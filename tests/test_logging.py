@@ -18,18 +18,12 @@ def test_initialization():
     assert log1.logger.level == deflogging.ERROR
 
 
-def test_create_log_file():
+def test_create_log_file(tmp_path):
     "This tests creation of logfile with ``logfile_name`` when initialized"
-    if os.path.isfile("testlog.log"):
-        os.remove("testlog.log")
-    log = logging.OslLogger(log_to_file=True, logfile_name="testlog.log")
-    assert os.path.isfile("testlog.log")
-
-    for handler in log.logger.handlers:
-        log.logger.removeHandler(handler)
-        handler.close()
-    if os.path.isfile("testlog.log"):
-        os.remove("testlog.log")
+    logfile_path = os.path.join(tmp_path, "testlog.log")
+    assert not os.path.isfile(logfile_path)
+    log = logging.OslLogger(log_to_file=True, logfile_name=logfile_path)
+    assert os.path.isfile(logfile_path)
 
 
 def test_set_log_level():
