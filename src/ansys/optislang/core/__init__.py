@@ -25,4 +25,4 @@ WINDOWS = os.name == "nt"
 LINUX = os.name == "posix"
 PY3 = sys.version_info[0] >= 3
 
-from ansys.optislang.core.osl_process import OslServerProcess
+from ansys.optislang.core.osl_process import OslServerProcess, ServerNotification

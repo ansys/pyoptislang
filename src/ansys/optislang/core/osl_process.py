@@ -131,7 +131,7 @@ class OslServerProcess:
         password: str = None,
         no_save: bool = False,
         server_info: str = None,
-        log_commands: bool = False,
+        log_server_events: bool = False,
         listener: Tuple[str, int] = None,
         listener_id: str = None,
         notifications: Iterable[ServerNotification] = None,
@@ -148,6 +148,13 @@ class OslServerProcess:
             raise FileNotFoundError("OptiSLang executable cannot be found.")
 
         self.__executable = executable
+        self.__process = None
+        self.__handle_process_output_thread = None
+
+        if logger is None:
+            self.__logger = logging.getLogger(__name__)
+        else:
+            self.__logger = logger
 
         self.__tempdir = None
         if project_path == None:
@@ -165,22 +172,14 @@ class OslServerProcess:
         self.__password = password
         self.__no_save = no_save
         self.__server_info = server_info
-        self.__log_commands = log_commands
+        self.__log_server_events = log_server_events
         self.__listener = listener
         self.__listener_id = listener_id
         self.__notifications = tuple(notifications) if notifications is not None else None
         self.__env_vars = dict(env_vars) if env_vars is not None else None
-
-        if logger is None:
-            self.__logger = logging.getLogger(__name__)
-        else:
-            self.__logger = logger
-
         self.__log_process_stdout = log_process_stdout
         self.__log_process_stderr = log_process_stderr
         self.__additional_args = kwargs
-        self.__process = None
-        self.__handle_process_output_thread = None
 
     @property
     def executable(self) -> str:
@@ -271,7 +270,7 @@ class OslServerProcess:
             ``True`` if server events are supposed to be displayed in the Message log pane;
             ``False`` otherwise.
         """
-        return self.__log_commands
+        return self.__log_server_events
 
     @property
     def listener(self) -> Tuple[str, int]:
@@ -365,6 +364,7 @@ class OslServerProcess:
         """
         return self.__additional_args
 
+    @property
     def pid(self) -> Union[int, None]:
         """Process ID.
 
@@ -401,9 +401,25 @@ class OslServerProcess:
 
         if self.__batch:
             args.append("-b")  # Start batch mode
+
+        if not os.path.isfile(self.__project_path):
+            # Creates a new project in the provided path.
+            if IRON_PYTHON:
+                args.append(f'--new="{self.__project_path}"')
+            else:
+                args.append(f"--new={self.__project_path}")
+        else:
+            # Opens existing project
+            if IRON_PYTHON:
+                args.append(f'"{self.__project_path}"')
+            else:
+                args.append(self.__project_path)
+
+        if self.__batch:
             args.append("--no-run")  # Does not run the specified projects.
-            args.append("--force")  # Forces projects to be processed, even if they are
-            # incomplete (can be used for damaged projects).
+            # Forces projects to be processed, even if they are incomplete
+            # (can be used for damaged projects).
+            args.append("--force")
 
         # Enables remote surveillance (plain TCP/IP based), the port indication is optional.
         if self.__port_range is not None:
@@ -428,7 +444,7 @@ class OslServerProcess:
             # Do not save the specified projects after all other actions have been completed.
             args.append("--no-save")
 
-        if self.__log_commands is not None:
+        if self.__log_server_events is not None:
             # Displays server events in the Message log pane.
             args.append("--log-server-events")
 
@@ -446,24 +462,11 @@ class OslServerProcess:
             for notification in self.__notifications:
                 cmd_arg += notification.name
                 cmd_arg += " "
-            args.append(f"--enable-notifications {cmd_arg.strip()}")
+            args.append(f"--enable-notifications={cmd_arg.strip()}")
 
         if self.__additional_args is not None:
             for arg_name, arg_value in self.__additional_args.items():
-                args.append(f"{arg_name} {arg_value}")
-
-        if not os.path.isfile(self.__project_path):
-            # Creates a new project in the provided path.
-            if IRON_PYTHON:
-                args.append(f'--new="{self.__project_path}"')
-            else:
-                args.append(f"--new={self.__project_path}")
-        else:
-            # Opens existing project
-            if IRON_PYTHON:
-                args.append(f'"{self.__project_path}"')
-            else:
-                args.append(self.__project_path)
+                args.append(f"{arg_name}={arg_value}")
 
         return args
 
@@ -581,7 +584,6 @@ class OslServerProcess:
             args,
             env=env_vars,
             cwd=os.getcwd(),
-            bufsize=1,
             stderr=subprocess.PIPE,
             stdout=subprocess.PIPE,
             shell=False,
@@ -613,19 +615,20 @@ class OslServerProcess:
             )
         for process in alive:
             self.__logger.debug(
-                "optiSLang server child process %s could not be terminated" " and will be killed.",
+                "optiSLang server child process %s could not be terminated and will be killed.",
                 process,
             )
             process.kill()
 
     def terminate(self):
         """Terminate optiSLang server process."""
-        self.__terminate_osl_child_processes()
-        self.__process.terminate()
+        if self.__process is not None:
+            self.__terminate_osl_child_processes()
+            self.__process.terminate()
 
         if self.__handle_process_output_thread is not None:
             self.__handle_process_output_thread.join()
-            del self.__handle_process_output_thread
+            self.__handle_process_output_thread = None
 
         if self.__tempdir is not None:
             self.__tempdir.cleanup()
@@ -648,9 +651,7 @@ class OslServerProcess:
         """Start new thread responsible for logging of STDOUT/STDERR of the optiSLang process."""
 
         def finalize_process(process, **kwargs):
-            print("Waiting for process end")
             process.wait(**kwargs)
-            print("Process has been finalized")
 
         self.__handle_process_output_thread = Thread(
             target=self.__class__.__handle_process_output,

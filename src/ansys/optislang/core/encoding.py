@@ -24,7 +24,7 @@ def safe_decode(s):
     if isinstance(s, text_type):
         return s
     elif isinstance(s, string_types):
-        return s.decode(defenc, "surrogateescape")
+        return s.decode(defenc, "ignore")
     elif s is not None:
         raise TypeError("Expected bytes or text, but got %r" % (s,))
 
