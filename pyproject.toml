@@ -32,6 +32,7 @@ dependencies = [
 test = [
     "pytest>=7.1.0",
     "pytest-cov>=3.0.0",
+    "psutil >=5.9"
 ]
 doc = [
     "Sphinx>=4.4",
