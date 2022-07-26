@@ -6,21 +6,21 @@ import re
 
 
 def get_osl_executable(osl_version=None):
-    """Return path of optislang executable file (by default the latest available version).
+    """Return path to optiSLang executable file (by default the latest available version).
 
     Parameters
     ----------
     osl_version : str, optional
-        Version of optislang, e.g. "221".
+        Version of optiSLang, e.g. "221".
     Returns
     -------
     path: str
-        Path of the specified optislang version.
+        Path of the specified optiSLang version.
     """
-    # TODO: Must work for standalone optislang as well
+    # TODO: Must work for standalone optiSLang as well
     # windows
     if os.name == "nt":
-        # find all ansys system variables, optislang installed in AWP_ROOT on windows
+        # find all ansys system variables, optiSLang installed in AWP_ROOT on windows
         installed_versions = _get_system_vars(pattern="^AWP_ROOT.*")
         if not installed_versions:
             raise FileNotFoundError(
@@ -49,7 +49,7 @@ def get_osl_executable(osl_version=None):
                     return path
 
             raise FileNotFoundError(
-                "No version of optislang was found, please specify direct path of executable."
+                "No version of optiSLang was found, please specify direct path of executable."
             )
 
     # linux
@@ -96,7 +96,6 @@ def _get_system_vars(pattern=".*"):
     installed_versions: dict
         Dictionary of matching system variables.
     """
-    # class with all system variables
     sys_vars = os.environ.copy()
     dictionary = {}
     for varname, value in sys_vars.items():
