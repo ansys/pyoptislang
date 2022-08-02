@@ -58,22 +58,29 @@ def get_osl_executable(osl_version=None):
         for path in ["/usr/ansys_inc", "/ansys_inc"]:
             if os.path.isdir(path):
                 base_path = path
-        if osl_version:
-            dir_path = os.path.join(base_path, "v" + osl_version)
-            if not os.path.exists(dir_path):
-                raise FileNotFoundError(f"Ansys not installed in this version: {osl_version}")
+        if base_path is not None:
+            if osl_version:
+                dir_path = os.path.join(base_path, "v" + osl_version)
+                if not os.path.exists(dir_path):
+                    raise FileNotFoundError(f"Ansys not installed in this version: {osl_version}")
 
-            file_path = os.path.join(dir_path, "optiSLang", "optislang")
-            if not os.path.isfile(file_path):
-                raise FileNotFoundError(f"Optislang not installed in this version: {osl_version}")
+                file_path = os.path.join(dir_path, "optiSLang", "optislang")
+                if not os.path.isfile(file_path):
+                    raise FileNotFoundError(
+                        f"Optislang not installed in this version: {osl_version}"
+                    )
 
-            return file_path
+                return file_path
+            else:
+                paths = sorted(glob(os.path.join(base_path, "v*")), reverse=True)
+                for path in paths:
+                    file_path = os.path.join(path, "optiSLang", "optislang")
+                    if os.path.isfile(file_path):
+                        return file_path
+                raise FileNotFoundError(
+                    "No version of optislang was found, please specify direct path of executable."
+                )
         else:
-            paths = sorted(glob(os.path.join(base_path, "v*")), reverse=True)
-            for path in paths:
-                file_path = os.path.join(path, "optiSLang", "optislang")
-                if os.path.isfile(file_path):
-                    return file_path
             raise FileNotFoundError(
                 "No version of optislang was found, please specify direct path of executable."
             )
