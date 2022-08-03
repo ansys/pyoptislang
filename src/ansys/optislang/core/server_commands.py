@@ -70,7 +70,7 @@ def apply_wizard(
     Parameters
     ----------
     actor_uid: str
-        Actor uid entry.
+        Unique identifying actor of the object.
     type_: str
         Node or system type, supported values are:
         ["solver", "sensitivity", "optimization", "robustness", "reevaluation"].
@@ -78,7 +78,7 @@ def apply_wizard(
         True or false.
     usage_mode: str, opt
         Usage mode, e.g. "EXPERT".
-    paren_hwnd: str, opt
+    parent_hwnd: str, opt
         Parent hwnd.
     password : str, opt
         Password.

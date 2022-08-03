@@ -1,10 +1,12 @@
-"""Logging module."""
+"""Osl logging module."""
 
+from copy import copy
 from datetime import datetime
-import inspect
 import logging
-import sys
 import weakref
+
+# TODO: from ansys.optislang.core.optislang import Optislang
+# add_instance_logger(osl: Optislang)
 
 ## Default configuration
 LOG_LEVEL = logging.DEBUG
@@ -41,11 +43,11 @@ class OslLogger:
 
     def __init__(
         self,
-        loglevel=LOG_LEVEL,
-        log_to_file=False,
-        logfile_name=FILE_NAME,
-        log_to_stdout=True,
-    ):
+        loglevel: str = LOG_LEVEL,
+        log_to_file: bool = False,
+        logfile_name: str = FILE_NAME,
+        log_to_stdout: bool = True,
+    ) -> None:
         """Initialize customized logger.
 
         Parameters
@@ -59,9 +61,6 @@ class OslLogger:
         log_to_stdout : bool, optional
             Log to command line, by default ``False``.
         """
-        # Set class/method name from where its called
-        logger_name = inspect.stack()[1][3]
-
         # Create logger
         self.logger = logging.getLogger("pyoptislang_global")
         self.set_log_level(loglevel)
@@ -75,9 +74,15 @@ class OslLogger:
 
     def set_log_level(
         self,
-        loglevel,
-    ):
-        """Set loglevel of the object and its handlers."""
+        loglevel: str,
+    ) -> None:
+        """Set loglevel of the object and its handlers.
+
+        Parameters
+        ----------
+        loglevel : str
+            Level of logging, by default LOG_LEVEL.
+        """
         self.logger.setLevel(loglevel)
         for handler in self.logger.handlers:
             handler.setLevel(loglevel)
@@ -85,23 +90,19 @@ class OslLogger:
 
     def add_file_handler(
         self,
-        logfile_name=FILE_NAME,
-        loglevel=LOG_LEVEL,
-    ):
+        logfile_name: str = FILE_NAME,
+        loglevel: str = LOG_LEVEL,
+    ) -> None:
         """Add file handler (output file) to the logger.
 
         Parameters
         ----------
         logger: logging.Logger
-            Logger where file_handle will be created
+            Logger, where file_handler will be created
         logfile_name: str, optional
             Output file name, by default FILE_NAME.
         loglevel : str, optional
             Level of logging, by default LOG_LEVEL.
-        Returns
-        -------
-        logging.logger
-            Logger class.
         """
         file_handler = logging.FileHandler(logfile_name)
         file_handler.setFormatter(logging.Formatter(FILE_MSG_FORMAT))
@@ -113,18 +114,14 @@ class OslLogger:
 
     def add_std_out_handler(
         self,
-        loglevel=LOG_LEVEL,
-    ):
+        loglevel: str = LOG_LEVEL,
+    ) -> None:
         """Add standard output to the terminal.
 
         Parameters
         ----------
         loglevel : str, optional
             Level of logging, by default LOG_LEVEL.
-        Returns
-        -------
-        logging.logger
-            Logger class.
         """
         std_out_handler = logging.StreamHandler()
         std_out_handler.setLevel(loglevel)
@@ -134,37 +131,47 @@ class OslLogger:
         std_out_handler.stream.write(NEW_SESSION_HEADER)
         std_out_handler.stream.write(DEFAULT_STDOUT_HEADER)
 
-    def create_logger(
-        self,
-        new_logger_name,
-    ):
+    def create_logger(self, new_logger_name: str, level: str = None) -> logging.Logger:
         """Create a logger for Optislang instance.
 
         Parameters
         ----------
         new_logger_name : str
             Name of the new logger.
+        level: str, opt
+            Level of logging, if None, global log_level is set.
+
         Returns
         -------
         logging.logger
             Logger class.
         """
         new_logger = logging.getLogger(new_logger_name)
+        new_logger.std_out_handler = None
+        new_logger.file_handler = None
+
+        if level is not None:
+            new_logger.setLevel(level)
+        else:
+            new_logger.setLevel(self.log_level)
+
         if self.file_handler:
-            new_logger.file_handler = self.file_handler
+            new_logger.file_handler = copy(self.file_handler)
             new_logger.addHandler(new_logger.file_handler)
+            new_logger.file_handler.setLevel(level)
 
         if self.std_out_handler:
-            new_logger.std_out_handler = self.std_out_handler
+            new_logger.std_out_handler = copy(self.std_out_handler)
             new_logger.addHandler(new_logger.std_out_handler)
+            new_logger.std_out_handler.setLevel(level)
 
         new_logger.propagate = True
         return new_logger
 
     def add_child_logger(
         self,
-        child_logger_name,
-    ):
+        child_logger_name: str,
+    ) -> None:
         """Call create_logger and a child logger is created (more general logger than main).
 
         Parameters
@@ -177,11 +184,7 @@ class OslLogger:
         child_logger = self.logger.name + "." + child_logger_name
         self.instances[child_logger] = self.create_logger(child_logger)
 
-    def add_instance_logger(
-        self,
-        instance_name,
-        osl_instance,
-    ):
+    def add_instance_logger(self, instance_name: str, osl_instance, level: str = None) -> None:
         """Create a logger for Optislang instance.
 
         Parameters
@@ -190,6 +193,8 @@ class OslLogger:
             Name of the new instance logger.
         osl_instance: ansys.optislang.core
             Optislang instance object. This should contain the attribute ``name``.
+        level: str, opt
+            Level of logging.
         """
         if type(instance_name) is not str:
             raise ValueError("Expected input instance_name: str")
@@ -202,10 +207,12 @@ class OslLogger:
             instance_name = name + str(counter)
 
         self.instances[instance_name] = OslCustomAdapter(
-            self.create_logger(instance_name), osl_instance
+            self.create_logger(instance_name, level), osl_instance
         )
 
-    def __getitem__(self, instance_name):
+        return self.instances[instance_name]
+
+    def __getitem__(self, instance_name: str) -> logging.Logger:
         """Return logger with instance_name.
 
         Parameters
@@ -214,30 +221,13 @@ class OslLogger:
             Name of the instance.
         Returns
         -------
-        logging.logger
+        self.instances[instance_name]: logging.Logger()
             Logger class.
         """
         if instance_name in self.instances.keys():
             return self.instances[instance_name]
         else:
             raise KeyError(f"There is no instances with name {instance_name}")
-
-    def add_handling_uncaught_expections(self, logger):
-        """Redirect the output of an exception to the logger.
-
-        Parameters
-        ----------
-        logging.logger
-            Logger class.
-        """
-
-        def handle_exception(exc_type, exc_value, exc_traceback):
-            if issubclass(exc_type, KeyboardInterrupt):
-                sys.__excepthook__(exc_type, exc_value, exc_traceback)
-                return
-            logger.critical("Uncaught exception", exc_info=(exc_type, exc_value, exc_traceback))
-
-        sys.excepthook = handle_exception
 
 
 class OslCustomAdapter(logging.LoggerAdapter):
@@ -249,9 +239,9 @@ class OslCustomAdapter(logging.LoggerAdapter):
 
     def __init__(
         self,
-        logger,
+        logger: logging.Logger,
         extra=None,
-    ):
+    ) -> None:
         """
         Initialize customized logger with extra inputs.
 
@@ -268,3 +258,11 @@ class OslCustomAdapter(logging.LoggerAdapter):
 
         self.file_handler = logger.file_handler
         self.std_out_handler = logger.std_out_handler
+
+    def process(self, msg, kwargs):
+        """Modify the message and/or keyword arguments passed to a logging call."""
+        kwargs["extra"] = {}
+        # This are the extra parameters sent to log
+        # here self.extra is the argument pass to the log records.
+        kwargs["extra"]["instance_name"] = self.extra.name
+        return msg, kwargs
