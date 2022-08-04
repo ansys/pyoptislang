@@ -58,12 +58,13 @@ class Optislang:
 
     Examples
     --------
-    Start and connect to the local optiSLang server, get server information, print received
-    information and shutdown the server.
+    Start and connect to the local optiSLang server, get version of used optiSLang, print it
+    and shutdown the server.
 
     >>> from ansys.optislang.core import Optislang
     >>> osl = Optislang()
-    >>> server_info = osl.get_server_info()
+    >>> osl_version = osl.get_osl_version()
+    >>> print(osl_version)
     >>> osl.shutdown()
     """
 
