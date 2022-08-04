@@ -24,7 +24,7 @@ def pytest_collection_modifyitems(config, items):
                 item.add_marker(skip_local_osl)
 
 
-@pytest.fixture()
+@pytest.fixture
 def executable():
     """Get path to the optiSLang executable.
 
@@ -33,10 +33,12 @@ def executable():
     str
         Path to the optiSLang executable.
     """
-    return utils.get_osl_executable()
+    osl_exec = utils.get_osl_exec()
+    assert osl_exec is not None
+    return osl_exec[1]
 
 
-@pytest.fixture()
+@pytest.fixture
 def project_file(tmp_path):
     """Get path to the optiSLang project.
 
@@ -73,7 +75,7 @@ def get_server_info_file_path(project_file: str, server_info_file_name: str) -> 
     return os.path.join(project_dir, project_name + ".opd", server_info_file_name)
 
 
-@pytest.fixture()
+@pytest.fixture
 def server_info_file(project_file):
     """Get path to the server information file.
 

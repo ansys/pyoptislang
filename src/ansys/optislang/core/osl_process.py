@@ -9,7 +9,7 @@ from typing import Any, Callable, Dict, Iterable, List, Mapping, Sequence, Tuple
 
 import psutil
 
-from ansys.optislang.core import IRON_PYTHON, encoding
+from ansys.optislang.core import IRON_PYTHON, encoding, utils
 
 if IRON_PYTHON:
     import System
@@ -43,59 +43,45 @@ class OslServerProcess:
     ----------
     executable : str
         Path to the optiSLang executable file.
-
-    project_path : str
+    project_path : str, optional
         Path to the optiSLang project file.
         - If the project file exists, it is opened.
         - If the project file does not exist, a new project is created on the specified path.
         - If the path is None, a new project is created in the temporary directory.
-
+        Defaults to ``None``.
     batch : bool, optional
         Determines whether to start optiSLang server in batch mode. Defaults to ``True``.
-
-    port_range : tuple[int, int], optional
+    port_range : Tuple[int, int], optional
         Defines the port range for optiSLang server. Defaults to ``None``.
-
     password : str, optional
         The server password. Use when communication with the server requires the request
         to contain a password entry. Defaults to ``None``.
-
     no_save : bool, optional
         Determines whether not to save the specified project after all other actions are completed.
         Defaults to ``False``.
-
     server_info : str, optional
         Path to the server information file. If an absolute path is not supplied, it is considered
         to be relative to the project working directory. If ``None``, no server information file
         will be written. Defaults to ``None``.
-
     log_commands : bool, optional
         Determines whether to display server events in the Message log pane. Defaults to ``False``.
-
-    listener : tuple[str, int], optional
+    listener : Tuple[str, int], optional
         Host and port of the remote listener (plain TCP/IP based) to be registered by optiSLang
         server. Defaults to ``None``.
-
     listener_id : str, optional
         Specific unique ID for the TCP listener. Defaults to ``None``.
-
     notifications : Iterable[ServerNotification], optional
         Notifications to be sent to the listener. Defaults to ``None``.
-
     env_vars : Mapping[str, str], optional
         Additional environmental variables (key and value) for the optiSLang server process.
         Defaults to ``None``.
-
     logger : Any, optional
         Object for logging. If ``None``, standard logging object is used. Defaults to ``None``.
-
     log_process_stdout : bool, optional
         Determines whether the process STDOUT is supposed to be logged. Defaults to ``True``.
-
     log_process_stderr : bool, optional
         Determines whether the process STDERR is supposed to be logged. Defaults to ``True``.
-
-    **kwargs : dict[str, Any], optional
+    **kwargs : Dict[str, Any], optional
         Additional command line arguments used for execution of the optiSLang server process.
         Defaults to ``None``.
 
@@ -124,8 +110,8 @@ class OslServerProcess:
 
     def __init__(
         self,
-        executable: str,
-        project_path: str,
+        executable: str = None,
+        project_path: str = None,
         batch: bool = True,
         port_range: Tuple[int, int] = None,
         password: str = None,
@@ -142,19 +128,29 @@ class OslServerProcess:
         **kwargs,
     ) -> None:
         """Initialize a new instance of the ``OslServerProcess`` class."""
-        if executable is None:
-            raise TypeError("OptiSLang executable cannot be None.")
-        if not os.path.isfile(executable):
-            raise FileNotFoundError("OptiSLang executable cannot be found.")
+        if logger is None:
+            self._logger = logging.getLogger(__name__)
+        else:
+            self._logger = logger
 
-        self.__executable = executable
+        if executable is not None:
+            if not os.path.isfile(executable):
+                raise FileNotFoundError(f"optiSLang executable cannot be found: {executable}")
+            self.__executable = executable
+        else:
+            osl_exec = utils.get_osl_exec()
+            if osl_exec is not None:
+                osl_version, osl_exec_path = osl_exec
+                self.__executable = osl_exec_path
+                self._logger.info(
+                    f"optiSLang executable has been found for version {osl_version} "
+                    f"on path: {osl_exec_path}"
+                )
+            else:
+                raise RuntimeError("No optiSLang executable could be found.")
+
         self.__process = None
         self.__handle_process_output_thread = None
-
-        if logger is None:
-            self.__logger = logging.getLogger(__name__)
-        else:
-            self.__logger = logger
 
         self.__tempdir = None
         if project_path == None:
@@ -327,7 +323,7 @@ class OslServerProcess:
         :class:
             Logger object.
         """
-        return self.__logger
+        return self._logger
 
     @property
     def log_process_stdout(self) -> bool:
@@ -377,8 +373,6 @@ class OslServerProcess:
             return None
 
         return self.__process.pid
-
-    # TODO: Implement function for automatic executable search.
 
     def __enter__(self):
         """Enter the context."""
@@ -481,7 +475,7 @@ class OslServerProcess:
                 if file.endswith(".ini"):
                     info_file = os.path.join(project_dir, file)
                     os.remove(info_file)
-                    self.__logger.info("The server information file %s has been removed", info_file)
+                    self._logger.info("The server information file %s has been removed", info_file)
 
     def start(self, remove_ini_files: bool = True):
         """Start new optiSLang server process.
@@ -497,7 +491,7 @@ class OslServerProcess:
         RuntimeError
             Raised when the process is already running.
         """
-        if self.is_process_running():
+        if self.is_running():
             raise RuntimeError("Process is running.")
 
         if remove_ini_files:
@@ -523,6 +517,7 @@ class OslServerProcess:
         ----------
         args : Sequence[str]
             Sequence of command line arguments.
+
         env_vars : Mapping[str, str]
             Environment variables.
         """
@@ -537,7 +532,7 @@ class OslServerProcess:
         # TODO: Add comment why this is done
         if start_info.EnvironmentVariables.ContainsKey("LD_LIBRARY_PATH"):
             start_info.EnvironmentVariables.Remove("LD_LIBRARY_PATH")
-            self.__logger.debug(
+            self._logger.debug(
                 "LD_LIBRARY_PATH environment variable has been removed before "
                 "start of the optiSLang process."
             )
@@ -552,7 +547,7 @@ class OslServerProcess:
         self.__process = System.Diagnostics.Process()
         self.__process.StartInfo = start_info
 
-        self.__logger.debug("Executing process %s", args)
+        self._logger.debug("Executing process %s", args)
         self.__process.Start()
 
     def __start_in_python(self, args: Sequence[str], env_vars: Mapping[str, str]):
@@ -562,24 +557,25 @@ class OslServerProcess:
         ----------
         args : Sequence[str]
             Sequence of command line arguments.
+
         env_vars : Mapping[str, str]
             Environment variables.
         """
         for i in range(len(args)):
-            args[i] = encoding.safe_encode_to_ascii(args[i])
+            args[i] = encoding.to_ascii_safe(args[i])
 
         for var_name in env_vars:
-            env_vars[var_name] = encoding.safe_encode_to_ascii(env_vars[var_name])
+            env_vars[var_name] = encoding.to_ascii_safe(env_vars[var_name])
 
         # TODO: Add comment why this is done
         if "LD_LIBRARY_PATH" in env_vars:
             env_vars.pop("LD_LIBRARY_PATH")
-            self.__logger.debug(
+            self._logger.debug(
                 "LD_LIBRARY_PATH environment variable has been removed before "
                 "start of the optiSLang process."
             )
 
-        self.__logger.debug("Executing process %s", args)
+        self._logger.debug("Executing process %s", args)
         self.__process = subprocess.Popen(
             args,
             env=env_vars,
@@ -588,6 +584,8 @@ class OslServerProcess:
             stdout=subprocess.PIPE,
             shell=False,
         )
+
+        self._logger.debug("optiSLang server process has started with PID: %d", self.__process.pid)
 
     def __terminate_osl_child_processes(self):
         """Terminate all child processes of the optiSLang server process."""
@@ -601,20 +599,20 @@ class OslServerProcess:
             try:
                 process.terminate()
             except psutil.NoSuchProcess:
-                self.__logger.debug(
+                self._logger.debug(
                     "Cannot terminate child process PID: %s. " "The process does not exist.",
                     process.pid,
                 )
 
         gone, alive = psutil.wait_procs(children, timeout=3)
         for process in gone:
-            self.__logger.debug(
+            self._logger.debug(
                 "optiSLang server child process %s terminated with exit code %s.",
                 process,
                 process.returncode,
             )
         for process in alive:
-            self.__logger.debug(
+            self._logger.debug(
                 "optiSLang server child process %s could not be terminated and will be killed.",
                 process,
             )
@@ -634,7 +632,7 @@ class OslServerProcess:
             self.__tempdir.cleanup()
             self.__tempdir = None
 
-    def is_process_running(self) -> bool:
+    def is_running(self) -> bool:
         """Determine whether the optiSLang server process is running.
 
         Returns
@@ -655,14 +653,14 @@ class OslServerProcess:
 
         self.__handle_process_output_thread = Thread(
             target=self.__class__.__handle_process_output,
-            name="optiSLang.ProcessOutputHandlerThread",
+            name="PyOptiSLang.ProcessOutputHandlerThread",
             args=(
                 self.__process,
-                self.__logger.debug if self.__log_process_stdout else None,
-                self.__logger.warning if self.__log_process_stderr else None,
+                self._logger.debug if self.__log_process_stdout else None,
+                self._logger.warning if self.__log_process_stderr else None,
                 finalize_process,
                 True,
-                self.__logger,
+                self._logger,
             ),
         )
         self.__handle_process_output_thread.start()
@@ -691,16 +689,21 @@ class OslServerProcess:
         ----------
         process : subprocess.Popen
             Process which STDOUT or STDERR is supposed to be handled.
+
         stdout_handler : Callable[[str], None], None
             Handler for STDOUT.
+
         stderr_handler : Callable[[str], None], None
             Handler for STDERR. It is supposed to be a function with one argument of str.
+
         finalizer : Callable[[subprocess.Popen,...], Any], optional
             Function which finalizes output process handling. Defaults to ``None``.
+
         decode_streams : bool, optional
             Determines whether to safely decode STDOUT/STDERR streams before pushing their
             contents to handlers. Should be set to ``False`` if 'universal_newline == True'
             (then streams are in text-mode) or if decoding must happen later. Defaults to ``True``.
+
         logger : Any, optional
             Object for logging. Defaults to ``None``.
 
@@ -723,7 +726,7 @@ class OslServerProcess:
                         if handler:
                             try:
                                 if is_decode:
-                                    line = encoding.safe_decode(line)
+                                    line = encoding.force_text(line)
                                 handler("optiSLang " + name + ": " + line)
                             except:
                                 handler("optiSLang " + name + ": " + line)
@@ -743,7 +746,7 @@ class OslServerProcess:
                         if handler:
                             try:
                                 if is_decode:
-                                    line = encoding.safe_decode(line)
+                                    line = encoding.force_text(line)
                                 handler("optiSLang " + name + ": " + line)
                             except:
                                 handler("optiSLang " + name + ": " + line)
@@ -770,7 +773,7 @@ class OslServerProcess:
         for name, stream, handler in pumps:
             thread = Thread(
                 target=stream_reader,
-                name="optiSLang." + name + "HandlerThread",
+                name="PyOptiSLang." + name + "HandlerThread",
                 args=(cmdline, name, stream, decode_streams, handler),
             )
             thread.setDaemon(True)

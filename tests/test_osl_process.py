@@ -138,10 +138,10 @@ def test_start_wo_project_file(executable, caplog):
         Builtin fixture which captures log records.
     """
     with OslServerProcess(executable, None, logger=get_logger()) as osl_process:
-        assert not osl_process.is_process_running()
+        assert not osl_process.is_running()
         assert osl_process.pid is None
         osl_process.start()
-        assert osl_process.is_process_running()
+        assert osl_process.is_running()
         assert psutil.pid_exists(osl_process.pid)
 
         log_record = wait_for_log_record(NEW_PROJECT_STR, caplog)
@@ -163,10 +163,10 @@ def test_start_with_project_file(executable, project_file, caplog):
         Builtin fixture which captures log records.
     """
     with OslServerProcess(executable, project_file, logger=get_logger()) as osl_process:
-        assert not osl_process.is_process_running()
+        assert not osl_process.is_running()
         assert osl_process.pid is None
         osl_process.start()
-        assert osl_process.is_process_running()
+        assert osl_process.is_running()
         assert psutil.pid_exists(osl_process.pid)
 
         log_record = wait_for_log_record(NEW_PROJECT_STR, caplog)
@@ -231,7 +231,7 @@ def test_terminate_process(executable):
     with OslServerProcess(executable, None) as osl_process:
         # Start optiSLang process
         osl_process.start()
-        assert osl_process.is_process_running()
+        assert osl_process.is_running()
         assert osl_process.pid is not None
         assert psutil.pid_exists(osl_process.pid)
 
@@ -241,7 +241,7 @@ def test_terminate_process(executable):
 
         # Terminate optiSLang process
         osl_process.terminate()
-        assert not osl_process.is_process_running()
+        assert not osl_process.is_running()
         assert not parent.is_running()
         for chile_process in child_processes:
             assert not chile_process.is_running()
