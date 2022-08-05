@@ -502,6 +502,16 @@ class TcpOslServer(OslServer):
         """
         return self._send_command(queries.server_info())
 
+    def _get_basic_project_info(self) -> Dict:
+        """Get basic project info, like name, location, global settings and status.
+
+        Returns
+        -------
+        Dict
+            Information data as dictionary.
+        """
+        return self._send_command(queries.basic_project_info())
+
     def close(self) -> None:
         """Close the current project.
 
@@ -530,6 +540,27 @@ class TcpOslServer(OslServer):
         server_info = self._get_server_info()
         return server_info["application"]["version"]
 
+    def get_project_description(self) -> str:
+        """Get description of optiSLang project.
+
+        Returns
+        -------
+        str
+            optiSLang project description. If no project is loaded in the optiSLang,
+            returns ``None``.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        """
+        project_info = self._get_basic_project_info()
+        if len(project_info["projects"]) == 0:
+            return None
+        return project_info["projects"][0]["settings"]["short_description"]
+
     def get_project_location(self) -> str:
         """Get path to the optiSLang project file.
 
@@ -546,10 +577,10 @@ class TcpOslServer(OslServer):
         OslCommandError
             Raised when the command or query fails.
         """
-        server_info = self._get_server_info()
-        if len(server_info["projects"]) == 0:
+        project_info = self._get_basic_project_info()
+        if len(project_info["projects"]) == 0:
             return None
-        return server_info["projects"][0]["location"]
+        return project_info["projects"][0]["location"]
 
     def get_project_name(self) -> str:
         """Get name of the optiSLang project.
@@ -567,10 +598,10 @@ class TcpOslServer(OslServer):
         OslCommandError
             Raised when the command or query fails.
         """
-        server_info = self._get_server_info()
-        if len(server_info["projects"]) == 0:
+        project_info = self._get_basic_project_info()
+        if len(project_info["projects"]) == 0:
             return None
-        return server_info["projects"][0]["name"]
+        return project_info["projects"][0]["name"]
 
     def get_project_status(self) -> str:
         """Get status of the optiSLang project.
@@ -588,10 +619,10 @@ class TcpOslServer(OslServer):
         OslCommandError
             Raised when the command or query fails.
         """
-        server_info = self._get_server_info()
-        if len(server_info["projects"]) == 0:
+        project_info = self._get_basic_project_info()
+        if len(project_info["projects"]) == 0:
             return None
-        return server_info["projects"][0]["state"]
+        return project_info["projects"][0]["state"]
 
     def get_working_dir(self) -> str:
         """Get path to the optiSLang project working directory.
@@ -609,10 +640,10 @@ class TcpOslServer(OslServer):
         OslCommandError
             Raised when the command or query fails.
         """
-        server_info = self._get_server_info()
-        if len(server_info["projects"]) == 0:
+        project_info = self._get_basic_project_info()
+        if len(project_info["projects"]) == 0:
             return None
-        return server_info["projects"][0]["working_dir"]
+        return project_info["projects"][0]["working_dir"]
 
     def new(self) -> None:
         """Create a new project.

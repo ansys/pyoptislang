@@ -156,6 +156,24 @@ class Optislang:
         """
         return self.__osl_server.get_osl_version()
 
+    def get_project_description(self) -> str:
+        """Get description of optiSLang project.
+
+        Returns
+        -------
+        str
+            optiSLang project description. If no project is loaded in the optiSLang,
+            returns ``None``.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        """
+        return self.__osl_server.get_project_description()
+
     def get_project_location(self) -> str:
         """Get path to the optiSLang project file.
 
