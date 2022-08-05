@@ -9,6 +9,7 @@ import struct
 import threading
 import time
 from typing import Dict, Sequence, Tuple, Union
+import uuid
 
 from ansys.optislang.core import IRON_PYTHON
 from ansys.optislang.core import server_commands as commands
@@ -809,6 +810,23 @@ class TcpOslServer(OslServer):
         """
         self._send_command(commands.stop_gently(self.__password))
 
+    def _unregister_listener(self, uuid: str) -> None:
+        """Unregister a listener.
+
+        Parameters
+        ----------
+        uuid : str
+            Specific unique ID for the TCP listener.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        """
+        self._send_command(commands.unregister_listener(uuid, self.__password))
+
     def _start_local(self, timeout) -> None:
         """Start local optiSLang server.
 
@@ -831,6 +849,7 @@ class TcpOslServer(OslServer):
             raise RuntimeError("optiSLang server is already started.")
 
         listener_socket = None
+        listener_uid = uuid.uuid4()
         try:
             listener_socket = self.__init_port_listener(self.__class__._PRIVATE_PORTS_RANGE)
             if listener_socket is None:
@@ -850,13 +869,13 @@ class TcpOslServer(OslServer):
                 no_save=self.__no_save,
                 password=self.__password,
                 listener=(self.__class__._LOCALHOST, listener_socket.getsockname()[1]),
+                listener_id=str(listener_uid),
                 logger=self._logger,
             )
             self.__osl_process.start()
 
             listener_thread.join()
         finally:
-            # TODO: Unregister listener (send command); otherwise it takes time to shutdown
             if listener_socket is not None:
                 listener_socket.close()
 
@@ -866,6 +885,11 @@ class TcpOslServer(OslServer):
             raise RuntimeError("Cannot get optiSLang server port.")
 
         self.__host = self.__class__._LOCALHOST
+
+        try:
+            self._unregister_listener(str(listener_uid))
+        except Exception as ex:
+            self._logger.warn("Cannot unregister port listener: %s", ex)
 
     def __init_port_listener(self, port_range: Tuple[int, int]) -> socket.socket:
         """Initialize port listener.
