@@ -26,7 +26,7 @@ def get_osl_exec(osl_version: Union[int, str] = None) -> Union[Tuple[int, str], 
         return None
 
     if osl_version is not None:
-        osl_version = _try_parse_str_to_int(osl_version)
+        osl_version = _try_cast_str_to_int(osl_version)
         return (osl_version, osl_versions[osl_version][0]) if osl_version in osl_versions else None
     else:
         # It is assumed that the first item corresponds to the latest optiSLang
@@ -62,13 +62,13 @@ def find_all_osl_exec() -> OrderedDict[int, Tuple[str, ...]]:
         for awp_root_key, awp_root_value in awp_root_envars.items():
             file_path = os.path.join(awp_root_value, "optiSlang", "optislang.com")
             if os.path.isfile(file_path):
-                ansys_version = _try_parse_str_to_int(awp_root_key[-3:])
+                ansys_version = _try_cast_str_to_int(awp_root_key[-3:])
                 osl_versions[ansys_version] = [file_path]
 
         # Check also standard Ansys installation directories (in Program Files)
         program_files_path = os.environ.get("ProgramFiles", "C:\\Program Files")
         for ans_path in glob(os.path.join(program_files_path, "ANSYS Inc", "v*")):
-            ansys_version = _try_parse_str_to_int(ans_path[-3:])
+            ansys_version = _try_cast_str_to_int(ans_path[-3:])
             # Check only those that were not found using AWP_ROOT environment variables.
             if ansys_version not in osl_versions:
                 file_path = os.path.join(ans_path, "optiSLang", "optislang.com")
@@ -83,7 +83,7 @@ def find_all_osl_exec() -> OrderedDict[int, Tuple[str, ...]]:
                 file_path = os.path.join(path, ver, "optislang.com")
                 if os.path.isfile(file_path):
                     # convert version fmt "yyyy Rx" to "yyx"
-                    conv_fmt = _try_parse_str_to_int(ver[-5:-3] + ver[-1:])
+                    conv_fmt = _try_cast_str_to_int(ver[-5:-3] + ver[-1:])
                     if conv_fmt not in osl_versions.keys():
                         osl_versions[conv_fmt] = [file_path]
                     else:
@@ -97,7 +97,7 @@ def find_all_osl_exec() -> OrderedDict[int, Tuple[str, ...]]:
                 base_path = ans_path
         if base_path is not None:
             for ans_path in glob(os.path.join(base_path, "v*")):
-                ansys_version = _try_parse_str_to_int(ans_path[-3:])
+                ansys_version = _try_cast_str_to_int(ans_path[-3:])
                 # TODO: optislang or another executable?
                 file_path = os.path.join(ans_path, "optiSLang", "optislang")
                 if os.path.isfile(file_path):
@@ -110,7 +110,7 @@ def find_all_osl_exec() -> OrderedDict[int, Tuple[str, ...]]:
                 file_path = os.path.join(path, ver, "optislang")
                 if os.path.isfile(file_path):
                     # convert version fmt "yyyy Rx" to "yyx"
-                    conv_fmt = _try_parse_str_to_int(ver[-4:-2] + ver[-1:])
+                    conv_fmt = _try_cast_str_to_int(ver[-4:-2] + ver[-1:])
                     if conv_fmt not in osl_versions.keys():
                         osl_versions[conv_fmt] = [file_path]
                     else:
@@ -148,7 +148,7 @@ def _get_environ_vars(pattern: str = ".*") -> Dict:
     return dictionary
 
 
-def _try_parse_str_to_int(str_value: str) -> Union[int, str]:
+def _try_cast_str_to_int(str_value: str) -> Union[int, str]:
     """Try to parse string value to integer.
 
     Parameters
