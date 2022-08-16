@@ -11,7 +11,7 @@ def test_initialization():
     """This tests correct initialization
     of class OslLogger"""
     log0 = logging.OslLogger()
-    assert log0.logger.level == logging.LOG_LEVEL
+    assert log0.logger.level == LOG_LEVELS[logging.LOG_LEVEL]
     assert log0.file_handler == None
     assert isinstance(log0.std_out_handler, type(LOG.std_out_handler))
     log1 = logging.OslLogger(loglevel="ERROR")
@@ -45,7 +45,7 @@ def test_add_file_handler():
     log = logging.OslLogger()
     log.add_file_handler(logfile_name="testlog.log")
     assert log.file_handler != None
-    assert log.file_handler.level == logging.LOG_LEVEL
+    assert log.file_handler.level == LOG_LEVELS[logging.LOG_LEVEL]
     log.set_log_level(loglevel="ERROR")
     assert log.file_handler.level == deflogging.ERROR
 

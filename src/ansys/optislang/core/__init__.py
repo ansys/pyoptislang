@@ -4,7 +4,6 @@ optiSLang.
 core
 """
 
-import logging
 import os
 import sys
 
@@ -15,7 +14,7 @@ except ModuleNotFoundError:
 
 from ansys.optislang.core.logging import OslLogger
 
-LOG = OslLogger(loglevel=logging.ERROR, log_to_file=False, log_to_stdout=True)
+LOG = OslLogger(loglevel="ERROR", log_to_file=False, log_to_stdout=True)
 LOG.logger.debug("Loaded logging module as LOG")
 
 __version__ = importlib_metadata.version(__name__.replace(".", "-"))

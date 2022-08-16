@@ -90,8 +90,6 @@ class Optislang:
         self.__name = name
         self.__password = password
 
-        if loglevel is None:
-            loglevel = LOG.log_level
         self._logger = LOG.add_instance_logger(self.name, self, loglevel)
         self.__osl_server: OslServer = self.__init_osl_server("tcp")
 

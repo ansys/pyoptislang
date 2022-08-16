@@ -9,13 +9,8 @@ import weakref
 # add_instance_logger(osl: Optislang)
 
 ## Default configuration
-LOG_LEVEL = logging.DEBUG
+LOG_LEVEL = "DEBUG"
 FILE_NAME = "pyOptislang.log"
-DEBUG = logging.DEBUG
-INFO = logging.INFO
-WARN = logging.WARN
-ERROR = logging.ERROR
-CRITICAL = logging.CRITICAL
 
 ## Formatting
 
@@ -150,10 +145,9 @@ class OslLogger:
         new_logger.std_out_handler = None
         new_logger.file_handler = None
 
-        if level is not None:
-            new_logger.setLevel(level)
-        else:
-            new_logger.setLevel(self.log_level)
+        if level is None:
+            level = self.log_level
+        new_logger.setLevel(level)
 
         if self.file_handler:
             new_logger.file_handler = copy(self.file_handler)
