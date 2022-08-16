@@ -1,5 +1,5 @@
 """Contains Optislang class which provides python API for optiSLang application."""
-from typing import Sequence
+from typing import Sequence, Tuple, Union
 
 from ansys.optislang.core import LOG
 from ansys.optislang.core.osl_server import OslServer
@@ -258,15 +258,22 @@ class Optislang:
         """
         self.__osl_server.reset()
 
-    def run_python_script(self, script: str, args: Sequence[object]) -> None:
+    def run_python_commands(
+        self, script: str, args: Union[Sequence[object], None] = None
+    ) -> Tuple[str, str]:
         """Load a Python script in a project context and execute it.
 
         Parameters
         ----------
         script : str
-            Python script to be executed on the server.
-        args : Sequence[object]
-            Sequence of script arguments.
+            Python commands to be executed on the server.
+        args : Sequence[object], None, optional
+            Sequence of arguments used in Python script. Defaults to ``None``.
+
+        Returns
+        -------
+        Tuple[str, str]
+            STDOUT and STDERR from executed Python script.
 
         Raises
         ------
@@ -275,9 +282,37 @@ class Optislang:
         OslCommandError
             Raised when the command or query fails.
         """
-        self.__osl_server.run_python_script(script, args)
+        return self.__osl_server.run_python_commands(script, args)
 
-    def save_copy(self, file_path: str):
+    def run_python_script(
+        self, script_path: str, args: Union[Sequence[object], None] = None
+    ) -> Tuple[str, str]:
+        """Read python script from the file, load it in a project context and execute it.
+
+        Parameters
+        ----------
+        script_path : str
+            Path to the Python script file which content is supposed to be executed on the server.
+        args : Sequence[object], None, optional
+            Sequence of arguments used in Python script. Defaults to ``None``.
+
+        Returns
+        -------
+        Tuple[str, str]
+            STDOUT and STDERR from executed Python script.
+
+        Raises
+        ------
+        FileNotFoundError
+            Raised when the specified Python script file does not exist.
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        """
+        return self.__osl_server.run_python_script(script_path, args)
+
+    def save_copy(self, file_path: str) -> None:
         """Save the current project as a copy to a location.
 
         Parameters
