@@ -678,15 +678,22 @@ class TcpOslServer(OslServer):
         """
         self._send_command(commands.reset(password=self.__password))
 
-    def run_python_script(self, script: str, args: Sequence[object]) -> None:
+    def run_python_commands(
+        self, script: str, args: Union[Sequence[object], None] = None
+    ) -> Tuple[str, str]:
         """Load a Python script in a project context and execute it.
 
         Parameters
         ----------
         script : str
-            Python script to be executed on the server.
-        args : Sequence[object]
-            Sequence of script arguments.
+            Python commands to be executed on the server.
+        args : Sequence[object], None, optional
+            Sequence of arguments used in Python script. Defaults to ``None``.
+
+        Returns
+        -------
+        Tuple[str, str]
+            STDOUT and STDERR from executed Python script.
 
         Raises
         ------
@@ -695,7 +702,48 @@ class TcpOslServer(OslServer):
         OslCommandError
             Raised when the command or query fails.
         """
-        self._send_command(commands.run_python_script(script, args, self.__password))
+        responses = self._send_command(commands.run_python_script(script, args, self.__password))
+        std_out = ""
+        std_err = ""
+        for response in responses:
+            std_out += response.get("std_out", "")
+            std_err += response.get("std_err", "")
+
+        return (std_out, std_err)
+
+    def run_python_script(
+        self, script_path: str, args: Union[Sequence[object], None] = None
+    ) -> Tuple[str, str]:
+        """Read python script from the file, load it in a project context and execute it.
+
+        Parameters
+        ----------
+        script_path : str
+            Path to the Python script file which content is supposed to be executed on the server.
+        args : Sequence[object], None, optional
+            Sequence of arguments used in Python script. Defaults to ``None``.
+
+        Returns
+        -------
+        Tuple[str, str]
+            STDOUT and STDERR from executed Python script.
+
+        Raises
+        ------
+        FileNotFoundError
+            Raised when the specified Python script file does not exist.
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        """
+        if not os.path.isfile(script_path):
+            raise FileNotFoundError("Python script file does not exist.")
+
+        with open(script_path, "r") as file:
+            script = file.readlines()
+
+        return self.run_python_commands(script, args)
 
     def save(self) -> None:
         """Save the changed data and settings of the current project.

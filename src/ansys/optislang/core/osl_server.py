@@ -1,7 +1,7 @@
 """Contains abstract optiSLang server class."""
 
 from abc import ABC, abstractmethod
-from typing import Sequence
+from typing import Sequence, Tuple, Union
 
 
 class OslServer(ABC):
@@ -184,18 +184,54 @@ class OslServer(ABC):
         pass
 
     @abstractmethod
-    def run_python_script(self, script: str, args: Sequence[object]) -> None:
+    def run_python_commands(
+        self, script: str, args: Union[Sequence[object], None] = None
+    ) -> Tuple[str, str]:
         """Load a Python script in a project context and execute it.
 
         Parameters
         ----------
         script : str
-            Python script to be executed on the server.
-        args : Sequence[object]
-            Sequence of script arguments.
+            Python commands to be executed on the server.
+        args : Sequence[object], None, optional
+            Sequence of arguments used in Python script. Defaults to ``None``.
+
+        Returns
+        -------
+        Tuple[str, str]
+            STDOUT and STDERR from executed Python script.
 
         Raises
         ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        """
+        pass
+
+    @abstractmethod
+    def run_python_script(
+        self, script_path: str, args: Union[Sequence[object], None] = None
+    ) -> Tuple[str, str]:
+        """Read python script from the file, load it in a project context and execute it.
+
+        Parameters
+        ----------
+        script_path : str
+            Path to the Python script file which content is supposed to be executed on the server.
+        args : Sequence[object], None, optional
+            Sequence of arguments used in Python script. Defaults to ``None``.
+
+        Returns
+        -------
+        Tuple[str, str]
+            STDOUT and STDERR from executed Python script.
+
+        Raises
+        ------
+        FileNotFoundError
+            Raised when the specified Python script file does not exist.
         OslCommunicationError
             Raised when an error occurs while communicating with server.
         OslCommandError
