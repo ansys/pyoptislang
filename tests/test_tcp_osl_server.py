@@ -7,10 +7,9 @@ import pytest
 from ansys.optislang.core import OslServerProcess
 import ansys.optislang.core.tcp_osl_server as tos
 
-NEW_PROJECT_STR = "New project"
-OPENED_PROJECT_STR = "Opened project"
-
-pytestmark = pytest.mark.local_osl
+_host = "127.0.0.1"
+_port = 5310
+_msg = '{ "What": "SYSTEMS_STATUS_INFO" }'
 
 
 @pytest.fixture(scope="session", autouse=True)
@@ -22,6 +21,20 @@ def osl_server_process():
     yield osl
     # Will be executed after the last test
     osl.terminate()
+
+
+@pytest.fixture
+def tcp_client() -> tos.TcpClient:
+    """Create TcpClient.
+
+    Returns
+    -------
+    TcpOslServer:
+        Class which provides access to optiSLang server using plain TCP/IP communication protocol.
+    """
+    client = tos.TcpClient()
+    client.connect(host=_host, port=_port)
+    return client
 
 
 @pytest.fixture
@@ -40,14 +53,69 @@ def tcp_osl_server() -> tos.TcpOslServer:
     TcpOslServer:
         Class which provides access to optiSLang server using plain TCP/IP communication protocol.
     """
-    # tmp = _host_and_port(osl)
-    return tos.TcpOslServer(host="127.0.0.1", port=5310)
+    return tos.TcpOslServer(host=_host, port=_port)
 
 
+## TcpClient
+def test_connect(tcp_client):
+    "Test ``connect``."
+    client = tos.TcpClient()
+    with does_not_raise() as dnr:
+        client.connect(host=_host, port=_port)
+    assert dnr is None
+
+
+def test_disconnect(tcp_client):
+    "Test ``disconnect``"
+    client = tcp_client
+    with does_not_raise() as dnr:
+        client.disconnect()
+    assert dnr is None
+
+
+def test_send_msg(tcp_client):
+    "Test ``send_msg`"
+    client = tcp_client
+    with does_not_raise() as dnr:
+        client.send_msg(_msg)
+    assert dnr is None
+
+
+def test_send_file(tcp_client, tmp_path):
+    "Test ``send_file`"
+    client = tcp_client
+    file_path = os.path.join(tmp_path, "testfile.txt")
+    with open(file_path, "w") as testfile:
+        testfile.write(_msg)
+    with does_not_raise() as dnr:
+        client.send_file(file_path)
+    assert dnr is None
+
+
+def test_receive_msg(tcp_client):
+    "Test ``receive_msg``."
+    client = tcp_client
+    client.send_msg(_msg)
+    tmp = client.receive_msg()
+    assert isinstance(tmp, str)
+
+
+def test_receive_file(tcp_client, tmp_path):
+    "Test ``receive_file`"
+    client = tcp_client
+    file_path = os.path.join(tmp_path, "testfile.txt")
+    with open(file_path, "w") as testfile:
+        testfile.write(_msg)
+    client.send_file(file_path)
+    with does_not_raise() as dnr:
+        client.receive_file(os.path.join(tmp_path, "received.txt"))
+    assert dnr is None
+
+
+## TcpOslServer
 def test_get_server_info(tcp_osl_server):
     """Test ``_get_server_info``."""
     tmp = tcp_osl_server._get_server_info()
-    print(tmp)
     assert isinstance(tmp, dict)
     assert bool(tmp)
 
@@ -56,7 +124,6 @@ def test_get_basic_project_info(tcp_osl_server):
     """Test ``_get_basic_project_info``."""
     server = tcp_osl_server
     tmp = server._get_basic_project_info()
-    print(tmp)
     assert isinstance(tmp, dict)
     assert bool(tmp)
 
@@ -65,7 +132,6 @@ def test_get_osl_version(tcp_osl_server):
     """Test ``get_osl_version``."""
     server = tcp_osl_server
     tmp = server.get_osl_version()
-    print(tmp)
     assert isinstance(tmp, str)
     assert bool(tmp)
 
@@ -74,7 +140,6 @@ def test_get_project_description(tcp_osl_server):
     """Test ``get_project_description``."""
     server = tcp_osl_server
     tmp = server.get_project_description()
-    print(f"Type of output: {type(tmp)}, len: {len(tmp)},output: {tmp}")
     assert isinstance(tmp, str)
     assert not bool(tmp)
 
@@ -83,7 +148,6 @@ def test_get_project_location(tcp_osl_server):
     """Test ``get_project_location``."""
     server = tcp_osl_server
     tmp = server.get_project_location()
-    print(f"Type of output: {type(tmp)}, len: {len(tmp)},output: {tmp}")
     assert isinstance(tmp, str)
     assert bool(tmp)
 
@@ -92,7 +156,6 @@ def test_get_project_name(tcp_osl_server):
     """Test ``get_project_name``."""
     server = tcp_osl_server
     tmp = server.get_project_name()
-    print(f"Type of output: {type(tmp)}, len: {len(tmp)},output: {tmp}")
     assert isinstance(tmp, str)
     assert bool(tmp)
 
@@ -101,7 +164,6 @@ def test_get_project_status(tcp_osl_server):
     """Test ``get_get_project_status``."""
     server = tcp_osl_server
     tmp = server.get_project_status()
-    print(f"Type of output: {type(tmp)}, len: {len(tmp)},output: {tmp}")
     assert isinstance(tmp, str)
     assert bool(tmp)
 
@@ -110,7 +172,6 @@ def test_get_working_dir(tcp_osl_server):
     """Test ``get_working_dir``."""
     server = tcp_osl_server
     tmp = server.get_working_dir()
-    print(f"Type of output: {type(tmp)}, len: {len(tmp)},output: {tmp}")
     assert isinstance(tmp, str)
     assert bool(tmp)
 
