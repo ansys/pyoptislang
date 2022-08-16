@@ -1003,11 +1003,34 @@ class TcpOslServer(OslServer):
         self._logger.debug("Response received: %s", response_str)
         response = json.loads(response_str)
 
-        if "status" in response and response["status"].lower() == "failure":
-            if "message" in response:
-                message = response["message"]
-            else:
-                message = "Command error: " + response_str
-            raise OslCommandError(message)
+        if isinstance(response, list):
+            for resp_elem in response:
+                self.__class__.__check_command_response(resp_elem)
+        else:
+            self.__class__.__check_command_response(response)
 
         return response
+
+    @staticmethod
+    def __check_command_response(response: Dict) -> None:
+        """Check whether the server response for a sent command contains any failure information.
+
+        Parameters
+        ----------
+        response : Dict
+            Server response as dictionary.
+
+        Raises
+        ------
+        OslCommandError
+            Raised when the server response for the sent command contains any failure information.
+        """
+        if "status" in response and response["status"].lower() == "failure":
+            message = None
+            if "message" in response:
+                message = response["message"]
+            if "std_err" in response:
+                message += "; " + response["std_err"]
+            if message is None:
+                message = "Command error: " + str(response)
+            raise OslCommandError(message)
