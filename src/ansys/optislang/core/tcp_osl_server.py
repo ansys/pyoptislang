@@ -12,11 +12,11 @@ import time
 from typing import Dict, Sequence, Tuple, Union
 import uuid
 
-from ansys.optislang.core import IRON_PYTHON
 from ansys.optislang.core import server_commands as commands
 from ansys.optislang.core import server_queries as queries
 from ansys.optislang.core.encoding import force_bytes, force_text
 from ansys.optislang.core.errors import (
+    ConnectionEstablishedError,
     ConnectionNotEstablishedError,
     EmptyResponseError,
     OslCommandError,
@@ -120,9 +120,16 @@ class TcpClient:
 
         Raises
         ------
+        ConnectionEstablishedError
+            Raised when the connection is already established.
         ConnectionRefusedError
             Raised when the connection cannot be established.
         """
+        if self.is_connected:
+            raise ConnectionEstablishedError("Connection is already established.")
+
+        start_time = time.time()
+
         for af, socktype, proto, canonname, sa in socket.getaddrinfo(
             host, port, socket.AF_UNSPEC, socket.SOCK_STREAM, 0, socket.AI_PASSIVE
         ):
@@ -131,7 +138,7 @@ class TcpClient:
             except OSError as ex:
                 self.__socket = None
                 continue
-            self.__socket.settimeout(timeout)
+            self.__socket.settimeout(self.__class__.__get_current_timeout(timeout, start_time))
             try:
                 self.__socket.connect(sa)
             except OSError:
@@ -183,8 +190,7 @@ class TcpClient:
         data = force_bytes(msg)
         data_len = len(data)
 
-        pack_format = "!QQ" if IRON_PYTHON else b"!QQ"
-        header = struct.pack(pack_format, data_len, data_len)
+        header = struct.pack("!QQ", data_len, data_len)
 
         self.__socket.settimeout(timeout)
         self.__socket.sendall(header + data)
@@ -225,8 +231,7 @@ class TcpClient:
         )
         file_size = os.path.getsize(file_path)
 
-        pack_format = "!QQ" if IRON_PYTHON else b"!QQ"
-        header = struct.pack(pack_format, file_size, file_size)
+        header = struct.pack("!QQ", file_size, file_size)
 
         with open(file_path, "rb") as file:
             self.__socket.settimeout(timeout)
@@ -242,10 +247,9 @@ class TcpClient:
         Parameters
         ----------
         timeout : float, None, optional
-            Timeout in seconds to receive a message. If a non-zero value is given,
-            the function will raise a timeout exception if the timeout period value has elapsed
-            before the operation has completed. If zero is given, the non-blocking mode is used.
-            If ``None`` is given, the blocking mode is used. Defaults to 5 s.
+            Timeout in seconds to receive a message. The function will raise a timeout exception
+            if the timeout period value has elapsed before the operation has completed. If ``None``
+            is given, the blocking mode is used. Defaults to 5 s.
 
         Returns
         -------
@@ -262,18 +266,25 @@ class TcpClient:
             Raised when the format of the received message is not valid.
         TimeoutError
             Raised when the timeout period value has elapsed before the operation has completed.
+        ValueError
+            Raised if the timeout value is a number not greater than zero.
         """
         if not self.is_connected:
             raise ConnectionNotEstablishedError(
                 "Cannot receive message. Connection is not established."
             )
 
-        self.__socket.settimeout(timeout)
+        if isinstance(timeout, float) and timeout <= 0:
+            raise ValueError("Timeout value must be greater than zero or None.")
+
+        start_time = time.time()
+
         msg_len = self._recv_response_length(timeout)
         if msg_len == 0:
             raise EmptyResponseError("The empty message has been received.")
 
-        data = self._receive_bytes(msg_len)
+        remain_timeout = self.__class__.__get_current_timeout(timeout, start_time)
+        data = self._receive_bytes(msg_len, remain_timeout)
         if len(data) != msg_len:
             raise ResponseFormatError("Received data does not match declared data size.")
 
@@ -287,10 +298,9 @@ class TcpClient:
         file_path : str
             Path where the received file is to be saved.
         timeout : float, None, optional
-            Timeout in seconds to receive a buffer of the file part. If a non-zero value is given,
-            the function will raise a timeout exception if the timeout period value has elapsed
-            before the operation has completed. If zero is given, the non-blocking mode is used.
-            If ``None`` is given, the blocking mode is used. Defaults to 5 s.
+            Timeout in seconds to receive a buffer of the file part. The function will raise
+            a timeout exception if the timeout period value has elapsed before the operation
+            has completed. If ``None`` is given, the blocking mode is used. Defaults to 5 s.
 
         Raises
         ------
@@ -302,6 +312,8 @@ class TcpClient:
             Raised when the format of the received data is not valid.
         TimeoutError
             Raised when the timeout period value has elapsed before the operation has completed.
+        ValueError
+            Raised if the timeout value is a number not greater than zero.
         OSError
             Raised when the file cannot be opened.
         """
@@ -310,12 +322,14 @@ class TcpClient:
                 "Cannot receive file. Connection is not established."
             )
 
-        self.__socket.settimeout(timeout)
+        start_time = time.time()
+
         msg_len = self._recv_response_length(timeout)
         if msg_len == 0:
             raise EmptyResponseError("The empty file has been received.")
 
-        self._write_bytes(msg_len, file_path)
+        remain_timeout = self.__class__.__get_current_timeout(timeout, start_time)
+        self._write_bytes(msg_len, file_path, remain_timeout)
         if os.path.getsize(file_path) != msg_len:
             raise ResponseFormatError("Received data does not match declared data size.")
 
@@ -351,7 +365,7 @@ class TcpClient:
 
         response_len = -1
         bytes_to_receive = self.__class__._RESPONSE_SIZE_BYTES
-        # read from socket until response size (twice) has been
+        # read from socket until response size (twice) has been received
         while True:
             try:
                 # Test if we will be able to read something from the connection.
@@ -377,35 +391,57 @@ class TcpClient:
 
         return response_len
 
-    def _receive_bytes(self, count: int) -> bytes:
+    def _receive_bytes(self, count: int, timeout: Union[float, None]) -> bytes:
         """Receive specified number of bytes from the server.
 
         Parameters
         ----------
         count : int
             Number of bytes to be received from the server.
+        timeout : float, None
+            Timeout in seconds to receive specified number of bytes. The function will raise
+            a timeout exception if the timeout period value has elapsed before the operation
+            has completed. If ``None`` is given, the blocking mode is used.
 
         Returns
         -------
         bytes
             Received bytes.
+
+        Raises
+        ------
+        TimeoutError
+            Raised when the timeout period value has elapsed before the operation has completed.
+        ValueError
+            Raised when the number of bytes is not greater than zero.
+            -or-
+            Raised if the timeout value is a number not greater than zero.
         """
-        data = b""
-        data_len = 0
-        while data_len < count:
-            remain = count - data_len
+        if count <= 0:
+            raise ValueError("Number of bytes must be greater than zero.")
+        if isinstance(timeout, float) and timeout <= 0:
+            raise ValueError("Timeout value must be greater than zero or None.")
+
+        start_time = time.time()
+
+        received = b""
+        received_len = 0
+        while received_len < count:
+            remain = count - received_len
             if remain > self.__class__._BUFFER_SIZE:
                 buff = self.__class__._BUFFER_SIZE
             else:
                 buff = remain
+
+            self.__socket.settimeout(self.__class__.__get_current_timeout(timeout, start_time))
             chunk = self.__socket.recv(buff)
             if not chunk:
                 break
-            data += chunk
-            data_len += len(chunk)
-        return data
+            received += chunk
+            received_len += len(chunk)
+        return received
 
-    def _write_bytes(self, count: int, file_path: str) -> None:
+    def _write_bytes(self, count: int, file_path: str, timeout: Union[float, None]) -> None:
         """Write received bytes from the server to the file.
 
         Parameters
@@ -414,12 +450,26 @@ class TcpClient:
             Number of bytes to be written.
         file_path : str
             Path to the file to which the received data is to be written.
+        timeout : float, None
+            Timeout in seconds to receive bytes from the server and write them to the file.
+            The function will raise a timeout exception if the timeout period value has
+            elapsed before the operation has completed. If ``None`` is given, the blocking mode
+            is used.
 
         Raises
         ------
+        TimeoutError
+            Raised when the timeout period value has elapsed before the operation has completed.
         OSError
             Raised when the file cannot be opened.
+        ValueError
+            Raised if the timeout value is a number not greater than zero.
         """
+        if isinstance(timeout, float) and timeout <= 0:
+            raise ValueError("Timeout value must be greater than zero or None.")
+
+        start_time = time.time()
+
         with open(file_path, "wb") as file:
             data_len = 0
             while data_len < count:
@@ -428,11 +478,44 @@ class TcpClient:
                     buff = self.__class__._BUFFER_SIZE
                 else:
                     buff = remain
+
+                self.__socket.settimeout(self.__class__.__get_current_timeout(timeout, start_time))
                 chunk = self.__socket.recv(buff)
                 if not chunk:
                     break
                 file.write(chunk)
                 data_len += len(chunk)
+
+    @staticmethod
+    def __get_current_timeout(initial_timeout: Union[float, None], start_time: float) -> None:
+        """Get actual timeout value.
+
+        The function will raise a timeout exception if the timeout has expired.
+
+        Parameters
+        ----------
+        initial_timeout : float, None
+            Initial timeout value. For non-zero value, the new timeout value is computed.
+            If the timeout period value has elapsed, the timeout exception is raised.
+            For zero value, the non-blocking mode is assumed and zero value is returned.
+            For ``None``, the blocking mode is assumed and ``None`` is returned.
+        start_time : float
+            The time when the initial time out starts to count down. It is defined in seconds
+            since the epoch as a floating point number.
+
+        Raises
+        ------
+        TimeoutError
+            Raised when the timeout expires.
+        """
+        if initial_timeout != 0 and initial_timeout is not None:
+            elapsed_time = time.time() - start_time
+            remaining_timeout = initial_timeout - elapsed_time
+            if remaining_timeout <= 0:
+                raise TimeoutError("Timeout has expired.")
+            return remaining_timeout
+        else:
+            return initial_timeout
 
 
 class TcpOslServer(OslServer):

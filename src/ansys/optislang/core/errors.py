@@ -19,6 +19,12 @@ class EmptyResponseError(ResponseError):
     pass
 
 
+class ConnectionEstablishedError(Exception):
+    """Raised when the connection is already established."""
+
+    pass
+
+
 class ConnectionNotEstablishedError(Exception):
     """Raised when the connection is not established."""
 
