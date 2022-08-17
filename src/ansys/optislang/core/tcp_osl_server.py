@@ -856,7 +856,7 @@ class TcpOslServer(OslServer):
             raise FileNotFoundError("Python script file does not exist.")
 
         with open(script_path, "r") as file:
-            script = file.readlines()
+            script = file.read()
 
         return self.run_python_commands(script, args)
 
