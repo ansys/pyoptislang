@@ -93,19 +93,15 @@ class TcpClient:
         return self.__socket.getsockname()
 
     @property
-    def timeout(self) -> Union[float, None]:
-        """Get timeout for operations.
+    def is_connected(self) -> bool:
+        """Determine whether the connection has been established.
 
         Returns
         -------
-        float, None
-            The timeout in seconds (float) associated with socket operations, or ``None`` if
-            no timeout is set.
+        bool
+            True if the connection has been established; False otherwise.
         """
-        if self.__socket is None:
-            return None
-
-        return self.__socket.gettimeout()
+        return self.__socket is not None
 
     def connect(self, host: str, port: int, timeout: Union[float, None] = 2) -> None:
         """Connect to the plain TCP/IP server.
@@ -152,7 +148,7 @@ class TcpClient:
 
     def disconnect(self) -> None:
         """Disconnect from the server."""
-        if self.__socket is not None:
+        if self.is_connected:
             self.__socket.close()
             self.__socket = None
 
@@ -178,7 +174,7 @@ class TcpClient:
         OSError
             Raised when an error occurs while sending data.
         """
-        if self.__socket is None:
+        if not self.is_connected:
             raise ConnectionNotEstablishedError(
                 "Cannot send message. Connection is not established."
             )
@@ -217,7 +213,7 @@ class TcpClient:
         OSError
             Raised when an error occurs while sending data.
         """
-        if self.__socket is None:
+        if not self.is_connected:
             raise ConnectionNotEstablishedError("Cannot send file. Connection is not established.")
         if not os.path.isfile(file_path):
             raise FileNotFoundError(
@@ -267,7 +263,7 @@ class TcpClient:
         TimeoutError
             Raised when the timeout period value has elapsed before the operation has completed.
         """
-        if self.__socket is None:
+        if not self.is_connected:
             raise ConnectionNotEstablishedError(
                 "Cannot receive message. Connection is not established."
             )
@@ -309,7 +305,7 @@ class TcpClient:
         OSError
             Raised when the file cannot be opened.
         """
-        if self.__socket is None:
+        if not self.is_connected:
             raise ConnectionNotEstablishedError(
                 "Cannot receive file. Connection is not established."
             )
