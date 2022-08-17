@@ -27,6 +27,37 @@ from ansys.optislang.core.osl_process import OslServerProcess
 from ansys.optislang.core.osl_server import OslServer
 
 
+def _get_current_timeout(initial_timeout: Union[float, None], start_time: float) -> None:
+    """Get actual timeout value.
+
+    The function will raise a timeout exception if the timeout has expired.
+
+    Parameters
+    ----------
+    initial_timeout : float, None
+        Initial timeout value. For non-zero value, the new timeout value is computed.
+        If the timeout period value has elapsed, the timeout exception is raised.
+        For zero value, the non-blocking mode is assumed and zero value is returned.
+        For ``None``, the blocking mode is assumed and ``None`` is returned.
+    start_time : float
+        The time when the initial time out starts to count down. It is defined in seconds
+        since the epoch as a floating point number.
+
+    Raises
+    ------
+    TimeoutError
+        Raised when the timeout expires.
+    """
+    if initial_timeout != 0 and initial_timeout is not None:
+        elapsed_time = time.time() - start_time
+        remaining_timeout = initial_timeout - elapsed_time
+        if remaining_timeout <= 0:
+            raise TimeoutError("Timeout has expired.")
+        return remaining_timeout
+    else:
+        return initial_timeout
+
+
 class TcpClient:
     r"""Client of the plain TCP/IP communication.
 
@@ -138,7 +169,7 @@ class TcpClient:
             except OSError as ex:
                 self.__socket = None
                 continue
-            self.__socket.settimeout(self.__class__.__get_current_timeout(timeout, start_time))
+            self.__socket.settimeout(_get_current_timeout(timeout, start_time))
             try:
                 self.__socket.connect(sa)
             except OSError:
@@ -283,7 +314,7 @@ class TcpClient:
         if msg_len == 0:
             raise EmptyResponseError("The empty message has been received.")
 
-        remain_timeout = self.__class__.__get_current_timeout(timeout, start_time)
+        remain_timeout = _get_current_timeout(timeout, start_time)
         data = self._receive_bytes(msg_len, remain_timeout)
         if len(data) != msg_len:
             raise ResponseFormatError("Received data does not match declared data size.")
@@ -328,7 +359,7 @@ class TcpClient:
         if msg_len == 0:
             raise EmptyResponseError("The empty file has been received.")
 
-        remain_timeout = self.__class__.__get_current_timeout(timeout, start_time)
+        remain_timeout = _get_current_timeout(timeout, start_time)
         self._write_bytes(msg_len, file_path, remain_timeout)
         if os.path.getsize(file_path) != msg_len:
             raise ResponseFormatError("Received data does not match declared data size.")
@@ -433,7 +464,7 @@ class TcpClient:
             else:
                 buff = remain
 
-            self.__socket.settimeout(self.__class__.__get_current_timeout(timeout, start_time))
+            self.__socket.settimeout(_get_current_timeout(timeout, start_time))
             chunk = self.__socket.recv(buff)
             if not chunk:
                 break
@@ -479,43 +510,12 @@ class TcpClient:
                 else:
                     buff = remain
 
-                self.__socket.settimeout(self.__class__.__get_current_timeout(timeout, start_time))
+                self.__socket.settimeout(_get_current_timeout(timeout, start_time))
                 chunk = self.__socket.recv(buff)
                 if not chunk:
                     break
                 file.write(chunk)
                 data_len += len(chunk)
-
-    @staticmethod
-    def __get_current_timeout(initial_timeout: Union[float, None], start_time: float) -> None:
-        """Get actual timeout value.
-
-        The function will raise a timeout exception if the timeout has expired.
-
-        Parameters
-        ----------
-        initial_timeout : float, None
-            Initial timeout value. For non-zero value, the new timeout value is computed.
-            If the timeout period value has elapsed, the timeout exception is raised.
-            For zero value, the non-blocking mode is assumed and zero value is returned.
-            For ``None``, the blocking mode is assumed and ``None`` is returned.
-        start_time : float
-            The time when the initial time out starts to count down. It is defined in seconds
-            since the epoch as a floating point number.
-
-        Raises
-        ------
-        TimeoutError
-            Raised when the timeout expires.
-        """
-        if initial_timeout != 0 and initial_timeout is not None:
-            elapsed_time = time.time() - start_time
-            remaining_timeout = initial_timeout - elapsed_time
-            if remaining_timeout <= 0:
-                raise TimeoutError("Timeout has expired.")
-            return remaining_timeout
-        else:
-            return initial_timeout
 
 
 class TcpOslServer(OslServer):
@@ -1144,18 +1144,23 @@ class TcpOslServer(OslServer):
             Raised when an error occurs while communicating with server.
         OslCommandError
             Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout expires.
         """
         if self.__host is None or self.__port is None:
             raise RuntimeError("optiSLang server is not started.")
         if timeout is not None and timeout <= 0:
             raise ValueError("timeout must be greater than zero or None.")
 
+        start_time = time.time()
         self._logger.debug("Sending command or query to the server: %s", command)
         client = TcpClient(logger=self._logger)
         try:
-            client.connect(self.__host, self.__port, timeout)
-            client.send_msg(command, timeout)
-            response_str = client.receive_msg(timeout)
+            client.connect(self.__host, self.__port, _get_current_timeout(timeout, start_time))
+            client.send_msg(command, _get_current_timeout(timeout, start_time))
+            response_str = client.receive_msg(_get_current_timeout(timeout, start_time))
+        except TimeoutError as ex:
+            raise
         except Exception as ex:
             raise OslCommunicationError(
                 "An error occurred while communicating with the optiSLang server."
