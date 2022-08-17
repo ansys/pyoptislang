@@ -1,20 +1,26 @@
 """Contains errors related to this package."""
 
 
-class MessageError(Exception):
-    """Raised when the message is invalid."""
+class ResponseError(Exception):
+    """Raised when the response is invalid."""
 
     pass
 
 
-class MessageFormatError(MessageError):
-    """Raised when the format of the message is invalid."""
+class ResponseFormatError(ResponseError):
+    """Raised when the format of the response is invalid."""
 
     pass
 
 
-class EmptyMessageError(MessageError):
-    """Raised when the message is empty."""
+class EmptyResponseError(ResponseError):
+    """Raised when the response is empty."""
+
+    pass
+
+
+class ConnectionEstablishedError(Exception):
+    """Raised when the connection is already established."""
 
     pass
 
