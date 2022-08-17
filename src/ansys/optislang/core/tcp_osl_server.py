@@ -4,6 +4,7 @@ from datetime import datetime
 import json
 import logging
 import os
+import select
 import socket
 import struct
 import threading
@@ -17,10 +18,10 @@ from ansys.optislang.core import server_queries as queries
 from ansys.optislang.core.encoding import force_bytes, force_text
 from ansys.optislang.core.errors import (
     ConnectionNotEstablishedError,
-    EmptyMessageError,
-    MessageFormatError,
+    EmptyResponseError,
     OslCommandError,
     OslCommunicationError,
+    ResponseFormatError,
 )
 from ansys.optislang.core.osl_process import OslServerProcess
 from ansys.optislang.core.osl_server import OslServer
@@ -49,6 +50,8 @@ class TcpClient:
     """
 
     _BUFFER_SIZE = pow(2, 12)
+    # Response size in bytes. Value is assumed to be binary 64Bit unsigned integer.
+    _RESPONSE_SIZE_BYTES = 8
 
     def __init__(self, socket: Union[socket.SocketType, None] = None, logger=None) -> None:
         """Initialize a new instance of the ``TcpClient`` class."""
@@ -135,17 +138,17 @@ class TcpClient:
             self.__socket.settimeout(timeout)
             try:
                 self.__socket.connect(sa)
-            except OSError as ex:
+            except OSError:
                 self.__socket.close()
                 self.__socket = None
                 continue
 
         if self.__socket is None:
             raise ConnectionRefusedError(
-                f"Connection could not be established to host {host} " f"and port {port}"
+                f"Connection could not be established to host {host} and port {port}."
             )
 
-        self._logger.info("Connection has been established to host %s and port %d", host, port)
+        self._logger.info("Connection has been established to host %s and port %d.", host, port)
 
     def disconnect(self) -> None:
         """Disconnect from the server."""
@@ -257,9 +260,9 @@ class TcpClient:
         ------
         ConnectionNotEstablishedError
             Raised when the connection has not been established before function call.
-        EmptyMessageError
+        EmptyResponseError
             Raised when the empty message is received.
-        MessageFormatError
+        ResponseFormatError
             Raised when the format of the received message is not valid.
         TimeoutError
             Raised when the timeout period value has elapsed before the operation has completed.
@@ -270,10 +273,13 @@ class TcpClient:
             )
 
         self.__socket.settimeout(timeout)
-        msg_len = self._recv_message_length()
+        msg_len = self._recv_response_length(timeout)
+        if msg_len == 0:
+            raise EmptyResponseError("The empty message has been received.")
+
         data = self._receive_bytes(msg_len)
         if len(data) != msg_len:
-            raise MessageFormatError("Received data does not match declared data size.")
+            raise ResponseFormatError("Received data does not match declared data size.")
 
         return force_text(data)
 
@@ -294,9 +300,9 @@ class TcpClient:
         ------
         ConnectionNotEstablishedError
             Raised when the connection has not been established before function call.
-        EmptyMessageError
-            Raised when the no data is received.
-        MessageFormatError
+        EmptyResponseError
+            Raised when the empty message is received.
+        ResponseFormatError
             Raised when the format of the received data is not valid.
         TimeoutError
             Raised when the timeout period value has elapsed before the operation has completed.
@@ -309,41 +315,71 @@ class TcpClient:
             )
 
         self.__socket.settimeout(timeout)
-        msg_len = self._recv_message_length()
+        msg_len = self._recv_response_length(timeout)
+        if msg_len == 0:
+            raise EmptyResponseError("The empty file has been received.")
+
         self._write_bytes(msg_len, file_path)
         if os.path.getsize(file_path) != msg_len:
-            raise MessageFormatError("Received data does not match declared data size.")
+            raise ResponseFormatError("Received data does not match declared data size.")
 
-    def _recv_message_length(self) -> int:
-        """Receive length of the message to be received from the server.
+    def _recv_response_length(self, timeout: Union[float, None]) -> int:
+        """Receive length of the response.
+
+        Parameters
+        ----------
+        timeout : float, None
+            Timeout in seconds to receive the response length. The function will raise a timeout
+            exception if the timeout period value has elapsed before the operation has completed.
+            If ``None`` is given, the blocking mode is used.
 
         Returns
         -------
         int
-            Length of the message to be received.
+            Length of the response to be received.
 
         Raises
         ------
-        EmptyMessageError
-            Raised when the empty message is received.
-        MessageFormatError
-            Raised when the message length specification is invalid.
+        TimeoutError
+            Raised when the timeout period value has elapsed before the operation has completed.
+        ResponseFormatError
+            Raised when the response length specification is invalid.
+        ValueError
+            Raised if the timeout value is a number not greater than zero.
         """
-        header_field_1 = self._receive_bytes(8)
-        header_field_2 = self._receive_bytes(8)
+        if isinstance(timeout, float) and timeout <= 0:
+            raise ValueError("Timeout value must be greater than zero or None.")
 
-        if len(header_field_1) == 0 or len(header_field_2) == 0:
-            raise EmptyMessageError("The empty message has been received.")
-        if len(header_field_1) != 8 or len(header_field_2) != 8:
-            raise MessageFormatError("The message header fields do not match.")
+        start_time = time.time()
+        self.__socket.settimeout(timeout)
 
-        pack_format = "!Q" if IRON_PYTHON else b"!Q"
-        msg_len_1 = struct.unpack(pack_format, header_field_1)[0]
-        msg_len_2 = struct.unpack(pack_format, header_field_2)[0]
-        if msg_len_1 != msg_len_2:
-            raise MessageFormatError("The message size values do not match.")
+        response_len = -1
+        bytes_to_receive = self.__class__._RESPONSE_SIZE_BYTES
+        # read from socket until response size (twice) has been
+        while True:
+            try:
+                # Test if we will be able to read something from the connection.
+                readable_sockets, _, _ = select.select([self.__socket], [], [], 1)
+                if self.__socket in readable_sockets:
+                    # Read and convert response size. Assume server sent response size twice.
+                    # Sizes need to match.
+                    response_len_1 = struct.unpack("!Q", self.__socket.recv(bytes_to_receive))[0]
+                    response_len_2 = struct.unpack("!Q", self.__socket.recv(bytes_to_receive))[0]
+                    if response_len_1 != response_len_2:
+                        raise ResponseFormatError("The message size values do not match.")
 
-        return msg_len_1
+                    response_len = response_len_1
+                if response_len >= 0:
+                    break
+            except Exception as e:
+                self._logger.debug(e)
+                pass
+            now = time.time()
+            elapsed = now - start_time
+            if timeout is not None and elapsed > timeout:
+                raise TimeoutError("Time to receive message length has expired.")
+
+        return response_len
 
     def _receive_bytes(self, count: int) -> bytes:
         """Receive specified number of bytes from the server.
