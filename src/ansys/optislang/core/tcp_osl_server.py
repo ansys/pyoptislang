@@ -601,8 +601,17 @@ class TcpOslServer(OslServer):
         if self.__host is None or self.__port is None:
             self._start_local(timeout)
 
-    def _get_server_info(self) -> Dict:
+    def _get_server_info(self, timeout: Union[float, None] = None) -> Dict:
         """Get information about the application, the server configuration and the open projects.
+
+        Parameters
+        ----------
+        timeout : float, None, optional
+            Timeout in seconds to perform the query. It must be greater than zero or ``None``.
+            The function will raise a timeout exception if the timeout period value has
+            elapsed before the operation has completed. If ``None`` is given, the function
+            will wait until the function is finished (no timeout exception is raised).
+            Defaults to ``None``.
 
         Returns
         -------
@@ -615,21 +624,50 @@ class TcpOslServer(OslServer):
             Raised when an error occurs while communicating with server.
         OslCommandError
             Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
         """
-        return self._send_command(queries.server_info())
+        return self._send_command(queries.server_info(), timeout)
 
-    def _get_basic_project_info(self) -> Dict:
+    def _get_basic_project_info(self, timeout: Union[float, None] = None) -> Dict:
         """Get basic project info, like name, location, global settings and status.
+
+        Parameters
+        ----------
+        timeout : float, None, optional
+            Timeout in seconds to perform the query. It must be greater than zero or ``None``.
+            The function will raise a timeout exception if the timeout period value has
+            elapsed before the operation has completed. If ``None`` is given, the function
+            will wait until the function is finished (no timeout exception is raised).
+            Defaults to ``None``.
 
         Returns
         -------
         Dict
             Information data as dictionary.
-        """
-        return self._send_command(queries.basic_project_info())
 
-    def close(self) -> None:
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        return self._send_command(queries.basic_project_info(), timeout)
+
+    def close(self, timeout: Union[float, None] = None) -> None:
         """Close the current project.
+
+        Parameters
+        ----------
+        timeout : float, None, optional
+            Timeout in seconds to perform the query. It must be greater than zero or ``None``.
+            The function will raise a timeout exception if the timeout period value has
+            elapsed before the operation has completed. If ``None`` is given, the function
+            will wait until the function is finished (no timeout exception is raised).
+            Defaults to ``None``.
 
         Raises
         ------
@@ -638,8 +676,17 @@ class TcpOslServer(OslServer):
         """
         raise NotImplementedError("Currently, command is not supported in batch mode.")
 
-    def get_osl_version(self) -> str:
+    def get_osl_version(self, timeout: Union[float, None] = None) -> str:
         """Get version of used optiSLang.
+
+        Parameters
+        ----------
+        timeout : float, None, optional
+            Timeout in seconds to perform the query. It must be greater than zero or ``None``.
+            The function will raise a timeout exception if the timeout period value has
+            elapsed before the operation has completed. If ``None`` is given, the function
+            will wait until the function is finished (no timeout exception is raised).
+            Defaults to ``None``.
 
         Returns
         -------
@@ -652,12 +699,23 @@ class TcpOslServer(OslServer):
             Raised when an error occurs while communicating with server.
         OslCommandError
             Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
         """
-        server_info = self._get_server_info()
+        server_info = self._get_server_info(timeout)
         return server_info["application"]["version"]
 
-    def get_project_description(self) -> str:
+    def get_project_description(self, timeout: Union[float, None] = None) -> str:
         """Get description of optiSLang project.
+
+        Parameters
+        ----------
+        timeout : float, None, optional
+            Timeout in seconds to perform the query. It must be greater than zero or ``None``.
+            The function will raise a timeout exception if the timeout period value has
+            elapsed before the operation has completed. If ``None`` is given, the function
+            will wait until the function is finished (no timeout exception is raised).
+            Defaults to ``None``.
 
         Returns
         -------
@@ -671,14 +729,25 @@ class TcpOslServer(OslServer):
             Raised when an error occurs while communicating with server.
         OslCommandError
             Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
         """
-        project_info = self._get_basic_project_info()
+        project_info = self._get_basic_project_info(timeout)
         if len(project_info["projects"]) == 0:
             return None
         return project_info["projects"][0]["settings"]["short_description"]
 
-    def get_project_location(self) -> str:
+    def get_project_location(self, timeout: Union[float, None] = None) -> str:
         """Get path to the optiSLang project file.
+
+        Parameters
+        ----------
+        timeout : float, None, optional
+            Timeout in seconds to perform the query. It must be greater than zero or ``None``.
+            The function will raise a timeout exception if the timeout period value has
+            elapsed before the operation has completed. If ``None`` is given, the function
+            will wait until the function is finished (no timeout exception is raised).
+            Defaults to ``None``.
 
         Returns
         -------
@@ -692,14 +761,25 @@ class TcpOslServer(OslServer):
             Raised when an error occurs while communicating with server.
         OslCommandError
             Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
         """
-        project_info = self._get_basic_project_info()
+        project_info = self._get_basic_project_info(timeout)
         if len(project_info["projects"]) == 0:
             return None
         return project_info["projects"][0]["location"]
 
-    def get_project_name(self) -> str:
+    def get_project_name(self, timeout: Union[float, None] = None) -> str:
         """Get name of the optiSLang project.
+
+        Parameters
+        ----------
+        timeout : float, None, optional
+            Timeout in seconds to perform the query. It must be greater than zero or ``None``.
+            The function will raise a timeout exception if the timeout period value has
+            elapsed before the operation has completed. If ``None`` is given, the function
+            will wait until the function is finished (no timeout exception is raised).
+            Defaults to ``None``.
 
         Returns
         -------
@@ -713,14 +793,25 @@ class TcpOslServer(OslServer):
             Raised when an error occurs while communicating with server.
         OslCommandError
             Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
         """
-        project_info = self._get_basic_project_info()
+        project_info = self._get_basic_project_info(timeout)
         if len(project_info["projects"]) == 0:
             return None
         return project_info["projects"][0]["name"]
 
-    def get_project_status(self) -> str:
+    def get_project_status(self, timeout: Union[float, None] = None) -> str:
         """Get status of the optiSLang project.
+
+        Parameters
+        ----------
+        timeout : float, None, optional
+            Timeout in seconds to perform the query. It must be greater than zero or ``None``.
+            The function will raise a timeout exception if the timeout period value has
+            elapsed before the operation has completed. If ``None`` is given, the function
+            will wait until the function is finished (no timeout exception is raised).
+            Defaults to ``None``.
 
         Returns
         -------
@@ -734,14 +825,25 @@ class TcpOslServer(OslServer):
             Raised when an error occurs while communicating with server.
         OslCommandError
             Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
         """
-        project_info = self._get_basic_project_info()
+        project_info = self._get_basic_project_info(timeout)
         if len(project_info["projects"]) == 0:
             return None
         return project_info["projects"][0]["state"]
 
-    def get_working_dir(self) -> str:
+    def get_working_dir(self, timeout: Union[float, None] = None) -> str:
         """Get path to the optiSLang project working directory.
+
+        Parameters
+        ----------
+        timeout : float, None, optional
+            Timeout in seconds to perform the query. It must be greater than zero or ``None``.
+            The function will raise a timeout exception if the timeout period value has
+            elapsed before the operation has completed. If ``None`` is given, the function
+            will wait until the function is finished (no timeout exception is raised).
+            Defaults to ``None``.
 
         Returns
         -------
@@ -755,15 +857,26 @@ class TcpOslServer(OslServer):
             Raised when an error occurs while communicating with server.
         OslCommandError
             Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
         """
-        project_info = self._get_basic_project_info()
+        project_info = self._get_basic_project_info(timeout)
         if len(project_info["projects"]) == 0:
             return None
         return project_info["projects"][0]["working_dir"]
 
-    def new(self) -> None:
+    def new(self, timeout: Union[float, None] = None) -> None:
         """Create a new project.
 
+        Parameters
+        ----------
+        timeout : float, None, optional
+            Timeout in seconds to perform the command. It must be greater than zero or ``None``.
+            The function will raise a timeout exception if the timeout period value has
+            elapsed before the operation has completed. If ``None`` is given, the function
+            will wait until the function is finished (no timeout exception is raised).
+            Defaults to ``None``.
+
         Raises
         ------
         NotImplementedError
@@ -771,9 +884,33 @@ class TcpOslServer(OslServer):
         """
         raise NotImplementedError("Currently, command is not supported in batch mode.")
 
-    def open(self, file_path: str, force: bool, restore: bool, reset: bool) -> None:
+    def open(
+        self,
+        file_path: str,
+        force: bool,
+        restore: bool,
+        reset: bool,
+        timeout: Union[float, None] = None,
+    ) -> None:
         """Open a new project.
 
+        Parameters
+        ----------
+        file_path : str
+            Path to the optiSLang project file to open.
+        force : bool
+            # TODO: description of this parameter is missing in ANSYS help
+        restore : bool
+            # TODO: description of this parameter is missing in ANSYS help
+        reset : bool
+            # TODO: description of this parameter is missing in ANSYS help
+        timeout : float, None, optional
+            Timeout in seconds to perform the command. It must be greater than zero or ``None``.
+            The function will raise a timeout exception if the timeout period value has
+            elapsed before the operation has completed. If ``None`` is given, the function
+            will wait until the function is finished (no timeout exception is raised).
+            Defaults to ``None``.
+
         Raises
         ------
         NotImplementedError
@@ -781,8 +918,17 @@ class TcpOslServer(OslServer):
         """
         raise NotImplementedError("Currently, command is not supported in batch mode.")
 
-    def reset(self):
+    def reset(self, timeout: Union[float, None] = None):
         """Reset complete project.
+
+        Parameters
+        ----------
+        timeout : float, None, optional
+            Timeout in seconds to perform the command. It must be greater than zero or ``None``.
+            The function will raise a timeout exception if the timeout period value has
+            elapsed before the operation has completed. If ``None`` is given, the function
+            will wait until the function is finished (no timeout exception is raised).
+            Defaults to ``None``.
 
         Raises
         ------
@@ -790,11 +936,16 @@ class TcpOslServer(OslServer):
             Raised when an error occurs while communicating with server.
         OslCommandError
             Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
         """
-        self._send_command(commands.reset(password=self.__password))
+        self._send_command(commands.reset(password=self.__password), timeout)
 
     def run_python_commands(
-        self, script: str, args: Union[Sequence[object], None] = None
+        self,
+        script: str,
+        args: Union[Sequence[object], None] = None,
+        timeout: Union[float, None] = None,
     ) -> Tuple[str, str]:
         """Load a Python script in a project context and execute it.
 
@@ -804,6 +955,12 @@ class TcpOslServer(OslServer):
             Python commands to be executed on the server.
         args : Sequence[object], None, optional
             Sequence of arguments used in Python script. Defaults to ``None``.
+        timeout : float, None, optional
+            Timeout in seconds to perform the command. It must be greater than zero or ``None``.
+            The function will raise a timeout exception if the timeout period value has
+            elapsed before the operation has completed. If ``None`` is given, the function
+            will wait until the function is finished (no timeout exception is raised).
+            Defaults to ``None``.
 
         Returns
         -------
@@ -816,8 +973,12 @@ class TcpOslServer(OslServer):
             Raised when an error occurs while communicating with server.
         OslCommandError
             Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
         """
-        responses = self._send_command(commands.run_python_script(script, args, self.__password))
+        responses = self._send_command(
+            commands.run_python_script(script, args, self.__password), timeout
+        )
         std_out = ""
         std_err = ""
         for response in responses:
@@ -827,7 +988,10 @@ class TcpOslServer(OslServer):
         return (std_out, std_err)
 
     def run_python_script(
-        self, script_path: str, args: Union[Sequence[object], None] = None
+        self,
+        script_path: str,
+        args: Union[Sequence[object], None] = None,
+        timeout: Union[float, None] = None,
     ) -> Tuple[str, str]:
         """Read python script from the file, load it in a project context and execute it.
 
@@ -837,6 +1001,12 @@ class TcpOslServer(OslServer):
             Path to the Python script file which content is supposed to be executed on the server.
         args : Sequence[object], None, optional
             Sequence of arguments used in Python script. Defaults to ``None``.
+        timeout : float, None, optional
+            Timeout in seconds to perform the command. It must be greater than zero or ``None``.
+            The function will raise a timeout exception if the timeout period value has
+            elapsed before the operation has completed. If ``None`` is given, the function
+            will wait until the function is finished (no timeout exception is raised).
+            Defaults to ``None``.
 
         Returns
         -------
@@ -851,6 +1021,8 @@ class TcpOslServer(OslServer):
             Raised when an error occurs while communicating with server.
         OslCommandError
             Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
         """
         if not os.path.isfile(script_path):
             raise FileNotFoundError("Python script file does not exist.")
@@ -858,10 +1030,19 @@ class TcpOslServer(OslServer):
         with open(script_path, "r") as file:
             script = file.read()
 
-        return self.run_python_commands(script, args)
+        return self.run_python_commands(script, args, timeout)
 
-    def save(self) -> None:
+    def save(self, timeout: Union[float, None] = None) -> None:
         """Save the changed data and settings of the current project.
+
+        Parameters
+        ----------
+        timeout : float, None, optional
+            Timeout in seconds to perform the command. It must be greater than zero or ``None``.
+            The function will raise a timeout exception if the timeout period value has
+            elapsed before the operation has completed. If ``None`` is given, the function
+            will wait until the function is finished (no timeout exception is raised).
+            Defaults to ``None``.
 
         Raises
         ------
@@ -870,7 +1051,14 @@ class TcpOslServer(OslServer):
         """
         raise NotImplementedError("Currently, command is not supported in batch mode.")
 
-    def save_as(self, file_path: str, force: bool, restore: bool, reset: bool) -> None:
+    def save_as(
+        self,
+        file_path: str,
+        force: bool,
+        restore: bool,
+        reset: bool,
+        timeout: Union[float, None] = None,
+    ) -> None:
         """Save and open the current project at a new location.
 
         Parameters
@@ -883,6 +1071,12 @@ class TcpOslServer(OslServer):
             # TODO: description of this parameter is missing in ANSYS help
         reset : bool
             # TODO: description of this parameter is missing in ANSYS help
+        timeout : float, None, optional
+            Timeout in seconds to perform the command. It must be greater than zero or ``None``.
+            The function will raise a timeout exception if the timeout period value has
+            elapsed before the operation has completed. If ``None`` is given, the function
+            will wait until the function is finished (no timeout exception is raised).
+            Defaults to ``None``.
 
         Raises
         ------
@@ -891,13 +1085,19 @@ class TcpOslServer(OslServer):
         """
         raise NotImplementedError("Currently, command is not supported in batch mode.")
 
-    def save_copy(self, file_path: str) -> None:
+    def save_copy(self, file_path: str, timeout: Union[float, None] = None) -> None:
         """Save the current project as a copy to a location.
 
         Parameters
         ----------
         file_path : str
             Path where to save the project copy.
+        timeout : float, None, optional
+            Timeout in seconds to perform the command. It must be greater than zero or ``None``.
+            The function will raise a timeout exception if the timeout period value has
+            elapsed before the operation has completed. If ``None`` is given, the function
+            will wait until the function is finished (no timeout exception is raised).
+            Defaults to ``None``.
 
         Raises
         ------
@@ -905,8 +1105,10 @@ class TcpOslServer(OslServer):
             Raised when an error occurs while communicating with server.
         OslCommandError
             Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
         """
-        self._send_command(commands.save_copy(file_path, self.__password))
+        self._send_command(commands.save_copy(file_path, self.__password), timeout)
 
     def shutdown(self) -> None:
         """Shutdown the server.
@@ -937,49 +1139,88 @@ class TcpOslServer(OslServer):
             self.__host = None
             self.__port = None
 
-    def start(self) -> None:
+    def start(self, timeout: Union[float, None] = None) -> None:
         """Start project execution.
 
+        Parameters
+        ----------
+        timeout : float, None, optional
+            Timeout in seconds to perform the command. It must be greater than zero or ``None``.
+            The function will raise a timeout exception if the timeout period value has
+            elapsed before the operation has completed. If ``None`` is given, the function
+            will wait until the function is finished (no timeout exception is raised).
+            Defaults to ``None``.
+
         Raises
         ------
         OslCommunicationError
             Raised when an error occurs while communicating with server.
         OslCommandError
             Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
         """
-        self._send_command(commands.start(self.__password))
+        self._send_command(commands.start(self.__password), timeout)
 
-    def stop(self) -> None:
+    def stop(self, timeout: Union[float, None] = None) -> None:
         """Stop project execution.
 
+        Parameters
+        ----------
+        timeout : float, None, optional
+            Timeout in seconds to perform the command. It must be greater than zero or ``None``.
+            The function will raise a timeout exception if the timeout period value has
+            elapsed before the operation has completed. If ``None`` is given, the function
+            will wait until the function is finished (no timeout exception is raised).
+            Defaults to ``None``.
+
         Raises
         ------
         OslCommunicationError
             Raised when an error occurs while communicating with server.
         OslCommandError
             Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
         """
-        self._send_command(commands.stop(self.__password))
+        self._send_command(commands.stop(self.__password), timeout)
 
-    def stop_gently(self) -> None:
+    def stop_gently(self, timeout: Union[float, None] = None) -> None:
         """Stop project execution after the current design is finished.
 
+        Parameters
+        ----------
+        timeout : float, None, optional
+            Timeout in seconds to perform the command. It must be greater than zero or ``None``.
+            The function will raise a timeout exception if the timeout period value has
+            elapsed before the operation has completed. If ``None`` is given, the function
+            will wait until the function is finished (no timeout exception is raised).
+            Defaults to ``None``.
+
         Raises
         ------
         OslCommunicationError
             Raised when an error occurs while communicating with server.
         OslCommandError
             Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
         """
-        self._send_command(commands.stop_gently(self.__password))
+        self._send_command(commands.stop_gently(self.__password), timeout)
 
-    def _unregister_listener(self, uuid: str) -> None:
+    def _unregister_listener(self, uuid: str, timeout: Union[float, None] = None) -> None:
         """Unregister a listener.
 
         Parameters
         ----------
         uuid : str
             Specific unique ID for the TCP listener.
+        timeout : float, None, optional
+            Timeout in seconds to unregister the listener. It must be greater than zero
+            or ``None``. The function will raise a timeout exception if the timeout period
+            value has elapsed before the operation has completed. If ``None`` is given,
+            the function will wait until the function is finished (no timeout exception is raised).
+            Defaults to ``None``.
 
         Raises
         ------
@@ -987,8 +1228,10 @@ class TcpOslServer(OslServer):
             Raised when an error occurs while communicating with server.
         OslCommandError
             Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
         """
-        self._send_command(commands.unregister_listener(uuid, self.__password))
+        self._send_command(commands.unregister_listener(uuid, self.__password), timeout)
 
     def _start_local(self, timeout) -> None:
         """Start local optiSLang server.
@@ -1125,9 +1368,12 @@ class TcpOslServer(OslServer):
         ----------
         command : str
             Command or query to be executed on optiSLang server.
-        timeout : float, None
+        timeout : float, None, optional
             Timeout in seconds to send a command. Must be greater than zero or ``None``.
-            If ``None``, Defaults to ``None``.
+            The function will raise a timeout exception if the timeout period value has
+            elapsed before the operation has completed. If ``None`` is given, the function
+            will wait until the function is finished (no timeout exception is raised).
+            Defaults to ``None``.
 
         Returns
         -------

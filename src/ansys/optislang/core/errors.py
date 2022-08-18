@@ -39,3 +39,5 @@ class OslCommandError(Exception):
 
 class OslCommunicationError(Exception):
     """Raised when error occurs during communication with a server."""
+
+    pass
