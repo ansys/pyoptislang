@@ -450,11 +450,14 @@ class Optislang:
         """
         self.__osl_server.shutdown()
 
-    def start(self, timeout: Union[float, None] = None) -> None:
+    def start(self, wait_for_finish: bool = True, timeout: Union[float, None] = None) -> None:
         """Start project execution.
 
         Parameters
         ----------
+        wait_for_finish : bool, optional
+            Determines whether this function call should wait on the optiSlang to finish
+            the project execution. Defaults to ``True``.
         timeout : float, None, optional
             Timeout in seconds to perform the command. It must be greater than zero or ``None``.
             The function will raise a timeout exception if the timeout period value has
@@ -471,13 +474,16 @@ class Optislang:
         TimeoutError
             Raised when the timeout float value expires.
         """
-        self.__osl_server.start(timeout)
+        self.__osl_server.start(wait_for_finish, timeout)
 
-    def stop(self, timeout: Union[float, None] = None) -> None:
+    def stop(self, wait_for_finish: bool = True, timeout: Union[float, None] = None) -> None:
         """Stop project execution.
 
         Parameters
         ----------
+        wait_for_finish : bool, optional
+            Determines whether this function call should wait on the optiSlang to finish
+            the project execution. Defaults to ``True``.
         timeout : float, None, optional
             Timeout in seconds to perform the command. It must be greater than zero or ``None``.
             The function will raise a timeout exception if the timeout period value has
@@ -494,13 +500,16 @@ class Optislang:
         TimeoutError
             Raised when the timeout float value expires.
         """
-        self.__osl_server.stop(timeout)
+        self.__osl_server.stop(wait_for_finish, timeout)
 
-    def stop_gently(self, timeout: Union[float, None] = None) -> None:
+    def stop_gently(self, wait_for_finish: bool = True, timeout: Union[float, None] = None) -> None:
         """Stop project execution after the current design is finished.
 
         Parameters
         ----------
+        wait_for_finish : bool, optional
+            Determines whether this function call should wait on the optiSlang to finish
+            the project execution. Defaults to ``True``.
         timeout : float, None, optional
             Timeout in seconds to perform the command. It must be greater than zero or ``None``.
             The function will raise a timeout exception if the timeout period value has
@@ -517,4 +526,4 @@ class Optislang:
         TimeoutError
             Raised when the timeout float value expires.
         """
-        self.__osl_server.stop_gently(timeout)
+        self.__osl_server.stop_gently(wait_for_finish, timeout)

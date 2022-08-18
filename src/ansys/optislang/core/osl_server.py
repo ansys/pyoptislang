@@ -482,11 +482,14 @@ class OslServer(ABC):
         pass
 
     @abstractmethod
-    def start(self, timeout: Union[float, None] = None) -> None:
+    def start(self, wait_for_finish: bool = True, timeout: Union[float, None] = None) -> None:
         """Start project execution.
 
         Parameters
         ----------
+        wait_for_finish : bool, optional
+            Determines whether this function call should wait on the optiSlang to finish
+            the project execution. Defaults to ``True``.
         timeout : float, None, optional
             Timeout in seconds to perform the command. It must be greater than zero or ``None``.
             The function will raise a timeout exception if the timeout period value has
@@ -506,11 +509,14 @@ class OslServer(ABC):
         pass
 
     @abstractmethod
-    def stop(self, timeout: Union[float, None] = None) -> None:
+    def stop(self, wait_for_finish: bool = True, timeout: Union[float, None] = None) -> None:
         """Stop project execution.
 
         Parameters
         ----------
+        wait_for_finish : bool, optional
+            Determines whether this function call should wait on the optiSlang to finish
+            the project execution. Defaults to ``True``.
         timeout : float, None, optional
             Timeout in seconds to perform the command. It must be greater than zero or ``None``.
             The function will raise a timeout exception if the timeout period value has
@@ -530,11 +536,14 @@ class OslServer(ABC):
         pass
 
     @abstractmethod
-    def stop_gently(self, timeout: Union[float, None] = None) -> None:
+    def stop_gently(self, wait_for_finish: bool = True, timeout: Union[float, None] = None) -> None:
         """Stop project execution after the current design is finished.
 
         Parameters
         ----------
+        wait_for_finish : bool, optional
+            Determines whether this function call should wait on the optiSlang to finish
+            the project execution. Defaults to ``True``.
         timeout : float, None, optional
             Timeout in seconds to perform the command. It must be greater than zero or ``None``.
             The function will raise a timeout exception if the timeout period value has
