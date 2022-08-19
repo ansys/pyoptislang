@@ -434,21 +434,39 @@ class Optislang:
         """
         self.__osl_server.save_copy(file_path, timeout)
 
-    def shutdown(self) -> None:
+    def shutdown(self, force: bool = False, timeout: Union[float, None] = None) -> None:
         """Shutdown the server.
 
         Stop listening for incoming connections, discard pending requests, and shut down
         the server. Batch mode exclusive: Continue project run until execution finished.
         Terminate optiSLang.
 
+        Parameters
+        ----------
+        force : bool, optional
+            Determines whether to force shutdown the local optiSLang server. Has no effect when
+            the connection is established to the remote optiSLang server. In all cases, it is tried
+            to shutdown the optiSLang server process in a proper way. However, if the force
+            parameter is ``True``, after a while, the process is forced to terminate and
+            no exception is raised. Defaults to ``False``.
+        timeout : float, None, optional
+            Timeout in seconds to shutdown the server in a proper way. It must be greater than zero
+            or ``None``. The function will raise a timeout exception if the parameter force is
+            ``False`` and the timeout period value has elapsed before the operation has completed.
+            If ``None`` is given, the function will wait until the function is finished
+            (no timeout exception is raised). Defaults to ``None``.
+
         Raises
         ------
         OslCommunicationError
-            Raised when an error occurs while communicating with server.
+            Raised when the parameter force is ``False`` and an error occurs while communicating
+            with server.
         OslCommandError
-            Raised when the command or query fails.
+            Raised when the parameter force is ``False`` and the command or query fails.
+        TimeoutError
+            Raised when the parameter force is ``False`` and the timeout float value expires.
         """
-        self.__osl_server.shutdown()
+        self.__osl_server.shutdown(force, timeout)
 
     def start(self, wait_for_finish: bool = True, timeout: Union[float, None] = None) -> None:
         """Start project execution.

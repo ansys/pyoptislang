@@ -564,12 +564,26 @@ class TcpOslServer(OslServer):
 
     Examples
     --------
-    # TODO: Add example
+    Start local optiSLang server, get optiSLang version and shutdown the server.
+    >>> from ansys.optislang.core.tcp_osl_server import TcpOslServer
+    >>> osl_server = TcpOslServer()
+    >>> osl_version = osl_server.get_osl_version()
+    >>> print(osl_version)
+    >>> osl_server.shutdown()
+
+    Connect to the remote optiSLang server, get optiSLang version and shutdown the server.
+    >>> from ansys.optislang.core.tcp_osl_server import TcpOslServer
+    >>> host = "192.168.101.1"  # IP address of the remote host
+    >>> port = 49200            # Port of the remote optiSLang server
+    >>> osl_server = TcpOslServer(host, port)
+    >>> osl_version = osl_server.get_osl_version()
+    >>> print(osl_version)
+    >>> osl_server.shutdown()
     """
 
     _LOCALHOST = "127.0.0.1"
     _PRIVATE_PORTS_RANGE = (49152, 65535)
-    _SHUTDOWN_WAIT = 60  # wait for local server to shutdown in second
+    _SHUTDOWN_WAIT = 5  # wait for local server to shutdown in second
 
     def __init__(
         self,
@@ -1110,34 +1124,64 @@ class TcpOslServer(OslServer):
         """
         self._send_command(commands.save_copy(file_path, self.__password), timeout)
 
-    def shutdown(self) -> None:
+    def shutdown(self, force: bool = False, timeout: Union[float, None] = None) -> None:
         """Shutdown the server.
 
         Stop listening for incoming connections, discard pending requests, and shut down
         the server. Batch mode exclusive: Continue project run until execution finished.
         Terminate optiSLang.
 
+        Parameters
+        ----------
+        force : bool, optional
+            Determines whether to force shutdown the local optiSLang server. Has no effect when
+            the connection is established to the remote optiSLang server. In all cases, it is tried
+            to shutdown the optiSLang server process in a proper way. However, if the force
+            parameter is ``True``, after a while, the process is forced to terminate and
+            no exception is raised. Defaults to ``False``.
+        timeout : float, None, optional
+            Timeout in seconds to shutdown the server in a proper way. It must be greater than zero
+            or ``None``. The function will raise a timeout exception if the parameter force is
+            ``False`` and the timeout period value has elapsed before the operation has completed.
+            If ``None`` is given, the function will wait until the function is finished
+            (no timeout exception is raised). Defaults to ``None``.
+
         Raises
         ------
         OslCommunicationError
-            Raised when an error occurs while communicating with server.
+            Raised when the parameter force is ``False`` and an error occurs while communicating
+            with server.
         OslCommandError
-            Raised when the command or query fails.
+            Raised when the parameter force is ``False`` and the command or query fails.
+        TimeoutError
+            Raised when the parameter force is ``False`` and the timeout float value expires.
         """
-        self._send_command(commands.shutdown(self.__password))
+        try:
+            self._send_command(commands.shutdown(self.__password), timeout)
+        except Exception:
+            if not force or self.__osl_process is None:
+                raise
+        finally:
+            if force and self.__osl_process is not None:
+                self._force_shutdown_local_process()
 
-        if self.__osl_process is not None:
-            start_time = datetime.now()
-            while (
-                self.__osl_process.is_running()
-                and (datetime.now() - start_time).seconds < self.__class__._SHUTDOWN_WAIT
-            ):
-                time.sleep(0.5)
-            if self.__osl_process.is_running():
-                self.__osl_process.terminate()
-            self.__osl_process = None
-            self.__host = None
-            self.__port = None
+    def _force_shutdown_local_process(self):
+        """Force shutdown local optiSLang server process.
+
+        It waits a while and then terminates the process.
+        """
+        start_time = datetime.now()
+        while (
+            self.__osl_process.is_running()
+            and (datetime.now() - start_time).seconds < self.__class__._SHUTDOWN_WAIT
+        ):
+            time.sleep(0.5)
+
+        if self.__osl_process.is_running():
+            self.__osl_process.terminate()
+        self.__osl_process = None
+        self.__host = None
+        self.__port = None
 
     def start(self, wait_for_finish: bool = True, timeout: Union[float, None] = None) -> None:
         """Start project execution.
