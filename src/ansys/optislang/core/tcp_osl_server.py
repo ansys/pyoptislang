@@ -1139,11 +1139,14 @@ class TcpOslServer(OslServer):
             self.__host = None
             self.__port = None
 
-    def start(self, timeout: Union[float, None] = None) -> None:
+    def start(self, wait_for_finish: bool = True, timeout: Union[float, None] = None) -> None:
         """Start project execution.
 
         Parameters
         ----------
+        wait_for_finish : bool, optional
+            Determines whether this function call should wait on the optiSlang to finish
+            the project execution. Defaults to ``True``.
         timeout : float, None, optional
             Timeout in seconds to perform the command. It must be greater than zero or ``None``.
             The function will raise a timeout exception if the timeout period value has
@@ -1162,11 +1165,17 @@ class TcpOslServer(OslServer):
         """
         self._send_command(commands.start(self.__password), timeout)
 
-    def stop(self, timeout: Union[float, None] = None) -> None:
+        if wait_for_finish:
+            self._wait_for_finish("FINISHED", timeout)
+
+    def stop(self, wait_for_finish: bool = True, timeout: Union[float, None] = None) -> None:
         """Stop project execution.
 
         Parameters
         ----------
+        wait_for_finish : bool, optional
+            Determines whether this function call should wait on the optiSlang to finish
+            the project execution. Defaults to ``True``.
         timeout : float, None, optional
             Timeout in seconds to perform the command. It must be greater than zero or ``None``.
             The function will raise a timeout exception if the timeout period value has
@@ -1185,11 +1194,17 @@ class TcpOslServer(OslServer):
         """
         self._send_command(commands.stop(self.__password), timeout)
 
-    def stop_gently(self, timeout: Union[float, None] = None) -> None:
+        if wait_for_finish:
+            self._wait_for_finish("STOPPED", timeout)
+
+    def stop_gently(self, wait_for_finish: bool = True, timeout: Union[float, None] = None) -> None:
         """Stop project execution after the current design is finished.
 
         Parameters
         ----------
+        wait_for_finish : bool, optional
+            Determines whether this function call should wait on the optiSlang to finish
+            the project execution. Defaults to ``True``.
         timeout : float, None, optional
             Timeout in seconds to perform the command. It must be greater than zero or ``None``.
             The function will raise a timeout exception if the timeout period value has
@@ -1207,6 +1222,9 @@ class TcpOslServer(OslServer):
             Raised when the timeout float value expires.
         """
         self._send_command(commands.stop_gently(self.__password), timeout)
+
+        if wait_for_finish:
+            self._wait_for_finish("GENTLY_STOPPED", timeout)
 
     def _unregister_listener(self, uuid: str, timeout: Union[float, None] = None) -> None:
         """Unregister a listener.
@@ -1448,3 +1466,32 @@ class TcpOslServer(OslServer):
             if message is None:
                 message = "Command error: " + str(response)
             raise OslCommandError(message)
+
+    def _wait_for_finish(self, desired_status: str, timeout: Union[float, None] = None) -> None:
+        """Wait on optiSLang to finish the project run.
+
+        Parameters
+        ----------
+        desired_status : str
+            The project status to wait for.
+        timeout : Union[float, None], optional
+            Timeout in seconds to wait on optiSlang to finish the project run. Must be greater
+            than zero or ``None``. The function will raise a timeout exception if the timeout
+            period value has elapsed before the operation has completed. If ``None`` is given,
+            the function will wait until the function is finished (no timeout exception is raised).
+            Defaults to ``None``.
+
+        Raises
+        ------
+        TimeoutError
+            Raised when the timeout expires.
+        """
+        start_time = time.time()
+
+        while True:
+            status = self.get_project_status(_get_current_timeout(timeout, start_time))
+            if status == desired_status:
+                return
+
+            self._logger.debug("Waiting for project run to finish...")
+            time.sleep(1)
