@@ -120,7 +120,7 @@ def _find_ansys_osl_execs_in_windows_envars() -> Dict[int, str]:
     osl_execs = {}
     awp_root_envars = _get_environ_vars(pattern=f"^AWP_ROOT.*")
     for awp_root_key, awp_root_value in awp_root_envars.items():
-        osl_exec_path = os.path.join(awp_root_value, "optiSlang", "optislang.com")
+        osl_exec_path = os.path.join(awp_root_value, "optiSLang", "optislang.com")
         if os.path.isfile(osl_exec_path):
             ansys_version = _try_cast_str_to_int(awp_root_key[-3:])
             osl_execs[ansys_version] = osl_exec_path
@@ -233,10 +233,11 @@ def _merge_osl_exec_dicts(osl_execs_dicts: Iterable[Dict[int, str]]) -> Dict[int
     osl_execs_merged = {}
     for osl_execs in osl_execs_dicts:
         for osl_version, exec_path in osl_execs.items():
-            if osl_version not in osl_execs_dicts:
+            if osl_version not in osl_execs_merged:
                 osl_execs_merged[osl_version] = [exec_path]
             else:
-                osl_execs_merged[osl_version].append(exec_path)
+                if exec_path not in osl_execs_merged[osl_version]:
+                    osl_execs_merged[osl_version].append(exec_path)
 
     # convert list of version to tuple
     for osl_version, execs_paths in osl_execs_merged.items():
