@@ -2,6 +2,9 @@ from contextlib import nullcontext as does_not_raise
 import os
 import pathlib
 
+import pytest
+
+pytestmark = pytest.mark.local_osl
 pytest_path = __file__
 examples_dir = os.path.join(pathlib.Path(__file__).parents[1], "examples")
 example_files_paths = []
