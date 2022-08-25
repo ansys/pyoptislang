@@ -1,0 +1,94 @@
+*HEADING
+ Dynardo example: Damped oscillator
+** --------------------------------------------------------------------------------------- %
+** 
+** Dynardo example
+** 
+** Damped oscillator
+** 
+** Undamped eigenfrequency: omega_0 = sqrt(k/m)
+** Damped eigenfrequency:     omega = sqrt(1-D^2)*omega_0
+** Response:                   x(t) = exp(-D*omega_0*t)*sqrt(2*Ekin/m)/omega*sin(omega*t)
+** 
+** Minimize maximum amplitude after 5 seconds
+** Maximum eigenfrequencies as constraint: omega <= 8 1/s
+** 
+** 0.1 kg <= m <= 5.0 kg
+** 10 N/m <= k <= 50 N/m
+** D = 0.02
+** Ekin = 10 Nm
+** 
+** For background information see ../doc/oszillator.pdf
+** --------------------------------------------------------------------------------------- %
+*PREPRINT,ECHO=YES,HISTORY=NO,MODEL=NO
+** ------------------------------------------------------------------------------------------------------------------
+** --- Input parameters                                                                                           ---
+*PARAMETER
+ m    = 1
+ k    = 20
+ D    = 0.02
+ Ekin = 10
+** Initial velocity
+ v0   = sqrt(2.0*Ekin/m)
+** viscous damping parameter
+ c    = D*2.0*sqrt(k*m)
+** ------------------------------------------------------------------------------------------------------------------
+** Masspoint
+*NODE,NSET=POINT
+ 1,0.
+*ELEMENT,TYPE=MASS,ELSET=MASS
+ 1,1
+*MASS  ,ELSET=MASS
+ <m>, 
+**  
+*Element, type=CONN3D2, elset=Connector
+ 2, 1, 
+*Connector Section, elset=Connector, behavior=ConnSect
+ Axial,
+*Nset, nset=Connector
+ 1,
+*Elset, elset=Connector
+ 2,
+*Connector Behavior, name=ConnSect
+*Connector Elasticity
+ <k>,
+
+
+*Connector Damping,TYPE=VISCOUS
+ <c>,
+
+
+** 
+** BOUNDARY CONDITIONS
+** 
+** Name: BC-2 Type: Displacement/Rotation
+*Boundary
+ POINT, 2, 6
+** 
+** 
+** PREDEFINED FIELDS
+** 
+** Name: IC-1   Type: Velocity
+*Initial Conditions, type=VELOCITY
+ POINT, 1, <v0>
+** ----------------------------------------------------------------
+** 
+** STEP: Step-1
+** 
+*Step, name=Explicit, nlgeom=NO
+*Dynamic, Explicit, direct user control
+ 0.001, 10.
+** 
+** OUTPUT REQUESTS
+** 
+** 
+** HISTORY OUTPUT: H-Output
+** 
+*Output, history
+*Element Output, ELSET=Connector
+ CV, CVF
+*Node Output, NSET=POINT
+ U1,V1
+*Energy Output
+ ALLVD, ALLSE, ALLIE, ALLKE, ETOTAL
+*End Step
