@@ -1,6 +1,8 @@
 """Contains Optislang class which provides python API for optiSLang application."""
 from typing import Sequence, Tuple, Union
 
+from importlib_metadata import version
+
 from ansys.optislang.core import LOG
 from ansys.optislang.core.osl_server import OslServer
 from ansys.optislang.core.tcp_osl_server import TcpOslServer
@@ -126,6 +128,11 @@ class Optislang:
             )
         else:
             raise NotImplementedError(f'OptiSLang server of type "{server_type}" is not supported.')
+
+    def __str__(self):
+        """Return product name, version of optiSLang and PyOptiSLang version."""
+        return f"Product name: optiSLang \nVersion: {self.get_osl_version()} \nPyOptiSLang: \
+            {version('ansys.optislang.core')}"
 
     @property
     def name(self) -> str:
@@ -309,6 +316,33 @@ class Optislang:
             Raised when the timeout float value expires.
         """
         return self.__osl_server.get_working_dir(timeout)
+
+        """Get information about the application, the server configuration and the open projects.
+
+        Parameters
+        ----------
+        timeout : float, None, optional
+            Timeout in seconds to perform the query. It must be greater than zero or ``None``.
+            The function will raise a timeout exception if the timeout period value has
+            elapsed before the operation has completed. If ``None`` is given, the function
+            will wait until the function is finished (no timeout exception is raised).
+            Defaults to ``None``.
+
+        Returns
+        -------
+        Dict
+            Information data as dictionary.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        return self.__osl_server._get_basic_project_info(timeout)
 
     def reset(self, timeout: Union[float, None] = None) -> None:
         """Reset complete project.
