@@ -317,33 +317,6 @@ class Optislang:
         """
         return self.__osl_server.get_working_dir(timeout)
 
-        """Get information about the application, the server configuration and the open projects.
-
-        Parameters
-        ----------
-        timeout : float, None, optional
-            Timeout in seconds to perform the query. It must be greater than zero or ``None``.
-            The function will raise a timeout exception if the timeout period value has
-            elapsed before the operation has completed. If ``None`` is given, the function
-            will wait until the function is finished (no timeout exception is raised).
-            Defaults to ``None``.
-
-        Returns
-        -------
-        Dict
-            Information data as dictionary.
-
-        Raises
-        ------
-        OslCommunicationError
-            Raised when an error occurs while communicating with server.
-        OslCommandError
-            Raised when the command or query fails.
-        TimeoutError
-            Raised when the timeout float value expires.
-        """
-        return self.__osl_server._get_basic_project_info(timeout)
-
     def reset(self, timeout: Union[float, None] = None) -> None:
         """Reset complete project.
 
