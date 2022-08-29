@@ -112,7 +112,7 @@ class OslServerProcess:
         self,
         executable: str = None,
         project_path: str = None,
-        batch: bool = False,
+        batch: bool = True,
         port_range: Tuple[int, int] = None,
         password: str = None,
         no_save: bool = False,
