@@ -1,12 +1,13 @@
 """
-.. _ref_optimizer_settings:
+.. _ref_ten_bar_truss:
 
-Optimizer settings
-------------------
+Ten bar truss
+-------------
 
-Create, configure and insert an Evolutionary Algorithm Optimizer into the scenery
-(using ``optimizer_settings.py``). Save optiSLang project into the same folder as this script
-then. More details in python script.
+Create ARSM ten_bar_truss flow in batch (using ``arsm_ten_bar_truss.py``),
+modify this flow (using ``ten_bar_modify_parameters`` and ``ten_bar_truss_lc2``),
+run this project (and optionally save_copy). More details in individual python scripts and
+ten bar truss example in optiSLang tutorial section.
 """
 
 ####################################################
@@ -18,15 +19,24 @@ import ansys.optislang.core.examples as examples
 #########################################################
 # Create ``Optislang()`` instance.
 #########################################################
-# in current working directory, create dir for osl files
 osl = Optislang()
 print(osl)
 
 #########################################################
-# Get path of example script and run it.
+# Get paths of example scripts and run them.
 #########################################################
-paths = examples.get_files("optimizer_settings")
-osl.run_python_script(paths[0])
+paths1 = examples.get_files("arsm_ten_bar_truss")
+paths2 = examples.get_files("ten_bar_modify_parameters")
+paths3 = examples.get_files("ten_bar_truss_lc2")
+
+osl.run_python_script(paths1[0])
+osl.run_python_script(paths2[0])
+osl.run_python_script(paths3[0])
+
+#########################################################
+# Execute workflow created by scripts above.
+#########################################################
+osl.start()
 
 ######################################################################
 # In order to save project to desired location, uncomment lines below:

@@ -10,20 +10,36 @@ console (using ``python_help.py``). Save optiSLang project into the same folder 
 then. More details in python script.
 """
 
-import os
-
+####################################################
+# Import necessary modules.
+####################################################
 from ansys.optislang.core import Optislang
 import ansys.optislang.core.examples as examples
 
-# in current working directory, create dir for osl files
-path = os.path.dirname(__file__)
-osl_files_path = os.path.join(path, "optislang_projects", "04_python_node_and_help")
-os.makedirs(osl_files_path, exist_ok=True)
-
+#########################################################
+# Create ``Optislang()`` instance.
+#########################################################
 osl = Optislang()
+print(osl)
+
+#########################################################
+# Get paths of example scripts and run them.
+#########################################################
 paths1 = examples.get_files("python_node")
 paths2 = examples.get_files("python_help")
 osl.run_python_script(paths1[0])
 print(osl.run_python_script(paths2[0]))
-osl.save_copy(os.path.join(osl_files_path, "test_project.opf"))
+
+######################################################################
+# In order to save project to desired location, uncomment lines below:
+# .. code:: python
+#
+#   path = r'<insert-desired-location>'
+#   osl.save_copy(os.path.join(path, "test_project.opf"))
+#
+######################################################################
+
+#########################################################
+# Terminate and cancel project.
+#########################################################
 osl.shutdown()

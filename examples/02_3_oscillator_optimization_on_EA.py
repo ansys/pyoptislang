@@ -10,21 +10,39 @@ the same folder as this script then. More details in python script and oscillato
 in optiSLang tutorial section.
 """
 
-import os
-
+####################################################
+# Import necessary modules.
+####################################################
 from ansys.optislang.core import Optislang
 import ansys.optislang.core.examples as examples
 
-# in current working directory, create dir for osl files
-path = os.path.dirname(__file__)
-osl_files_path = os.path.join(path, "optislang_projects", "02_3_optimization_on_EA")
-os.makedirs(osl_files_path, exist_ok=True)
-
-
+#########################################################
+# Create ``Optislang()`` instance.
+#########################################################
 osl = Optislang()
+print(osl)
+
+#########################################################
+# Get paths of example scripts and run them.
+#########################################################
 paths = examples.get_files("oscillator_optimization_ea")
 osl.run_python_script(paths[0])
-osl.save_copy(os.path.join(osl_files_path, "test_project.opf"))
+
+#########################################################
+# Execute workflow created by scripts above.
+#########################################################
 osl.start()
-osl.save_copy(os.path.join(osl_files_path, "test_project.opf"))
+
+######################################################################
+# In order to save project to desired location, uncomment lines below:
+# .. code:: python
+#
+#   path = r'<insert-desired-location>'
+#   osl.save_copy(os.path.join(path, "test_project.opf"))
+#
+######################################################################
+
+#########################################################
+# Terminate and cancel project.
+#########################################################
 osl.shutdown()

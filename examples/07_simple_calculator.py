@@ -6,28 +6,42 @@ Simple calculator
 
 Create a simple flow of 4 nodes a run this flow then (using ``simple_calculator.py``).
 
-     A(12.0)  ---
-                  | --->  A + B*2  ---> Result
-     B( 3.0)  ---
-
 Save optiSLang project into the same folder as this script then.
 More details in python script.
 """
 
-import os
-
+####################################################
+# Import necessary modules.
+####################################################
 from ansys.optislang.core import Optislang
 import ansys.optislang.core.examples as examples
 
-# in current working directory, create dir for osl files
-path = os.path.dirname(__file__)
-osl_files_path = os.path.join(path, "optislang_projects", "07_simple_calculator")
-os.makedirs(osl_files_path, exist_ok=True)
-
+#########################################################
+# Create ``Optislang()`` instance.
+#########################################################
 osl = Optislang()
 paths = examples.get_files("simple_calculator")
+
+#########################################################
+# Get path of example script and run it.
+#########################################################
 osl.run_python_script(paths[0])
-osl.save_copy(os.path.join(osl_files_path, "test_project.opf"))
+
+#########################################################
+# Execute workflow created by scripts above.
+#########################################################
 osl.start()
-osl.save_copy(os.path.join(osl_files_path, "test_project.opf"))
+
+######################################################################
+# In order to save project to desired location, uncomment lines below:
+# .. code:: python
+#
+#   path = r'<insert-desired-location>'
+#   osl.save_copy(os.path.join(path, "test_project.opf"))
+#
+######################################################################
+
+#########################################################
+# Terminate and cancel project.
+#########################################################
 osl.shutdown()

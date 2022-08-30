@@ -2,6 +2,10 @@ from contextlib import nullcontext as does_not_raise
 import os
 import pathlib
 
+import pytest
+
+pytestmark = pytest.mark.local_osl
+
 pytest_path = __file__
 examples_dir = os.path.join(pathlib.Path(__file__).parents[1], "examples")
 example_files_paths = []
@@ -11,29 +15,13 @@ for file in os.listdir(examples_dir):
 
 
 def setup_function(function):
-    """Rewrite ``__file__`` attribute in order to save files in correct directory."""
+    """Get name of test (example) being executed."""
     global name
     name = function.__name__[5:]
-    global __file__
-    __file__ = os.path.join(examples_dir, name + ".py")
 
 
-def teardown_function(function):
-    """Rewrite ``__file__`` attribute to original value."""
-    global __file__
-    __file__ = pytest_path
-
-
-def test_01_1_ten_bar_truss():
+def test_01_ten_bar_truss():
     """Test 01_1_ten_bar_truss.py."""
-    with does_not_raise() as dnr:
-        file = list(filter(lambda path: name in path, example_files_paths))[0]
-        exec(open(file).read())
-    assert dnr is None
-
-
-def test_01_2_ten_bar_truss():
-    """Test 01_2_ten_bar_truss.py."""
     with does_not_raise() as dnr:
         file = list(filter(lambda path: name in path, example_files_paths))[0]
         exec(open(file).read())
