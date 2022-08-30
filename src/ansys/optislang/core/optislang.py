@@ -1,6 +1,8 @@
 """Contains Optislang class which provides python API for optiSLang application."""
 from typing import Sequence, Tuple, Union
 
+from importlib_metadata import version
+
 from ansys.optislang.core import LOG
 from ansys.optislang.core.osl_server import OslServer
 from ansys.optislang.core.tcp_osl_server import TcpOslServer
@@ -126,6 +128,11 @@ class Optislang:
             )
         else:
             raise NotImplementedError(f'OptiSLang server of type "{server_type}" is not supported.')
+
+    def __str__(self):
+        """Return product name, version of optiSLang and PyOptiSLang version."""
+        return f"Product name: optiSLang \nVersion: {self.get_osl_version()} \nPyOptiSLang: \
+            {version('ansys.optislang.core')}"
 
     @property
     def name(self) -> str:
