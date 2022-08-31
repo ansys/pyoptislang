@@ -57,6 +57,10 @@ jobs:
         uses: actions/setup-python@v2
         with:
           python-version: 3.7
+      - name: Install OS packages
+        run: |
+          sudo apt update
+          sudo apt install pandoc
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip flit tox
@@ -79,3 +83,4 @@ jobs:
           python -m pip install -r requirements/requirements_build.txt
           flit build
           python -m twine check dist/*
+        
