@@ -41,7 +41,7 @@ doc = [
     "Sphinx-copybutton>=0.4",
     "sphinx-gallery>=0.11.1",
     "matplotlib>=3.5.2",
-    "pypandoc>=1.8.1",
+    "pypandoc>=1.8.1"
 ]
 build = [
     "build>=0.7.0",
