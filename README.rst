@@ -31,38 +31,56 @@ PyOptiSLang
    :alt: Black
 
 
-A Python wrapper for Ansys optiSLang application.
+Overview
+--------
+The PyOptiSLang project is a python wrapper for Ansys optiSLang applicattion. It supports Pythonic 
+access to OptiSLang to be able to communicate with OptiSLang process directly from python. 
+The latest ansys-optislang-core package supports:
 
+- Remote connections to OptiSLang via gRPC.
+- Basic server commands, queries and running of python scripts.
 
-How to install
---------------
+Documentation and issues
+------------------------
+See the latest release of the `Documentation <https://mapdldocs.pyansys.com>`_ for more detailed 
+information on PyOptiSLang. Issues, bug reports, request for new features or other questions can 
+be addressed to `PyOptiSLang Issues <https://github.com/pyansys/pyoptislang/issues>`_.
 
-At least two installation modes are provided: user and developer.
+Installation
+------------
+The ``ansys-optislang-core`` package currently supports python 3.7 through 3.10 on Windows 
+and Linux. Two installation modes are provided: user and developer.
 
 For users
-^^^^^^^^^
+~~~~~~~~~
 
-In order to install PyoptiSLang core, make sure you
+In order to install PyOptiSLang core, make sure you
 have the required build system tool. To do so, run:
 
 .. code:: bash
 
     python -m pip install -U pip flit
 
-Then, you can simply execute:
+Then, you can simply execute command below to install latest release:
 
 .. code:: bash
 
     python -m pip install ansys-optislang-core
 
+Alternatively, install the latest release from PyOptiSLang GitHub by executing:
+
+.. code:: bash
+
+    python -m pip install git+https://github.com/pyansys/pyoptislang.git
+
 For developers
-^^^^^^^^^^^^^^
+~~~~~~~~~~~~~~
 
-Installing PyoptiSLang core in developer mode allows
-you to modify the source and enhance it.
+Installing PyOptiSLang core in developer mode allows you to modify the source and enhance it. 
+Before contributing to the project, please refer to the `PyAnsys Developer's guide 
+<https://dev.docs.pyansys.com/>`_. 
 
-Before contributing to the project, please refer to the `PyAnsys Developer's guide`_. You will 
-need to follow these steps:
+.. code:: bash
 
 1. Start by cloning this repository:
 
@@ -102,93 +120,80 @@ need to follow these steps:
     
         python -m pip install --editable ansys-optislang-core
     
-    5. Finally, verify your development installation by running:
+    1. Finally, verify your development installation by running:
 
     .. code:: bash
         
         tox
 
+Offline installation
+~~~~~~~~~~~~~~~~~~~~
+If the machine, where the installation is to be performed doesn't have internet connection, the 
+recommended way of installing PyOptiSLang is downloading archive from `Releases Page 
+<https://github.com/pyansys/pyoptislang/releases>`_ for your corresponding setup.
 
-How to testing
+For example, on Linux with Python 3.7, unzip it and install it with the following:
+
+.. code:: bash
+
+    unzip PyMAPDL-v0.62.dev1-wheelhouse-Linux-3.7.zip wheelhouse
+    pip install ansys-mapdl-core -f wheelhouse --no-index --upgrade --ignore-installed
+
+If you're on Windows with Python 3.9, unzip to a wheelhouse directory and install using the same 
+command as above.
+
+Dependencies
 --------------
+Local licensed copy or remote instance of Optislang needs to be installed. The first supported 
+supported version is XXXX.
 
-This project takes advantage of `tox`_. This tool allows to automate common
-development tasks (similar to Makefile) but it is oriented towards Python
-development. 
+Getting started
+---------------
 
-Using tox
-^^^^^^^^^
+Launch OptiSLang Locally
+~~~~~~~~~~~~~~~~~~~~~~~~
 
-As Makefile has rules, `tox`_ has environments. In fact, the tool creates its
-own virtual environment so anything being tested is isolated from the project in
-order to guarantee project's integrity. The following environments commands are provided:
+You can launch OptiSLang locally using ``Optislang()``, both ``host`` and ``port`` parameters 
+must be ``None``, other parameters can be optionally specified.:
 
-- **tox -e style**: will check for coding style quality.
-- **tox -e py**: checks for unit tests.
-- **tox -e py-coverage**: checks for unit testing and code coverage.
-- **tox -e doc**: checs for documentation building process.
+.. code:: python
+    
+    from ansys.optislang.core import Optislang
+    osl = Optislang()
 
+Connect to a remote instance
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+For remote connection, it is assumed that the OptiSLang server process is already running
+on remote (or local) host. In that case, the host and port must be specified and parameters
+related to the execution of the new optiSLang server are ignored.:
 
-Raw testing
-^^^^^^^^^^^
+.. code:: python
+    
+    from ansys.optislang.core import Optislang
+    host = "127.0.0.1"
+    port = 5310
+    osl = Optislang(host=host, port=port)
 
-If required, you can always call the style commands (`black`_, `isort`_,
-`flake8`_...) or unit testing ones (`pytest`_) from the command line. However,
-this does not guarantee that your project is being tested in an isolated
-environment, which is the reason why tools like `tox`_ exist.
+Basic usage
+~~~~~~~~~~~
 
+.. code:: python
 
-A note on pre-commit
-^^^^^^^^^^^^^^^^^^^^
+    from ansys.optislang.core import Optislang
+    osl = Optislang()
+    script_path = r"C:\Users\Username\my_scripts\myscript.py"
+    osl.run_python_script(path=script_path)
+    osl.save_as("MyNewProject.opf")
+    osl.terminate()
 
-The style checks take advantage of `pre-commit`_. Developers are not forced but
-encouraged to install this tool via:
+License and acknowledgments
+---------------------------
 
-.. code:: bash
+PyOptiSLang is licensed under the MIT license.
 
-    python -m pip install pre-commit && pre-commit install
-
-
-Documentation
--------------
-
-For building documentation, you can either run the usual rules provided in the
-`Sphinx`_ Makefile, such us:
-
-.. code:: bash
-
-    make -C doc/ html && your_browser_name doc/html/index.html
-
-However, the recommended way of checking documentation integrity is using:
-
-.. code:: bash
-
-    tox -e doc && your_browser_name .tox/doc_out/html/index.html
-
-
-Distributing
-------------
-
-If you would like to create either source or wheel files, start by installing
-the building requirements:
-
-.. code:: bash
-
-    python -m pip install -r requirements/requirements_build.txt
-
-Then, you can execute:
-
-.. code:: bash
-
-        flit build
-        python -m twine check dist/*
-
-.. LINKS AND REFERENCES
-.. _black: https://github.com/psf/black
-.. _flake8: https://flake8.pycqa.org/en/latest/
-.. _isort: https://github.com/PyCQA/isort
-.. _PyAnsys Developer's guide: https://dev.docs.pyansys.com/
-.. _pre-commit: https://pre-commit.com/
-.. _pytest: https://docs.pytest.org/en/stable/
-.. _Sphinx: https://www.sphinx-doc.org/en/master/
-.. _tox: https://tox.wiki/
+This module, ``ansys-optislang-core`` makes no commercial claim over Ansys whatsoever. This module 
+extends the functionality of ``OptiSLang`` by adding a Python interface to OptiSLang without 
+changing the core behavior or license of the original software. The use of the interactive control 
+of ``PyOptiSLang`` requires a legally licensed local copy of OptiSLang. For more information about 
+OptiSLang, visit the `OptiSLang <https://www.ansys.com/products/connect/ansys-optislang>`_ page 
+on the Ansys website.
