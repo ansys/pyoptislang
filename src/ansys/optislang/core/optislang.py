@@ -38,7 +38,7 @@ class Optislang:
     no_save : bool, optional
         Determines whether not to save the specified project after all other actions are completed.
         It is ignored when the host and port parameters are specified. Defaults to ``False``.
-    timeout : float, optional
+    ini_timeout : Union[int, float], optional
         Time in seconds to connect to the optiSLang server. Defaults to 20 s.
     name : str, optional
         Identifier of the optiSLang instance.
@@ -77,7 +77,7 @@ class Optislang:
         executable: str = None,
         project_path: str = None,
         no_save: bool = False,
-        timeout: float = 20,
+        ini_timeout: Union[int, float] = 20,
         name: str = None,
         password: str = None,
         loglevel: str = None,
@@ -88,7 +88,7 @@ class Optislang:
         self.__executable = executable
         self.__project_path = project_path
         self.__no_save = no_save
-        self.__timeout = timeout
+        self.__ini_timeout = ini_timeout
         self.__name = name
         self.__password = password
 
@@ -122,7 +122,7 @@ class Optislang:
                 executable=self.__executable,
                 project_path=self.__project_path,
                 no_save=self.__no_save,
-                timeout=self.__timeout,
+                ini_timeout=self.__ini_timeout,
                 password=self.__password,
                 logger=self._logger,
             )
@@ -144,17 +144,8 @@ class Optislang:
                 self.__name = f"optiSLang_{id(self)}"
         return self.__name
 
-    def get_osl_version(self, timeout: Union[float, None] = None) -> str:
+    def get_osl_version(self) -> str:
         """Get version of used optiSLang.
-
-        Parameters
-        ----------
-        timeout : float, None, optional
-            Timeout in seconds to perform the query. It must be greater than zero or ``None``.
-            The function will raise a timeout exception if the timeout period value has
-            elapsed before the operation has completed. If ``None`` is given, the function
-            will wait until the function is finished (no timeout exception is raised).
-            Defaults to ``None``.
 
         Returns
         -------
@@ -170,19 +161,10 @@ class Optislang:
         TimeoutError
             Raised when the timeout float value expires.
         """
-        return self.__osl_server.get_osl_version(timeout)
+        return self.__osl_server.get_osl_version()
 
-    def get_project_description(self, timeout: Union[float, None] = None) -> str:
+    def get_project_description(self) -> str:
         """Get description of optiSLang project.
-
-        Parameters
-        ----------
-        timeout : float, None, optional
-            Timeout in seconds to perform the query. It must be greater than zero or ``None``.
-            The function will raise a timeout exception if the timeout period value has
-            elapsed before the operation has completed. If ``None`` is given, the function
-            will wait until the function is finished (no timeout exception is raised).
-            Defaults to ``None``.
 
         Returns
         -------
@@ -199,19 +181,10 @@ class Optislang:
         TimeoutError
             Raised when the timeout float value expires.
         """
-        return self.__osl_server.get_project_description(timeout)
+        return self.__osl_server.get_project_description()
 
-    def get_project_location(self, timeout: Union[float, None] = None) -> str:
+    def get_project_location(self) -> str:
         """Get path to the optiSLang project file.
-
-        Parameters
-        ----------
-        timeout : float, None, optional
-            Timeout in seconds to perform the query. It must be greater than zero or ``None``.
-            The function will raise a timeout exception if the timeout period value has
-            elapsed before the operation has completed. If ``None`` is given, the function
-            will wait until the function is finished (no timeout exception is raised).
-            Defaults to ``None``.
 
         Returns
         -------
@@ -228,19 +201,10 @@ class Optislang:
         TimeoutError
             Raised when the timeout float value expires.
         """
-        return self.__osl_server.get_project_location(timeout)
+        return self.__osl_server.get_project_location()
 
-    def get_project_name(self, timeout: Union[float, None] = None) -> str:
+    def get_project_name(self) -> str:
         """Get name of the optiSLang project.
-
-        Parameters
-        ----------
-        timeout : float, None, optional
-            Timeout in seconds to perform the query. It must be greater than zero or ``None``.
-            The function will raise a timeout exception if the timeout period value has
-            elapsed before the operation has completed. If ``None`` is given, the function
-            will wait until the function is finished (no timeout exception is raised).
-            Defaults to ``None``.
 
         Returns
         -------
@@ -257,19 +221,10 @@ class Optislang:
         TimeoutError
             Raised when the timeout float value expires.
         """
-        return self.__osl_server.get_project_name(timeout)
+        return self.__osl_server.get_project_name()
 
-    def get_project_status(self, timeout: Union[float, None] = None) -> str:
+    def get_project_status(self) -> str:
         """Get status of the optiSLang project.
-
-        Parameters
-        ----------
-        timeout : float, None, optional
-            Timeout in seconds to perform the query. It must be greater than zero or ``None``.
-            The function will raise a timeout exception if the timeout period value has
-            elapsed before the operation has completed. If ``None`` is given, the function
-            will wait until the function is finished (no timeout exception is raised).
-            Defaults to ``None``.
 
         Returns
         -------
@@ -286,19 +241,33 @@ class Optislang:
         TimeoutError
             Raised when the timeout float value expires.
         """
-        return self.__osl_server.get_project_status(timeout)
+        return self.__osl_server.get_project_status()
 
-    def get_working_dir(self, timeout: Union[float, None] = None) -> str:
-        """Get path to the optiSLang project working directory.
+    def get_timeout(self) -> Union[int, float, None]:
+        """Get current timeout value for execution of commands.
 
-        Parameters
-        ----------
-        timeout : float, None, optional
-            Timeout in seconds to perform the query. It must be greater than zero or ``None``.
-            The function will raise a timeout exception if the timeout period value has
-            elapsed before the operation has completed. If ``None`` is given, the function
-            will wait until the function is finished (no timeout exception is raised).
+        Returns
+        -------
+        timeout: Union[int, float, None]
+            Timeout in seconds to perform commands, it must be greater than zero or ``None``.
+            Another functions will raise a timeout exception if the timeout period value has
+            elapsed before the operation has completed. If ``None`` is given, functions
+            will wait until they're finished (no timeout exception is raised).
             Defaults to ``None``.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        return self.__osl_server.get_timeout()
+
+    def get_working_dir(self) -> str:
+        """Get path to the optiSLang project working directory.
 
         Returns
         -------
@@ -315,19 +284,10 @@ class Optislang:
         TimeoutError
             Raised when the timeout float value expires.
         """
-        return self.__osl_server.get_working_dir(timeout)
+        return self.__osl_server.get_working_dir()
 
-    def reset(self, timeout: Union[float, None] = None) -> None:
+    def reset(self) -> None:
         """Reset complete project.
-
-        Parameters
-        ----------
-        timeout : float, None, optional
-            Timeout in seconds to perform the command. It must be greater than zero or ``None``.
-            The function will raise a timeout exception if the timeout period value has
-            elapsed before the operation has completed. If ``None`` is given, the function
-            will wait until the function is finished (no timeout exception is raised).
-            Defaults to ``None``.
 
         Raises
         ------
@@ -338,13 +298,12 @@ class Optislang:
         TimeoutError
             Raised when the timeout float value expires.
         """
-        self.__osl_server.reset(timeout)
+        self.__osl_server.reset()
 
     def run_python_commands(
         self,
         script: str,
         args: Union[Sequence[object], None] = None,
-        timeout: Union[float, None] = None,
     ) -> Tuple[str, str]:
         """Load a Python script in a project context and execute it.
 
@@ -354,12 +313,6 @@ class Optislang:
             Python commands to be executed on the server.
         args : Sequence[object], None, optional
             Sequence of arguments used in Python script. Defaults to ``None``.
-        timeout : float, None, optional
-            Timeout in seconds to perform the command. It must be greater than zero or ``None``.
-            The function will raise a timeout exception if the timeout period value has
-            elapsed before the operation has completed. If ``None`` is given, the function
-            will wait until the function is finished (no timeout exception is raised).
-            Defaults to ``None``.
 
         Returns
         -------
@@ -375,13 +328,12 @@ class Optislang:
         TimeoutError
             Raised when the timeout float value expires.
         """
-        return self.__osl_server.run_python_commands(script, args, timeout)
+        return self.__osl_server.run_python_commands(script, args)
 
     def run_python_script(
         self,
         script_path: str,
         args: Union[Sequence[object], None] = None,
-        timeout: Union[float, None] = None,
     ) -> Tuple[str, str]:
         """Read python script from the file, load it in a project context and execute it.
 
@@ -391,12 +343,6 @@ class Optislang:
             Path to the Python script file which content is supposed to be executed on the server.
         args : Sequence[object], None, optional
             Sequence of arguments used in Python script. Defaults to ``None``.
-        timeout : float, None, optional
-            Timeout in seconds to perform the command. It must be greater than zero or ``None``.
-            The function will raise a timeout exception if the timeout period value has
-            elapsed before the operation has completed. If ``None`` is given, the function
-            will wait until the function is finished (no timeout exception is raised).
-            Defaults to ``None``.
 
         Returns
         -------
@@ -414,21 +360,15 @@ class Optislang:
         TimeoutError
             Raised when the timeout float value expires.
         """
-        return self.__osl_server.run_python_script(script_path, args, timeout)
+        return self.__osl_server.run_python_script(script_path, args)
 
-    def save_copy(self, file_path: str, timeout: Union[float, None] = None) -> None:
+    def save_copy(self, file_path: str) -> None:
         """Save the current project as a copy to a location.
 
         Parameters
         ----------
         file_path : str
             Path where to save the project copy.
-        timeout : float, None, optional
-            Timeout in seconds to perform the command. It must be greater than zero or ``None``.
-            The function will raise a timeout exception if the timeout period value has
-            elapsed before the operation has completed. If ``None`` is given, the function
-            will wait until the function is finished (no timeout exception is raised).
-            Defaults to ``None``.
 
         Raises
         ------
@@ -439,9 +379,38 @@ class Optislang:
         TimeoutError
             Raised when the timeout float value expires.
         """
-        self.__osl_server.save_copy(file_path, timeout)
+        self.__osl_server.save_copy(file_path)
 
-    def shutdown(self, force: bool = False, timeout: Union[float, None] = None) -> None:
+    def set_timeout(self, timeout: Union[int, float, None] = None) -> None:
+        """Set timeout value for execution of commands.
+
+        Parameters
+        ----------
+        timeout: Union[int, float, None]
+            Timeout in seconds to perform commands, it must be greater than zero or ``None``.
+            Another functions will raise a timeout exception if the timeout period value has
+            elapsed before the operation has completed. If ``None`` is given, functions
+            will wait until they're finished (no timeout exception is raised).
+            Defaults to ``None``.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        """
+        if timeout is None:
+            self.__osl_server.set_timeout(timeout)
+        elif isinstance(timeout, (float, int)):
+            if timeout > 0:
+                self.__osl_server.set_timeout(timeout)
+            else:
+                self._logger.error("Timeout must be positive, command ignored!")
+        else:
+            self._logger.error("Invalid type of timeout, command ignored!")
+
+    def shutdown(self, force: bool = False) -> None:
         """Shutdown the server.
 
         Stop listening for incoming connections, discard pending requests, and shut down
@@ -456,12 +425,6 @@ class Optislang:
             to shutdown the optiSLang server process in a proper way. However, if the force
             parameter is ``True``, after a while, the process is forced to terminate and
             no exception is raised. Defaults to ``False``.
-        timeout : float, None, optional
-            Timeout in seconds to shutdown the server in a proper way. It must be greater than zero
-            or ``None``. The function will raise a timeout exception if the parameter force is
-            ``False`` and the timeout period value has elapsed before the operation has completed.
-            If ``None`` is given, the function will wait until the function is finished
-            (no timeout exception is raised). Defaults to ``None``.
 
         Raises
         ------
@@ -473,22 +436,18 @@ class Optislang:
         TimeoutError
             Raised when the parameter force is ``False`` and the timeout float value expires.
         """
-        self.__osl_server.shutdown(force, timeout)
+        self.__osl_server.shutdown(force)
 
-    def start(self, wait_for_finish: bool = True, timeout: Union[float, None] = None) -> None:
+    def start(self, wait_for_finish: bool = True) -> None:
         """Start project execution.
 
         Parameters
         ----------
         wait_for_finish : bool, optional
             Determines whether this function call should wait on the optiSlang to finish
-            the project execution. Defaults to ``True``.
-        timeout : float, None, optional
-            Timeout in seconds to perform the command. It must be greater than zero or ``None``.
-            The function will raise a timeout exception if the timeout period value has
-            elapsed before the operation has completed. If ``None`` is given, the function
-            will wait until the function is finished (no timeout exception is raised).
-            Defaults to ``None``.
+            the command execution. I.e. don't continue on next line of python script after command
+            was successfully sent to optiSLang but wait for execution of flow inside optiSLang.
+            Defaults to ``True``.
 
         Raises
         ------
@@ -499,22 +458,18 @@ class Optislang:
         TimeoutError
             Raised when the timeout float value expires.
         """
-        self.__osl_server.start(wait_for_finish, timeout)
+        self.__osl_server.start(wait_for_finish)
 
-    def stop(self, wait_for_finish: bool = True, timeout: Union[float, None] = None) -> None:
+    def stop(self, wait_for_finish: bool = True) -> None:
         """Stop project execution.
 
         Parameters
         ----------
         wait_for_finish : bool, optional
             Determines whether this function call should wait on the optiSlang to finish
-            the project execution. Defaults to ``True``.
-        timeout : float, None, optional
-            Timeout in seconds to perform the command. It must be greater than zero or ``None``.
-            The function will raise a timeout exception if the timeout period value has
-            elapsed before the operation has completed. If ``None`` is given, the function
-            will wait until the function is finished (no timeout exception is raised).
-            Defaults to ``None``.
+            the command execution. I.e. don't continue on next line of python script after command
+            was successfully sent to optiSLang but wait for execution of command inside optiSLang.
+            Defaults to ``True``.
 
         Raises
         ------
@@ -525,22 +480,18 @@ class Optislang:
         TimeoutError
             Raised when the timeout float value expires.
         """
-        self.__osl_server.stop(wait_for_finish, timeout)
+        self.__osl_server.stop(wait_for_finish)
 
-    def stop_gently(self, wait_for_finish: bool = True, timeout: Union[float, None] = None) -> None:
+    def stop_gently(self, wait_for_finish: bool = True) -> None:
         """Stop project execution after the current design is finished.
 
         Parameters
         ----------
         wait_for_finish : bool, optional
             Determines whether this function call should wait on the optiSlang to finish
-            the project execution. Defaults to ``True``.
-        timeout : float, None, optional
-            Timeout in seconds to perform the command. It must be greater than zero or ``None``.
-            The function will raise a timeout exception if the timeout period value has
-            elapsed before the operation has completed. If ``None`` is given, the function
-            will wait until the function is finished (no timeout exception is raised).
-            Defaults to ``None``.
+            the command execution. I.e. don't continue on next line of python script after command
+            was successfully sent to optiSLang but wait for execution of command inside optiSLang.
+            Defaults to ``True``.
 
         Raises
         ------
@@ -551,4 +502,4 @@ class Optislang:
         TimeoutError
             Raised when the timeout float value expires.
         """
-        self.__osl_server.stop_gently(wait_for_finish, timeout)
+        self.__osl_server.stop_gently(wait_for_finish)
