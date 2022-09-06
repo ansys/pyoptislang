@@ -1143,7 +1143,7 @@ class TcpOslServer(OslServer):
         """
         start_time = time.time()
         status = self.get_project_status()
-        if status != "FINISHED":
+        if status not in ["FINISHED", "STOPPED"]:
             self._send_command(commands.stop(self.__password))
 
             if wait_for_finish:
@@ -1171,7 +1171,7 @@ class TcpOslServer(OslServer):
         """
         start_time = time.time()
         status = self.get_project_status()
-        if status != "FINISHED":
+        if status not in ["FINISHED", "STOPPED"]:
             self._send_command(commands.stop_gently(self.__password))
 
             if wait_for_finish:
