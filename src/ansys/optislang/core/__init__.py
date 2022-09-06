@@ -23,6 +23,8 @@ IRON_PYTHON = sys.platform == "cli"
 WINDOWS = os.name == "nt"
 LINUX = os.name == "posix"
 PY3 = sys.version_info[0] >= 3
+# First supported version of optiSLang: 2023R1
+FIRST_SUPPORTED_VERSION = 231
 
 from ansys.optislang.core.optislang import Optislang
 from ansys.optislang.core.osl_process import OslServerProcess, ServerNotification

@@ -354,13 +354,13 @@ class TcpClient:
 
         start_time = time.time()
 
-        msg_len = self._recv_response_length(timeout)
-        if msg_len == 0:
+        file_len = self._recv_response_length(timeout)
+        if file_len == 0:
             raise EmptyResponseError("The empty file has been received.")
 
         remain_timeout = _get_current_timeout(timeout, start_time)
-        self._write_bytes(msg_len, file_path, remain_timeout)
-        if os.path.getsize(file_path) != msg_len:
+        self._fetch_file(file_len, file_path, remain_timeout)
+        if os.path.getsize(file_path) != file_len:
             raise ResponseFormatError("Received data does not match declared data size.")
 
     def _recv_response_length(self, timeout: Union[float, None]) -> int:
@@ -471,12 +471,12 @@ class TcpClient:
             received_len += len(chunk)
         return received
 
-    def _write_bytes(self, count: int, file_path: str, timeout: Union[float, None]) -> None:
+    def _fetch_file(self, file_len: int, file_path: str, timeout: Union[float, None]) -> None:
         """Write received bytes from the server to the file.
 
         Parameters
         ----------
-        count : int
+        file_len : int
             Number of bytes to be written.
         file_path : str
             Path to the file to which the received data is to be written.
@@ -502,8 +502,8 @@ class TcpClient:
 
         with open(file_path, "wb") as file:
             data_len = 0
-            while data_len < count:
-                remain = count - data_len
+            while data_len < file_len:
+                remain = file_len - data_len
                 if remain > self.__class__._BUFFER_SIZE:
                     buff = self.__class__._BUFFER_SIZE
                 else:
@@ -1031,16 +1031,26 @@ class TcpOslServer(OslServer):
             Raised when an error occurs while communicating with server.
         OslCommandError
             Raised when the command or query fails.
+        ValueError
+            Raised when timeout <= 0.
+        TypeError
+            Raised when timeout not Union[float, None].
         """
         if timeout is None:
             self.__timeout = timeout
-        elif isinstance(timeout, (float, int)):
+        elif isinstance(timeout, float):
             if timeout > 0:
                 self.__timeout = timeout
             else:
-                self._logger.error("Timeout must be positive, command ignored!!!")
+                raise ValueError(
+                    "Timeout must be float greater than zero or ``None`` but "
+                    f"``{timeout}`` was given."
+                )
         else:
-            self._logger.error("Invalid type of timeout, command ignored!!!")
+            raise TypeError(
+                "Invalid type of timeout, timeout must be float greater than zero or "
+                f"``None`` but {type(timeout)} was given."
+            )
 
     def shutdown(self, force: bool = False) -> None:
         """Shutdown the server.

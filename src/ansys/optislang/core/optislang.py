@@ -245,12 +245,12 @@ class Optislang:
         """
         return self.__osl_server.get_project_status()
 
-    def get_timeout(self) -> Union[int, float, None]:
+    def get_timeout(self) -> Union[float, None]:
         """Get current timeout value for execution of commands.
 
         Returns
         -------
-        timeout: Union[int, float, None]
+        timeout: Union[float, None]
             Timeout in seconds to perform commands, it must be greater than zero or ``None``.
             Another functions will raise a timeout exception if the timeout period value has
             elapsed before the operation has completed. If ``None`` is given, functions
@@ -383,12 +383,12 @@ class Optislang:
         """
         self.__osl_server.save_copy(file_path)
 
-    def set_timeout(self, timeout: Union[int, float, None] = None) -> None:
+    def set_timeout(self, timeout: Union[float, None] = None) -> None:
         """Set timeout value for execution of commands.
 
         Parameters
         ----------
-        timeout: Union[int, float, None]
+        timeout: Union[float, None]
             Timeout in seconds to perform commands, it must be greater than zero or ``None``.
             Another functions will raise a timeout exception if the timeout period value has
             elapsed before the operation has completed. If ``None`` is given, functions
@@ -401,16 +401,12 @@ class Optislang:
             Raised when an error occurs while communicating with server.
         OslCommandError
             Raised when the command or query fails.
+        ValueError
+            Raised when timeout <= 0.
+        TypeError
+            Raised when timeout not Union[float, None].
         """
-        if timeout is None:
-            self.__osl_server.set_timeout(timeout)
-        elif isinstance(timeout, (float, int)):
-            if timeout > 0:
-                self.__osl_server.set_timeout(timeout)
-            else:
-                self._logger.error("Timeout must be positive, command ignored!")
-        else:
-            self._logger.error("Invalid type of timeout, command ignored!")
+        self.__osl_server.set_timeout(timeout)
 
     def shutdown(self, force: bool = False) -> None:
         """Shutdown the server.
