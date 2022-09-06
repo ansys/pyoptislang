@@ -77,7 +77,6 @@ numpydoc_validation_checks = {
     # type, unless multiple values are being returned"
 }
 
-
 # static path
 html_static_path = ["_static"]
 
@@ -111,5 +110,5 @@ sphinx_gallery_conf = {
     "ignore_pattern": "flycheck*",
     "thumbnail_size": (350, 350),
     # Execute scripts?
-    "plot_gallery": True,
+    "plot_gallery": False,
 }
