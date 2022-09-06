@@ -131,8 +131,10 @@ class Optislang:
 
     def __str__(self):
         """Return product name, version of optiSLang and PyOptiSLang version."""
-        return f"Product name: optiSLang \nVersion: {self.get_osl_version()} \nPyOptiSLang: \
-{version('ansys.optislang.core')}"
+        return (
+            f"Product name: optiSLang \nVersion: {self.get_osl_version()} \nPyOptiSLang: "
+            f"{version('ansys.optislang.core')}"
+        )
 
     @property
     def name(self) -> str:
