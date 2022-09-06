@@ -80,8 +80,6 @@ Installing PyOptiSLang core in developer mode allows you to modify the source an
 Before contributing to the project, please refer to the `PyAnsys Developer's guide 
 <https://dev.docs.pyansys.com/>`_. 
 
-.. code:: bash
-
 1. Start by cloning this repository:
 
     .. code:: bash
