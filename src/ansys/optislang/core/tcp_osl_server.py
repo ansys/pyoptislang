@@ -143,7 +143,7 @@ class TcpClient:
             A string representation of an IPv4/v6 address or domain name.
         port : int
             A numeric port number.
-        timeout : float, None, optional
+        timeout : Union[float, None], optional
             Timeout in seconds to establish a connection. If a non-zero value is given,
             the function will raise a timeout exception if the timeout period value has elapsed
             before the operation has completed. If zero is given, the non-blocking mode is used.
@@ -197,7 +197,7 @@ class TcpClient:
         ----------
         msg : str
             Message to send.
-        timeout : float, None, optional
+        timeout : Union[float, None], optional
             Timeout in seconds to send a message. If a non-zero value is given,
             the function will raise a timeout exception if the timeout period value has elapsed
             before the operation has completed. If zero is given, the non-blocking mode is used.
@@ -233,12 +233,11 @@ class TcpClient:
         ----------
         file_path : str
             Path to the file whose content is to be sent to the server.
-        timeout : float, None, optional
+        timeout : Union[float, None], optional
             Timeout in seconds to send the buffer of the read part of the file. If a non-zero value
             is given, the function will raise a timeout exception if the timeout period value
             has elapsed before the operation has completed. If zero is given, the non-blocking mode
             is used. If ``None`` is given, the blocking mode is used. Defaults to 5 s.
-
         Raises
         ------
         ConnectionNotEstablishedError
@@ -277,7 +276,7 @@ class TcpClient:
 
         Parameters
         ----------
-        timeout : float, None, optional
+        timeout : Union[float, None], optional
             Timeout in seconds to receive a message. The function will raise a timeout exception
             if the timeout period value has elapsed before the operation has completed. If ``None``
             is given, the blocking mode is used. Defaults to 5 s.
@@ -328,7 +327,7 @@ class TcpClient:
         ----------
         file_path : str
             Path where the received file is to be saved.
-        timeout : float, None, optional
+        timeout : Union[float, None], optional
             Timeout in seconds to receive a buffer of the file part. The function will raise
             a timeout exception if the timeout period value has elapsed before the operation
             has completed. If ``None`` is given, the blocking mode is used. Defaults to 5 s.
@@ -355,13 +354,13 @@ class TcpClient:
 
         start_time = time.time()
 
-        msg_len = self._recv_response_length(timeout)
-        if msg_len == 0:
+        file_len = self._recv_response_length(timeout)
+        if file_len == 0:
             raise EmptyResponseError("The empty file has been received.")
 
         remain_timeout = _get_current_timeout(timeout, start_time)
-        self._write_bytes(msg_len, file_path, remain_timeout)
-        if os.path.getsize(file_path) != msg_len:
+        self._fetch_file(file_len, file_path, remain_timeout)
+        if os.path.getsize(file_path) != file_len:
             raise ResponseFormatError("Received data does not match declared data size.")
 
     def _recv_response_length(self, timeout: Union[float, None]) -> int:
@@ -369,7 +368,7 @@ class TcpClient:
 
         Parameters
         ----------
-        timeout : float, None
+        timeout : Union[float, None], optional
             Timeout in seconds to receive the response length. The function will raise a timeout
             exception if the timeout period value has elapsed before the operation has completed.
             If ``None`` is given, the blocking mode is used.
@@ -429,7 +428,7 @@ class TcpClient:
         ----------
         count : int
             Number of bytes to be received from the server.
-        timeout : float, None
+        timeout : Union[float, None], optional
             Timeout in seconds to receive specified number of bytes. The function will raise
             a timeout exception if the timeout period value has elapsed before the operation
             has completed. If ``None`` is given, the blocking mode is used.
@@ -472,16 +471,16 @@ class TcpClient:
             received_len += len(chunk)
         return received
 
-    def _write_bytes(self, count: int, file_path: str, timeout: Union[float, None]) -> None:
+    def _fetch_file(self, file_len: int, file_path: str, timeout: Union[float, None]) -> None:
         """Write received bytes from the server to the file.
 
         Parameters
         ----------
-        count : int
+        file_len : int
             Number of bytes to be written.
         file_path : str
             Path to the file to which the received data is to be written.
-        timeout : float, None
+        timeout : Union[float, None], optional
             Timeout in seconds to receive bytes from the server and write them to the file.
             The function will raise a timeout exception if the timeout period value has
             elapsed before the operation has completed. If ``None`` is given, the blocking mode
@@ -503,8 +502,8 @@ class TcpClient:
 
         with open(file_path, "wb") as file:
             data_len = 0
-            while data_len < count:
-                remain = count - data_len
+            while data_len < file_len:
+                remain = file_len - data_len
                 if remain > self.__class__._BUFFER_SIZE:
                     buff = self.__class__._BUFFER_SIZE
                 else:
@@ -545,7 +544,7 @@ class TcpOslServer(OslServer):
     no_save : bool, optional
         Determines whether not to save the specified project after all other actions are completed.
         It is ignored when the host and port parameters are specified. Defaults to ``False``.
-    timeout : float, optional
+    ini_timeout : float, optional
         Time in seconds to listen to the optiSLang server port. If the port is not listened
         for specified time, the optiSLang server is not started and RuntimeError is raised.
         It is ignored when the host and port parameters are specified. Defaults to 20 s.
@@ -592,14 +591,14 @@ class TcpOslServer(OslServer):
         executable: str = None,
         project_path: str = None,
         no_save: bool = False,
-        timeout: float = 20,
+        ini_timeout: float = 20,
         password: str = None,
         logger=None,
     ) -> None:
         """Initialize a new instance of the ``TcpOslServer`` class."""
         self.__host = host
         self.__port = port
-
+        self.__timeout = None
         self.__executable = executable
 
         if logger is None:
@@ -613,20 +612,11 @@ class TcpOslServer(OslServer):
         self.__osl_process = None
 
         if self.__host is None or self.__port is None:
-            self._start_local(timeout)
+            self._start_local(ini_timeout)
 
-    def _get_server_info(self, timeout: Union[float, None] = None) -> Dict:
+    def _get_server_info(self) -> Dict:
         """Get information about the application, the server configuration and the open projects.
 
-        Parameters
-        ----------
-        timeout : float, None, optional
-            Timeout in seconds to perform the query. It must be greater than zero or ``None``.
-            The function will raise a timeout exception if the timeout period value has
-            elapsed before the operation has completed. If ``None`` is given, the function
-            will wait until the function is finished (no timeout exception is raised).
-            Defaults to ``None``.
-
         Returns
         -------
         Dict
@@ -641,20 +631,11 @@ class TcpOslServer(OslServer):
         TimeoutError
             Raised when the timeout float value expires.
         """
-        return self._send_command(queries.server_info(), timeout)
+        return self._send_command(queries.server_info())
 
-    def _get_basic_project_info(self, timeout: Union[float, None] = None) -> Dict:
+    def _get_basic_project_info(self) -> Dict:
         """Get basic project info, like name, location, global settings and status.
 
-        Parameters
-        ----------
-        timeout : float, None, optional
-            Timeout in seconds to perform the query. It must be greater than zero or ``None``.
-            The function will raise a timeout exception if the timeout period value has
-            elapsed before the operation has completed. If ``None`` is given, the function
-            will wait until the function is finished (no timeout exception is raised).
-            Defaults to ``None``.
-
         Returns
         -------
         Dict
@@ -669,19 +650,10 @@ class TcpOslServer(OslServer):
         TimeoutError
             Raised when the timeout float value expires.
         """
-        return self._send_command(queries.basic_project_info(), timeout)
+        return self._send_command(queries.basic_project_info())
 
-    def close(self, timeout: Union[float, None] = None) -> None:
+    def close(self) -> None:
         """Close the current project.
-
-        Parameters
-        ----------
-        timeout : float, None, optional
-            Timeout in seconds to perform the query. It must be greater than zero or ``None``.
-            The function will raise a timeout exception if the timeout period value has
-            elapsed before the operation has completed. If ``None`` is given, the function
-            will wait until the function is finished (no timeout exception is raised).
-            Defaults to ``None``.
 
         Raises
         ------
@@ -690,17 +662,8 @@ class TcpOslServer(OslServer):
         """
         raise NotImplementedError("Currently, command is not supported in batch mode.")
 
-    def get_osl_version(self, timeout: Union[float, None] = None) -> str:
+    def get_osl_version(self) -> str:
         """Get version of used optiSLang.
-
-        Parameters
-        ----------
-        timeout : float, None, optional
-            Timeout in seconds to perform the query. It must be greater than zero or ``None``.
-            The function will raise a timeout exception if the timeout period value has
-            elapsed before the operation has completed. If ``None`` is given, the function
-            will wait until the function is finished (no timeout exception is raised).
-            Defaults to ``None``.
 
         Returns
         -------
@@ -716,20 +679,11 @@ class TcpOslServer(OslServer):
         TimeoutError
             Raised when the timeout float value expires.
         """
-        server_info = self._get_server_info(timeout)
+        server_info = self._get_server_info()
         return server_info["application"]["version"]
 
-    def get_project_description(self, timeout: Union[float, None] = None) -> str:
+    def get_project_description(self) -> str:
         """Get description of optiSLang project.
-
-        Parameters
-        ----------
-        timeout : float, None, optional
-            Timeout in seconds to perform the query. It must be greater than zero or ``None``.
-            The function will raise a timeout exception if the timeout period value has
-            elapsed before the operation has completed. If ``None`` is given, the function
-            will wait until the function is finished (no timeout exception is raised).
-            Defaults to ``None``.
 
         Returns
         -------
@@ -746,22 +700,13 @@ class TcpOslServer(OslServer):
         TimeoutError
             Raised when the timeout float value expires.
         """
-        project_info = self._get_basic_project_info(timeout)
+        project_info = self._get_basic_project_info()
         if len(project_info["projects"]) == 0:
             return None
         return project_info["projects"][0]["settings"]["short_description"]
 
-    def get_project_location(self, timeout: Union[float, None] = None) -> str:
+    def get_project_location(self) -> str:
         """Get path to the optiSLang project file.
-
-        Parameters
-        ----------
-        timeout : float, None, optional
-            Timeout in seconds to perform the query. It must be greater than zero or ``None``.
-            The function will raise a timeout exception if the timeout period value has
-            elapsed before the operation has completed. If ``None`` is given, the function
-            will wait until the function is finished (no timeout exception is raised).
-            Defaults to ``None``.
 
         Returns
         -------
@@ -778,22 +723,13 @@ class TcpOslServer(OslServer):
         TimeoutError
             Raised when the timeout float value expires.
         """
-        project_info = self._get_basic_project_info(timeout)
+        project_info = self._get_basic_project_info()
         if len(project_info["projects"]) == 0:
             return None
         return project_info["projects"][0]["location"]
 
-    def get_project_name(self, timeout: Union[float, None] = None) -> str:
+    def get_project_name(self) -> str:
         """Get name of the optiSLang project.
-
-        Parameters
-        ----------
-        timeout : float, None, optional
-            Timeout in seconds to perform the query. It must be greater than zero or ``None``.
-            The function will raise a timeout exception if the timeout period value has
-            elapsed before the operation has completed. If ``None`` is given, the function
-            will wait until the function is finished (no timeout exception is raised).
-            Defaults to ``None``.
 
         Returns
         -------
@@ -810,22 +746,13 @@ class TcpOslServer(OslServer):
         TimeoutError
             Raised when the timeout float value expires.
         """
-        project_info = self._get_basic_project_info(timeout)
+        project_info = self._get_basic_project_info()
         if len(project_info["projects"]) == 0:
             return None
         return project_info["projects"][0]["name"]
 
-    def get_project_status(self, timeout: Union[float, None] = None) -> str:
+    def get_project_status(self) -> str:
         """Get status of the optiSLang project.
-
-        Parameters
-        ----------
-        timeout : float, None, optional
-            Timeout in seconds to perform the query. It must be greater than zero or ``None``.
-            The function will raise a timeout exception if the timeout period value has
-            elapsed before the operation has completed. If ``None`` is given, the function
-            will wait until the function is finished (no timeout exception is raised).
-            Defaults to ``None``.
 
         Returns
         -------
@@ -842,22 +769,32 @@ class TcpOslServer(OslServer):
         TimeoutError
             Raised when the timeout float value expires.
         """
-        project_info = self._get_basic_project_info(timeout)
+        project_info = self._get_basic_project_info()
         if len(project_info["projects"]) == 0:
             return None
         return project_info["projects"][0]["state"]
 
-    def get_working_dir(self, timeout: Union[float, None] = None) -> str:
-        """Get path to the optiSLang project working directory.
+    def get_timeout(self) -> Union[float, None]:
+        """Get current timeout value for execution of commands.
 
-        Parameters
-        ----------
-        timeout : float, None, optional
-            Timeout in seconds to perform the query. It must be greater than zero or ``None``.
-            The function will raise a timeout exception if the timeout period value has
-            elapsed before the operation has completed. If ``None`` is given, the function
-            will wait until the function is finished (no timeout exception is raised).
-            Defaults to ``None``.
+        Returns
+        -------
+        timeout: Union[float, None]
+            Timeout in seconds to perform commands.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        return self.__timeout
+
+    def get_working_dir(self) -> str:
+        """Get path to the optiSLang project working directory.
 
         Returns
         -------
@@ -874,12 +811,12 @@ class TcpOslServer(OslServer):
         TimeoutError
             Raised when the timeout float value expires.
         """
-        project_info = self._get_basic_project_info(timeout)
+        project_info = self._get_basic_project_info()
         if len(project_info["projects"]) == 0:
             return None
         return project_info["projects"][0]["working_dir"]
 
-    def new(self, timeout: Union[float, None] = None) -> None:
+    def new(self) -> None:
         """Create a new project.
 
         Parameters
@@ -904,7 +841,6 @@ class TcpOslServer(OslServer):
         force: bool,
         restore: bool,
         reset: bool,
-        timeout: Union[float, None] = None,
     ) -> None:
         """Open a new project.
 
@@ -932,17 +868,8 @@ class TcpOslServer(OslServer):
         """
         raise NotImplementedError("Currently, command is not supported in batch mode.")
 
-    def reset(self, timeout: Union[float, None] = None):
+    def reset(self):
         """Reset complete project.
-
-        Parameters
-        ----------
-        timeout : float, None, optional
-            Timeout in seconds to perform the command. It must be greater than zero or ``None``.
-            The function will raise a timeout exception if the timeout period value has
-            elapsed before the operation has completed. If ``None`` is given, the function
-            will wait until the function is finished (no timeout exception is raised).
-            Defaults to ``None``.
 
         Raises
         ------
@@ -953,13 +880,12 @@ class TcpOslServer(OslServer):
         TimeoutError
             Raised when the timeout float value expires.
         """
-        self._send_command(commands.reset(password=self.__password), timeout)
+        self._send_command(commands.reset(password=self.__password))
 
-    def run_python_commands(
+    def run_python_script(
         self,
         script: str,
         args: Union[Sequence[object], None] = None,
-        timeout: Union[float, None] = None,
     ) -> Tuple[str, str]:
         """Load a Python script in a project context and execute it.
 
@@ -969,12 +895,6 @@ class TcpOslServer(OslServer):
             Python commands to be executed on the server.
         args : Sequence[object], None, optional
             Sequence of arguments used in Python script. Defaults to ``None``.
-        timeout : float, None, optional
-            Timeout in seconds to perform the command. It must be greater than zero or ``None``.
-            The function will raise a timeout exception if the timeout period value has
-            elapsed before the operation has completed. If ``None`` is given, the function
-            will wait until the function is finished (no timeout exception is raised).
-            Defaults to ``None``.
 
         Returns
         -------
@@ -990,9 +910,7 @@ class TcpOslServer(OslServer):
         TimeoutError
             Raised when the timeout float value expires.
         """
-        responses = self._send_command(
-            commands.run_python_script(script, args, self.__password), timeout
-        )
+        responses = self._send_command(commands.run_python_script(script, args, self.__password))
         std_out = ""
         std_err = ""
         for response in responses:
@@ -1001,26 +919,19 @@ class TcpOslServer(OslServer):
 
         return (std_out, std_err)
 
-    def run_python_script(
+    def run_python_file(
         self,
-        script_path: str,
+        file_path: str,
         args: Union[Sequence[object], None] = None,
-        timeout: Union[float, None] = None,
     ) -> Tuple[str, str]:
         """Read python script from the file, load it in a project context and execute it.
 
         Parameters
         ----------
-        script_path : str
+        file_path : str
             Path to the Python script file which content is supposed to be executed on the server.
         args : Sequence[object], None, optional
             Sequence of arguments used in Python script. Defaults to ``None``.
-        timeout : float, None, optional
-            Timeout in seconds to perform the command. It must be greater than zero or ``None``.
-            The function will raise a timeout exception if the timeout period value has
-            elapsed before the operation has completed. If ``None`` is given, the function
-            will wait until the function is finished (no timeout exception is raised).
-            Defaults to ``None``.
 
         Returns
         -------
@@ -1038,25 +949,16 @@ class TcpOslServer(OslServer):
         TimeoutError
             Raised when the timeout float value expires.
         """
-        if not os.path.isfile(script_path):
+        if not os.path.isfile(file_path):
             raise FileNotFoundError("Python script file does not exist.")
 
-        with open(script_path, "r") as file:
+        with open(file_path, "r") as file:
             script = file.read()
 
-        return self.run_python_commands(script, args, timeout)
+        return self.run_python_script(script, args)
 
-    def save(self, timeout: Union[float, None] = None) -> None:
+    def save(self) -> None:
         """Save the changed data and settings of the current project.
-
-        Parameters
-        ----------
-        timeout : float, None, optional
-            Timeout in seconds to perform the command. It must be greater than zero or ``None``.
-            The function will raise a timeout exception if the timeout period value has
-            elapsed before the operation has completed. If ``None`` is given, the function
-            will wait until the function is finished (no timeout exception is raised).
-            Defaults to ``None``.
 
         Raises
         ------
@@ -1071,7 +973,6 @@ class TcpOslServer(OslServer):
         force: bool,
         restore: bool,
         reset: bool,
-        timeout: Union[float, None] = None,
     ) -> None:
         """Save and open the current project at a new location.
 
@@ -1085,12 +986,6 @@ class TcpOslServer(OslServer):
             # TODO: description of this parameter is missing in ANSYS help
         reset : bool
             # TODO: description of this parameter is missing in ANSYS help
-        timeout : float, None, optional
-            Timeout in seconds to perform the command. It must be greater than zero or ``None``.
-            The function will raise a timeout exception if the timeout period value has
-            elapsed before the operation has completed. If ``None`` is given, the function
-            will wait until the function is finished (no timeout exception is raised).
-            Defaults to ``None``.
 
         Raises
         ------
@@ -1099,19 +994,13 @@ class TcpOslServer(OslServer):
         """
         raise NotImplementedError("Currently, command is not supported in batch mode.")
 
-    def save_copy(self, file_path: str, timeout: Union[float, None] = None) -> None:
+    def save_copy(self, file_path: str) -> None:
         """Save the current project as a copy to a location.
 
         Parameters
         ----------
         file_path : str
             Path where to save the project copy.
-        timeout : float, None, optional
-            Timeout in seconds to perform the command. It must be greater than zero or ``None``.
-            The function will raise a timeout exception if the timeout period value has
-            elapsed before the operation has completed. If ``None`` is given, the function
-            will wait until the function is finished (no timeout exception is raised).
-            Defaults to ``None``.
 
         Raises
         ------
@@ -1122,9 +1011,48 @@ class TcpOslServer(OslServer):
         TimeoutError
             Raised when the timeout float value expires.
         """
-        self._send_command(commands.save_copy(file_path, self.__password), timeout)
+        self._send_command(commands.save_copy(file_path, self.__password))
 
-    def shutdown(self, force: bool = False, timeout: Union[float, None] = None) -> None:
+    def set_timeout(self, timeout: Union[float, None] = None) -> None:
+        """Set timeout value for execution of commands.
+
+        Parameters
+        ----------
+        timeout: Union[float, None]
+            Timeout in seconds to perform commands, it must be greater than zero or ``None``.
+            Another functions will raise a timeout exception if the timeout period value has
+            elapsed before the operation has completed. If ``None`` is given, functions
+            will wait until they're finished (no timeout exception is raised).
+            Defaults to ``None``.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        ValueError
+            Raised when timeout <= 0.
+        TypeError
+            Raised when timeout not Union[float, None].
+        """
+        if timeout is None:
+            self.__timeout = timeout
+        elif isinstance(timeout, float):
+            if timeout > 0:
+                self.__timeout = timeout
+            else:
+                raise ValueError(
+                    "Timeout must be float greater than zero or ``None`` but "
+                    f"``{timeout}`` was given."
+                )
+        else:
+            raise TypeError(
+                "Invalid type of timeout, timeout must be float greater than zero or "
+                f"``None`` but {type(timeout)} was given."
+            )
+
+    def shutdown(self, force: bool = False) -> None:
         """Shutdown the server.
 
         Stop listening for incoming connections, discard pending requests, and shut down
@@ -1139,12 +1067,6 @@ class TcpOslServer(OslServer):
             to shutdown the optiSLang server process in a proper way. However, if the force
             parameter is ``True``, after a while, the process is forced to terminate and
             no exception is raised. Defaults to ``False``.
-        timeout : float, None, optional
-            Timeout in seconds to shutdown the server in a proper way. It must be greater than zero
-            or ``None``. The function will raise a timeout exception if the parameter force is
-            ``False`` and the timeout period value has elapsed before the operation has completed.
-            If ``None`` is given, the function will wait until the function is finished
-            (no timeout exception is raised). Defaults to ``None``.
 
         Raises
         ------
@@ -1157,7 +1079,7 @@ class TcpOslServer(OslServer):
             Raised when the parameter force is ``False`` and the timeout float value expires.
         """
         try:
-            self._send_command(commands.shutdown(self.__password), timeout)
+            self._send_command(commands.shutdown(self.__password))
         except Exception:
             if not force or self.__osl_process is None:
                 raise
@@ -1183,20 +1105,16 @@ class TcpOslServer(OslServer):
         self.__host = None
         self.__port = None
 
-    def start(self, wait_for_finish: bool = True, timeout: Union[float, None] = None) -> None:
+    def start(self, wait_for_finish: bool = True) -> None:
         """Start project execution.
 
         Parameters
         ----------
         wait_for_finish : bool, optional
             Determines whether this function call should wait on the optiSlang to finish
-            the project execution. Defaults to ``True``.
-        timeout : float, None, optional
-            Timeout in seconds to perform the command. It must be greater than zero or ``None``.
-            The function will raise a timeout exception if the timeout period value has
-            elapsed before the operation has completed. If ``None`` is given, the function
-            will wait until the function is finished (no timeout exception is raised).
-            Defaults to ``None``.
+            the command execution. I.e. don't continue on next line of python script after command
+            was successfully sent to optiSLang but wait for execution of flow inside optiSLang.
+            Defaults to ``True``.
 
         Raises
         ------
@@ -1207,25 +1125,22 @@ class TcpOslServer(OslServer):
         TimeoutError
             Raised when the timeout float value expires.
         """
-        self._send_command(commands.start(self.__password), timeout)
+        start_time = time.time()
+        self._send_command(commands.start(self.__password))
 
         if wait_for_finish:
-            self._wait_for_finish("FINISHED", timeout)
+            self._wait_for_finish("FINISHED", _get_current_timeout(self.__timeout, start_time))
 
-    def stop(self, wait_for_finish: bool = True, timeout: Union[float, None] = None) -> None:
+    def stop(self, wait_for_finish: bool = True) -> None:
         """Stop project execution.
 
         Parameters
         ----------
         wait_for_finish : bool, optional
             Determines whether this function call should wait on the optiSlang to finish
-            the project execution. Defaults to ``True``.
-        timeout : float, None, optional
-            Timeout in seconds to perform the command. It must be greater than zero or ``None``.
-            The function will raise a timeout exception if the timeout period value has
-            elapsed before the operation has completed. If ``None`` is given, the function
-            will wait until the function is finished (no timeout exception is raised).
-            Defaults to ``None``.
+            the command execution. I.e. don't continue on next line of python script after command
+            was successfully sent to optiSLang but wait for execution of command inside optiSLang.
+            Defaults to ``True``.
 
         Raises
         ------
@@ -1236,25 +1151,24 @@ class TcpOslServer(OslServer):
         TimeoutError
             Raised when the timeout float value expires.
         """
-        self._send_command(commands.stop(self.__password), timeout)
+        start_time = time.time()
+        status = self.get_project_status()
+        if status not in ["FINISHED", "STOPPED"]:
+            self._send_command(commands.stop(self.__password))
 
-        if wait_for_finish:
-            self._wait_for_finish("STOPPED", timeout)
+            if wait_for_finish:
+                self._wait_for_finish("STOPPED", _get_current_timeout(self.__timeout, start_time))
 
-    def stop_gently(self, wait_for_finish: bool = True, timeout: Union[float, None] = None) -> None:
+    def stop_gently(self, wait_for_finish: bool = True) -> None:
         """Stop project execution after the current design is finished.
 
         Parameters
         ----------
         wait_for_finish : bool, optional
             Determines whether this function call should wait on the optiSlang to finish
-            the project execution. Defaults to ``True``.
-        timeout : float, None, optional
-            Timeout in seconds to perform the command. It must be greater than zero or ``None``.
-            The function will raise a timeout exception if the timeout period value has
-            elapsed before the operation has completed. If ``None`` is given, the function
-            will wait until the function is finished (no timeout exception is raised).
-            Defaults to ``None``.
+            the command execution. I.e. don't continue on next line of python script after command
+            was successfully sent to optiSLang but wait for execution of command inside optiSLang.
+            Defaults to ``True``.
 
         Raises
         ------
@@ -1265,24 +1179,21 @@ class TcpOslServer(OslServer):
         TimeoutError
             Raised when the timeout float value expires.
         """
-        self._send_command(commands.stop_gently(self.__password), timeout)
+        start_time = time.time()
+        status = self.get_project_status()
+        if status not in ["FINISHED", "STOPPED"]:
+            self._send_command(commands.stop_gently(self.__password))
 
-        if wait_for_finish:
-            self._wait_for_finish("GENTLY_STOPPED", timeout)
+            if wait_for_finish:
+                self._wait_for_finish("STOPPED", _get_current_timeout(self.__timeout, start_time))
 
-    def _unregister_listener(self, uuid: str, timeout: Union[float, None] = None) -> None:
+    def _unregister_listener(self, uuid: str) -> None:
         """Unregister a listener.
 
         Parameters
         ----------
         uuid : str
             Specific unique ID for the TCP listener.
-        timeout : float, None, optional
-            Timeout in seconds to unregister the listener. It must be greater than zero
-            or ``None``. The function will raise a timeout exception if the timeout period
-            value has elapsed before the operation has completed. If ``None`` is given,
-            the function will wait until the function is finished (no timeout exception is raised).
-            Defaults to ``None``.
 
         Raises
         ------
@@ -1293,14 +1204,14 @@ class TcpOslServer(OslServer):
         TimeoutError
             Raised when the timeout float value expires.
         """
-        self._send_command(commands.unregister_listener(uuid, self.__password), timeout)
+        self._send_command(commands.unregister_listener(uuid, self.__password))
 
-    def _start_local(self, timeout) -> None:
+    def _start_local(self, ini_timeout: float) -> None:
         """Start local optiSLang server.
 
         Parameters
         ----------
-        timeout : float, optional
+        ini_timeout : Union[float], optional
             Time in seconds to listen to the optiSLang server port. If the port is not listened
             for specified time, the optiSLang server is not started and RuntimeError is raised.
 
@@ -1326,7 +1237,7 @@ class TcpOslServer(OslServer):
             listener_thread = threading.Thread(
                 target=self.__listen_port,
                 name="PyOptiSLang.OslPortListener",
-                args=(listener_socket, timeout),
+                args=(listener_socket, ini_timeout),
                 daemon=True,
             )
             listener_thread.start()
@@ -1423,19 +1334,13 @@ class TcpOslServer(OslServer):
                 if client is not None:
                     client.disconnect()
 
-    def _send_command(self, command: str, timeout: Union[float, None] = None) -> Dict:
+    def _send_command(self, command: str) -> Dict:
         """Send command or query to the optiSLang server.
 
         Parameters
         ----------
         command : str
             Command or query to be executed on optiSLang server.
-        timeout : float, None, optional
-            Timeout in seconds to send a command. Must be greater than zero or ``None``.
-            The function will raise a timeout exception if the timeout period value has
-            elapsed before the operation has completed. If ``None`` is given, the function
-            will wait until the function is finished (no timeout exception is raised).
-            Defaults to ``None``.
 
         Returns
         -------
@@ -1446,8 +1351,6 @@ class TcpOslServer(OslServer):
         ------
         RuntimeError
             Raised when the optiSLang server is not started.
-        ValueError
-            Raised when the timeout is lower than or equal to zero.
         OslCommunicationError
             Raised when an error occurs while communicating with server.
         OslCommandError
@@ -1457,16 +1360,18 @@ class TcpOslServer(OslServer):
         """
         if self.__host is None or self.__port is None:
             raise RuntimeError("optiSLang server is not started.")
-        if timeout is not None and timeout <= 0:
-            raise ValueError("timeout must be greater than zero or None.")
 
         start_time = time.time()
         self._logger.debug("Sending command or query to the server: %s", command)
         client = TcpClient(logger=self._logger)
         try:
-            client.connect(self.__host, self.__port, _get_current_timeout(timeout, start_time))
-            client.send_msg(command, _get_current_timeout(timeout, start_time))
-            response_str = client.receive_msg(_get_current_timeout(timeout, start_time))
+            client.connect(
+                self.__host, self.__port, timeout=_get_current_timeout(self.__timeout, start_time)
+            )
+            client.send_msg(command, timeout=_get_current_timeout(self.__timeout, start_time))
+            response_str = client.receive_msg(
+                timeout=_get_current_timeout(self.__timeout, start_time)
+            )
         except TimeoutError as ex:
             raise
         except Exception as ex:
@@ -1511,7 +1416,7 @@ class TcpOslServer(OslServer):
                 message = "Command error: " + str(response)
             raise OslCommandError(message)
 
-    def _wait_for_finish(self, desired_status: str, timeout: Union[float, None] = None) -> None:
+    def _wait_for_finish(self, desired_status: str, timeout: Union[float, None]) -> None:
         """Wait on optiSLang to finish the project run.
 
         Parameters
@@ -1524,16 +1429,15 @@ class TcpOslServer(OslServer):
             period value has elapsed before the operation has completed. If ``None`` is given,
             the function will wait until the function is finished (no timeout exception is raised).
             Defaults to ``None``.
-
         Raises
         ------
         TimeoutError
             Raised when the timeout expires.
         """
         start_time = time.time()
-
         while True:
-            status = self.get_project_status(_get_current_timeout(timeout, start_time))
+            remain_time = _get_current_timeout(timeout, start_time)
+            status = self.get_project_status()
             if status == desired_status:
                 return
 

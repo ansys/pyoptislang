@@ -8,17 +8,8 @@ class OslServer(ABC):
     """Base class for classes which provide access to optiSLang server."""
 
     @abstractmethod
-    def close(self, timeout: Union[float, None] = None) -> None:
+    def close(self) -> None:
         """Close the current project.
-
-        Parameters
-        ----------
-        timeout : float, None, optional
-            Timeout in seconds to perform the query. It must be greater than zero or ``None``.
-            The function will raise a timeout exception if the timeout period value has
-            elapsed before the operation has completed. If ``None`` is given, the function
-            will wait until the function is finished (no timeout exception is raised).
-            Defaults to ``None``.
 
         Raises
         ------
@@ -32,17 +23,8 @@ class OslServer(ABC):
         pass
 
     @abstractmethod
-    def get_osl_version(self, timeout: Union[float, None] = None) -> str:
+    def get_osl_version(self) -> str:
         """Get version of used optiSLang.
-
-        Parameters
-        ----------
-        timeout : float, None, optional
-            Timeout in seconds to perform the query. It must be greater than zero or ``None``.
-            The function will raise a timeout exception if the timeout period value has
-            elapsed before the operation has completed. If ``None`` is given, the function
-            will wait until the function is finished (no timeout exception is raised).
-            Defaults to ``None``.
 
         Returns
         -------
@@ -61,17 +43,8 @@ class OslServer(ABC):
         pass
 
     @abstractmethod
-    def get_project_description(self, timeout: Union[float, None] = None) -> str:
+    def get_project_description(self) -> str:
         """Get description of optiSLang project.
-
-        Parameters
-        ----------
-        timeout : float, None, optional
-            Timeout in seconds to perform the query. It must be greater than zero or ``None``.
-            The function will raise a timeout exception if the timeout period value has
-            elapsed before the operation has completed. If ``None`` is given, the function
-            will wait until the function is finished (no timeout exception is raised).
-            Defaults to ``None``.
 
         Returns
         -------
@@ -91,17 +64,8 @@ class OslServer(ABC):
         pass
 
     @abstractmethod
-    def get_project_location(self, timeout: Union[float, None] = None) -> str:
+    def get_project_location(self) -> str:
         """Get path to the optiSLang project file.
-
-        Parameters
-        ----------
-        timeout : float, None, optional
-            Timeout in seconds to perform the query. It must be greater than zero or ``None``.
-            The function will raise a timeout exception if the timeout period value has
-            elapsed before the operation has completed. If ``None`` is given, the function
-            will wait until the function is finished (no timeout exception is raised).
-            Defaults to ``None``.
 
         Returns
         -------
@@ -121,17 +85,8 @@ class OslServer(ABC):
         pass
 
     @abstractmethod
-    def get_project_name(self, timeout: Union[float, None] = None) -> str:
+    def get_project_name(self) -> str:
         """Get name of the optiSLang project.
-
-        Parameters
-        ----------
-        timeout : float, None, optional
-            Timeout in seconds to perform the query. It must be greater than zero or ``None``.
-            The function will raise a timeout exception if the timeout period value has
-            elapsed before the operation has completed. If ``None`` is given, the function
-            will wait until the function is finished (no timeout exception is raised).
-            Defaults to ``None``.
 
         Returns
         -------
@@ -151,17 +106,8 @@ class OslServer(ABC):
         pass
 
     @abstractmethod
-    def get_project_status(self, timeout: Union[float, None] = None) -> str:
+    def get_project_status(self) -> str:
         """Get status of the optiSLang project.
-
-        Parameters
-        ----------
-        timeout : float, None, optional
-            Timeout in seconds to perform the query. It must be greater than zero or ``None``.
-            The function will raise a timeout exception if the timeout period value has
-            elapsed before the operation has completed. If ``None`` is given, the function
-            will wait until the function is finished (no timeout exception is raised).
-            Defaults to ``None``.
 
         Returns
         -------
@@ -181,17 +127,32 @@ class OslServer(ABC):
         pass
 
     @abstractmethod
-    def get_working_dir(self, timeout: Union[float, None] = None) -> str:
-        """Get path to the optiSLang project working directory.
+    def get_timeout(self) -> Union[float, None]:
+        """Get current timeout value for execution of commands.
 
-        Parameters
-        ----------
-        timeout : float, None, optional
-            Timeout in seconds to perform the query. It must be greater than zero or ``None``.
-            The function will raise a timeout exception if the timeout period value has
-            elapsed before the operation has completed. If ``None`` is given, the function
-            will wait until the function is finished (no timeout exception is raised).
+        Returns
+        -------
+        timeout: Union[float, None]
+            Timeout in seconds to perform commands, it must be greater than zero or ``None``.
+            Another functions will raise a timeout exception if the timeout period value has
+            elapsed before the operation has completed. If ``None`` is given, functions
+            will wait until they're finished (no timeout exception is raised).
             Defaults to ``None``.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        pass
+
+    @abstractmethod
+    def get_working_dir(self) -> str:
+        """Get path to the optiSLang project working directory.
 
         Returns
         -------
@@ -211,17 +172,8 @@ class OslServer(ABC):
         pass
 
     @abstractmethod
-    def new(self, timeout: Union[float, None] = None) -> None:
+    def new(self) -> None:
         """Create a new project.
-
-        Parameters
-        ----------
-        timeout : float, None, optional
-            Timeout in seconds to perform the command. It must be greater than zero or ``None``.
-            The function will raise a timeout exception if the timeout period value has
-            elapsed before the operation has completed. If ``None`` is given, the function
-            will wait until the function is finished (no timeout exception is raised).
-            Defaults to ``None``.
 
         Raises
         ------
@@ -241,7 +193,6 @@ class OslServer(ABC):
         force: bool,
         restore: bool,
         reset: bool,
-        timeout: Union[float, None] = None,
     ) -> None:
         """Open a new project.
 
@@ -255,12 +206,6 @@ class OslServer(ABC):
             # TODO: description of this parameter is missing in ANSYS help
         reset : bool
             # TODO: description of this parameter is missing in ANSYS help
-        timeout : float, None, optional
-            Timeout in seconds to perform the command. It must be greater than zero or ``None``.
-            The function will raise a timeout exception if the timeout period value has
-            elapsed before the operation has completed. If ``None`` is given, the function
-            will wait until the function is finished (no timeout exception is raised).
-            Defaults to ``None``.
 
         Raises
         ------
@@ -274,18 +219,9 @@ class OslServer(ABC):
         pass
 
     @abstractmethod
-    def reset(self, timeout: Union[float, None] = None):
+    def reset(self):
         """Reset complete project.
 
-        Parameters
-        ----------
-        timeout : float, None, optional
-            Timeout in seconds to perform the command. It must be greater than zero or ``None``.
-            The function will raise a timeout exception if the timeout period value has
-            elapsed before the operation has completed. If ``None`` is given, the function
-            will wait until the function is finished (no timeout exception is raised).
-            Defaults to ``None``.
-
         Raises
         ------
         OslCommunicationError
@@ -298,11 +234,10 @@ class OslServer(ABC):
         pass
 
     @abstractmethod
-    def run_python_commands(
+    def run_python_script(
         self,
         script: str,
         args: Union[Sequence[object], None] = None,
-        timeout: Union[float, None] = None,
     ) -> Tuple[str, str]:
         """Load a Python script in a project context and execute it.
 
@@ -312,12 +247,6 @@ class OslServer(ABC):
             Python commands to be executed on the server.
         args : Sequence[object], None, optional
             Sequence of arguments used in Python script. Defaults to ``None``.
-        timeout : float, None, optional
-            Timeout in seconds to perform the command. It must be greater than zero or ``None``.
-            The function will raise a timeout exception if the timeout period value has
-            elapsed before the operation has completed. If ``None`` is given, the function
-            will wait until the function is finished (no timeout exception is raised).
-            Defaults to ``None``.
 
         Returns
         -------
@@ -336,26 +265,19 @@ class OslServer(ABC):
         pass
 
     @abstractmethod
-    def run_python_script(
+    def run_python_file(
         self,
-        script_path: str,
+        file_path: str,
         args: Union[Sequence[object], None] = None,
-        timeout: Union[float, None] = None,
     ) -> Tuple[str, str]:
         """Read python script from the file, load it in a project context and execute it.
 
         Parameters
         ----------
-        script_path : str
+        file_path : str
             Path to the Python script file which content is supposed to be executed on the server.
         args : Sequence[object], None, optional
             Sequence of arguments used in Python script. Defaults to ``None``.
-        timeout : float, None, optional
-            Timeout in seconds to perform the command. It must be greater than zero or ``None``.
-            The function will raise a timeout exception if the timeout period value has
-            elapsed before the operation has completed. If ``None`` is given, the function
-            will wait until the function is finished (no timeout exception is raised).
-            Defaults to ``None``.
 
         Returns
         -------
@@ -376,17 +298,8 @@ class OslServer(ABC):
         pass
 
     @abstractmethod
-    def save(self, timeout: Union[float, None] = None) -> None:
+    def save(self) -> None:
         """Save the changed data and settings of the current project.
-
-        Parameters
-        ----------
-        timeout : float, None, optional
-            Timeout in seconds to perform the command. It must be greater than zero or ``None``.
-            The function will raise a timeout exception if the timeout period value has
-            elapsed before the operation has completed. If ``None`` is given, the function
-            will wait until the function is finished (no timeout exception is raised).
-            Defaults to ``None``.
 
         Raises
         ------
@@ -406,7 +319,6 @@ class OslServer(ABC):
         force: bool,
         restore: bool,
         reset: bool,
-        timeout: Union[float, None] = None,
     ) -> None:
         """Save and open the current project at a new location.
 
@@ -420,12 +332,6 @@ class OslServer(ABC):
             # TODO: description of this parameter is missing in ANSYS help
         reset : bool
             # TODO: description of this parameter is missing in ANSYS help
-        timeout : float, None, optional
-            Timeout in seconds to perform the command. It must be greater than zero or ``None``.
-            The function will raise a timeout exception if the timeout period value has
-            elapsed before the operation has completed. If ``None`` is given, the function
-            will wait until the function is finished (no timeout exception is raised).
-            Defaults to ``None``.
 
         Raises
         ------
@@ -439,19 +345,13 @@ class OslServer(ABC):
         pass
 
     @abstractmethod
-    def save_copy(self, file_path: str, timeout: Union[float, None] = None) -> None:
+    def save_copy(self, file_path: str) -> None:
         """Save the current project as a copy to a location.
 
         Parameters
         ----------
         file_path : str
             Path where to save the project copy.
-        timeout : float, None, optional
-            Timeout in seconds to perform the command. It must be greater than zero or ``None``.
-            The function will raise a timeout exception if the timeout period value has
-            elapsed before the operation has completed. If ``None`` is given, the function
-            will wait until the function is finished (no timeout exception is raised).
-            Defaults to ``None``.
 
         Raises
         ------
@@ -465,7 +365,33 @@ class OslServer(ABC):
         pass
 
     @abstractmethod
-    def shutdown(self, force: bool = False, timeout: Union[float, None] = None) -> None:
+    def set_timeout(self, timeout: Union[float, None] = None) -> None:
+        """Set timeout value for execution of commands.
+
+        Parameters
+        ----------
+        timeout: Union[float, None]
+            Timeout in seconds to perform commands, it must be greater than zero or ``None``.
+            Another functions will raise a timeout exception if the timeout period value has
+            elapsed before the operation has completed. If ``None`` is given, functions
+            will wait until they're finished (no timeout exception is raised).
+            Defaults to ``None``.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        ValueError
+            Raised when timeout <= 0.
+        TypeError
+            Raised when timeout not Union[float, None].
+        """
+        pass
+
+    @abstractmethod
+    def shutdown(self, force: bool = False) -> None:
         """Shutdown the server.
 
         Stop listening for incoming connections, discard pending requests, and shut down
@@ -480,12 +406,6 @@ class OslServer(ABC):
             to shutdown the optiSLang server process in a proper way. However, if the force
             parameter is ``True``, after a while, the process is forced to terminate and
             no exception is raised. Defaults to ``False``.
-        timeout : float, None, optional
-            Timeout in seconds to shutdown the server in a proper way. It must be greater than zero
-            or ``None``. The function will raise a timeout exception if the parameter force is
-            ``False`` and the timeout period value has elapsed before the operation has completed.
-            If ``None`` is given, the function will wait until the function is finished
-            (no timeout exception is raised). Defaults to ``None``.
 
         Raises
         ------
@@ -500,7 +420,7 @@ class OslServer(ABC):
         pass
 
     @abstractmethod
-    def start(self, wait_for_finish: bool = True, timeout: Union[float, None] = None) -> None:
+    def start(self, wait_for_finish: bool = True) -> None:
         """Start project execution.
 
         Parameters
@@ -508,12 +428,6 @@ class OslServer(ABC):
         wait_for_finish : bool, optional
             Determines whether this function call should wait on the optiSlang to finish
             the project execution. Defaults to ``True``.
-        timeout : float, None, optional
-            Timeout in seconds to perform the command. It must be greater than zero or ``None``.
-            The function will raise a timeout exception if the timeout period value has
-            elapsed before the operation has completed. If ``None`` is given, the function
-            will wait until the function is finished (no timeout exception is raised).
-            Defaults to ``None``.
 
         Raises
         ------
@@ -527,7 +441,7 @@ class OslServer(ABC):
         pass
 
     @abstractmethod
-    def stop(self, wait_for_finish: bool = True, timeout: Union[float, None] = None) -> None:
+    def stop(self, wait_for_finish: bool = True) -> None:
         """Stop project execution.
 
         Parameters
@@ -535,12 +449,6 @@ class OslServer(ABC):
         wait_for_finish : bool, optional
             Determines whether this function call should wait on the optiSlang to finish
             the project execution. Defaults to ``True``.
-        timeout : float, None, optional
-            Timeout in seconds to perform the command. It must be greater than zero or ``None``.
-            The function will raise a timeout exception if the timeout period value has
-            elapsed before the operation has completed. If ``None`` is given, the function
-            will wait until the function is finished (no timeout exception is raised).
-            Defaults to ``None``.
 
         Raises
         ------
@@ -554,7 +462,7 @@ class OslServer(ABC):
         pass
 
     @abstractmethod
-    def stop_gently(self, wait_for_finish: bool = True, timeout: Union[float, None] = None) -> None:
+    def stop_gently(self, wait_for_finish: bool = True) -> None:
         """Stop project execution after the current design is finished.
 
         Parameters
@@ -562,12 +470,6 @@ class OslServer(ABC):
         wait_for_finish : bool, optional
             Determines whether this function call should wait on the optiSlang to finish
             the project execution. Defaults to ``True``.
-        timeout : float, None, optional
-            Timeout in seconds to perform the command. It must be greater than zero or ``None``.
-            The function will raise a timeout exception if the timeout period value has
-            elapsed before the operation has completed. If ``None`` is given, the function
-            will wait until the function is finished (no timeout exception is raised).
-            Defaults to ``None``.
 
         Raises
         ------

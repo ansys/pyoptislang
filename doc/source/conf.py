@@ -2,7 +2,9 @@
 from datetime import datetime
 
 from pyansys_sphinx_theme import pyansys_logo_black
+from sphinx_gallery.sorting import FileNameSortKey
 
+import ansys.optislang.core as pyoptislang
 from ansys.optislang.core import __version__
 
 # Project information
@@ -16,6 +18,9 @@ html_logo = pyansys_logo_black
 html_theme = "pyansys_sphinx_theme"
 
 html_short_title = html_title = "ansys-optislang-core"
+
+# necessary when building the sphinx gallery
+pyoptislang.BUILDING_GALLERY = True
 
 # specify the location of your github repo
 html_theme_options = {
@@ -34,6 +39,8 @@ extensions = [
     "numpydoc",
     "sphinx.ext.intersphinx",
     "sphinx_copybutton",
+    "sphinx_gallery.gen_gallery",
+    "sphinxcontrib.images",
 ]
 
 # Intersphinx mapping
@@ -70,7 +77,6 @@ numpydoc_validation_checks = {
     # type, unless multiple values are being returned"
 }
 
-
 # static path
 html_static_path = ["_static"]
 
@@ -82,3 +88,27 @@ source_suffix = ".rst"
 
 # The master toctree document.
 master_doc = "index"
+
+# -- Sphinx Gallery Options ---------------------------------------------------
+sphinx_gallery_conf = {
+    # convert rst to md for ipynb
+    "pypandoc": True,
+    # path to your examples scripts
+    "examples_dirs": ["../../examples/"],
+    # path where to save gallery generated examples
+    "gallery_dirs": ["examples/gallery_examples"],
+    # Patter to search for example files
+    "filename_pattern": r"\.py",
+    # Remove the "Download all examples" button from the top level gallery
+    "download_all_examples": False,
+    # Sort gallery example by file name instead of number of lines (default)
+    "within_subsection_order": FileNameSortKey,
+    # directory where function granular galleries are stored
+    "backreferences_dir": None,
+    # Modules for which function level galleries are created.  In
+    "doc_module": "ansys-optislang-core",
+    "ignore_pattern": "flycheck*",
+    "thumbnail_size": (350, 350),
+    # Execute scripts?
+    "plot_gallery": False,
+}
