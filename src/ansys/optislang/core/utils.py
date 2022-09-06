@@ -220,9 +220,9 @@ def _find_standalone_osl_execs_in_posix() -> Dict[int, str]:
             if os.path.isfile(osl_exec_path):
                 # convert version fmt "yyyy Rx" to "yyx"
                 # TODO: add '$' at the end of regex pattern to disable dev version
-                match = re.findall("[2][0][1-9][0-9] R[1-9]", osl_version_dir)
+                match = re.findall("[2][0][1-9][0-9]R[1-9]", osl_version_dir)
                 if match:
-                    ansys_version = _try_cast_str_to_int(match[0][2:4] + match[0][6])
+                    ansys_version = _try_cast_str_to_int(match[0][2:4] + match[0][5])
                     if ansys_version >= FIRST_SUPPORTED_VERSION:
                         osl_execs[ansys_version] = osl_exec_path
     return osl_execs
