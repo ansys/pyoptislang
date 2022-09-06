@@ -132,7 +132,7 @@ class Optislang:
     def __str__(self):
         """Return product name, version of optiSLang and PyOptiSLang version."""
         return f"Product name: optiSLang \nVersion: {self.get_osl_version()} \nPyOptiSLang: \
-            {version('ansys.optislang.core')}"
+{version('ansys.optislang.core')}"
 
     @property
     def name(self) -> str:
@@ -300,7 +300,7 @@ class Optislang:
         """
         self.__osl_server.reset()
 
-    def run_python_commands(
+    def run_python_script(
         self,
         script: str,
         args: Union[Sequence[object], None] = None,
@@ -328,18 +328,18 @@ class Optislang:
         TimeoutError
             Raised when the timeout float value expires.
         """
-        return self.__osl_server.run_python_commands(script, args)
+        return self.__osl_server.run_python_script(script, args)
 
-    def run_python_script(
+    def run_python_file(
         self,
-        script_path: str,
+        file_path: str,
         args: Union[Sequence[object], None] = None,
     ) -> Tuple[str, str]:
         """Read python script from the file, load it in a project context and execute it.
 
         Parameters
         ----------
-        script_path : str
+        file_path : str
             Path to the Python script file which content is supposed to be executed on the server.
         args : Sequence[object], None, optional
             Sequence of arguments used in Python script. Defaults to ``None``.
@@ -360,7 +360,7 @@ class Optislang:
         TimeoutError
             Raised when the timeout float value expires.
         """
-        return self.__osl_server.run_python_script(script_path, args)
+        return self.__osl_server.run_python_file(file_path, args)
 
     def save_copy(self, file_path: str) -> None:
         """Save the current project as a copy to a location.

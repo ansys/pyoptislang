@@ -106,11 +106,3 @@ def test_07_simple_calculator():
         file = list(filter(lambda path: name in path, example_files_paths))[0]
         exec(open(file).read())
     assert dnr is None
-
-
-def test_08_ansys_workbench_portscan():
-    """Test 08_ansys_workbench_portscan.py."""
-    with does_not_raise() as dnr:
-        file = list(filter(lambda path: name in path, example_files_paths))[0]
-        exec(open(file).read())
-    assert dnr is None

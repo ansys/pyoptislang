@@ -11,6 +11,8 @@ _host = "127.0.0.1"
 _port = 5310
 _msg = '{ "What": "SYSTEMS_STATUS_INFO" }'
 
+pytestmark = pytest.mark.local_osl
+
 
 @pytest.fixture(scope="session", autouse=True)
 def osl_server_process():
@@ -96,8 +98,8 @@ def test_receive_msg(tcp_client):
     "Test ``receive_msg``."
     client = tcp_client
     client.send_msg(_msg)
-    tmp = client.receive_msg()
-    assert isinstance(tmp, str)
+    msg = client.receive_msg()
+    assert isinstance(msg, str)
 
 
 def test_receive_file(tcp_client, tmp_path):
@@ -115,65 +117,65 @@ def test_receive_file(tcp_client, tmp_path):
 ## TcpOslServer
 def test_get_server_info(tcp_osl_server):
     """Test ``_get_server_info``."""
-    tmp = tcp_osl_server._get_server_info()
-    assert isinstance(tmp, dict)
-    assert bool(tmp)
+    server_info = tcp_osl_server._get_server_info()
+    assert isinstance(server_info, dict)
+    assert bool(server_info)
 
 
 def test_get_basic_project_info(tcp_osl_server):
     """Test ``_get_basic_project_info``."""
     server = tcp_osl_server
-    tmp = server._get_basic_project_info()
-    assert isinstance(tmp, dict)
-    assert bool(tmp)
+    basic_project_info = server._get_basic_project_info()
+    assert isinstance(basic_project_info, dict)
+    assert bool(basic_project_info)
 
 
 def test_get_osl_version(tcp_osl_server):
     """Test ``get_osl_version``."""
     server = tcp_osl_server
-    tmp = server.get_osl_version()
-    assert isinstance(tmp, str)
-    assert bool(tmp)
+    version = server.get_osl_version()
+    assert isinstance(version, str)
+    assert bool(version)
 
 
 def test_get_project_description(tcp_osl_server):
     """Test ``get_project_description``."""
     server = tcp_osl_server
-    tmp = server.get_project_description()
-    assert isinstance(tmp, str)
-    assert not bool(tmp)
+    project_description = server.get_project_description()
+    assert isinstance(project_description, str)
+    assert not bool(project_description)
 
 
 def test_get_project_location(tcp_osl_server):
     """Test ``get_project_location``."""
     server = tcp_osl_server
-    tmp = server.get_project_location()
-    assert isinstance(tmp, str)
-    assert bool(tmp)
+    project_location = server.get_project_location()
+    assert isinstance(project_location, str)
+    assert bool(project_location)
 
 
 def test_get_project_name(tcp_osl_server):
     """Test ``get_project_name``."""
     server = tcp_osl_server
-    tmp = server.get_project_name()
-    assert isinstance(tmp, str)
-    assert bool(tmp)
+    project_name = server.get_project_name()
+    assert isinstance(project_name, str)
+    assert bool(project_name)
 
 
 def test_get_project_status(tcp_osl_server):
     """Test ``get_get_project_status``."""
     server = tcp_osl_server
-    tmp = server.get_project_status()
-    assert isinstance(tmp, str)
-    assert bool(tmp)
+    project_status = server.get_project_status()
+    assert isinstance(project_status, str)
+    assert bool(project_status)
 
 
 def test_get_working_dir(tcp_osl_server):
     """Test ``get_working_dir``."""
     server = tcp_osl_server
-    tmp = server.get_working_dir()
-    assert isinstance(tmp, str)
-    assert bool(tmp)
+    working_dir = server.get_working_dir()
+    assert isinstance(working_dir, str)
+    assert bool(working_dir)
 
 
 # not implemented
@@ -200,11 +202,34 @@ def test_reset(tcp_osl_server):
     assert dnr is None
 
 
-# def test_run_python_script():
-#     """Test ``run_python_script``."""
-#     server = _tcp_osl_server()
-#     tmp = server.run_python_script(script: str, args: Sequence[object])
-#     assert type(tmp) == type(None)
+def test_run_python_file(tcp_osl_server, tmp_path):
+    """Test ``run_python_file``."""
+    server = tcp_osl_server
+    cmd = """
+a = 5
+b = 10
+result = a + b
+print(result)
+"""
+    cmd_path = os.path.join(tmp_path, "commands.txt")
+    with open(cmd_path, "w") as f:
+        f.write(cmd)
+    run_file = server.run_python_file(file_path=cmd_path)
+    assert isinstance(run_file, tuple)
+
+
+def test_run_python_script(tcp_osl_server):
+    """Test ``run_python_script``."""
+    server = tcp_osl_server
+    cmd = """
+a = 5
+b = 10
+result = a + b
+print(result)
+"""
+    run_script = server.run_python_script(script=cmd)
+    assert isinstance(run_script, tuple)
+
 
 # not implemented
 def test_save(tcp_osl_server):

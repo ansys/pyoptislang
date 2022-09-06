@@ -5,58 +5,62 @@ import os
 
 module_path = os.path.dirname(inspect.getfile(inspect.currentframe()))
 
-
-def join_path(module_path, folder, filename, type_):
-    """Join module_path and file, return path."""
-    return os.path.join(module_path, folder, type_, filename)
-
-
 # dictionary of files, that must be available to run scripts
 example_files = {
     "ansys_workbench_portscan": None,
     "arsm_ten_bar_truss": (
-        join_path(module_path, r"00_run_script\ten_bar_truss", "ten_bar_truss.s", "files"),
-        join_path(module_path, r"00_run_script\ten_bar_truss", "ten_bar_truss.out", "files"),
+        os.path.join(module_path, "00_run_script", "ten_bar_truss", "files", "ten_bar_truss.s"),
+        os.path.join(module_path, "00_run_script", "ten_bar_truss", "files", "ten_bar_truss.out"),
     ),
     "ansys_workbench_ten_bar_truss": (
-        join_path(module_path, r"00_run_script\ten_bar_truss", "ten_bar_truss_apdl.wbpz", "files")
+        os.path.join(
+            module_path, "00_run_script", "ten_bar_truss", "files", "ten_bar_truss_apdl.wbpz"
+        )
     ),
     "ten_bar_modify_parameters": None,
     "ten_bar_truss_lc2": (
-        join_path(module_path, r"00_run_script\ten_bar_truss", "ten_bar_truss2.s", "files"),
-        join_path(module_path, r"00_run_script\ten_bar_truss", "ten_bar_truss2.out", "files"),
+        os.path.join(module_path, "00_run_script", "ten_bar_truss", "files", "ten_bar_truss2.s"),
+        os.path.join(module_path, "00_run_script", "ten_bar_truss", "files", "ten_bar_truss2.out"),
     ),
     "oscillatorcalibration_system_ascii": (
-        join_path(module_path, r"00_run_script\oscillator", "_create_oscillator.py", "scripts"),
-        join_path(module_path, r"00_run_script\oscillator", "oscillator.s", "files"),
-        join_path(module_path, r"00_run_script\oscillator", "oscillator.bat", "files"),
-        join_path(module_path, r"00_run_script\oscillator", "oscillator.sh", "files"),
-        join_path(module_path, r"00_run_script\oscillator", "oscillator_signal.txt", "files"),
-        join_path(module_path, r"00_run_script\oscillator", "oscillator_reference.txt", "files"),
+        os.path.join(
+            module_path, "00_run_script", "oscillator", "scripts", "_create_oscillator.py"
+        ),
+        os.path.join(module_path, "00_run_script", "oscillator", "files", "oscillator.s"),
+        os.path.join(module_path, "00_run_script", "oscillator", "files", "oscillator.bat"),
+        os.path.join(module_path, "00_run_script", "oscillator", "files", "oscillator.sh"),
+        os.path.join(module_path, "00_run_script", "oscillator", "files", "oscillator_signal.txt"),
+        os.path.join(
+            module_path, "00_run_script", "oscillator", "files", "oscillator_reference.txt"
+        ),
     ),
     "oscillatorcalibration_system_python": (
-        join_path(module_path, r"00_run_script\oscillator", "_create_oscillator.py", "scripts"),
-        join_path(module_path, r"00_run_script\oscillator", "oscillator_reference.txt", "files"),
+        os.path.join(
+            module_path, "00_run_script", "oscillator", "scripts", "_create_oscillator.py"
+        ),
+        os.path.join(
+            module_path, "00_run_script", "oscillator", "files", "oscillator_reference.txt"
+        ),
     ),
     "oscillator_optimization_ea": (
-        join_path(module_path, r"00_run_script\oscillator", "_create_oscillator.py", "scripts")
+        os.path.join(module_path, "00_run_script", "oscillator", "scripts", "_create_oscillator.py")
     ),
     "oscillator_optimization_on_mop": (
-        join_path(module_path, r"00_run_script\oscillator", "_create_oscillator.py", "scripts")
+        os.path.join(module_path, "00_run_script", "oscillator", "scripts", "_create_oscillator.py")
     ),
     "oscillator_robustness_arsm": (
-        join_path(module_path, r"00_run_script\oscillator", "_create_oscillator.py", "scripts")
+        os.path.join(module_path, "00_run_script", "oscillator", "scripts", "_create_oscillator.py")
     ),
     "oscillator_sensitivity_mop": (
-        join_path(module_path, r"00_run_script\oscillator", "_create_oscillator.py", "scripts")
+        os.path.join(module_path, "00_run_script", "oscillator", "scripts", "_create_oscillator.py")
     ),
     "oscillator_system_python": (
-        join_path(module_path, r"00_run_script\oscillator", "_create_oscillator.py", "scripts")
+        os.path.join(module_path, "00_run_script", "oscillator", "scripts", "_create_oscillator.py")
     ),
     "create_all_possible_nodes": None,
     "etk_abaqus": (
-        join_path(module_path, r"00_run_script\etk_abaqus", "oscillator.inp", "files"),
-        join_path(module_path, r"00_run_script\etk_abaqus", "oscillator.odb", "files"),
+        os.path.join(module_path, "00_run_script", "etk_abaqus", "files", "oscillator.inp"),
+        os.path.join(module_path, "00_run_script", "etk_abaqus", "files", "oscillator.odb"),
     ),
     "python_help": None,
     "python_node": None,
@@ -67,58 +71,69 @@ example_files = {
 
 # dictionary of scripts to be run
 example_scripts = {
-    "ansys_workbench_portscan": join_path(
-        module_path, r"00_run_script", "ansys_workbench_portscan.py", "scripts"
+    "ansys_workbench_portscan": os.path.join(
+        module_path, "00_run_script", "scripts", "ansys_workbench_portscan.py"
     ),
-    "arsm_ten_bar_truss": join_path(
-        module_path, r"00_run_script\ten_bar_truss", "arsm_ten_bar_truss.py", "scripts"
+    "arsm_ten_bar_truss": os.path.join(
+        module_path, "00_run_script", "ten_bar_truss", "scripts", "arsm_ten_bar_truss.py"
     ),
-    "ansys_workbench_ten_bar_truss": join_path(
-        module_path, r"00_run_script\ten_bar_truss", "ansys_workbench_ten_bar_truss.py", "scripts"
+    "ansys_workbench_ten_bar_truss": os.path.join(
+        module_path, "00_run_script", "ten_bar_truss", "scripts", "ansys_workbench_ten_bar_truss.py"
     ),
-    "ten_bar_modify_parameters": join_path(
-        module_path, r"00_run_script\ten_bar_truss", "ten_bar_modify_parameters.py", "scripts"
+    "ten_bar_modify_parameters": os.path.join(
+        module_path, "00_run_script", "ten_bar_truss", "scripts", "ten_bar_modify_parameters.py"
     ),
-    "ten_bar_truss_lc2": join_path(
-        module_path, r"00_run_script\ten_bar_truss", "ten_bar_truss_lc2.py", "scripts"
+    "ten_bar_truss_lc2": os.path.join(
+        module_path, "00_run_script", "ten_bar_truss", "scripts", "ten_bar_truss_lc2.py"
     ),
-    "oscillatorcalibration_system_ascii": join_path(
-        module_path, r"00_run_script\oscillator", "oscillatorcalibration_system_ascii.py", "scripts"
-    ),
-    "oscillatorcalibration_system_python": join_path(
+    "oscillatorcalibration_system_ascii": os.path.join(
         module_path,
-        r"00_run_script\oscillator",
-        "oscillatorcalibration_system_python.py",
+        "00_run_script",
+        "oscillator",
         "scripts",
+        "oscillatorcalibration_system_ascii.py",
     ),
-    "oscillator_optimization_ea": join_path(
-        module_path, r"00_run_script\oscillator", "oscillator_optimization_ea.py", "scripts"
+    "oscillatorcalibration_system_python": os.path.join(
+        module_path,
+        "00_run_script",
+        "oscillator",
+        "scripts",
+        "oscillatorcalibration_system_python.py",
     ),
-    "oscillator_optimization_on_mop": join_path(
-        module_path, r"00_run_script\oscillator", "oscillator_optimization_on_mop.py", "scripts"
+    "oscillator_optimization_ea": os.path.join(
+        module_path, "00_run_script", "oscillator", "scripts", "oscillator_optimization_ea.py"
     ),
-    "oscillator_robustness_arsm": join_path(
-        module_path, r"00_run_script\oscillator", "oscillator_robustness_arsm.py", "scripts"
+    "oscillator_optimization_on_mop": os.path.join(
+        module_path, "00_run_script", "oscillator", "scripts", "oscillator_optimization_on_mop.py"
     ),
-    "oscillator_sensitivity_mop": join_path(
-        module_path, r"00_run_script\oscillator", "oscillator_sensitivity_mop.py", "scripts"
+    "oscillator_robustness_arsm": os.path.join(
+        module_path, "00_run_script", "oscillator", "scripts", "oscillator_robustness_arsm.py"
     ),
-    "oscillator_system_python": join_path(
-        module_path, r"00_run_script\oscillator", "oscillator_system_python.py", "scripts"
+    "oscillator_sensitivity_mop": os.path.join(
+        module_path, "00_run_script", "oscillator", "scripts", "oscillator_sensitivity_mop.py"
     ),
-    "create_all_possible_nodes": join_path(
-        module_path, r"00_run_script", "create_all_possible_nodes.py", "scripts"
+    "oscillator_system_python": os.path.join(
+        module_path, "00_run_script", "oscillator", "scripts", "oscillator_system_python.py"
     ),
-    "etk_abaqus": join_path(module_path, r"00_run_script\etk_abaqus", "etk_abaqus.py", "scripts"),
-    "python_help": join_path(module_path, r"00_run_script\python", "python_help.py", "scripts"),
-    "python_node": join_path(module_path, r"00_run_script\python", "python_node.py", "scripts"),
-    "optimizer_settings": join_path(
-        module_path, r"00_run_script", "optimizer_settings.py", "scripts"
+    "create_all_possible_nodes": os.path.join(
+        module_path, "00_run_script", "scripts", "create_all_possible_nodes.py"
     ),
-    "sensitivity_settings": join_path(
-        module_path, r"00_run_script", "sensitivity_settings.py", "scripts"
+    "etk_abaqus": os.path.join(
+        module_path, "00_run_script", "etk_abaqus", "scripts", "etk_abaqus.py"
     ),
-    "simple_calculator": join_path(
-        module_path, r"00_run_script", "simple_calculator.py", "scripts"
+    "python_help": os.path.join(
+        module_path, "00_run_script", "python", "scripts", "python_help.py"
+    ),
+    "python_node": os.path.join(
+        module_path, "00_run_script", "python", "scripts", "python_node.py"
+    ),
+    "optimizer_settings": os.path.join(
+        module_path, "00_run_script", "scripts", "optimizer_settings.py"
+    ),
+    "sensitivity_settings": os.path.join(
+        module_path, "00_run_script", "scripts", "sensitivity_settings.py"
+    ),
+    "simple_calculator": os.path.join(
+        module_path, "00_run_script", "scripts", "simple_calculator.py"
     ),
 }

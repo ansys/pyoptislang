@@ -29,9 +29,9 @@ paths1 = examples.get_files("arsm_ten_bar_truss")
 paths2 = examples.get_files("ten_bar_modify_parameters")
 paths3 = examples.get_files("ten_bar_truss_lc2")
 
-osl.run_python_script(paths1[0])
-osl.run_python_script(paths2[0])
-osl.run_python_script(paths3[0])
+osl.run_python_file(paths1[0])
+osl.run_python_file(paths2[0])
+osl.run_python_file(paths3[0])
 
 #########################################################
 # Execute workflow created by scripts above.
@@ -51,3 +51,11 @@ osl.start()
 # Terminate and cancel project.
 #########################################################
 osl.shutdown()
+
+#########################################################
+# Generated workflow:
+# .. image:: ../../_static/01_ten_bar_truss.png
+#  :width: 400
+#  :alt: Result of script.
+#
+#########################################################

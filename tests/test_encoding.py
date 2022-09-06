@@ -12,7 +12,7 @@ if PY3:
     text_type = str
     binary_type = bytes
     test_text_type = test_string
-    test_binary_type = str.encode(test_string)
+    test_binary_type = bytes(test_string, "utf-8")
 else:
     if defenc == "ascii":
         defenc = "utf-8"
@@ -23,12 +23,12 @@ else:
 
 
 @pytest.mark.parametrize(
-    "input, expected", [(test_text_type, text_type), (test_binary_type, binary_type)]
+    "input, expected", [(test_text_type, text_type), (test_binary_type, text_type)]
 )
 def test_safe_decode(input, expected):
     "Test ``safe_decode``."
-    tmp = encoding.safe_decode(input)
-    assert isinstance(input, expected)
+    decoded = encoding.safe_decode(input)
+    assert isinstance(decoded, expected)
 
 
 def test_to_ascii_safe():
@@ -40,11 +40,11 @@ def test_to_ascii_safe():
 
 def test_force_bytes():
     """Test ``force_bytes``."""
-    tmp = encoding.force_bytes(test_text_type)
-    assert isinstance(tmp, bytes)
+    forced_bytes = encoding.force_bytes(test_text_type)
+    assert isinstance(forced_bytes, bytes)
 
 
 def test_force_text():
     """Test ``force_text``."""
-    tmp = encoding.force_text(test_binary_type)
-    assert isinstance(tmp, str)
+    forced_text = encoding.force_text(test_binary_type)
+    assert isinstance(forced_text, str)

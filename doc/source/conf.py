@@ -40,6 +40,7 @@ extensions = [
     "sphinx.ext.intersphinx",
     "sphinx_copybutton",
     "sphinx_gallery.gen_gallery",
+    "sphinxcontrib.images",
 ]
 
 # Intersphinx mapping
@@ -109,4 +110,6 @@ sphinx_gallery_conf = {
     "doc_module": "ansys-optislang-core",
     "ignore_pattern": "flycheck*",
     "thumbnail_size": (350, 350),
+    # Execute scripts?
+    "plot_gallery": True,
 }

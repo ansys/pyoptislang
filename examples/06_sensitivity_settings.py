@@ -25,7 +25,7 @@ print(osl)
 # Get path of example script and run it.
 #########################################################
 paths = examples.get_files("sensitivity_settings")
-osl.run_python_script(paths[0])
+osl.run_python_file(paths[0])
 
 ######################################################################
 # In order to save project to desired location, uncomment lines below:
@@ -40,3 +40,11 @@ osl.run_python_script(paths[0])
 # Terminate and cancel project.
 #########################################################
 osl.shutdown()
+
+#########################################################
+# Generated workflow:
+# .. image:: ../../_static/06_sensitivity_settings.png
+#  :width: 300
+#  :alt: Result of script.
+#
+#########################################################

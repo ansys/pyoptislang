@@ -298,7 +298,7 @@ class OslServer(ABC):
         pass
 
     @abstractmethod
-    def run_python_commands(
+    def run_python_script(
         self,
         script: str,
         args: Union[Sequence[object], None] = None,
@@ -336,9 +336,9 @@ class OslServer(ABC):
         pass
 
     @abstractmethod
-    def run_python_script(
+    def run_python_file(
         self,
-        script_path: str,
+        file_path: str,
         args: Union[Sequence[object], None] = None,
         timeout: Union[float, None] = None,
     ) -> Tuple[str, str]:
@@ -346,7 +346,7 @@ class OslServer(ABC):
 
         Parameters
         ----------
-        script_path : str
+        file_path : str
             Path to the Python script file which content is supposed to be executed on the server.
         args : Sequence[object], None, optional
             Sequence of arguments used in Python script. Defaults to ``None``.

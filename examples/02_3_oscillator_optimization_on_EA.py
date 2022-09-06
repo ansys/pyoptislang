@@ -26,7 +26,7 @@ print(osl)
 # Get paths of example scripts and run them.
 #########################################################
 paths = examples.get_files("oscillator_optimization_ea")
-osl.run_python_script(paths[0])
+osl.run_python_file(paths[0])
 
 #########################################################
 # Execute workflow created by scripts above.
@@ -46,3 +46,11 @@ osl.start()
 # Terminate and cancel project.
 #########################################################
 osl.shutdown()
+
+#########################################################
+# Generated workflow:
+# .. image:: ../../_static/02_3_optimization_on_EA.png
+#  :width: 400
+#  :alt: Result of script.
+#
+#########################################################

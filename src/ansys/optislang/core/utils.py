@@ -5,6 +5,9 @@ import os
 import re
 from typing import Dict, Iterable, OrderedDict, Tuple, Union
 
+# First supported version 2023R1
+SUPPORTED_VERSION = 231
+
 
 def get_osl_exec(osl_version: Union[int, str, None] = None) -> Union[Tuple[int, str], None]:
     """Return path to the optiSLang executable file.
@@ -123,7 +126,8 @@ def _find_ansys_osl_execs_in_windows_envars() -> Dict[int, str]:
         osl_exec_path = os.path.join(awp_root_value, "optiSLang", "optislang.com")
         if os.path.isfile(osl_exec_path):
             ansys_version = _try_cast_str_to_int(awp_root_key[-3:])
-            osl_execs[ansys_version] = osl_exec_path
+            if ansys_version >= SUPPORTED_VERSION:
+                osl_execs[ansys_version] = osl_exec_path
     return osl_execs
 
 
@@ -142,9 +146,10 @@ def _find_ansys_osl_execs_in_windows_program_files() -> Dict[int, str]:
     program_files_path = _get_program_files_path()
     for ansys_version_dir in glob(os.path.join(program_files_path, "ANSYS Inc", "v*")):
         ansys_version = _try_cast_str_to_int(ansys_version_dir[-3:])
-        osl_exec_path = os.path.join(ansys_version_dir, "optiSLang", "optislang.com")
-        if os.path.isfile(osl_exec_path):
-            osl_execs[ansys_version] = osl_exec_path
+        if ansys_version >= SUPPORTED_VERSION:
+            osl_exec_path = os.path.join(ansys_version_dir, "optiSLang", "optislang.com")
+            if os.path.isfile(osl_exec_path):
+                osl_execs[ansys_version] = osl_exec_path
     return osl_execs
 
 
@@ -164,8 +169,12 @@ def _find_standalone_osl_execs_in_windows() -> Dict[int, str]:
             osl_exec_path = os.path.join(root_install_dir, osl_version_dir, "optislang.com")
             if os.path.isfile(osl_exec_path):
                 # convert version fmt "yyyy Rx" to "yyx"
-                ansys_version = _try_cast_str_to_int(osl_version_dir[-5:-3] + osl_version_dir[-1:])
-                osl_execs[ansys_version] = osl_exec_path
+                # TODO: add '$' at the end of regex pattern to disable dev version
+                match = re.findall("[2][0][1-9][0-9] R[1-9]", osl_version_dir)
+                if match:
+                    ansys_version = _try_cast_str_to_int(match[0][2:4] + match[0][6])
+                    if ansys_version >= SUPPORTED_VERSION:
+                        osl_execs[ansys_version] = osl_exec_path
     return osl_execs
 
 
@@ -188,9 +197,10 @@ def _find_ansys_osl_execs_in_posix() -> Dict[int, str]:
     if base_path is not None:
         for ansys_version_dir in glob(os.path.join(base_path, "v*")):
             ansys_version = _try_cast_str_to_int(ansys_version_dir[-3:])
-            osl_exec_path = os.path.join(ansys_version_dir, "optiSLang", "optislang")
-            if os.path.isfile(osl_exec_path):
-                osl_execs[ansys_version] = osl_exec_path
+            if ansys_version >= SUPPORTED_VERSION:
+                osl_exec_path = os.path.join(ansys_version_dir, "optiSLang", "optislang")
+                if os.path.isfile(osl_exec_path):
+                    osl_execs[ansys_version] = osl_exec_path
     return osl_execs
 
 
@@ -210,8 +220,12 @@ def _find_standalone_osl_execs_in_posix() -> Dict[int, str]:
             osl_exec_path = os.path.join(root_install_dir, osl_version_dir, "optislang")
             if os.path.isfile(osl_exec_path):
                 # convert version fmt "yyyy Rx" to "yyx"
-                ansys_version = _try_cast_str_to_int(osl_version_dir[-4:-2] + osl_version_dir[-1:])
-                osl_execs[ansys_version] = osl_exec_path
+                # TODO: add '$' at the end of regex pattern to disable dev version
+                match = re.findall("[2][0][1-9][0-9] R[1-9]", osl_version_dir)
+                if match:
+                    ansys_version = _try_cast_str_to_int(match[0][2:4] + match[0][6])
+                    if ansys_version >= SUPPORTED_VERSION:
+                        osl_execs[ansys_version] = osl_exec_path
     return osl_execs
 
 

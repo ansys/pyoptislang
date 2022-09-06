@@ -1,7 +1,7 @@
 Getting Started
 ===============
 Local licensed copy or remote instance of optiSLang needs to be installed. The first supported 
-supported version is ???2022R2???. For more information about OptiSLang, visit the 
+supported version is 2023R1. For more information about OptiSLang, visit the 
 `OptiSLang <https://www.ansys.com/products/connect/ansys-optislang>`_ page on the Ansys website.
 
 ************

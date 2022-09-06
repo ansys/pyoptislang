@@ -25,7 +25,7 @@ print(osl)
 # Get path of example script and run it.
 #########################################################
 paths = examples.get_files("oscillator_system_python")
-osl.run_python_script(paths[0])
+osl.run_python_file(paths[0])
 
 #########################################################
 # Execute workflow created by script above.
@@ -45,3 +45,11 @@ osl.start()
 # Terminate and cancel project.
 #########################################################
 osl.shutdown()
+
+#########################################################
+# Generated workflow:
+# .. image:: ../../_static/02_2_python_system.png
+#  :width: 300
+#  :alt: Result of script.
+#
+#########################################################

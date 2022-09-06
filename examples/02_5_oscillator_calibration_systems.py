@@ -28,8 +28,8 @@ print(osl)
 paths1 = examples.get_files("oscillatorcalibration_system_python")
 paths2 = examples.get_files("oscillatorcalibration_system_ascii")
 
-osl.run_python_script(paths1[0])
-osl.run_python_script(paths2[0])
+osl.run_python_file(paths1[0])
+osl.run_python_file(paths2[0])
 
 #########################################################
 # Execute workflow created by scripts above.
@@ -49,3 +49,11 @@ osl.start()
 # Terminate and cancel project.
 #########################################################
 osl.shutdown()
+
+#########################################################
+# Generated workflow:
+# .. image:: ../../_static/02_5_oscillator_calibration_systems.png
+#  :width: 400
+#  :alt: Result of script.
+#
+#########################################################

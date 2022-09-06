@@ -25,7 +25,7 @@ paths = examples.get_files("simple_calculator")
 #########################################################
 # Get path of example script and run it.
 #########################################################
-osl.run_python_script(paths[0])
+osl.run_python_file(paths[0])
 
 #########################################################
 # Execute workflow created by scripts above.
@@ -45,3 +45,11 @@ osl.start()
 # Terminate and cancel project.
 #########################################################
 osl.shutdown()
+
+#########################################################
+# Generated workflow:
+# .. image:: ../../_static/07_simple_calculator.png
+#  :width: 400
+#  :alt: Result of script.
+#
+#########################################################

@@ -28,6 +28,44 @@ NEW_SESSION_HEADER = f"""
 """
 
 
+class OslCustomAdapter(logging.LoggerAdapter):
+    """Customized logger with extra inputs."""
+
+    file_handler = None
+    std_out_handler = None
+    log_level = LOG_LEVEL
+
+    def __init__(
+        self,
+        logger: logging.Logger,
+        extra=None,
+    ) -> None:
+        """
+        Initialize customized logger with extra inputs.
+
+        Parameters
+        ----------
+        logger : str, optional
+            Level of logging, by default LOG_LEVEL.
+        osl_instance : bool, optional
+            Record logs to file, by default ``True``.
+        """
+        self.logger = logger
+        if extra:
+            self.extra = weakref.proxy(extra)
+
+        self.file_handler = logger.file_handler
+        self.std_out_handler = logger.std_out_handler
+
+    def process(self, msg, kwargs):
+        """Modify the message and/or keyword arguments passed to a logging call."""
+        kwargs["extra"] = {}
+        # This are the extra parameters sent to log
+        # here self.extra is the argument pass to the log records.
+        kwargs["extra"]["instance_name"] = self.extra.name
+        return msg, kwargs
+
+
 class OslLogger:
     """Logger class created for each session."""
 
@@ -178,7 +216,9 @@ class OslLogger:
         child_logger = self.logger.name + "." + child_logger_name
         self.instances[child_logger] = self.create_logger(child_logger)
 
-    def add_instance_logger(self, instance_name: str, osl_instance, level: str = None) -> None:
+    def add_instance_logger(
+        self, instance_name: str, osl_instance, level: str = None
+    ) -> OslCustomAdapter:
         """Create a logger for Optislang instance.
 
         Parameters
@@ -189,6 +229,11 @@ class OslLogger:
             Optislang instance object. This should contain the attribute ``name``.
         level: str, opt
             Level of logging.
+
+        Returns
+        -------
+        OslCustomAdapter
+            Customized logger with extra inputs.
         """
         if type(instance_name) is not str:
             raise ValueError("Expected input instance_name: str")
@@ -222,41 +267,3 @@ class OslLogger:
             return self.instances[instance_name]
         else:
             raise KeyError(f"There is no instances with name {instance_name}")
-
-
-class OslCustomAdapter(logging.LoggerAdapter):
-    """Customized logger with extra inputs."""
-
-    file_handler = None
-    std_out_handler = None
-    log_level = LOG_LEVEL
-
-    def __init__(
-        self,
-        logger: logging.Logger,
-        extra=None,
-    ) -> None:
-        """
-        Initialize customized logger with extra inputs.
-
-        Parameters
-        ----------
-        logger : str, optional
-            Level of logging, by default LOG_LEVEL.
-        osl_instance : bool, optional
-            Record logs to file, by default ``True``.
-        """
-        self.logger = logger
-        if extra:
-            self.extra = weakref.proxy(extra)
-
-        self.file_handler = logger.file_handler
-        self.std_out_handler = logger.std_out_handler
-
-    def process(self, msg, kwargs):
-        """Modify the message and/or keyword arguments passed to a logging call."""
-        kwargs["extra"] = {}
-        # This are the extra parameters sent to log
-        # here self.extra is the argument pass to the log records.
-        kwargs["extra"]["instance_name"] = self.extra.name
-        return msg, kwargs

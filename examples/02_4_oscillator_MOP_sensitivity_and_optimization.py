@@ -28,8 +28,8 @@ print(osl)
 paths1 = examples.get_files("oscillator_sensitivity_mop")
 paths2 = examples.get_files("oscillator_optimization_on_mop")
 
-osl.run_python_script(paths1[0])
-osl.run_python_script(paths2[0])
+osl.run_python_file(paths1[0])
+osl.run_python_file(paths2[0])
 
 
 #########################################################
@@ -50,3 +50,11 @@ osl.start()
 # Terminate and cancel project.
 #########################################################
 osl.shutdown()
+
+#########################################################
+# Generated workflow:
+# .. image:: ../../_static/02_4_oscillator_MOP_sensitivity_and_optimization.png
+#  :width: 600
+#  :alt: Result of script.
+#
+#########################################################

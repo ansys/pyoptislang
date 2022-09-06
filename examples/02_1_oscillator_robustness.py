@@ -25,7 +25,7 @@ print(osl)
 # Get path of example script and run it.
 #########################################################
 paths = examples.get_files("oscillator_robustness_arsm")
-osl.run_python_script(paths[0])
+osl.run_python_file(paths[0])
 
 #########################################################
 # Execute workflow created by script above.
@@ -45,3 +45,11 @@ osl.start()
 # Terminate and cancel project.
 #########################################################
 osl.shutdown()
+
+#########################################################
+# Generated workflow:
+# .. image:: ../../_static/02_1_oscillator_robustness.png
+#  :width: 600
+#  :alt: Result of script.
+#
+#########################################################

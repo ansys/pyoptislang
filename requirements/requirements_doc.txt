@@ -3,5 +3,6 @@ numpydoc>=1.2
 pyansys_sphinx_theme>=0.2
 Sphinx-copybutton>=0.4
 sphinx-gallery>=0.11.1
+sphinxcontrib-images>=0.9.4
 matplotlib>=3.5.2
 pypandoc>=1.8.1

@@ -27,8 +27,8 @@ print(osl)
 #########################################################
 paths1 = examples.get_files("python_node")
 paths2 = examples.get_files("python_help")
-osl.run_python_script(paths1[0])
-print(osl.run_python_script(paths2[0]))
+osl.run_python_file(paths1[0])
+print(osl.run_python_file(paths2[0]))
 
 ######################################################################
 # In order to save project to desired location, uncomment lines below:
@@ -43,3 +43,11 @@ print(osl.run_python_script(paths2[0]))
 # Terminate and cancel project.
 #########################################################
 osl.shutdown()
+
+#########################################################
+# Generated workflow:
+# .. image:: ../../_static/04_python_node_and_help.png
+#  :width: 300
+#  :alt: Result of script.
+#
+#########################################################
