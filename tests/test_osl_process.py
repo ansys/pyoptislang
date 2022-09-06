@@ -220,33 +220,6 @@ def test_open_project_file(executable, project_file, caplog):
         check_log_for_errors(caplog)
 
 
-def test_terminate_process(executable):
-    """Test termination of the optiSLang process.
-
-    Parameters
-    ----------
-    executable : str
-        Path to the optiSLang executable.
-    """
-    with OslServerProcess(executable, None) as osl_process:
-        # Start optiSLang process
-        osl_process.start()
-        assert osl_process.is_running()
-        assert osl_process.pid is not None
-        assert psutil.pid_exists(osl_process.pid)
-
-        # Get all optiSLang processes
-        parent = psutil.Process(osl_process.pid)
-        child_processes = parent.children(recursive=True)
-
-        # Terminate optiSLang process
-        osl_process.terminate()
-        assert not osl_process.is_running()
-        assert not parent.is_running()
-        for chile_process in child_processes:
-            assert not chile_process.is_running()
-
-
 def test_tmp_project_file_exists(executable):
     """Test existence of the temporary project file.
 

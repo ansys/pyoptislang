@@ -6,7 +6,8 @@ import logging
 import weakref
 
 # TODO: from ansys.optislang.core.optislang import Optislang
-# add_instance_logger(osl: Optislang)
+# specify type of ``osl`` in ``add_instance_logger(osl: Optislang)``
+# problem with cyclic import
 
 ## Default configuration
 LOG_LEVEL = "DEBUG"

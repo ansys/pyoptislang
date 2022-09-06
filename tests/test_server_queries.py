@@ -9,7 +9,6 @@ my_string = "5cdfb20b-bef6-4412-9985-89f5ded5ee95"
 my_dict = {"feature": "CAN_FINALIZE"}
 hid = "0.1"
 my_slot = "MySlot"
-# TODO: add password into tests
 my_password = "otislang.-*123"
 
 
