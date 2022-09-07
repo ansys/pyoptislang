@@ -148,19 +148,21 @@ version is 2023R1.
 Getting started
 ---------------
 
-Launch OptiSLang Locally
+Launch optiSLang locally 
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
-You can launch OptiSLang locally using ``Optislang()``, both ``host`` and ``port`` parameters 
+You can launch optiSLang locally using ``Optislang()``, both ``host`` and ``port`` parameters 
 must be ``None``, other parameters can be optionally specified.:
 
 .. code:: python
     
     from ansys.optislang.core import Optislang
     osl = Optislang()
+    osl.shutdown()
 
-Connect to a remote instance
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Connect to a remote optiSLang server
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 For remote connection, it is assumed that the OptiSLang server process is already running
 on remote (or local) host. In that case, the host and port must be specified and parameters
 related to the execution of the new optiSLang server are ignored.:
@@ -171,6 +173,7 @@ related to the execution of the new optiSLang server are ignored.:
     host = "127.0.0.1"
     port = 5310
     osl = Optislang(host=host, port=port)
+    osl.shutdown()
 
 Basic usage
 ~~~~~~~~~~~
@@ -181,7 +184,7 @@ Basic usage
     osl = Optislang()
     file_path = r"C:\Users\Username\my_scripts\myscript.py"
     osl.run_python_file(path=script_path)
-    osl.save_as("MyNewProject.opf")
+    osl.save_copy("MyNewProject.opf")
     osl.shutdown()
 
 License and acknowledgments
