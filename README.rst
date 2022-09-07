@@ -37,7 +37,7 @@ The PyOptiSLang project is a python wrapper for Ansys optiSLang applicattion. It
 access to OptiSLang to be able to communicate with OptiSLang process directly from python. 
 The latest ansys-optislang-core package supports:
 
-- Remote connections to OptiSLang via gRPC.
+- Remote connections to OptiSLang via TCP/IP.
 - Basic server commands, queries and running of python scripts.
 
 Documentation and issues
@@ -134,8 +134,8 @@ For example, on Linux with Python 3.7, unzip it and install it with the followin
 
 .. code:: bash
 
-    unzip PyMAPDL-v0.62.dev1-wheelhouse-Linux-3.7.zip wheelhouse
-    pip install ansys-mapdl-core -f wheelhouse --no-index --upgrade --ignore-installed
+    unzip PyOptiSLang-v0.1.0-wheelhouse-Linux-3.7.zip wheelhouse
+    pip install ansys-optislang-core -f wheelhouse --no-index --upgrade --ignore-installed
 
 If you're on Windows with Python 3.9, unzip to a wheelhouse directory and install using the same 
 command as above.
@@ -143,7 +143,7 @@ command as above.
 Dependencies
 --------------
 Local licensed copy or remote instance of Optislang needs to be installed. The first supported 
-supported version is XXXX.
+version is 2023R1.
 
 Getting started
 ---------------
@@ -179,10 +179,10 @@ Basic usage
 
     from ansys.optislang.core import Optislang
     osl = Optislang()
-    script_path = r"C:\Users\Username\my_scripts\myscript.py"
-    osl.run_python_script(path=script_path)
+    file_path = r"C:\Users\Username\my_scripts\myscript.py"
+    osl.run_python_file(path=script_path)
     osl.save_as("MyNewProject.opf")
-    osl.terminate()
+    osl.shutdown()
 
 License and acknowledgments
 ---------------------------
