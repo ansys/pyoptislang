@@ -1434,8 +1434,6 @@ class TcpOslServer(OslServer):
 
         Parameters
         ----------
-        desired_status : str
-            The project status to wait for.
         timeout : Union[float, None], optional
             Timeout in seconds to wait on optiSlang to finish the project run. Must be greater
             than zero or ``None``. The function will raise a timeout exception if the timeout
