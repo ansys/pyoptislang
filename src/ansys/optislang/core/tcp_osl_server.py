@@ -1449,6 +1449,9 @@ class TcpOslServer(OslServer):
         while True:
             remain_time = _get_current_timeout(timeout, start_time)
             status = self.get_project_status()
+
+            self._logger.debug(f"Current project status: {status}")
+
             if status == "FINISHED" or status == "STOPPED" or status == "ABORTED":
                 return
 
