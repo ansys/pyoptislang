@@ -1129,7 +1129,7 @@ class TcpOslServer(OslServer):
         self._send_command(commands.start(self.__password))
 
         if wait_for_finish:
-            self._wait_for_finish("FINISHED", _get_current_timeout(self.__timeout, start_time))
+            self._wait_for_finish(_get_current_timeout(self.__timeout, start_time))
 
     def stop(self, wait_for_finish: bool = True) -> None:
         """Stop project execution.
@@ -1153,11 +1153,21 @@ class TcpOslServer(OslServer):
         """
         start_time = time.time()
         status = self.get_project_status()
-        if status not in ["FINISHED", "STOPPED"]:
+
+        not_stopped_states = [
+            "IDLE",
+            "FINISHED",
+            "STOP_REQUESTED",
+            "STOPPED",
+            "ABORT_REQUESTED",
+            "ABORTED",
+        ]
+
+        if status not in not_stopped_states:
             self._send_command(commands.stop(self.__password))
 
             if wait_for_finish:
-                self._wait_for_finish("STOPPED", _get_current_timeout(self.__timeout, start_time))
+                self._wait_for_finish(_get_current_timeout(self.__timeout, start_time))
 
     def stop_gently(self, wait_for_finish: bool = True) -> None:
         """Stop project execution after the current design is finished.
@@ -1181,11 +1191,14 @@ class TcpOslServer(OslServer):
         """
         start_time = time.time()
         status = self.get_project_status()
-        if status not in ["FINISHED", "STOPPED"]:
+
+        not_gently_stopped_states = ["IDLE", "FINISHED", "STOPPED", "ABORT_REQUESTED", "ABORTED"]
+
+        if status not in not_gently_stopped_states:
             self._send_command(commands.stop_gently(self.__password))
 
             if wait_for_finish:
-                self._wait_for_finish("STOPPED", _get_current_timeout(self.__timeout, start_time))
+                self._wait_for_finish(_get_current_timeout(self.__timeout, start_time))
 
     def _unregister_listener(self, uuid: str) -> None:
         """Unregister a listener.
@@ -1416,13 +1429,11 @@ class TcpOslServer(OslServer):
                 message = "Command error: " + str(response)
             raise OslCommandError(message)
 
-    def _wait_for_finish(self, desired_status: str, timeout: Union[float, None]) -> None:
+    def _wait_for_finish(self, timeout: Union[float, None]) -> None:
         """Wait on optiSLang to finish the project run.
 
         Parameters
         ----------
-        desired_status : str
-            The project status to wait for.
         timeout : Union[float, None], optional
             Timeout in seconds to wait on optiSlang to finish the project run. Must be greater
             than zero or ``None``. The function will raise a timeout exception if the timeout
@@ -1438,7 +1449,10 @@ class TcpOslServer(OslServer):
         while True:
             remain_time = _get_current_timeout(timeout, start_time)
             status = self.get_project_status()
-            if status == desired_status:
+
+            self._logger.debug(f"Current project status: {status}")
+
+            if status == "FINISHED" or status == "STOPPED" or status == "ABORTED":
                 return
 
             self._logger.debug("Waiting for project run to finish...")
