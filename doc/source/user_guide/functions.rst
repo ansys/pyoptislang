@@ -1,6 +1,6 @@
 .. _ref_functions:
 
-Run, save and get project info
+Basic usage
 ------------------------------
 In order to start project, use :func:`start <ansys.optislang.core.optislang.Optislang.start>`
 (example :ref:`ref_simple_calculator` will be used):

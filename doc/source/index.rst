@@ -26,8 +26,11 @@ effort to facilitate the use of Ansys technologies directly from
 Python. 
 PyOptiSLang implements a client-server architecture. It uses TCP/IP technology to launch or connect 
 with a running optiSLang process as a server. However, you only need to interact with the Python 
-interface. You can use PyOptiSLang to programmatically create, interact with, and control 
+interface. 
+
+You can use PyOptiSLang to programmatically create, interact with, and control 
 an optiSLang project, create customizable scripts that will speed-up and automate simulations. 
+
 PyOptiSLang  lets you use optiSLang within a Python environment of your choice 
 in conjunction with other PyAnsys libraries and external Python libraries.
 
@@ -36,7 +39,7 @@ Features
 Package ``ansys-optislang-core`` provides:
    - Launching of optiSLang locally or remote connection to optiSLang. For more information, 
      see :ref:`ref_launch`.
-   - Basic server commands and queries to get information about projects and its status. For more 
+   - Basic commands (e.g., open, save and run project) and queries to obtain information about project and its status. For more 
      information, see :ref:`ref_functions`.
    - Running of python scripts based on Ansys optiSLang Python API.  For more infornmation, 
      see :ref:`ref_run_python`.
