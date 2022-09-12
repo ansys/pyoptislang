@@ -16,9 +16,9 @@ More details in python script.
 from ansys.optislang.core import Optislang
 import ansys.optislang.core.examples as examples
 
-#########################################################
-# Create ``Optislang()`` instance.
-#########################################################
+#################################################################################
+# Create :class:`Optislang <ansys.optislang.core.optislang.Optislang>` instance.
+#################################################################################
 osl = Optislang()
 paths = examples.get_files("simple_calculator")
 

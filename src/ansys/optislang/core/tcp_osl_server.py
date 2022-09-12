@@ -1211,7 +1211,7 @@ class TcpOslServer(OslServer):
 
         Parameters
         ----------
-        ini_timeout : Union[float], optional
+        ini_timeout : float, optional
             Time in seconds to listen to the optiSLang server port. If the port is not listened
             for specified time, the optiSLang server is not started and RuntimeError is raised.
 
