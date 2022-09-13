@@ -18,19 +18,13 @@ PyOptiSLang library.
 
 PyOptiSLang Basic Overview
 --------------------------
+The instance of the :class:`Optislang <ansys.optislang.core.Optislang>` class 
+within the ``ansys-optislang-core`` library can be used to control and query the optiSLang project.
 
-The :class:`Optislang() <ansys.optislang.core.Optislang>` class
-within the ``ansys-optislang-core`` library creates an instance of
-:class:`Optislang <ansys.optislang.core.optislang.Optislang>` in the background and sends
-commands to that service.  Errors and warnings are processed
-Pythonically letting the user develop a script real-time without
-worrying about if it will function correctly when deployed in batch
-mode.
-
-OptiSLang can be started from python using
+OptiSLang can be started from Python using
 :func:`Optislang() <ansys.optislang.core.Optislang>`. This starts
-optiSLang in a temporary directory by default.  You can change project directory to
-your current working directory and file name with:
+optiSLang in a temporary directory by default. Path to the project file can be specified 
+by the ``project_path`` parameter of the :func:`Optislang() <ansys.optislang.core.Optislang>` as follows:
 
 .. code:: python
 
@@ -42,8 +36,13 @@ your current working directory and file name with:
     osl = Optislang(project_path = os.path.join(path, file_name))
     osl.shutdown()
 
-If we wanted to open existing project and run it, we would start optiSLang with 
-parameter ``project_path`` referencing to path of existing project and use function :func:`start`.
+
+If the project file exists, it is opened; otherwise, a new project file is created on the specified path. 
+Please note that the :func:`shutdown() <ansys.optislang.core.Optislang.shutdown>` function should be executed 
+when the :class:`Optislang <ansys.optislang.core.Optislang>` instance is no more needed.
+
+The :class:`Optislang <ansys.optislang.core.Optislang>` class provides several functions which enable to control or query the project. 
+The following example shows how to open an existing project and run it using the :func:`start() <ansys.optislang.core.Optislang.start>` function.
 
 .. code:: python
 
@@ -55,8 +54,11 @@ parameter ``project_path`` referencing to path of existing project and use funct
     osl.start()
     osl.shutdown()
 
-When optiSLang is active, you can send individual python commands to it as a genuine a Python class 
-via :func:`run_python_commands <ansys.optislang.core.optislang.Optislang.run_python_commands>`.
-Executing commands from optiSLang Python API is currently the only option how to create and edit 
-new nodes, parameters etc. These functionalities will be added in future versions. For more 
-information, see :ref:`ref_run_python`.
+Currently, the functionality provided by the ``ansys-optislang-core`` library is limited. 
+However, this can be overcome using the :func:`run_python_script() <ansys.optislang.core.Optislang.run_python_script>` or
+:func:`run_python_file() <ansys.optislang.core.Optislang.run_python_file>` functions of 
+the :class:`Optislang <ansys.optislang.core.Optislang>` class. 
+Both functions provide the ability to execute commands of the ``optiSLang Python API``. 
+Executing commands from ``optiSLang Python API`` is currently the only possibility to create and edit 
+new nodes, parameters etc. These features will be added in the future versions of the ``ansys-optislang-core`` library. 
+For more information, see :ref:`ref_run_python`.
