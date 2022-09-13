@@ -42,87 +42,39 @@ The latest ansys-optislang-core package supports:
 
 Documentation and issues
 ------------------------
-See the latest release of the `Documentation <https://mapdldocs.pyansys.com>`_ for more detailed 
+See the latest release of the `Documentation <https://optislangdocs.pyansys.com>`_ for more detailed 
 information on PyOptiSLang. Issues, bug reports, request for new features or other questions can 
 be addressed to `PyOptiSLang Issues <https://github.com/pyansys/pyoptislang/issues>`_.
 
 Installation
 ------------
-The ``ansys-optislang-core`` package currently supports python 3.7 through 3.10 on Windows 
-and Linux. Two installation modes are provided: user and developer.
+The ``ansys-optislang-core`` package currently supports python 3.7 through 3.10 on Windows and Linux.
+Install the latest release from `PyPi
+<https://pypi.org/project/ansys-optislang-core/>`_ with:
 
-For users
-~~~~~~~~~
+.. code::
 
-In order to install PyOptiSLang core, make sure you
-have the required build system tool. To do so, run:
+   pip install ansys-optislang-core
 
-.. code:: bash
+Alternatively, install the latest from `PyOptiSLang GitHub
+<https://github.com/pyansys/pyoptislang/issues>`_ via:
 
-    python -m pip install -U pip flit
+.. code::
 
-Then, you can simply execute command below to install latest release:
-
-.. code:: bash
-
-    python -m pip install ansys-optislang-core
-
-Alternatively, install the latest release from PyOptiSLang GitHub by executing:
-
-.. code:: bash
-
-    python -m pip install git+https://github.com/pyansys/pyoptislang.git
-
-For developers
-~~~~~~~~~~~~~~
-
-Installing PyOptiSLang core in developer mode allows you to modify the source and enhance it. 
-Before contributing to the project, please refer to the `PyAnsys Developer's guide 
-<https://dev.docs.pyansys.com/>`_. 
-
-1. Start by cloning this repository:
-
-    .. code:: bash
-
-        git clone https://github.com/pyansys/pyoptislang
-
-2. Create a fresh-clean Python environment and activate it:
-
-    .. code:: bash
-
-        # Create a virtual environment
-        python -m venv .venv
-
-        # Activate it in a POSIX system
-        source .venv/bin/activate
-
-        # Activate it in Windows CMD environment
-        .venv\Scripts\activate.bat
-
-        # Activate it in Windows Powershell
-        .venv\Scripts\Activate.ps1
-
-3. Make sure you have the latest required build system and doc, testing, and CI tools:
-
-    .. code:: bash
-
-        python -m pip install -U pip flit tox
-        python -m pip install -r requirements/requirements_build.txt
-        python -m pip install -r requirements/requirements_doc.txt
-        python -m pip install -r requirements/requirements_tests.txt
+   pip install git+https://github.com/pyansys/pyoptislang.git
 
 
-4. Install the project in editable mode:
+For a local "development" version, install with:
 
-    .. code:: bash
-    
-        python -m pip install --editable ansys-optislang-core
-    
-    1. Finally, verify your development installation by running:
+.. code::
 
-    .. code:: bash
-        
-        tox
+   git clone https://github.com/pyansys/pyoptislang.git
+   cd pyoptislang
+   pip install -e .
+
+This will allow you to install the PyOptiSLang ``ansys-optislang-core`` module
+and modify it locally and have the changes reflected in your setup
+after restarting the Python kernel.
 
 Offline installation
 ~~~~~~~~~~~~~~~~~~~~

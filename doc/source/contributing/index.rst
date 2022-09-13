@@ -15,49 +15,12 @@ The following contribution information is specific to PyOptiSLang.
 Cloning the PyOptiSLang Repository and Installation
 ---------------------------------------------------
 
-1. Start by cloning this repository:
+.. code::
 
-    .. code:: bash
-
-        git clone https://github.com/pyansys/pyoptislang
-
-2. Create a fresh-clean Python environment and activate it:
-
-    .. code:: bash
-
-        # Create a virtual environment
-        python -m venv .venv
-
-        # Activate it in a POSIX system
-        source .venv/bin/activate
-
-        # Activate it in Windows CMD environment
-        .venv\Scripts\activate.bat
-
-        # Activate it in Windows Powershell
-        .venv\Scripts\Activate.ps1
-
-3. Make sure you have the latest required build system and doc, testing, and CI tools:
-
-    .. code:: bash
-
-        python -m pip install -U pip flit tox
-        python -m pip install -r requirements/requirements_build.txt
-        python -m pip install -r requirements/requirements_doc.txt
-        python -m pip install -r requirements/requirements_tests.txt
-
-
-4. Install the project in editable mode:
-
-    .. code:: bash
-    
-        python -m pip install --editable ansys-optislang-core
-    
-    1. Finally, verify your development installation by running:
-
-    .. code:: bash
-        
-        tox
+    git clone https://github.com/pyansys/pyoptislang
+    cd pyoptislang
+    pip install pip -U
+    pip install -e .
 
 
 Posting Issues

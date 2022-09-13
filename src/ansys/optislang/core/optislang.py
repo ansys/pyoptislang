@@ -38,7 +38,7 @@ class Optislang:
     no_save : bool, optional
         Determines whether not to save the specified project after all other actions are completed.
         It is ignored when the host and port parameters are specified. Defaults to ``False``.
-    ini_timeout : Union[int, float], optional
+    ini_timeout : float, optional
         Time in seconds to connect to the optiSLang server. Defaults to 20 s.
     name : str, optional
         Identifier of the optiSLang instance.

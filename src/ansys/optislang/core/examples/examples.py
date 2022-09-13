@@ -66,7 +66,7 @@ example_files = {
     "python_node": None,
     "optimizer_settings": None,
     "sensitivity_settings": None,
-    "simple_calculator": None,
+    "simple_calculator": os.path.join(module_path, "00_run_script", "files", "calculator.opf"),
 }
 
 # dictionary of scripts to be run

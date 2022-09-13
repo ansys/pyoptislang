@@ -4,15 +4,10 @@
 API Reference
 =============
 This section gives an overview of the API of several public PyOptiSLang
-classes, functions, and attributes.
-
-These methods may include some optiSLang commands but are generally
-specific to PyOptiSLang methods and classes (i.e. methods that
-extend existing optiSLang methods in a pythonic manner).
+classes, functions, and attributes. Use the search feature or click links to view API documentation.
 
 .. toctree::
-   :maxdepth: 2
-   :hidden:
+   :maxdepth: 1
 
    optislang
    logging
