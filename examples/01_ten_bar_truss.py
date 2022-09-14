@@ -5,7 +5,7 @@ Ten bar truss
 -------------
 
 Create ARSM ten_bar_truss flow in batch (using ``arsm_ten_bar_truss.py``),
-modify this flow (using ``ten_bar_modify_parameters`` and ``ten_bar_truss_lc2``),
+modify this flow (using ``ten_bar_modify_parameters.py`` and ``ten_bar_truss_lc2.py``),
 run this project (and optionally save_copy). More details in individual python scripts and
 ten bar truss example in optiSLang tutorial section.
 """

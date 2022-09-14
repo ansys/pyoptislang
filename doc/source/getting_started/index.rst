@@ -1,8 +1,8 @@
 Getting Started
 ===============
 In order to run PyOptiSLang, user must have access to licensed copy of optiSLang. The first 
-supported supported version of optiSLang is 2023R1. For more information about OptiSLang, visit the 
-`OptiSLang <https://www.ansys.com/products/connect/ansys-optislang>`_ page on the Ansys website.
+supported supported version of optiSLang is 2023R1. For more information about optiSLang, visit the 
+`optiSLang <https://www.ansys.com/products/connect/ansys-optislang>`_ page on the Ansys website.
 
 ************
 Installation
@@ -19,7 +19,7 @@ Install the latest release from `PyPi
    pip install ansys-optislang-core
 
 Alternatively, install the latest from `PyOptiSLang GitHub
-<https://github.com/pyansys/pyoptislang/issues>`_ via:
+<https://github.com/pyansys/pyoptislang/releases>`_ via:
 
 .. code::
 
