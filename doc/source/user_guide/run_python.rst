@@ -16,7 +16,7 @@ we would call :
 
 .. note:: 
     Be aware that each time 
-    :func:`run_python_script <ansys.optislang.core.optislang.Optislang.run_python_script>` 
+    :func:`run_python_script() <ansys.optislang.core.optislang.Optislang.run_python_script>` 
     is called, new python console is created inside optiSLang, so variables from previous calls 
     won't be available.
 

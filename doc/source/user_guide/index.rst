@@ -59,8 +59,8 @@ and run it using the :func:`start() <ansys.optislang.core.optislang.Optislang.st
 
 Currently, the functionality provided by the ``ansys-optislang-core`` library is limited. 
 However, this can be overcome using the 
-:func:`run_python_script <ansys.optislang.core.optislang.Optislang.run_python_script>` or
-:func:`run_python_file <ansys.optislang.core.optislang.Optislang.run_python_file>` functions of 
+:func:`run_python_script() <ansys.optislang.core.optislang.Optislang.run_python_script>` or
+:func:`run_python_file() <ansys.optislang.core.optislang.Optislang.run_python_file>` functions of 
 the :class:`Optislang <ansys.optislang.core.optislang.Optislang>` class. 
 Both functions provide the ability to execute commands of the ``optiSLang Python API``. 
 Executing commands from ``optiSLang Python API`` is currently the only possibility to create and edit 
