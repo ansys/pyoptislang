@@ -16,7 +16,7 @@ In order to start project, use :func:`start <ansys.optislang.core.optislang.Opti
     osl.start()
 
 In order to save current project, use 
-:func:`save_copy <ansys.optislang.core.optislang.Optislang.save_copy>`:
+:func:`save_copy() <ansys.optislang.core.optislang.Optislang.save_copy>`:
 
 .. code:: python
 
