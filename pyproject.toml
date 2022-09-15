@@ -70,3 +70,8 @@ source = ["ansys.optislang"]
 
 [tool.coverage.report]
 show_missing = true
+
+[tool.pytest.ini_options]
+markers = [
+    "local_osl: local optiSLang process is used",
+]
