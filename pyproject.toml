@@ -53,7 +53,10 @@ build = [
 name = "ansys.optislang.core"
 
 [project.urls]
+Homepage = "https://optislang.docs.pyansys.com"
+Documentation = "https://optislang.docs.pyansys.com"
 Source = "https://github.com/pyansys/pyoptislang"
+Tracker = "https://github.com/pyansys/pyoptislang/issues"
 
 [tool.black]
 line-length = 100
