@@ -159,3 +159,9 @@ cython_debug/
 .vscode/
 
 # End of https://www.toptal.com/developers/gitignore/api/python
+
+# Ignore API autosummary
+doc/source/api/_autosummary/
+
+# Ignore rendered gallery of examples
+doc/source/examples/gallery_examples/
