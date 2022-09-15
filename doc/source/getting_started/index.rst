@@ -1,14 +1,14 @@
-Getting Started
+Getting started
 ===============
 In order to run PyOptiSLang, user must have access to licensed copy of optiSLang. The first 
-supported supported version of optiSLang is 2023R1. For more information about optiSLang, visit the 
+supported version of optiSLang is 2023R1. For more information about optiSLang, visit the 
 `optiSLang <https://www.ansys.com/products/connect/ansys-optislang>`_ page on the Ansys website.
 
 ************
 Installation
 ************
 
-Python Module
+Python module
 ~~~~~~~~~~~~~
 The ``ansys-optislang-core`` package currently supports python 3.7 through 3.10 on Windows and Linux.
 Install the latest release from `PyPi
@@ -34,7 +34,7 @@ For a local "development" version, install with:
    cd pyoptislang
    pip install -e .
 
-This will allow you to install the PyOptiSLang ``ansys-optislang-core`` module
+This allows you to install the PyOptiSLang ``ansys-optislang-core`` module
 and modify it locally and have the changes reflected in your setup
 after restarting the Python kernel.
 
@@ -52,13 +52,13 @@ For example, on Linux with Python 3.7, unzip it and install it with the followin
     pip install ansys-optislang-core -f wheelhouse --no-index --upgrade --ignore-installed
 
 If you're on Windows with Python 3.9, unzip to a wheelhouse directory and install using the same 
-command as above.
+command as preceding.
 
 Consider installing using a `virtual environment
 <https://docs.python.org/3/library/venv.html>`_.
 
 
-Ansys Software Requirements
+Ansys software requirements
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Ansys optiSLang version >= 2023R1.
 
@@ -73,6 +73,6 @@ Verify installation
     >>> print(osl)
     >>> osl.shutdown()
 
-If you see a response from the server, congratulations!  You're ready
-to get started using OptiSLang as a service.  For details regarding the
+If you see a response from the server, congratulations, you're ready
+to get started using OptiSLang as a service. For details regarding the
 PyOptiSLang interface, see :ref:`ref_user_guide`.

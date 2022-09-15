@@ -3,8 +3,8 @@
 Executing commands from optiSLang Python API
 -----------------------------------------------
 When optiSLang is active, you can send individual python commands to it as a genuine a
-Python class.  For example, if we wanted to get general information about sensitivity actor, 
-we would call :
+Python class. For example, if you want to get general information about sensitivity actor, 
+you would call:
 
 .. code:: python
 
@@ -20,9 +20,10 @@ we would call :
     is called, new python console is created inside optiSLang, so variables from previous calls 
     won't be available.
 
-For longer scripts, instead of sending string to optiSLang as in the above example, we can instead 
-send path to python script and it's converted to string automatically, example below crates 
-workflow with 2 variable actors and calculator (see example :ref:`ref_simple_calculator`):
+For longer scripts, instead of sending string to optiSLang as in the preceding
+example, it is possible to send path to python script and it's converted to
+string automatically, example below crates workflow with 2 variable actors and
+calculator (see example :ref:`ref_simple_calculator`):
 
 .. code:: python
 

@@ -18,7 +18,7 @@ Common issues
 
 Timeout error when launching optiSLang
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Default timeout for launching optiSLang is 20s. This can be increased by parameter ``ini_timeout``
+Default timeout for launching optiSLang is 20 seconds. This can be increased by parameter ``ini_timeout``
 when launching optiSLang:
 
 .. code:: python

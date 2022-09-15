@@ -1,4 +1,4 @@
-PyOptiSLang Documentation |version|
+PyOptiSLang documentation |version|
 ===================================
 
 .. toctree::
@@ -29,7 +29,7 @@ and the running optiSLang process (server) is based on the plain TCP/IP technolo
 However, you only need to interact with the Python interface. 
 
 You can use PyOptiSLang to programmatically create, interact with, and control 
-an optiSLang project, create customizable scripts that will speed-up and automate simulations. 
+an optiSLang project, create customizable scripts that can speed-up and automate simulations. 
 
 PyOptiSLang  lets you use optiSLang within a Python environment of your choice 
 in conjunction with other PyAnsys libraries and external Python libraries.
@@ -39,7 +39,7 @@ Features
 Package ``ansys-optislang-core`` provides:
    - Ability to launch optiSLang locally or connect to the remote optiSLang server. For more information, 
      see :ref:`ref_launch`.
-   - Basic commands (e.g., open, save and run project) and queries to obtain information about project. For more 
+   - Basic commands (for example open, save and run project) and queries to obtain information about project. For more 
      information, see :ref:`ref_functions`.
    - Executing Python commands from the optiSLang Python API. For more information, 
      see :ref:`ref_run_python`.
@@ -54,7 +54,7 @@ issues to submit questions, report bugs, and request new features. To reach the 
 team, email pyansys.support@ansys.com.
 
 
-Project Index
+Project index
 *************
 
 * :ref:`genindex`
