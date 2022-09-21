@@ -263,7 +263,7 @@ jobs:
         if: github.ref == 'refs/heads/main'
         uses: JamesIves/github-pages-deploy-action@v4.4.0
         with:
-          repository-name: pyansys/pygeometry-dev-docs
+          repository-name: pyansys/pyoptislang-dev-docs
           token: ${{ steps.get_workflow_token.outputs.token }}
           branch: gh-pages
           folder: HTML-Documentation
@@ -274,7 +274,7 @@ jobs:
         if: github.event_name == 'push' && contains(github.ref, 'refs/tags')
         uses: JamesIves/github-pages-deploy-action@v4
         with:
-          repository-name: pyansys/pygeometry-docs
+          repository-name: pyansys/pyoptislang-docs
           token: ${{ steps.get_workflow_token.outputs.token }}
           branch: gh-pages
           folder: HTML-Documentation
