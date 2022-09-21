@@ -9,7 +9,7 @@ in the *PyAnsys Developer's Guide*. Ensure that you are thoroughly familiar
 with it and all `Guidelines and Best Practices
 <https://dev.docs.pyansys.com/guidelines/index.html>`_ before attempting to
 contribute to PyOptiSLang.
- 
+
 The following contribution information is specific to PyOptiSLang.
 
 Cloning the PyOptiSLang repository and installation
@@ -39,7 +39,7 @@ To reach the project support team, email `pyansys.support@ansys.com <pyansys.sup
 Viewing PyOptiSLang documentation
 ---------------------------------
 Documentation for the latest stable release of PyOptiSLang is hosted at
-`PyOptiSLang Documentation <https://optislangdocs.pyansys.com>`_.
+`PyOptiSLang Documentation <https://optislang.docs.pyansys.com>`_.
 
 Documentation for the latest development version, which tracks the
 ``main`` branch, is hosted at  `Development PyOptiSLang Documentation <https://dev.optislangdocs.pyansys.com/>`_.
