@@ -1,0 +1,7 @@
+Ansys
+ansys
+optiSLang
+OptiSLang
+Optislang
+optislang
+PyOptiSLang

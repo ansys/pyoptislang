@@ -3,7 +3,7 @@
 Initial setup and launching optiSLang
 -------------------------------------
 In order to run, ``ansys.optislang.core`` needs to know the location of the optiSLang.
-Most of the time this can be automatically determined, but non-standard installs will need 
+Most of the time this can be automatically determined, but non-standard installs needs 
 to provide the location of optiSLang. You can start optiSLang by running:
 
 .. code:: python
@@ -22,7 +22,7 @@ List of all automatically detected, supported executables of optiSLang can be ob
     print(utils.find_all_osl_exec())
 
 By default, the newest version is used when launching optiSLang. In order to launch specific version
-from list above, launch :class:`Optislang <ansys.optislang.core.optislang.Optislang>` with parameter 
+from list preceding, launch :class:`Optislang <ansys.optislang.core.optislang.Optislang>` with parameter 
 ``executable`` containing path to desired version:
 
 .. code:: python
