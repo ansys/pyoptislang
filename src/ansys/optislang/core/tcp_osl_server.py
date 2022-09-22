@@ -1297,7 +1297,10 @@ class TcpOslServer(OslServer):
         self.__listener_uid = str(uuid.uuid4())
 
         try:
-            self.__listener_socket = self.__init_listener(self.__class__._PRIVATE_PORTS_RANGE)
+            self.__listener_socket = self.__init_listener(
+                self.__class__._LOCALHOST,
+                self.__class__._PRIVATE_PORTS_RANGE,
+            )
             if self.__listener_socket is None:
                 raise RuntimeError("Cannot start listener of optiSLang server port.")
 
@@ -1368,7 +1371,10 @@ class TcpOslServer(OslServer):
         """
         self.__listener_socket = None
 
-        self.__listener_socket = self.__init_listener(self.__class__._PRIVATE_PORTS_RANGE)
+        self.__listener_socket = self.__init_listener(
+            socket.gethostbyname(socket.gethostname()),
+            self.__class__._PRIVATE_PORTS_RANGE,
+        )
         if self.__listener_socket is None:
             raise RuntimeError("Cannot start listener of optiSLang server port.")
 
@@ -1386,11 +1392,13 @@ class TcpOslServer(OslServer):
 
         self.__create_refresh_thread()
 
-    def __init_listener(self, port_range: Tuple[int, int]) -> socket.socket:
+    def __init_listener(self, host: str, port_range: Tuple[int, int]) -> socket.socket:
         """Initialize listener.
 
         Parameters
         ----------
+        host: str
+            A string representation of an IPv4/v6 address or domain name.
         port_range : Tuple[int, int]
             Defines the port range for port listener. Defaults to ``None``.
 
@@ -1403,7 +1411,7 @@ class TcpOslServer(OslServer):
         for port in range(port_range[0], port_range[1] + 1):
             try:
                 listener_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                listener_socket.bind(("0.0.0.0", port))
+                listener_socket.bind((host, port))
                 listener_socket.listen(5)
                 self._logger.debug("Listening on port: %d", port)
                 break
