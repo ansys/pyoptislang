@@ -54,6 +54,8 @@ class OslCustomAdapter(logging.LoggerAdapter):
         self.logger = logger
         if extra:
             self.extra = weakref.proxy(extra)
+        else:
+            self.extra = None
 
         self.file_handler = logger.file_handler
         self.std_out_handler = logger.std_out_handler
@@ -63,7 +65,10 @@ class OslCustomAdapter(logging.LoggerAdapter):
         kwargs["extra"] = {}
         # This are the extra parameters sent to log
         # here self.extra is the argument pass to the log records.
-        kwargs["extra"]["instance_name"] = self.extra.name
+        try:
+            kwargs["extra"]["instance_name"] = self.extra.name
+        except ReferenceError:
+            kwargs["extra"]["instance_name"] = "Undefined"
         return msg, kwargs
 
 

@@ -1,7 +1,7 @@
 .. _ref_user_guide:
 
 ==========
-User Guide
+User guide
 ==========
 This guide provides a general overview of the basics and usage of the
 PyOptiSLang library.
@@ -16,7 +16,7 @@ PyOptiSLang library.
    troubleshooting
 
 
-PyOptiSLang Basic Overview
+PyOptiSLang basic overview
 --------------------------
 The instance of the :class:`Optislang <ansys.optislang.core.optislang.Optislang>` class 
 within the ``ansys-optislang-core`` library can be used to control and query the optiSLang project.
@@ -57,12 +57,12 @@ and run it using the :func:`start() <ansys.optislang.core.optislang.Optislang.st
     osl.start()
     osl.shutdown()
 
-Currently, the functionality provided by the ``ansys-optislang-core`` library is limited. 
+Currently, the capabilities provided by the ``ansys-optislang-core`` library are limited. 
 However, this can be overcome using the 
 :func:`run_python_script() <ansys.optislang.core.optislang.Optislang.run_python_script>` or
 :func:`run_python_file() <ansys.optislang.core.optislang.Optislang.run_python_file>` functions of 
 the :class:`Optislang <ansys.optislang.core.optislang.Optislang>` class. 
 Both functions provide the ability to execute commands of the ``optiSLang Python API``. 
 Executing commands from ``optiSLang Python API`` is currently the only possibility to create and edit 
-new nodes, parameters etc. These features will be added in the future versions of the ``ansys-optislang-core`` library. 
+new nodes, parameters etc. These features may be added in the future versions of the ``ansys-optislang-core`` library. 
 For more information, see :ref:`ref_run_python`.

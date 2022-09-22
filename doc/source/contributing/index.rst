@@ -9,10 +9,10 @@ in the *PyAnsys Developer's Guide*. Ensure that you are thoroughly familiar
 with it and all `Guidelines and Best Practices
 <https://dev.docs.pyansys.com/guidelines/index.html>`_ before attempting to
 contribute to PyOptiSLang.
- 
+
 The following contribution information is specific to PyOptiSLang.
 
-Cloning the PyOptiSLang Repository and Installation
+Cloning the PyOptiSLang repository and installation
 ---------------------------------------------------
 
 .. code::
@@ -23,11 +23,11 @@ Cloning the PyOptiSLang Repository and Installation
     pip install -e .
 
 
-Posting Issues
+Posting issues
 --------------
 Use the `PyOptiSLang Issues <https://github.com/pyansys/pyoptislang/issues>`_
-page to submit questions, report bugs, and request new features. When possible, we
-recommend that you use these issue templates:
+page to submit questions, report bugs, and request new features. When possible, it
+is recommended that you use these issue templates:
 
 * Bug report template
 * Feature request template
@@ -36,17 +36,17 @@ If your issue does not fit into one of these categories, create your own issue.
 
 To reach the project support team, email `pyansys.support@ansys.com <pyansys.support@ansys.com>`_.
 
-Viewing PyOptiSLang Documentation
+Viewing PyOptiSLang documentation
 ---------------------------------
 Documentation for the latest stable release of PyOptiSLang is hosted at
-`PyOptiSLang Documentation <https://optislangdocs.pyansys.com>`_.
+`PyOptiSLang Documentation <https://optislang.docs.pyansys.com>`_.
 
 Documentation for the latest development version, which tracks the
 ``main`` branch, is hosted at  `Development PyOptiSLang Documentation <https://dev.optislangdocs.pyansys.com/>`_.
 This version is automatically kept up to date via GitHub actions.
 
 
-Code Style
+Code style
 ----------
 PyOptiSLang follows PEP8 standard as outlined in the `PyAnsys Development Guide
 <https://dev.docs.pyansys.com>`_ and implements style checking using
