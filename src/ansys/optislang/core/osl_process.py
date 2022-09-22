@@ -71,7 +71,11 @@ class OslServerProcess:
     listener_id : str, optional
         Specific unique ID for the TCP listener. Defaults to ``None``.
     notifications : Iterable[ServerNotification], optional
-        Notifications to be sent to the listener. Defaults to ``None``.
+        Notifications to be sent to the listener. Defaults to "EXECUTION_FINISHED",
+        "NOTHING_PROCESSED", "CHECK_FAILED" and "EXEC_FAILED"
+    shutdown_on_finished: bool, optional
+        Shut down when execution is finished. Defaults to ``True``.
+
     env_vars : Mapping[str, str], optional
         Additional environmental variables (key and value) for the optiSLang server process.
         Defaults to ``None``.
@@ -121,6 +125,7 @@ class OslServerProcess:
         listener: Tuple[str, int] = None,
         listener_id: str = None,
         notifications: Iterable[ServerNotification] = None,
+        shutdown_on_finished: bool = False,
         env_vars: Mapping[str, str] = None,
         logger=None,
         log_process_stdout: bool = True,
@@ -172,6 +177,7 @@ class OslServerProcess:
         self.__listener = listener
         self.__listener_id = listener_id
         self.__notifications = tuple(notifications) if notifications is not None else None
+        self.__shutdown_on_finished = shutdown_on_finished
         self.__env_vars = dict(env_vars) if env_vars is not None else None
         self.__log_process_stdout = log_process_stdout
         self.__log_process_stderr = log_process_stderr
@@ -462,6 +468,8 @@ class OslServerProcess:
             for arg_name, arg_value in self.__additional_args.items():
                 args.append(f"{arg_name}={arg_value}")
 
+        if self.__shutdown_on_finished:
+            args.append("--shutdown-on-finished")
         return args
 
     def __remove_server_info_files(self):
@@ -584,7 +592,6 @@ class OslServerProcess:
             stdout=subprocess.PIPE,
             shell=False,
         )
-
         self._logger.debug("optiSLang server process has started with PID: %d", self.__process.pid)
 
     def __terminate_osl_child_processes(self):
