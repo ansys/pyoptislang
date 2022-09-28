@@ -182,7 +182,7 @@ class TcpClient:
                 f"Connection could not be established to host {host} and port {port}."
             )
 
-        self._logger.info("Connection has been established to host %s and port %d.", host, port)
+        self._logger.debug("Connection has been established to host %s and port %d.", host, port)
 
     def disconnect(self) -> None:
         """Disconnect from the server."""
