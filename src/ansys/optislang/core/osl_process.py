@@ -125,7 +125,7 @@ class OslServerProcess:
         listener: Tuple[str, int] = None,
         listener_id: str = None,
         notifications: Iterable[ServerNotification] = None,
-        shutdown_on_finished: bool = False,
+        shutdown_on_finished: bool = True,
         env_vars: Mapping[str, str] = None,
         logger=None,
         log_process_stdout: bool = True,
