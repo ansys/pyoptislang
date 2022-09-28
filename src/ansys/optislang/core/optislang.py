@@ -437,15 +437,23 @@ class Optislang:
         """
         self.__osl_server.shutdown(force)
 
-    def start(self, wait_for_finish: bool = True) -> None:
+    def start(self, wait_for_started: bool = True, wait_for_finished: bool = True) -> None:
         """Start project execution.
 
         Parameters
         ----------
-        wait_for_finish : bool, optional
+        wait_for_started : bool, optional
+            Determines whether this function call should wait on the optiSlang to start
+            the command execution. I.e. don't continue on next line of python script
+            after command was successfully sent to optiSLang but wait for execution of
+            flow inside optiSLang to start.
+            Defaults to ``True``.
+        wait_for_finished : bool, optional
             Determines whether this function call should wait on the optiSlang to finish
-            the command execution. I.e. don't continue on next line of python script after command
-            was successfully sent to optiSLang but wait for execution of flow inside optiSLang.
+            the command execution. I.e. don't continue on next line of python script
+            after command was successfully sent to optiSLang but wait for execution of
+            flow inside optiSLang to finish.
+            This implicitly interprets wait_for_started as True.
             Defaults to ``True``.
 
         Raises
@@ -457,14 +465,14 @@ class Optislang:
         TimeoutError
             Raised when the timeout float value expires.
         """
-        self.__osl_server.start(wait_for_finish)
+        self.__osl_server.start(wait_for_started, wait_for_finished)
 
-    def stop(self, wait_for_finish: bool = True) -> None:
+    def stop(self, wait_for_finished: bool = True) -> None:
         """Stop project execution.
 
         Parameters
         ----------
-        wait_for_finish : bool, optional
+        wait_for_finished : bool, optional
             Determines whether this function call should wait on the optiSlang to finish
             the command execution. I.e. don't continue on next line of python script after command
             was successfully sent to optiSLang but wait for execution of command inside optiSLang.
@@ -479,14 +487,14 @@ class Optislang:
         TimeoutError
             Raised when the timeout float value expires.
         """
-        self.__osl_server.stop(wait_for_finish)
+        self.__osl_server.stop(wait_for_finished)
 
-    def stop_gently(self, wait_for_finish: bool = True) -> None:
+    def stop_gently(self, wait_for_finished: bool = True) -> None:
         """Stop project execution after the current design is finished.
 
         Parameters
         ----------
-        wait_for_finish : bool, optional
+        wait_for_finished : bool, optional
             Determines whether this function call should wait on the optiSlang to finish
             the command execution. I.e. don't continue on next line of python script after command
             was successfully sent to optiSLang but wait for execution of command inside optiSLang.
@@ -501,4 +509,4 @@ class Optislang:
         TimeoutError
             Raised when the timeout float value expires.
         """
-        self.__osl_server.stop_gently(wait_for_finish)
+        self.__osl_server.stop_gently(wait_for_finished)
