@@ -71,8 +71,7 @@ class OslServerProcess:
     listener_id : str, optional
         Specific unique ID for the TCP listener. Defaults to ``None``.
     notifications : Iterable[ServerNotification], optional
-        Notifications to be sent to the listener. Defaults to "EXECUTION_FINISHED",
-        "NOTHING_PROCESSED", "CHECK_FAILED" and "EXEC_FAILED"
+        Notifications to be sent to the listener. Defaults to ``None``.
     shutdown_on_finished: bool, optional
         Shut down when execution is finished. Defaults to ``True``.
 
