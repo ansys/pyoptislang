@@ -4,6 +4,7 @@ from datetime import datetime
 import json
 import logging
 import os
+from queue import Queue
 import select
 import socket
 import struct
@@ -23,7 +24,7 @@ from ansys.optislang.core.errors import (
     OslCommunicationError,
     ResponseFormatError,
 )
-from ansys.optislang.core.osl_process import OslServerProcess, ServerNotification
+from ansys.optislang.core.osl_process import OslServerProcess
 from ansys.optislang.core.osl_server import OslServer
 
 
@@ -182,7 +183,7 @@ class TcpClient:
                 f"Connection could not be established to host {host} and port {port}."
             )
 
-        self._logger.info("Connection has been established to host %s and port %d.", host, port)
+        self._logger.debug("Connection has been established to host %s and port %d.", host, port)
 
     def disconnect(self) -> None:
         """Disconnect from the server."""
@@ -1121,15 +1122,23 @@ class TcpOslServer(OslServer):
         self.__host = None
         self.__port = None
 
-    def start(self, wait_for_finish: bool = True) -> None:
+    def start(self, wait_for_started: bool = True, wait_for_finished: bool = True) -> None:
         """Start project execution.
 
         Parameters
         ----------
-        wait_for_finish : bool, optional
+        wait_for_started : bool, optional
+            Determines whether this function call should wait on the optiSlang to start
+            the command execution. I.e. don't continue on next line of python script
+            after command was successfully sent to optiSLang but wait for execution of
+            flow inside optiSLang to start.
+            Defaults to ``True``.
+        wait_for_finished : bool, optional
             Determines whether this function call should wait on the optiSlang to finish
-            the command execution. I.e. don't continue on next line of python script after command
-            was successfully sent to optiSLang but wait for execution of flow inside optiSLang.
+            the command execution. I.e. don't continue on next line of python script
+            after command was successfully sent to optiSLang but wait for execution of
+            flow inside optiSLang to finish.
+            This implicitly interprets wait_for_started as True.
             Defaults to ``True``.
 
         Raises
@@ -1141,27 +1150,54 @@ class TcpOslServer(OslServer):
         TimeoutError
             Raised when the timeout float value expires.
         """
-        if wait_for_finish:
-            listener_thread = threading.Thread(
+        self.__cleanup_notifications(self.__listener_socket)
+
+        successfully_started = False
+        successfully_started_queue = Queue()
+        already_running = False
+
+        if self.get_project_status() == "PROCESSING":
+            already_running = True
+
+        if not already_running and (wait_for_started or wait_for_finished):
+            start_listener_thread = threading.Thread(
+                target=self.__wait_for_started,
+                name="PyOptiSLang.OslPortListener",
+                args=(self.__listener_socket, self.__timeout, successfully_started_queue),
+                daemon=True,
+            )
+            start_listener_thread.start()
+            self._logger.debug("Thread for listening push notifications created.")
+
+        if wait_for_finished:
+            stop_listener_thread = threading.Thread(
                 target=self.__wait_for_finish,
                 name="PyOptiSLang.OslPortListener",
                 args=(self.__listener_socket, self.__timeout),
                 daemon=True,
             )
-            listener_thread.start()
+            stop_listener_thread.start()
             self._logger.debug("Thread for listening push notifications created.")
 
-        self._send_command(commands.start(self.__password))
+        if not already_running:
+            self._send_command(commands.start(self.__password))
 
-        if wait_for_finish:
-            listener_thread.join()
+        if not already_running and (wait_for_started or wait_for_finished):
+            self._logger.info(f"Waiting for started")
+            start_listener_thread.join()
+            successfully_started = successfully_started_queue.get()
+            self._logger.info(f"successfully_started: {successfully_started}")
 
-    def stop(self, wait_for_finish: bool = True) -> None:
+        if wait_for_finished and (successfully_started or already_running):
+            self._logger.info(f"Waiting for finished")
+            stop_listener_thread.join()
+
+    def stop(self, wait_for_finished: bool = True) -> None:
         """Stop project execution.
 
         Parameters
         ----------
-        wait_for_finish : bool, optional
+        wait_for_finished : bool, optional
             Determines whether this function call should wait on the optiSlang to finish
             the command execution. I.e. don't continue on next line of python script after command
             was successfully sent to optiSLang but wait for execution of command inside optiSLang.
@@ -1176,6 +1212,8 @@ class TcpOslServer(OslServer):
         TimeoutError
             Raised when the timeout float value expires.
         """
+        self.__cleanup_notifications(self.__listener_socket)
+
         status = self.get_project_status()
 
         stopped_states = [
@@ -1188,7 +1226,7 @@ class TcpOslServer(OslServer):
         ]
 
         if status not in stopped_states:
-            if wait_for_finish:
+            if wait_for_finished:
                 listener_thread = threading.Thread(
                     target=self.__wait_for_finish,
                     name="PyOptiSLang.OslPortListener",
@@ -1200,17 +1238,18 @@ class TcpOslServer(OslServer):
 
             self._send_command(commands.stop(self.__password))
 
-            if wait_for_finish:
+            if wait_for_finished:
+                self._logger.info(f"Waiting for finished")
                 listener_thread.join()
         else:
             self._logger.debug(f"Do not send STOP request, project status is: {status}")
 
-    def stop_gently(self, wait_for_finish: bool = True) -> None:
+    def stop_gently(self, wait_for_finished: bool = True) -> None:
         """Stop project execution after the current design is finished.
 
         Parameters
         ----------
-        wait_for_finish : bool, optional
+        wait_for_finished : bool, optional
             Determines whether this function call should wait on the optiSlang to finish
             the command execution. I.e. don't continue on next line of python script after command
             was successfully sent to optiSLang but wait for execution of command inside optiSLang.
@@ -1225,6 +1264,8 @@ class TcpOslServer(OslServer):
         TimeoutError
             Raised when the timeout float value expires.
         """
+        self.__cleanup_notifications(self.__listener_socket)
+
         status = self.get_project_status()
 
         stopped_states = [
@@ -1236,7 +1277,7 @@ class TcpOslServer(OslServer):
             "ABORTED",
         ]
         if status not in stopped_states:
-            if wait_for_finish:
+            if wait_for_finished:
                 listener_thread = threading.Thread(
                     target=self.__wait_for_finish,
                     name="PyOptiSLang.OslPortListener",
@@ -1248,7 +1289,8 @@ class TcpOslServer(OslServer):
 
             self._send_command(commands.stop_gently(self.__password))
 
-            if wait_for_finish:
+            if wait_for_finished:
+                self._logger.info(f"Waiting for finished")
                 listener_thread.join()
         else:
             self._logger.debug(f"Do not send STOP_GENTLY request, project status is: {status}")
@@ -1319,12 +1361,6 @@ class TcpOslServer(OslServer):
                 password=self.__password,
                 listener=(self.__class__._LOCALHOST, self.__listener_socket.getsockname()[1]),
                 listener_id=self.__listener_uid,
-                notifications=[
-                    ServerNotification.EXECUTION_FINISHED,
-                    ServerNotification.NOTHING_PROCESSED,
-                    ServerNotification.CHECK_FAILED,
-                    ServerNotification.EXEC_FAILED,
-                ],
                 logger=self._logger,
             )
             self.__osl_process.start()
@@ -1349,6 +1385,7 @@ class TcpOslServer(OslServer):
         self.__subscribe_for_push_notifications(
             uid=self.__listener_uid,
             notifications=[
+                "EXECUTION_STARTED",
                 "EXECUTION_FINISHED",
                 "NOTHING_PROCESSED",
                 "CHECK_FAILED",
@@ -1383,6 +1420,7 @@ class TcpOslServer(OslServer):
             host=socket.gethostbyname(socket.gethostname()),
             port=self.__listener_socket.getsockname()[1],
             notifications=[
+                "EXECUTION_STARTED",
                 "EXECUTION_FINISHED",
                 "NOTHING_PROCESSED",
                 "CHECK_FAILED",
@@ -1451,6 +1489,8 @@ class TcpOslServer(OslServer):
                 data_dict = json.loads(message)
                 self.__port = int(data_dict["port"])
                 self._logger.info("optiSLang server port has been received: %d", self.__port)
+
+                client.send_msg("")
                 break
             except Exception as ex:
                 self._logger.warning(ex)
@@ -1480,7 +1520,8 @@ class TcpOslServer(OslServer):
             Either ["ALL"] or Sequence picked from below options:
             Server: [ "SERVER_UP", "SERVER_DOWN" ] (always be sent by default).
             Logging: [ "LOG_INFO", "LOG_WARNING", "LOG_ERROR", "LOG_DEBUG" ].
-            Project: [ "EXECUTION_FINISHED", "NOTHING_PROCESSED", "CHECK_FAILED", "EXEC_FAILED" ].
+            Project: [ "EXECUTION_STARTED", "EXECUTION_FINISHED", "NOTHING_PROCESSED",
+                "CHECK_FAILED", "EXEC_FAILED" ].
             Nodes: [ "ACTOR_STATE_CHANGED", "ACTOR_ACTIVE_CHANGED", "ACTOR_NAME_CHANGED",
                 "ACTOR_CONTENTS_CHANGED", "ACTOR_DATA_CHANGED" ].
 
@@ -1514,7 +1555,8 @@ class TcpOslServer(OslServer):
             Either ["ALL"] or Sequence picked from below options:
             Server: [ "SERVER_UP", "SERVER_DOWN" ] (always be sent by default).
             Logging: [ "LOG_INFO", "LOG_WARNING", "LOG_ERROR", "LOG_DEBUG" ].
-            Project: [ "EXECUTION_FINISHED", "NOTHING_PROCESSED", "CHECK_FAILED", "EXEC_FAILED" ].
+            Project: [ "EXECUTION_STARTED", "EXECUTION_FINISHED", "NOTHING_PROCESSED",
+                "CHECK_FAILED", "EXEC_FAILED" ].
             Nodes: [ "ACTOR_STATE_CHANGED", "ACTOR_ACTIVE_CHANGED", "ACTOR_NAME_CHANGED",
                 "ACTOR_CONTENTS_CHANGED", "ACTOR_DATA_CHANGED" ].
 
@@ -1648,6 +1690,44 @@ class TcpOslServer(OslServer):
                 message = "Command error: " + str(response)
             raise OslCommandError(message)
 
+    def __wait_for_started(
+        self, listener_socket: socket.socket, timeout: float, successfully_started: Queue
+    ) -> None:
+        """Listen to the optiSLang server port.
+
+        Parameters
+        ----------
+        listener_socket : socket.socket
+            Socket of the port listener.
+        timeout : float
+            Timeout in seconds for listening port.
+        """
+        listener_socket.settimeout(timeout)
+        while True:
+            client = None
+            try:
+                clientsocket, address = listener_socket.accept()
+                client = TcpClient(clientsocket)
+                message = client.receive_msg(timeout)
+                data_dict = json.loads(message)
+                self._logger.debug(f"PUSH NOTIFICATION: {data_dict}")
+                client.send_msg("")
+                if data_dict["type"] == "EXECUTION_STARTED":
+                    successfully_started.put(True)
+                    break
+                elif data_dict["type"] in [
+                    "CHECK_FAILED",
+                    "EXEC_FAILED",
+                ]:
+                    successfully_started.put(False)
+                    break
+            except Exception as ex:
+                successfully_started.put(False)
+                self._logger.warning(ex)
+            finally:
+                if client is not None:
+                    client.disconnect()
+
     def __wait_for_finish(self, listener_socket: socket.socket, timeout: float) -> None:
         """Listen to the optiSLang server port.
 
@@ -1667,13 +1747,38 @@ class TcpOslServer(OslServer):
                 message = client.receive_msg(timeout)
                 data_dict = json.loads(message)
                 self._logger.debug(f"PUSH NOTIFICATION: {data_dict}")
+                client.send_msg("")
                 if data_dict["type"] in [
-                    "EXECUTION_FINISHED",
                     "NOTHING_PROCESSED",
-                    "CHECK_FAILED",
-                    "EXEC_FAILED",
+                    "EXECUTION_FINISHED",
                 ]:
                     break
+            except Exception as ex:
+                self._logger.warning(ex)
+            finally:
+                if client is not None:
+                    client.disconnect()
+
+    def __cleanup_notifications(self, listener_socket: socket.socket) -> None:
+        """Cleanup previously unprocessed push notifications.
+
+        Parameters
+        ----------
+        listener_socket : socket.socket
+            Socket of the port listener.
+        """
+        listener_socket.settimeout(0.2)
+        while True:
+            client = None
+            try:
+                clientsocket, address = listener_socket.accept()
+                client = TcpClient(clientsocket)
+                message = client.receive_msg(0.2)
+                data_dict = json.loads(message)
+                self._logger.debug(f"PUSH NOTIFICATION (cleanup): {data_dict}")
+                client.send_msg("")
+            except socket.timeout:
+                break
             except Exception as ex:
                 self._logger.warning(ex)
             finally:

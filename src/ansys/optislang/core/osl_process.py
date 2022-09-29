@@ -24,16 +24,17 @@ class ServerNotification(Enum):
     LOG_WARNING = 3
     LOG_ERROR = 4
     LOG_DEBUG = 5
-    EXECUTION_FINISHED = 6
-    NOTHING_PROCESSED = 7
-    CHECK_FAILED = 8
-    EXEC_FAILED = 9
-    ACTOR_STATE_CHANGED = 10
-    ACTOR_ACTIVE_CHANGED = 11
-    ACTOR_NAME_CHANGED = 12
-    ACTOR_CONTENTS_CHANGED = 13
-    ACTOR_DATA_CHANGED = 14
-    NUM_NOTIFICATIONS = 15
+    EXECUTION_STARTED = 6
+    EXECUTION_FINISHED = 7
+    NOTHING_PROCESSED = 8
+    CHECK_FAILED = 9
+    EXEC_FAILED = 10
+    ACTOR_STATE_CHANGED = 11
+    ACTOR_ACTIVE_CHANGED = 12
+    ACTOR_NAME_CHANGED = 13
+    ACTOR_CONTENTS_CHANGED = 14
+    ACTOR_DATA_CHANGED = 15
+    NUM_NOTIFICATIONS = 16
 
 
 class OslServerProcess:
@@ -71,8 +72,7 @@ class OslServerProcess:
     listener_id : str, optional
         Specific unique ID for the TCP listener. Defaults to ``None``.
     notifications : Iterable[ServerNotification], optional
-        Notifications to be sent to the listener. Defaults to "EXECUTION_FINISHED",
-        "NOTHING_PROCESSED", "CHECK_FAILED" and "EXEC_FAILED"
+        Notifications to be sent to the listener. Defaults to ``None``.
     shutdown_on_finished: bool, optional
         Shut down when execution is finished. Defaults to ``True``.
 
@@ -125,7 +125,7 @@ class OslServerProcess:
         listener: Tuple[str, int] = None,
         listener_id: str = None,
         notifications: Iterable[ServerNotification] = None,
-        shutdown_on_finished: bool = False,
+        shutdown_on_finished: bool = True,
         env_vars: Mapping[str, str] = None,
         logger=None,
         log_process_stdout: bool = True,
