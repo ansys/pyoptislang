@@ -92,7 +92,7 @@ class Optislang:
         self.__name = name
         self.__password = password
 
-        self._logger = LOG.add_instance_logger(self.name, self, loglevel)
+        self.log = LOG.add_instance_logger(self.name, self, loglevel)
         self.__osl_server: OslServer = self.__init_osl_server("tcp")
 
     def __init_osl_server(self, server_type: str) -> OslServer:
@@ -124,7 +124,7 @@ class Optislang:
                 no_save=self.__no_save,
                 ini_timeout=self.__ini_timeout,
                 password=self.__password,
-                logger=self._logger,
+                logger=self.log,
             )
         else:
             raise NotImplementedError(f'OptiSLang server of type "{server_type}" is not supported.')
