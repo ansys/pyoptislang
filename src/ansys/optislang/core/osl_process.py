@@ -380,6 +380,17 @@ class OslServerProcess:
 
         return self.__process.pid
 
+    @property
+    def shutdown_on_finished(self) -> str:
+        """Whether to shut down when execution is finished.
+
+        Returns
+        -------
+        str
+            Whether to shut down when execution is finished.
+        """
+        return self.__shutdown_on_finished
+
     def __enter__(self):
         """Enter the context."""
         return self

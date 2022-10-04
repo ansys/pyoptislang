@@ -1087,6 +1087,7 @@ class TcpOslServer(OslServer):
         self.__refresh = False
         self.__refresh_thread.join()
 
+        # Unregister listener
         try:
             self._unregister_listener(str(self.__listener_uid))
         except Exception as ex:
@@ -1095,14 +1096,17 @@ class TcpOslServer(OslServer):
         if self.__listener_socket is not None:
             self.__listener_socket.close()
 
-        try:
-            self._send_command(commands.shutdown(self.__password))
-        except Exception:
-            if not force or self.__osl_process is None:
-                raise
-        finally:
-            if force and self.__osl_process is not None:
-                self._force_shutdown_local_process()
+        # Only in case shutdown_on_finished option is not set, actively send shutdown command
+        if not self.__osl_process.shutdown_on_finished:
+            try:
+                self._send_command(commands.shutdown(self.__password))
+            except Exception:
+                if not force or self.__osl_process is None:
+                    raise
+
+        # If desired actively force osl process to terminate
+        if force and self.__osl_process is not None:
+            self._force_shutdown_local_process()
 
     def _force_shutdown_local_process(self):
         """Force shutdown local optiSLang server process.
