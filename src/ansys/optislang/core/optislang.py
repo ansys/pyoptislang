@@ -443,13 +443,13 @@ class Optislang:
         Parameters
         ----------
         wait_for_started : bool, optional
-            Determines whether this function call should wait on the optiSlang to start
+            Determines whether this function call should wait for optiSLang to start
             the command execution. I.e. don't continue on next line of python script
             after command was successfully sent to optiSLang but wait for execution of
             flow inside optiSLang to start.
             Defaults to ``True``.
         wait_for_finished : bool, optional
-            Determines whether this function call should wait on the optiSlang to finish
+            Determines whether this function call should wait for optiSLang to finish
             the command execution. I.e. don't continue on next line of python script
             after command was successfully sent to optiSLang but wait for execution of
             flow inside optiSLang to finish.
@@ -473,7 +473,7 @@ class Optislang:
         Parameters
         ----------
         wait_for_finished : bool, optional
-            Determines whether this function call should wait on the optiSlang to finish
+            Determines whether this function call should wait for optiSLang to finish
             the command execution. I.e. don't continue on next line of python script after command
             was successfully sent to optiSLang but wait for execution of command inside optiSLang.
             Defaults to ``True``.
@@ -495,7 +495,7 @@ class Optislang:
         Parameters
         ----------
         wait_for_finished : bool, optional
-            Determines whether this function call should wait on the optiSlang to finish
+            Determines whether this function call should wait for optiSLang to finish
             the command execution. I.e. don't continue on next line of python script after command
             was successfully sent to optiSLang but wait for execution of command inside optiSLang.
             Defaults to ``True``.
