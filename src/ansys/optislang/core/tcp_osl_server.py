@@ -4,12 +4,13 @@ from datetime import datetime
 import json
 import logging
 import os
+from queue import Queue
 import select
 import socket
 import struct
 import threading
 import time
-from typing import Dict, Sequence, Tuple, Union
+from typing import Dict, Iterable, Sequence, Tuple, Union
 import uuid
 
 from ansys.optislang.core import server_commands as commands
@@ -182,7 +183,7 @@ class TcpClient:
                 f"Connection could not be established to host {host} and port {port}."
             )
 
-        self._logger.info("Connection has been established to host %s and port %d.", host, port)
+        self._logger.debug("Connection has been established to host %s and port %d.", host, port)
 
     def disconnect(self) -> None:
         """Disconnect from the server."""
@@ -610,9 +611,13 @@ class TcpOslServer(OslServer):
         self.__no_save = no_save
         self.__password = password
         self.__osl_process = None
+        self.__refresh = True
+        self.__refresh_interval = 10
 
         if self.__host is None or self.__port is None:
             self._start_local(ini_timeout)
+        else:
+            self._connect_to_remote()
 
     def _get_server_info(self) -> Dict:
         """Get information about the application, the server configuration and the open projects.
@@ -1038,7 +1043,7 @@ class TcpOslServer(OslServer):
         """
         if timeout is None:
             self.__timeout = timeout
-        elif isinstance(timeout, float):
+        elif isinstance(timeout, (int, float)):
             if timeout > 0:
                 self.__timeout = timeout
             else:
@@ -1078,14 +1083,30 @@ class TcpOslServer(OslServer):
         TimeoutError
             Raised when the parameter force is ``False`` and the timeout float value expires.
         """
+        # Don't refresh listener registration
+        self.__refresh = False
+        self.__refresh_thread.join()
+
+        # Unregister listener
         try:
-            self._send_command(commands.shutdown(self.__password))
-        except Exception:
-            if not force or self.__osl_process is None:
-                raise
-        finally:
-            if force and self.__osl_process is not None:
-                self._force_shutdown_local_process()
+            self._unregister_listener(str(self.__listener_uid))
+        except Exception as ex:
+            self._logger.warn("Cannot unregister port listener: %s", ex)
+
+        if self.__listener_socket is not None:
+            self.__listener_socket.close()
+
+        # Only in case shutdown_on_finished option is not set, actively send shutdown command
+        if not self.__osl_process.shutdown_on_finished:
+            try:
+                self._send_command(commands.shutdown(self.__password))
+            except Exception:
+                if not force or self.__osl_process is None:
+                    raise
+
+        # If desired actively force osl process to terminate
+        if force and self.__osl_process is not None:
+            self._force_shutdown_local_process()
 
     def _force_shutdown_local_process(self):
         """Force shutdown local optiSLang server process.
@@ -1105,15 +1126,23 @@ class TcpOslServer(OslServer):
         self.__host = None
         self.__port = None
 
-    def start(self, wait_for_finish: bool = True) -> None:
+    def start(self, wait_for_started: bool = True, wait_for_finished: bool = True) -> None:
         """Start project execution.
 
         Parameters
         ----------
-        wait_for_finish : bool, optional
+        wait_for_started : bool, optional
+            Determines whether this function call should wait on the optiSlang to start
+            the command execution. I.e. don't continue on next line of python script
+            after command was successfully sent to optiSLang but wait for execution of
+            flow inside optiSLang to start.
+            Defaults to ``True``.
+        wait_for_finished : bool, optional
             Determines whether this function call should wait on the optiSlang to finish
-            the command execution. I.e. don't continue on next line of python script after command
-            was successfully sent to optiSLang but wait for execution of flow inside optiSLang.
+            the command execution. I.e. don't continue on next line of python script
+            after command was successfully sent to optiSLang but wait for execution of
+            flow inside optiSLang to finish.
+            This implicitly interprets wait_for_started as True.
             Defaults to ``True``.
 
         Raises
@@ -1125,18 +1154,54 @@ class TcpOslServer(OslServer):
         TimeoutError
             Raised when the timeout float value expires.
         """
-        start_time = time.time()
-        self._send_command(commands.start(self.__password))
+        self.__cleanup_notifications(self.__listener_socket)
 
-        if wait_for_finish:
-            self._wait_for_finish(_get_current_timeout(self.__timeout, start_time))
+        successfully_started = False
+        successfully_started_queue = Queue()
+        already_running = False
 
-    def stop(self, wait_for_finish: bool = True) -> None:
+        if self.get_project_status() == "PROCESSING":
+            already_running = True
+
+        if not already_running and (wait_for_started or wait_for_finished):
+            start_listener_thread = threading.Thread(
+                target=self.__wait_for_started,
+                name="PyOptiSLang.OslPortListener",
+                args=(self.__listener_socket, self.__timeout, successfully_started_queue),
+                daemon=True,
+            )
+            start_listener_thread.start()
+            self._logger.debug("Thread for listening push notifications created.")
+
+        if wait_for_finished:
+            stop_listener_thread = threading.Thread(
+                target=self.__wait_for_finish,
+                name="PyOptiSLang.OslPortListener",
+                args=(self.__listener_socket, self.__timeout),
+                daemon=True,
+            )
+            stop_listener_thread.start()
+            self._logger.debug("Thread for listening push notifications created.")
+
+        if not already_running:
+            self._send_command(commands.start(self.__password))
+
+        if not already_running and (wait_for_started or wait_for_finished):
+            self._logger.info(f"Waiting for started")
+            start_listener_thread.join()
+            successfully_started = successfully_started_queue.get()
+            self._logger.info(f"successfully_started: {successfully_started}")
+
+        if wait_for_finished and (successfully_started or already_running):
+            self._logger.info(f"Waiting for finished")
+            stop_listener_thread.join()
+
+    def stop(self, wait_for_finished: bool = True) -> None:
         """Stop project execution.
 
         Parameters
         ----------
-        wait_for_finish : bool, optional
+        wait_for_finished : bool, optional
             Determines whether this function call should wait on the optiSlang to finish
             the command execution. I.e. don't continue on next line of python script after command
             was successfully sent to optiSLang but wait for execution of command inside optiSLang.
@@ -1151,10 +1216,11 @@ class TcpOslServer(OslServer):
         TimeoutError
             Raised when the timeout float value expires.
         """
-        start_time = time.time()
+        self.__cleanup_notifications(self.__listener_socket)
+
         status = self.get_project_status()
 
-        not_stopped_states = [
+        stopped_states = [
             "IDLE",
             "FINISHED",
             "STOP_REQUESTED",
@@ -1163,18 +1229,31 @@ class TcpOslServer(OslServer):
             "ABORTED",
         ]
 
-        if status not in not_stopped_states:
+        if status not in stopped_states:
+            if wait_for_finished:
+                listener_thread = threading.Thread(
+                    target=self.__wait_for_finish,
+                    name="PyOptiSLang.OslPortListener",
+                    args=(self.__listener_socket, self.__timeout),
+                    daemon=True,
+                )
+                listener_thread.start()
+                self._logger.debug("Thread for listening push notifications created.")
+
             self._send_command(commands.stop(self.__password))
 
-            if wait_for_finish:
-                self._wait_for_finish(_get_current_timeout(self.__timeout, start_time))
+            if wait_for_finished:
+                self._logger.info(f"Waiting for finished")
+                listener_thread.join()
+        else:
+            self._logger.debug(f"Do not send STOP request, project status is: {status}")
 
-    def stop_gently(self, wait_for_finish: bool = True) -> None:
+    def stop_gently(self, wait_for_finished: bool = True) -> None:
         """Stop project execution after the current design is finished.
 
         Parameters
         ----------
-        wait_for_finish : bool, optional
+        wait_for_finished : bool, optional
             Determines whether this function call should wait on the optiSlang to finish
             the command execution. I.e. don't continue on next line of python script after command
             was successfully sent to optiSLang but wait for execution of command inside optiSLang.
@@ -1189,16 +1268,36 @@ class TcpOslServer(OslServer):
         TimeoutError
             Raised when the timeout float value expires.
         """
-        start_time = time.time()
+        self.__cleanup_notifications(self.__listener_socket)
+
         status = self.get_project_status()
 
-        not_gently_stopped_states = ["IDLE", "FINISHED", "STOPPED", "ABORT_REQUESTED", "ABORTED"]
+        stopped_states = [
+            "IDLE",
+            "FINISHED",
+            "STOP_REQUESTED",
+            "STOPPED",
+            "ABORT_REQUESTED",
+            "ABORTED",
+        ]
+        if status not in stopped_states:
+            if wait_for_finished:
+                listener_thread = threading.Thread(
+                    target=self.__wait_for_finish,
+                    name="PyOptiSLang.OslPortListener",
+                    args=(self.__listener_socket, self.__timeout),
+                    daemon=True,
+                )
+                listener_thread.start()
+                self._logger.debug("Thread for listening push notifications created.")
 
-        if status not in not_gently_stopped_states:
             self._send_command(commands.stop_gently(self.__password))
 
-            if wait_for_finish:
-                self._wait_for_finish(_get_current_timeout(self.__timeout, start_time))
+            if wait_for_finished:
+                self._logger.info(f"Waiting for finished")
+                listener_thread.join()
+        else:
+            self._logger.debug(f"Do not send STOP_GENTLY request, project status is: {status}")
 
     def _unregister_listener(self, uuid: str) -> None:
         """Unregister a listener.
@@ -1240,17 +1339,21 @@ class TcpOslServer(OslServer):
         if self.__osl_process is not None:
             raise RuntimeError("optiSLang server is already started.")
 
-        listener_socket = None
-        listener_uid = uuid.uuid4()
+        self.__listener_socket = None
+        self.__listener_uid = str(uuid.uuid4())
+
         try:
-            listener_socket = self.__init_port_listener(self.__class__._PRIVATE_PORTS_RANGE)
-            if listener_socket is None:
+            self.__listener_socket = self.__init_listener(
+                self.__class__._LOCALHOST,
+                self.__class__._PRIVATE_PORTS_RANGE,
+            )
+            if self.__listener_socket is None:
                 raise RuntimeError("Cannot start listener of optiSLang server port.")
 
             listener_thread = threading.Thread(
                 target=self.__listen_port,
                 name="PyOptiSLang.OslPortListener",
-                args=(listener_socket, ini_timeout),
+                args=(self.__listener_socket, ini_timeout),
                 daemon=True,
             )
             listener_thread.start()
@@ -1260,34 +1363,84 @@ class TcpOslServer(OslServer):
                 project_path=self.__project_path,
                 no_save=self.__no_save,
                 password=self.__password,
-                listener=(self.__class__._LOCALHOST, listener_socket.getsockname()[1]),
-                listener_id=str(listener_uid),
+                listener=(self.__class__._LOCALHOST, self.__listener_socket.getsockname()[1]),
+                listener_id=self.__listener_uid,
                 logger=self._logger,
             )
             self.__osl_process.start()
 
             listener_thread.join()
-        finally:
-            if listener_socket is not None:
-                listener_socket.close()
 
-        if self.__port is None:
-            self.__osl_process.terminate()
-            self.__osl_process = None
-            raise RuntimeError("Cannot get optiSLang server port.")
+        except Exception:
+            if self.__listener_socket is not None:
+                self.__listener_socket.close()
+            raise
+
+        finally:
+            if self.__port is None:
+                self.__osl_process.terminate()
+                self.__osl_process = None
+                raise RuntimeError("Cannot get optiSLang server port.")
 
         self.__host = self.__class__._LOCALHOST
 
-        try:
-            self._unregister_listener(str(listener_uid))
-        except Exception as ex:
-            self._logger.warn("Cannot unregister port listener: %s", ex)
+        # subscribe listener for push notifications and create new thread
+        # for refresing listener registration
+        self.__subscribe_for_push_notifications(
+            uid=self.__listener_uid,
+            notifications=[
+                "EXECUTION_STARTED",
+                "EXECUTION_FINISHED",
+                "NOTHING_PROCESSED",
+                "CHECK_FAILED",
+                "EXEC_FAILED",
+            ],
+        )
+        self.__create_refresh_thread()
 
-    def __init_port_listener(self, port_range: Tuple[int, int]) -> socket.socket:
-        """Initialize port listener.
+    def _connect_to_remote(self) -> None:
+        """Connect to remote optiSLang server.
+
+        Raises
+        ------
+        RuntimeError
+            Raised when the optiSLang server is already started.
+            -or-
+            Port listener cannot be started.
+            -or-
+            optiSLang server port is not listened for specified timeout value.
+        """
+        self.__listener_socket = None
+
+        self.__listener_socket = self.__init_listener(
+            socket.gethostbyname(socket.gethostname()),
+            self.__class__._PRIVATE_PORTS_RANGE,
+        )
+        if self.__listener_socket is None:
+            raise RuntimeError("Cannot start listener of optiSLang server port.")
+
+        # TODO: another way of getting local_ip, hostname doesn't have to be defined?
+        self.__listener_uid = self.__register_listener(
+            host=socket.gethostbyname(socket.gethostname()),
+            port=self.__listener_socket.getsockname()[1],
+            notifications=[
+                "EXECUTION_STARTED",
+                "EXECUTION_FINISHED",
+                "NOTHING_PROCESSED",
+                "CHECK_FAILED",
+                "EXEC_FAILED",
+            ],
+        )
+
+        self.__create_refresh_thread()
+
+    def __init_listener(self, host: str, port_range: Tuple[int, int]) -> socket.socket:
+        """Initialize listener.
 
         Parameters
         ----------
+        host: str
+            A string representation of an IPv4/v6 address or domain name.
         port_range : Tuple[int, int]
             Defines the port range for port listener. Defaults to ``None``.
 
@@ -1300,7 +1453,7 @@ class TcpOslServer(OslServer):
         for port in range(port_range[0], port_range[1] + 1):
             try:
                 listener_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                listener_socket.bind((self.__class__._LOCALHOST, port))
+                listener_socket.bind((host, port))
                 listener_socket.listen(5)
                 self._logger.debug("Listening on port: %d", port)
                 break
@@ -1340,12 +1493,123 @@ class TcpOslServer(OslServer):
                 data_dict = json.loads(message)
                 self.__port = int(data_dict["port"])
                 self._logger.info("optiSLang server port has been received: %d", self.__port)
+
+                client.send_msg("")
                 break
             except Exception as ex:
                 self._logger.warning(ex)
             finally:
                 if client is not None:
                     client.disconnect()
+
+    def __create_refresh_thread(self) -> None:
+        """Create new thread for refreshing of listener registration."""
+        self.__refresh_thread = threading.Thread(
+            target=self.__refresh_listener_registration, args=(), daemon=True
+        )
+        self.__refresh_thread.start()
+
+    def __subscribe_for_push_notifications(
+        self,
+        uid: str,
+        notifications: Iterable[str],
+    ) -> None:
+        """Subscribe listener for push notifications.
+
+        Parameters
+        ----------
+        uid : str
+            Specific unique ID for the TCP listener.
+        notifications: Iterable[str], optional
+            Either ["ALL"] or Sequence picked from below options:
+            Server: [ "SERVER_UP", "SERVER_DOWN" ] (always be sent by default).
+            Logging: [ "LOG_INFO", "LOG_WARNING", "LOG_ERROR", "LOG_DEBUG" ].
+            Project: [ "EXECUTION_STARTED", "EXECUTION_FINISHED", "NOTHING_PROCESSED",
+                "CHECK_FAILED", "EXEC_FAILED" ].
+            Nodes: [ "ACTOR_STATE_CHANGED", "ACTOR_ACTIVE_CHANGED", "ACTOR_NAME_CHANGED",
+                "ACTOR_CONTENTS_CHANGED", "ACTOR_DATA_CHANGED" ].
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        self._send_command(
+            commands.subscribe_for_push_notifications(
+                uid=uid,
+                notifications=notifications,
+                password=self.__password,
+            )
+        )
+
+    def __register_listener(self, host: str, port: int, notifications: Iterable[str] = None) -> str:
+        """Register a client, returning a reference ID.
+
+        Parameters
+        ----------
+        host : str
+          A string representation of an IPv4/v6 address or domain name.
+        port: int
+            A numeric port number of listener.
+        notifications: Iterable[str], optional
+            Either ["ALL"] or Sequence picked from below options:
+            Server: [ "SERVER_UP", "SERVER_DOWN" ] (always be sent by default).
+            Logging: [ "LOG_INFO", "LOG_WARNING", "LOG_ERROR", "LOG_DEBUG" ].
+            Project: [ "EXECUTION_STARTED", "EXECUTION_FINISHED", "NOTHING_PROCESSED",
+                "CHECK_FAILED", "EXEC_FAILED" ].
+            Nodes: [ "ACTOR_STATE_CHANGED", "ACTOR_ACTIVE_CHANGED", "ACTOR_NAME_CHANGED",
+                "ACTOR_CONTENTS_CHANGED", "ACTOR_DATA_CHANGED" ].
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        msg = self._send_command(
+            commands.register_listener(
+                host=host,
+                port=port,
+                notifications=notifications,
+                password=self.__password,
+            )
+        )
+        return msg[0]["uid"]
+
+    def __refresh_listener_registration(self):
+        """Refresh listener registration.
+
+        Raises
+        ------
+        RuntimeError
+            Raised when the optiSLang server is not started.
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout expires.
+        """
+        check_for_refresh = 0.5
+        counter = 0
+        while self.__refresh:
+            if counter >= self.__refresh_interval:
+                response = self._send_command(
+                    commands.refresh_listener_registration(
+                        uid=self.__listener_uid, password=self.__password
+                    )
+                )
+                counter = 0
+            counter += check_for_refresh
+            time.sleep(check_for_refresh)
+        self._logger.debug("Stop refreshing listener registration, self.__refresh = False")
 
     def _send_command(self, command: str) -> Dict:
         """Send command or query to the optiSLang server.
@@ -1385,6 +1649,7 @@ class TcpOslServer(OslServer):
             response_str = client.receive_msg(
                 timeout=_get_current_timeout(self.__timeout, start_time)
             )
+
         except TimeoutError as ex:
             raise
         except Exception as ex:
@@ -1429,31 +1694,97 @@ class TcpOslServer(OslServer):
                 message = "Command error: " + str(response)
             raise OslCommandError(message)
 
-    def _wait_for_finish(self, timeout: Union[float, None]) -> None:
-        """Wait on optiSLang to finish the project run.
+    def __wait_for_started(
+        self, listener_socket: socket.socket, timeout: float, successfully_started: Queue
+    ) -> None:
+        """Listen to the optiSLang server port.
 
         Parameters
         ----------
-        timeout : Union[float, None], optional
-            Timeout in seconds to wait on optiSlang to finish the project run. Must be greater
-            than zero or ``None``. The function will raise a timeout exception if the timeout
-            period value has elapsed before the operation has completed. If ``None`` is given,
-            the function will wait until the function is finished (no timeout exception is raised).
-            Defaults to ``None``.
-        Raises
-        ------
-        TimeoutError
-            Raised when the timeout expires.
+        listener_socket : socket.socket
+            Socket of the port listener.
+        timeout : float
+            Timeout in seconds for listening port.
         """
-        start_time = time.time()
+        listener_socket.settimeout(timeout)
         while True:
-            remain_time = _get_current_timeout(timeout, start_time)
-            status = self.get_project_status()
+            client = None
+            try:
+                clientsocket, address = listener_socket.accept()
+                client = TcpClient(clientsocket)
+                message = client.receive_msg(timeout)
+                data_dict = json.loads(message)
+                self._logger.debug(f"PUSH NOTIFICATION: {data_dict}")
+                client.send_msg("")
+                if data_dict["type"] == "EXECUTION_STARTED":
+                    successfully_started.put(True)
+                    break
+                elif data_dict["type"] in [
+                    "CHECK_FAILED",
+                    "EXEC_FAILED",
+                ]:
+                    successfully_started.put(False)
+                    break
+            except Exception as ex:
+                successfully_started.put(False)
+                self._logger.warning(ex)
+            finally:
+                if client is not None:
+                    client.disconnect()
 
-            self._logger.debug(f"Current project status: {status}")
+    def __wait_for_finish(self, listener_socket: socket.socket, timeout: float) -> None:
+        """Listen to the optiSLang server port.
 
-            if status == "FINISHED" or status == "STOPPED" or status == "ABORTED":
-                return
+        Parameters
+        ----------
+        listener_socket : socket.socket
+            Socket of the port listener.
+        timeout : float
+            Timeout in seconds for listening port.
+        """
+        listener_socket.settimeout(timeout)
+        while True:
+            client = None
+            try:
+                clientsocket, address = listener_socket.accept()
+                client = TcpClient(clientsocket)
+                message = client.receive_msg(timeout)
+                data_dict = json.loads(message)
+                self._logger.debug(f"PUSH NOTIFICATION: {data_dict}")
+                client.send_msg("")
+                if data_dict["type"] in [
+                    "NOTHING_PROCESSED",
+                    "EXECUTION_FINISHED",
+                ]:
+                    break
+            except Exception as ex:
+                self._logger.warning(ex)
+            finally:
+                if client is not None:
+                    client.disconnect()
 
-            self._logger.debug("Waiting for project run to finish...")
-            time.sleep(1)
+    def __cleanup_notifications(self, listener_socket: socket.socket) -> None:
+        """Cleanup previously unprocessed push notifications.
+
+        Parameters
+        ----------
+        listener_socket : socket.socket
+            Socket of the port listener.
+        """
+        listener_socket.settimeout(0.2)
+        while True:
+            client = None
+            try:
+                clientsocket, address = listener_socket.accept()
+                client = TcpClient(clientsocket)
+                message = client.receive_msg(0.2)
+                data_dict = json.loads(message)
+                self._logger.debug(f"PUSH NOTIFICATION (cleanup): {data_dict}")
+                client.send_msg("")
+            except socket.timeout:
+                break
+            except Exception as ex:
+                self._logger.warning(ex)
+            finally:
+                if client is not None:
+                    client.disconnect()

@@ -96,6 +96,9 @@ print(result)
     )
     assert isinstance(run_script, tuple)
     assert run_script[0][0:2] == "15"
+    with does_not_raise() as dnr:
+        optislang.shutdown()
+    assert dnr is None
 
 
 def test_run_python_file(optislang, tmp_path):
@@ -111,6 +114,9 @@ print(result)
         f.write(cmd)
     run_file = optislang.run_python_file(file_path=cmd_path)
     assert isinstance(run_file, tuple)
+    with does_not_raise() as dnr:
+        optislang.shutdown()
+    assert dnr is None
 
 
 def test_save_copy(optislang, tmp_path):
@@ -153,7 +159,7 @@ connect(sens, "IODesign", python, "IDesign")
 connect(python, "ODesign", sens, "IIDesign")
 """
         )
-        optislang.start(wait_for_finish=False)
+        optislang.start(wait_for_finished=False)
         print(optislang.get_project_status())
         optislang.stop()
         optislang.start()
@@ -182,7 +188,7 @@ connect(sens, "IODesign", python, "IDesign")
 connect(python, "ODesign", sens, "IIDesign")
 """
         )
-        optislang.start(wait_for_finish=False)
+        optislang.start(wait_for_finished=False)
         print(optislang.get_project_status())
         optislang.stop_gently()
         optislang.start()

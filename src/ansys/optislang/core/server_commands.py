@@ -1348,7 +1348,8 @@ def subscribe_for_push_notifications(
         Either ["ALL"] or Sequence picked from below options:
             Server: [ "SERVER_UP", "SERVER_DOWN" ] (always be sent by default).
             Logging: [ "LOG_INFO", "LOG_WARNING", "LOG_ERROR", "LOG_DEBUG" ].
-            Project: [ "EXECUTION_FINISHED", "NOTHING_PROCESSED", "CHECK_FAILED", "EXEC_FAILED" ].
+            Project: [ "EXECUTION_STARTED", "EXECUTION_FINISHED", "NOTHING_PROCESSED",
+                "CHECK_FAILED", "EXEC_FAILED" ].
             Nodes: [ "ACTOR_STATE_CHANGED", "ACTOR_ACTIVE_CHANGED", "ACTOR_NAME_CHANGED",
                 "ACTOR_CONTENTS_CHANGED", "ACTOR_DATA_CHANGED" ].
     node_types: Sequence, opt
@@ -1363,7 +1364,13 @@ def subscribe_for_push_notifications(
     """
     server = ["SERVER_UP", "SERVER_DOWN"]
     logging = ["LOG_INFO", "LOG_WARNING", "LOG_ERROR", "LOG_DEBUG"]
-    project = ["EXECUTION_FINISHED", "NOTHING_PROCESSED", "CHECK_FAILED", "EXEC_FAILED"]
+    project = [
+        "EXECUTION_STARTED",
+        "EXECUTION_FINISHED",
+        "NOTHING_PROCESSED",
+        "CHECK_FAILED",
+        "EXEC_FAILED",
+    ]
     nodes = [
         "ACTOR_STATE_CHANGED",
         "ACTOR_ACTIVE_CHANGED",
