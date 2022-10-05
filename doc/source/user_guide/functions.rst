@@ -11,8 +11,8 @@ In order to start project, use :func:`start <ansys.optislang.core.optislang.Opti
     from ansys.optislang.core import Optislang
     from ansys.optislang.core import examples
     osl = Optislang()
-    path_to_script = examples.get_files('simple_calculator')[0]
-    osl.run_python_script(script_path=path_to_script)
+    path_to_file = examples.get_files('simple_calculator')[0]
+    osl.run_python_file(file_path=path_to_file)
     osl.start()
 
 In order to save current project, use 
