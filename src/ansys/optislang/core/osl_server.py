@@ -420,14 +420,17 @@ class OslServer(ABC):
         pass
 
     @abstractmethod
-    def start(self, wait_for_finish: bool = True) -> None:
+    def start(self, wait_for_started: bool = True, wait_for_finished: bool = True) -> None:
         """Start project execution.
 
         Parameters
         ----------
-        wait_for_finish : bool, optional
+        wait_for_started : bool, optional
+            Determines whether this function call should wait on the optiSlang to start
+            the command execution. Defaults to ``True``.
+        wait_for_finished : bool, optional
             Determines whether this function call should wait on the optiSlang to finish
-            the project execution. Defaults to ``True``.
+            the command execution. Defaults to ``True``.
 
         Raises
         ------
@@ -441,12 +444,12 @@ class OslServer(ABC):
         pass
 
     @abstractmethod
-    def stop(self, wait_for_finish: bool = True) -> None:
+    def stop(self, wait_for_finished: bool = True) -> None:
         """Stop project execution.
 
         Parameters
         ----------
-        wait_for_finish : bool, optional
+        wait_for_finished : bool, optional
             Determines whether this function call should wait on the optiSlang to finish
             the project execution. Defaults to ``True``.
 
@@ -462,12 +465,12 @@ class OslServer(ABC):
         pass
 
     @abstractmethod
-    def stop_gently(self, wait_for_finish: bool = True) -> None:
+    def stop_gently(self, wait_for_finished: bool = True) -> None:
         """Stop project execution after the current design is finished.
 
         Parameters
         ----------
-        wait_for_finish : bool, optional
+        wait_for_finished : bool, optional
             Determines whether this function call should wait on the optiSlang to finish
             the project execution. Defaults to ``True``.
 
