@@ -1,6 +1,6 @@
 """Module for generation of all server commands."""
 import json
-from typing import Dict, Sequence, Union
+from typing import Dict, Iterable, Sequence, Union
 
 _APPLY_WIZARD = "APPLY_WIZARD"
 _CLOSE = "CLOSE"
@@ -599,7 +599,7 @@ def register_listener(
     host: str = None,
     port: int = None,
     timeout: int = None,
-    notifications: Sequence = None,
+    notifications: Iterable[str] = None,
     password: str = None,
 ) -> str:
     """Generate JSON string of register_listener command.
@@ -1391,10 +1391,10 @@ def subscribe_for_push_notifications(
             raise TypeError(
                 f"Unsuppored values of ``notifications``: {invalid_items}, "
                 "supported options are: \n"
-                "server: {server},\n"
-                "logging: {logging},\n"
-                "project: {project},\n"
-                "nodes: {nodes}"
+                f"server: {server},\n"
+                f"logging: {logging},\n"
+                f"project: {project},\n"
+                f"nodes: {nodes}"
             )
         args["notifications"] = notifications
 

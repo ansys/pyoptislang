@@ -484,3 +484,8 @@ class OslServer(ABC):
             Raised when the timeout float value expires.
         """
         pass
+
+    @abstractmethod
+    def terminate_server_threads(self) -> None:
+        """Terminate all local threads created by this instance."""
+        pass

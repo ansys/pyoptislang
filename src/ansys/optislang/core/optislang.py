@@ -137,6 +137,13 @@ class Optislang:
             f"PyOptiSLang: {version('ansys.optislang.core')}"
         )
 
+    def __del__(self):
+        """Shutdown optiSLang."""
+        if self.__host and self.__port:
+            self.shutdown()
+        else:
+            self.terminate_server_threads()
+
     @property
     def name(self) -> str:
         """Instance unique identifier."""
@@ -510,3 +517,17 @@ class Optislang:
             Raised when the timeout float value expires.
         """
         self.__osl_server.stop_gently(wait_for_finished)
+
+    def terminate_server_threads(self) -> None:
+        """Terminate all local threads created by self.__osl_server.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        self.__osl_server.terminate_server_threads()

@@ -35,6 +35,7 @@ class ServerNotification(Enum):
     ACTOR_CONTENTS_CHANGED = 14
     ACTOR_DATA_CHANGED = 15
     NUM_NOTIFICATIONS = 16
+    ALL = 17
 
 
 class OslServerProcess:
@@ -74,7 +75,7 @@ class OslServerProcess:
     notifications : Iterable[ServerNotification], optional
         Notifications to be sent to the listener. Defaults to ``None``.
     shutdown_on_finished: bool, optional
-        Shut down when execution is finished. Defaults to ``True``.
+        Shut down when execution is finished. Defaults to ``False``.
 
     env_vars : Mapping[str, str], optional
         Additional environmental variables (key and value) for the optiSLang server process.
@@ -618,21 +619,16 @@ class OslServerProcess:
                 process.terminate()
             except psutil.NoSuchProcess:
                 self._logger.debug(
-                    "Cannot terminate child process PID: %s. " "The process does not exist.",
-                    process.pid,
+                    f"Cannot terminate child process PID: {process.pid}. "
+                    "The process does not exist."
                 )
 
         gone, alive = psutil.wait_procs(children, timeout=3)
-        for process in gone:
-            self._logger.debug(
-                "optiSLang server child process %s terminated with exit code %s.",
-                process,
-                process.returncode,
-            )
+
         for process in alive:
             self._logger.debug(
-                "optiSLang server child process %s could not be terminated and will be killed.",
-                process,
+                f"optiSLang server child process {process} could not be terminated "
+                "and will be killed.",
             )
             process.kill()
 
