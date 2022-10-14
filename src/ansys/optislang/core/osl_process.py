@@ -75,7 +75,7 @@ class OslServerProcess:
     notifications : Iterable[ServerNotification], optional
         Notifications to be sent to the listener. Defaults to ``None``.
     shutdown_on_finished: bool, optional
-        Shut down when execution is finished. Defaults to ``False``.
+        Shut down when execution is finished. Defaults to ``True``.
 
     env_vars : Mapping[str, str], optional
         Additional environmental variables (key and value) for the optiSLang server process.

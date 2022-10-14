@@ -532,10 +532,10 @@ class TcpOslListener:
             Name of listener.
         host: str
             Local IPv6 address.
-        uid: str, opt
+        uid: str, optional
             Unique ID of listener, should be used only if listener is used for optiSLangs port
             when started locally.
-        logger: OslLogger, opt
+        logger: OslLogger, optional
             Preferably OslLogger should be given. If not given, default logging.Logger is used.
 
     Raises
@@ -606,55 +606,63 @@ class TcpOslListener:
             self.__listener_socket.close()
 
     @property
-    def uid(self):
+    def uid(self) -> str:
         """Instance unique identifier."""
         return self.__uid
 
     @uid.setter
-    def uid(self, uid):
+    def uid(self, uid) -> None:
         self.__uid = uid
 
     @property
-    def name(self):
+    def name(self) -> str:
         """Instance name used for naming self.__thread."""
         return self.__name
 
     @property
-    def timeout(self):
+    def timeout(self) -> Union[float, None]:
         """Timeout in seconds to receive a message."""
         return self.__timeout
 
     @timeout.setter
-    def timeout(self, timeout):
+    def timeout(self, timeout) -> None:
         self.__timeout = timeout
 
     @property
-    def host(self):
+    def host(self) -> str:
         """Local IPv6 address associated with self.__listener_socket."""
         return self.__listener_socket.getsockname()[0]
 
     @property
-    def port(self):
+    def port(self) -> int:
         """Port number associated with self.__listener_socket."""
         return self.__listener_socket.getsockname()[1]
 
-    def add_callback(self, callback: Callable, args):
-        """Add callback (method) that will be called after push notification is received."""
+    def add_callback(self, callback: Callable, args) -> None:
+        """Add callback (method) that will be called after push notification is received.
+
+        Parameters
+        ----------
+        callback: Callable
+            Method or any callable that will be called when listener receives message.
+        args:
+            Arguments to the callback.
+        """
         self.__callbacks.append((callback, args))
 
     # def remove_callback(self, callback: Callable):
     #     self.__callbacks.remove(callback)
 
-    def clear_callbacks(self):
+    def clear_callbacks(self) -> None:
         """Remove all callbacks."""
         self.__callbacks.clear()
 
-    def start_listening(self, timeout=None):
+    def start_listening(self, timeout=None) -> None:
         """Start new thread listening optiSLang server port.
 
         Parameters
         ----------
-        timeout: float, opt
+        timeout: float, optional
             Listener socket timeout.
         """
         self.__thread = threading.Thread(
@@ -666,12 +674,12 @@ class TcpOslListener:
         self.__run_listening_thread = True
         self.__thread.start()
 
-    def stop_listening(self):
+    def stop_listening(self) -> None:
         """Stop listening optiSLang server port."""
         self.__run_listening_thread = False
         self.__thread = None
 
-    def __init_listener_socket(self, host: str, port_range: Tuple[int, int]) -> socket.socket:
+    def __init_listener_socket(self, host: str, port_range: Tuple[int, int]) -> None:
         """Initialize listener.
 
         Parameters
@@ -680,11 +688,6 @@ class TcpOslListener:
             A string representation of an IPv4/v6 address or domain name.
         port_range : Tuple[int, int]
             Defines the port range for port listener. Defaults to ``None``.
-
-        Returns
-        -------
-        socket
-            Listener socket.
         """
         self.__listener_socket = None
         for port in range(port_range[0], port_range[1] + 1):
@@ -704,7 +707,7 @@ class TcpOslListener:
 
         Parameters
         ----------
-        timeout: float, opt
+        timeout: float, optional
             Listener socket timeout.
         """
         start_time = time.time()
@@ -736,27 +739,27 @@ class TcpOslListener:
                 if client is not None:
                     client.disconnect()
 
-    def __execute_callbacks(self, response):
+    def __execute_callbacks(self, response) -> None:
         """Execute all callback."""
         for callback, args in self.__callbacks:
             callback(self, response, *args)
 
-    def is_listening(self):
+    def is_listening(self) -> None:
         """Return True if listener is listening."""
         return self.is_initialized() and self.__thread is not None and self.__thread.is_alive()
 
-    def join(self):
+    def join(self) -> None:
         """Wait until self.__thread is finished."""
         if not self.is_listening():
             raise RuntimeError("Listener is not listening.")
         self.__thread.join()
 
-    def cleanup_notifications(self, timeout: float = 0.2):
+    def cleanup_notifications(self, timeout: float = 0.2) -> None:
         """Cleanup previously unprocessed push notifications.
 
         Parameters
         ----------
-        timeout: float, opt
+        timeout: float, optional
             Listener socket timeout. Default value ``0.2``.
         """
         while True:
@@ -814,6 +817,9 @@ class TcpOslServer(OslServer):
         to contain a password entry. Defaults to ``None``.
     logger : Any, optional
         Object for logging. If ``None``, standard logging object is used. Defaults to ``None``.
+    shutdown_on_finished: bool, optional
+        Shut down when execution is finished and there are not any listeners registered.
+        It is ignored when the host and port parameters are specified. Defaults to ``True``.
 
     Raises
     ------
@@ -855,6 +861,7 @@ class TcpOslServer(OslServer):
         ini_timeout: float = 20,
         password: str = None,
         logger=None,
+        shutdown_on_finished=True,
     ) -> None:
         """Initialize a new instance of the ``TcpOslServer`` class."""
         self.__host = host
@@ -878,7 +885,7 @@ class TcpOslServer(OslServer):
 
         if self.__host is None or self.__port is None:
             self.__host = self.__class__._LOCALHOST
-            self._start_local(ini_timeout)
+            self._start_local(ini_timeout, shutdown_on_finished)
         else:
             listener = self.__create_listener(
                 timeout=self.__timeout,
@@ -1595,19 +1602,6 @@ class TcpOslServer(OslServer):
         else:
             self._logger.debug(f"Do not send STOP_GENTLY request, project status is: {status}")
 
-    def terminate_server_threads(self) -> None:
-        """Terminate all local threads created by this instance."""
-        self.__stop_listeners_registration_thread()
-        # Unregister listeners and close its sockets
-        for listener in self.__listeners.values():
-            if listener.uid is not None:
-                try:
-                    self._unregister_listener(listener)
-                except Exception as ex:
-                    self._logger.warn("Cannot unregister port listener: %s", ex)
-            if listener.is_listening():
-                listener.dispose()
-
     def _is_status_in_stopped_states(self, status: str) -> bool:
         """Compare current project status with list."""
         stopped_states = [
@@ -1640,14 +1634,16 @@ class TcpOslServer(OslServer):
         self._send_command(commands.unregister_listener(str(listener.uid), self.__password))
         listener.uid = None
 
-    def _start_local(self, ini_timeout: float) -> TcpOslListener:
+    def _start_local(self, ini_timeout: float, shutdown_on_finished: bool) -> None:
         """Start local optiSLang server.
 
         Parameters
         ----------
-        ini_timeout : float, optional
+        ini_timeout : float
             Time in seconds to listen to the optiSLang server port. If the port is not listened
             for specified time, the optiSLang server is not started and RuntimeError is raised.
+        shutdown_on_finished: bool
+            Shut down when execution is finished and there are not any listeners registered.
 
         Raises
         ------
@@ -1678,7 +1674,7 @@ class TcpOslServer(OslServer):
                 listener=(listener.host, listener.port),
                 listener_id=listener.uid,
                 notifications=[ServerNotification.ALL],
-                shutdown_on_finished=True,
+                shutdown_on_finished=shutdown_on_finished,
                 logger=self._logger,
             )
             self.__osl_process.start()
@@ -1713,6 +1709,7 @@ class TcpOslServer(OslServer):
         Returns
         -------
         TcpOslListener
+            Listener ready to be registered to optiSLang server.
 
         Raises
         ------
@@ -1738,7 +1735,23 @@ class TcpOslServer(OslServer):
         return listener
 
     def __create_exec_started_listener(self) -> TcpOslListener:
-        """Create exec_started listener and add to self.__listeners."""
+        """Create exec_started listener and add to self.__listeners.
+
+        Returns
+        -------
+        exec_started_listener: TcpOslListener
+            Listener registered to the optiSLang server and subscribed
+            for push notifications.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
         exec_started_listener = self.__create_listener(
             timeout=self.__timeout,
             name="ExecStarted",
@@ -1756,7 +1769,23 @@ class TcpOslServer(OslServer):
         return exec_started_listener
 
     def __create_exec_finished_listener(self) -> TcpOslListener:
-        """Create exec_finished listener and add to self.__listeners."""
+        """Create exec_finished listener and add to self.__listeners.
+
+        Returns
+        -------
+        exec_finished_listener: TcpOslListener
+            Listener registered to the optiSLang server and subscribed
+            for push notifications.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
         exec_finished_listener = self.__create_listener(
             timeout=self.__timeout,
             name="ExecFinished",
@@ -1775,7 +1804,7 @@ class TcpOslServer(OslServer):
         return exec_finished_listener
 
     def __start_listeners_registration_thread(self) -> None:
-        """Create new thread for refreshing of listeners registrations."""
+        """Create new thread for refreshing of listeners registrations and start it."""
         self.__listeners_registration_thread = threading.Thread(
             target=self.__refresh_listeners_registration,
             name="PyOptiSLang.ListenersRegistrationThread",
@@ -1818,6 +1847,11 @@ class TcpOslServer(OslServer):
                 "CHECK_FAILED", "EXEC_FAILED" ].
             Nodes: [ "ACTOR_STATE_CHANGED", "ACTOR_ACTIVE_CHANGED", "ACTOR_NAME_CHANGED",
                 "ACTOR_CONTENTS_CHANGED", "ACTOR_DATA_CHANGED" ].
+
+        Returns
+        -------
+        str
+            Uid of registered listener created by optiSLang server.
 
         Raises
         ------
