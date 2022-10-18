@@ -34,8 +34,7 @@ class ServerNotification(Enum):
     ACTOR_NAME_CHANGED = 13
     ACTOR_CONTENTS_CHANGED = 14
     ACTOR_DATA_CHANGED = 15
-    NUM_NOTIFICATIONS = 16
-    ALL = 17
+    ALL = 16
 
 
 class OslServerProcess:
