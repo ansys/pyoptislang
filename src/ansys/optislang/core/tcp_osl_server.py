@@ -2018,15 +2018,15 @@ class TcpOslServer(OslServer):
     ) -> None:
         """Terminate listener thread if execution finished or failed."""
         type = response.get("type", None)
-        if type in [ServerNotification.EXEC_FAILED.name or ServerNotification.CHECK_FAILED.name]:
+        if type in [ServerNotification.EXEC_FAILED.name, ServerNotification.CHECK_FAILED.name]:
             sender.stop_listening()
             sender.clear_callbacks()
-            target_queue.put("False")
+            target_queue.put(False)
             logger.error(f"Listener {sender.name} received error notification.")
         elif type in target_notifications:
             sender.stop_listening()
             sender.clear_callbacks()
-            target_queue.put("True")
+            target_queue.put(True)
             logger.debug(f"Listener {sender.name} received expected notification.")
         elif type is None:
             logger.error("Invalid response from server, push notification not evaluated.")
