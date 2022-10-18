@@ -1481,12 +1481,12 @@ class TcpOslServer(OslServer):
         if not already_running and (wait_for_started or wait_for_finished):
             self._logger.info(f"Waiting for started")
             successfully_started = wait_for_started_queue.get()
-            self._logger.info(f"Successfully_started: {successfully_started}.")
+            self._logger.info(f"Successfully started: {successfully_started}.")
 
         if wait_for_finished and (successfully_started or already_running):
             self._logger.info(f"Waiting for finished")
             successfully_finished = wait_for_finished_queue.get()
-            self._logger.info(f"Successfully_finished: {successfully_finished}.")
+            self._logger.info(f"Successfully finished: {successfully_finished}.")
         else:
             time.sleep(1)
 
