@@ -23,7 +23,7 @@ def osl_server_process():
     # Will be executed before each test
     osl_server_process = OslServerProcess(shutdown_on_finished=False)
     osl_server_process.start()
-    time.sleep(4)
+    time.sleep(5)
     return osl_server_process
 
 
@@ -57,7 +57,7 @@ def tcp_osl_server() -> tos.TcpOslServer:
         Class which provides access to optiSLang server using plain TCP/IP communication protocol.
     """
     tcp_osl_server = tos.TcpOslServer(host=_host, port=_port)
-    tcp_osl_server.set_timeout(timeout=8)
+    tcp_osl_server.set_timeout(timeout=10)
     return tcp_osl_server
 
 

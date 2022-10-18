@@ -9,7 +9,7 @@ pytestmark = pytest.mark.local_osl
 
 
 @pytest.fixture
-def optislang(scope="function", autouse=True) -> Optislang:
+def optislang() -> Optislang:
     """Create Optislang class.
 
     Returns
