@@ -1447,7 +1447,7 @@ class TcpOslServer(OslServer):
             exec_started_listener.add_callback(
                 self.__class__.__terminate_listener_thread,
                 (
-                    [ServerNotification.EXECUTION_STARTED.name],
+                    [ServerNotification.PROCESSING_STARTED.name],
                     wait_for_started_queue,
                     self._logger,
                 ),
@@ -1487,8 +1487,6 @@ class TcpOslServer(OslServer):
             self._logger.info(f"Waiting for finished")
             successfully_finished = wait_for_finished_queue.get()
             self._logger.info(f"Successfully finished: {successfully_finished}.")
-        else:
-            time.sleep(1)
 
     def stop(self, wait_for_finished: bool = True) -> None:
         """Stop project execution.
@@ -1757,7 +1755,7 @@ class TcpOslServer(OslServer):
             host=exec_started_listener.host,
             port=exec_started_listener.port,
             notifications=[
-                ServerNotification.EXECUTION_STARTED,
+                ServerNotification.PROCESSING_STARTED,
                 ServerNotification.EXEC_FAILED,
                 ServerNotification.CHECK_FAILED,
             ],
@@ -1840,8 +1838,8 @@ class TcpOslServer(OslServer):
             Either ["ALL"] or Sequence picked from below options:
             Server: [ "SERVER_UP", "SERVER_DOWN" ] (always be sent by default).
             Logging: [ "LOG_INFO", "LOG_WARNING", "LOG_ERROR", "LOG_DEBUG" ].
-            Project: [ "EXECUTION_STARTED", "EXECUTION_FINISHED", "NOTHING_PROCESSED",
-                "CHECK_FAILED", "EXEC_FAILED" ].
+            Project: [ "EXECUTION_STARTED", "PROCESSING_STARTED", "EXECUTION_FINISHED",
+                "NOTHING_PROCESSED", "CHECK_FAILED", "EXEC_FAILED" ].
             Nodes: [ "ACTOR_STATE_CHANGED", "ACTOR_ACTIVE_CHANGED", "ACTOR_NAME_CHANGED",
                 "ACTOR_CONTENTS_CHANGED", "ACTOR_DATA_CHANGED" ].
 
