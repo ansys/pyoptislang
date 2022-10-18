@@ -1366,16 +1366,7 @@ class TcpOslServer(OslServer):
         TimeoutError
             Raised when the parameter force is ``False`` and the timeout float value expires.
         """
-        self.__stop_listeners_registration_thread()
-        # Unregister listeners and close its sockets
-        for listener in self.__listeners.values():
-            if listener.uid is not None:
-                try:
-                    self._unregister_listener(listener)
-                except Exception as ex:
-                    self._logger.warn("Cannot unregister port listener: %s", ex)
-            if listener.is_listening():
-                listener.dispose()
+        self.__finish_all_threads()
 
         # Only in case shutdown_on_finished option is not set, actively send shutdown command
         if self.__osl_process is None or (
@@ -1901,6 +1892,18 @@ class TcpOslServer(OslServer):
             counter += check_for_refresh
             time.sleep(check_for_refresh)
         self._logger.debug("Stop refreshing listener registration, self.__refresh = False")
+
+    def __finish_all_threads(self) -> None:
+        """Stop listeners registration and unregister them."""
+        self.__stop_listeners_registration_thread()
+        for listener in self.__listeners.values():
+            if listener.uid is not None:
+                try:
+                    self._unregister_listener(listener)
+                except Exception as ex:
+                    self._logger.warn("Cannot unregister port listener: %s", ex)
+            if listener.is_listening():
+                listener.dispose()
 
     def _send_command(self, command: str) -> Dict:
         """Send command or query to the optiSLang server.
