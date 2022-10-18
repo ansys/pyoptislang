@@ -894,7 +894,10 @@ class TcpOslServer(OslServer):
             listener.uid = self.__register_listener(
                 host=listener.host,
                 port=listener.port,
-                notifications=[ServerNotification.ALL],
+                notifications=[
+                    ServerNotification.SERVER_UP,
+                    ServerNotification.SERVER_DOWN,
+                ],
             )
             self.__listeners["main"] = listener
             self.__start_listeners_registration_thread()
@@ -1664,7 +1667,10 @@ class TcpOslServer(OslServer):
                 password=self.__password,
                 listener=(listener.host, listener.port),
                 listener_id=listener.uid,
-                notifications=[ServerNotification.ALL],
+                notifications=[
+                    ServerNotification.SERVER_UP,
+                    ServerNotification.SERVER_DOWN,
+                ],
                 shutdown_on_finished=shutdown_on_finished,
                 logger=self._logger,
             )
