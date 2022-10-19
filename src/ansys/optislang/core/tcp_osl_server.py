@@ -1690,7 +1690,7 @@ class TcpOslServer(OslServer):
         self.__start_listeners_registration_thread()
 
     def __signal_handler(self, signum, frame):
-        self._logger.warning("Ctrl+c event captuted, terminating execution.")
+        self._logger.warning("Interrupt from keyboard (CTRL + C), terminating execution.")
         self.__stop_listeners_registration_thread()
         self.__osl_process = None
         quit()
