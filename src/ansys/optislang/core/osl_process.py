@@ -470,11 +470,9 @@ class OslServerProcess:
 
         if self.__notifications is not None:
             # Subscribe to push notifications sent to the listener.
-            cmd_arg = ""
+            args.append("--enable-notifications")
             for notification in self.__notifications:
-                cmd_arg += notification.name
-                cmd_arg += " "
-            args.append(f"--enable-notifications={cmd_arg.strip()}")
+                args.append(notification.name)
 
         if self.__additional_args is not None:
             for arg_name, arg_value in self.__additional_args.items():
