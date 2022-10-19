@@ -25,16 +25,17 @@ class ServerNotification(Enum):
     LOG_ERROR = 4
     LOG_DEBUG = 5
     EXECUTION_STARTED = 6
-    EXECUTION_FINISHED = 7
-    NOTHING_PROCESSED = 8
-    CHECK_FAILED = 9
-    EXEC_FAILED = 10
-    ACTOR_STATE_CHANGED = 11
-    ACTOR_ACTIVE_CHANGED = 12
-    ACTOR_NAME_CHANGED = 13
-    ACTOR_CONTENTS_CHANGED = 14
-    ACTOR_DATA_CHANGED = 15
-    NUM_NOTIFICATIONS = 16
+    PROCESSING_STARTED = 7
+    EXECUTION_FINISHED = 8
+    NOTHING_PROCESSED = 9
+    CHECK_FAILED = 10
+    EXEC_FAILED = 11
+    ACTOR_STATE_CHANGED = 12
+    ACTOR_ACTIVE_CHANGED = 13
+    ACTOR_NAME_CHANGED = 14
+    ACTOR_CONTENTS_CHANGED = 15
+    ACTOR_DATA_CHANGED = 16
+    ALL = 17
 
 
 class OslServerProcess:
@@ -469,11 +470,9 @@ class OslServerProcess:
 
         if self.__notifications is not None:
             # Subscribe to push notifications sent to the listener.
-            cmd_arg = ""
+            args.append("--enable-notifications")
             for notification in self.__notifications:
-                cmd_arg += notification.name
-                cmd_arg += " "
-            args.append(f"--enable-notifications={cmd_arg.strip()}")
+                args.append(notification.name)
 
         if self.__additional_args is not None:
             for arg_name, arg_value in self.__additional_args.items():
@@ -618,21 +617,16 @@ class OslServerProcess:
                 process.terminate()
             except psutil.NoSuchProcess:
                 self._logger.debug(
-                    "Cannot terminate child process PID: %s. " "The process does not exist.",
-                    process.pid,
+                    f"Cannot terminate child process PID: {process.pid}. "
+                    "The process does not exist."
                 )
 
         gone, alive = psutil.wait_procs(children, timeout=3)
-        for process in gone:
-            self._logger.debug(
-                "optiSLang server child process %s terminated with exit code %s.",
-                process,
-                process.returncode,
-            )
+
         for process in alive:
             self._logger.debug(
-                "optiSLang server child process %s could not be terminated and will be killed.",
-                process,
+                f"optiSLang server child process {process} could not be terminated "
+                "and will be killed.",
             )
             process.kill()
 

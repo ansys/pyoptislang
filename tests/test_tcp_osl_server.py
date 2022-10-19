@@ -1,5 +1,6 @@
 from contextlib import nullcontext as does_not_raise
 import os
+import socket
 import time
 
 import pytest
@@ -7,8 +8,10 @@ import pytest
 from ansys.optislang.core import OslServerProcess
 import ansys.optislang.core.tcp_osl_server as tos
 
-_host = "127.0.0.1"
+_host = socket.gethostbyname(socket.gethostname())
 _port = 5310
+
+
 _msg = '{ "What": "SYSTEMS_STATUS_INFO" }'
 
 pytestmark = pytest.mark.local_osl
@@ -16,10 +19,11 @@ pytestmark = pytest.mark.local_osl
 
 @pytest.fixture(scope="function", autouse=True)
 def osl_server_process():
-    # Will be executed before the first test
-    osl_server_process = OslServerProcess()
+    time.sleep(2)
+    # Will be executed before each test
+    osl_server_process = OslServerProcess(shutdown_on_finished=False)
     osl_server_process.start()
-    time.sleep(3)
+    time.sleep(5)
     return osl_server_process
 
 
@@ -53,11 +57,11 @@ def tcp_osl_server() -> tos.TcpOslServer:
         Class which provides access to optiSLang server using plain TCP/IP communication protocol.
     """
     tcp_osl_server = tos.TcpOslServer(host=_host, port=_port)
-    tcp_osl_server.set_timeout(timeout=3)
+    tcp_osl_server.set_timeout(timeout=10)
     return tcp_osl_server
 
 
-## TcpClient
+# TcpClient
 def test_connect_and_disconnect(osl_server_process, tcp_client):
     "Test ``connect``."
     with does_not_raise() as dnr:
@@ -114,7 +118,7 @@ def test_receive_file(osl_server_process, tcp_client, tmp_path):
     assert dnr is None
 
 
-## TcpOslServer
+# TcpOslServer
 def test_get_server_info(osl_server_process, tcp_osl_server):
     """Test ``_get_server_info``."""
     server_info = tcp_osl_server._get_server_info()

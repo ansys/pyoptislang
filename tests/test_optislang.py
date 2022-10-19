@@ -146,13 +146,12 @@ def test_stop(optislang):
     with does_not_raise() as dnr:
         optislang.run_python_script(
             r"""
-import time
 from py_os_design import *
 sens = actors.SensitivityActor("Sensitivity")
 add_actor(sens)
 python = actors.PythonActor('python_sleep')
 sens.add_actor(python)
-python.source = 'time.sleep(1)\noutput_value = input_value*2'
+python.source = 'import time\ntime.sleep(0.1)\noutput_value = input_value*2'
 python.add_parameter("input_value", PyOSDesignEntry(5.0))
 python.add_response(("output_value", PyOSDesignEntry(10)))
 connect(sens, "IODesign", python, "IDesign")
@@ -160,7 +159,6 @@ connect(python, "ODesign", sens, "IIDesign")
 """
         )
         optislang.start(wait_for_finished=False)
-        print(optislang.get_project_status())
         optislang.stop()
         optislang.start()
         optislang.stop()
@@ -175,13 +173,12 @@ def test_stop_gently(optislang):
     with does_not_raise() as dnr:
         optislang.run_python_script(
             r"""
-import time
 from py_os_design import *
 sens = actors.SensitivityActor("Sensitivity")
 add_actor(sens)
 python = actors.PythonActor('python_sleep')
 sens.add_actor(python)
-python.source = 'time.sleep(1)\noutput_value = input_value*2'
+python.source = 'import time\ntime.sleep(0.1)\noutput_value = input_value*2'
 python.add_parameter("input_value", PyOSDesignEntry(5.0))
 python.add_response(("output_value", PyOSDesignEntry(10)))
 connect(sens, "IODesign", python, "IDesign")
@@ -189,7 +186,6 @@ connect(python, "ODesign", sens, "IIDesign")
 """
         )
         optislang.start(wait_for_finished=False)
-        print(optislang.get_project_status())
         optislang.stop_gently()
         optislang.start()
         optislang.stop()
