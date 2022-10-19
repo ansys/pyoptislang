@@ -52,6 +52,9 @@ class Optislang:
         - WARNING: Log some oddities or potential problems.
         - INFO: Log some useful information that program works as expected.
         - DEBUG: The most grained logging.
+    shutdown_on_finished: bool, optional
+        Shut down when execution is finished and there are not any listeners registered.
+        It is ignored when the host and port parameters are specified. Defaults to ``True``.
 
     Raises
     ------
@@ -81,6 +84,7 @@ class Optislang:
         name: str = None,
         password: str = None,
         loglevel: str = None,
+        shutdown_on_finished: bool = True,
     ) -> None:
         """Initialize a new instance of the ``Optislang`` class."""
         self.__host = host
@@ -91,8 +95,8 @@ class Optislang:
         self.__ini_timeout = ini_timeout
         self.__name = name
         self.__password = password
-
-        self.log = LOG.add_instance_logger(self.name, self, loglevel)
+        self.__shutdown_on_finished = shutdown_on_finished
+        self.__logger = LOG.add_instance_logger(self.name, self, loglevel)
         self.__osl_server: OslServer = self.__init_osl_server("tcp")
 
     def __init_osl_server(self, server_type: str) -> OslServer:
@@ -125,6 +129,7 @@ class Optislang:
                 ini_timeout=self.__ini_timeout,
                 password=self.__password,
                 logger=self.log,
+                shutdown_on_finished=self.__shutdown_on_finished,
             )
         else:
             raise NotImplementedError(f'OptiSLang server of type "{server_type}" is not supported.')
@@ -146,6 +151,11 @@ class Optislang:
             else:
                 self.__name = f"optiSLang_{id(self)}"
         return self.__name
+
+    @property
+    def log(self):
+        """Return instance logger."""
+        return self.__logger
 
     def get_osl_version(self) -> str:
         """Get version of used optiSLang.
