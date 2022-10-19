@@ -5,6 +5,7 @@ import logging
 import os
 from queue import Queue
 import select
+import signal
 import socket
 import struct
 import threading
@@ -882,6 +883,7 @@ class TcpOslServer(OslServer):
         self.__listeners_registration_thread = None
         self.__refresh_listeners = threading.Event()
         self.__listeners_refresh_interval = 20
+        signal.signal(signal.SIGINT, self.__signal_handler)
 
         if self.__host is None or self.__port is None:
             self.__host = self.__class__._LOCALHOST
@@ -1686,6 +1688,12 @@ class TcpOslServer(OslServer):
 
         self.__listeners["main_listener"] = listener
         self.__start_listeners_registration_thread()
+
+    def __signal_handler(self, signum, frame):
+        self._logger.warning("Ctrl+c event captuted, terminating execution.")
+        self.__stop_listeners_registration_thread()
+        self.__osl_process = None
+        quit()
 
     def __create_listener(self, timeout: float, name: str, uid: str = None) -> TcpOslListener:
         """Create new listener.
