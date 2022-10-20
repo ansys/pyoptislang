@@ -1684,9 +1684,10 @@ class TcpOslServer(OslServer):
 
         finally:
             if self.__port is None:
-                self.__osl_process.terminate()
-                self.__osl_process = None
-                raise RuntimeError("Cannot get optiSLang server port.")
+                if self.__osl_process is not None:
+                    self.__osl_process.terminate()
+                    self.__osl_process = None
+                    raise RuntimeError("Cannot get optiSLang server port.")
 
         self.__listeners["main_listener"] = listener
         self.__start_listeners_registration_thread()
