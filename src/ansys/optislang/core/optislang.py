@@ -68,7 +68,7 @@ class Optislang:
 
     >>> from ansys.optislang.core import Optislang
     >>> osl = Optislang()
-    >>> osl_version = osl.get_osl_version()
+    >>> osl_version = osl.get_osl_version_string()
     >>> print(osl_version)
     >>> osl.shutdown()
     """
@@ -138,7 +138,7 @@ class Optislang:
         """Return product name, version of optiSLang and PyOptiSLang version."""
         return (
             f"Product name: optiSLang\n"
-            f"Version: {self.get_osl_version()}\n"
+            f"Version: {self.get_osl_version_string()}\n"
             f"PyOptiSLang: {version('ansys.optislang.core')}"
         )
 
@@ -157,13 +157,33 @@ class Optislang:
         """Return instance logger."""
         return self.__logger
 
-    def get_osl_version(self) -> str:
+    def get_osl_version_string(self) -> str:
         """Get version of used optiSLang.
 
         Returns
         -------
         str
             optiSLang version.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        return self.__osl_server.get_osl_version_string()
+
+    def get_osl_version(self) -> str:
+        """Get version of used optiSLang.
+
+        Returns
+        -------
+        tuple
+            optiSLang version as tuple containing
+            major version, minor version, maintenance version and revision.
 
         Raises
         ------

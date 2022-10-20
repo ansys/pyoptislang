@@ -136,8 +136,8 @@ def test_get_basic_project_info(osl_server_process, tcp_osl_server):
 
 
 def test_get_osl_version(osl_server_process, tcp_osl_server):
-    """Test ``get_osl_version``."""
-    version = tcp_osl_server.get_osl_version()
+    """Test ``get_osl_version_string``."""
+    version = tcp_osl_server.get_osl_version_string()
     tcp_osl_server.shutdown()
     assert isinstance(version, str)
     assert bool(version)

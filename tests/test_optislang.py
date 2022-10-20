@@ -21,8 +21,8 @@ def optislang(scope="function", autouse=True) -> Optislang:
 
 
 def test_get_osl_version(optislang):
-    "Test ``get_osl_version``."
-    version = optislang.get_osl_version()
+    "Test ``get_osl_version_string``."
+    version = optislang.get_osl_version_string()
     assert isinstance(version, str)
     with does_not_raise() as dnr:
         optislang.shutdown()
