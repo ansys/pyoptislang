@@ -745,7 +745,8 @@ class TcpOslListener:
 
             except TimeoutError or socket.timeout:
                 self._logger.warning(f"Listener {self.uid} listening timed out.")
-                self.stop_listening()
+                response = {"type": "TimeoutError"}
+                self.__execute_callbacks(response)
                 break
             except Exception as ex:
                 self._logger.warning(ex)
@@ -2064,7 +2065,7 @@ class TcpOslServer(OslServer):
         response: dict,
         target_notifications: List[str],
         target_queue: Queue,
-        logger,
+        logger: logging.Logger,
     ) -> None:
         """Terminate listener thread if execution finished or failed."""
         type = response.get("type", None)
