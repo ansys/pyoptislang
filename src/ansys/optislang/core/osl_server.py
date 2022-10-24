@@ -1,6 +1,7 @@
 """Contains abstract optiSLang server class."""
 
 from abc import ABC, abstractmethod
+from pathlib import Path
 from typing import Sequence, Tuple, Union
 
 
@@ -64,12 +65,12 @@ class OslServer(ABC):
         pass
 
     @abstractmethod
-    def get_project_location(self) -> str:
+    def get_project_location(self) -> Path:
         """Get path to the optiSLang project file.
 
         Returns
         -------
-        str
+        Path
             Path to the optiSLang project file. If no project is loaded in the optiSLang,
             returns ``None``.
 
@@ -151,12 +152,12 @@ class OslServer(ABC):
         pass
 
     @abstractmethod
-    def get_working_dir(self) -> str:
+    def get_working_dir(self) -> Path:
         """Get path to the optiSLang project working directory.
 
         Returns
         -------
-        str
+        Path
             Path to the optiSLang project working directory. If no project is loaded
             in the optiSLang, returns ``None``.
 
@@ -189,7 +190,7 @@ class OslServer(ABC):
     @abstractmethod
     def open(
         self,
-        file_path: str,
+        file_path: Union[str, Path],
         force: bool,
         restore: bool,
         reset: bool,
@@ -198,7 +199,7 @@ class OslServer(ABC):
 
         Parameters
         ----------
-        file_path : str
+        file_path : Union[str, Path]
             Path to the optiSLang project file to open.
         force : bool
             # TODO: description of this parameter is missing in ANSYS help
@@ -267,14 +268,14 @@ class OslServer(ABC):
     @abstractmethod
     def run_python_file(
         self,
-        file_path: str,
+        file_path: Union[str, Path],
         args: Union[Sequence[object], None] = None,
     ) -> Tuple[str, str]:
         """Read python script from the file, load it in a project context and execute it.
 
         Parameters
         ----------
-        file_path : str
+        file_path : Union[str, Path]
             Path to the Python script file which content is supposed to be executed on the server.
         args : Sequence[object], None, optional
             Sequence of arguments used in Python script. Defaults to ``None``.
@@ -315,7 +316,7 @@ class OslServer(ABC):
     @abstractmethod
     def save_as(
         self,
-        file_path: str,
+        file_path: Union[str, Path],
         force: bool,
         restore: bool,
         reset: bool,
@@ -324,7 +325,7 @@ class OslServer(ABC):
 
         Parameters
         ----------
-        file_path : str
+        file_path : Union[str, Path]
             Path where to save the project file.
         force : bool
             # TODO: description of this parameter is missing in ANSYS help
@@ -345,12 +346,12 @@ class OslServer(ABC):
         pass
 
     @abstractmethod
-    def save_copy(self, file_path: str) -> None:
+    def save_copy(self, file_path: Union[str, Path]) -> None:
         """Save the current project as a copy to a location.
 
         Parameters
         ----------
-        file_path : str
+        file_path : Union[str, Path]
             Path where to save the project copy.
 
         Raises

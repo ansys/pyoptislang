@@ -1,4 +1,5 @@
 """Contains Optislang class which provides python API for optiSLang application."""
+from pathlib import Path
 from typing import Sequence, Tuple, Union
 
 from importlib_metadata import version
@@ -25,10 +26,10 @@ class Optislang:
         Defaults to ``None``.
     port : int, optional
         A numeric port number of running optiSLang server. Defaults to ``None``.
-    executable : str, optional
+    executable : Union[str, Path], optional
         Path to the optiSLang executable file which supposed to be executed on localhost.
         It is ignored when the host and port parameters are specified. Defaults to ``None``.
-    project_path : str, optional
+    project_path : Union[str, Path], optional
         Path to the optiSLang project file which is supposed to be used by new local optiSLang
         server. It is ignored when the host and port parameters are specified.
         - If the project file exists, it is opened.
@@ -74,8 +75,8 @@ class Optislang:
         self,
         host: str = None,
         port: int = None,
-        executable: str = None,
-        project_path: str = None,
+        executable: Union[str, Path] = None,
+        project_path: Union[str, Path] = None,
         no_save: bool = False,
         ini_timeout: Union[int, float] = 20,
         name: str = None,
@@ -85,8 +86,8 @@ class Optislang:
         """Initialize a new instance of the ``Optislang`` class."""
         self.__host = host
         self.__port = port
-        self.__executable = executable
-        self.__project_path = project_path
+        self.__executable = Path(executable) if executable is not None else None
+        self.__project_path = Path(project_path) if project_path is not None else None
         self.__no_save = no_save
         self.__ini_timeout = ini_timeout
         self.__name = name
@@ -185,12 +186,12 @@ class Optislang:
         """
         return self.__osl_server.get_project_description()
 
-    def get_project_location(self) -> str:
+    def get_project_location(self) -> Path:
         """Get path to the optiSLang project file.
 
         Returns
         -------
-        str
+        Path
             Path to the optiSLang project file. If no project is loaded in the optiSLang,
             returns ``None``.
 
@@ -268,12 +269,12 @@ class Optislang:
         """
         return self.__osl_server.get_timeout()
 
-    def get_working_dir(self) -> str:
+    def get_working_dir(self) -> Path:
         """Get path to the optiSLang project working directory.
 
         Returns
         -------
-        str
+        Path
             Path to the optiSLang project working directory. If no project is loaded
             in the optiSLang, returns ``None``.
 
@@ -334,14 +335,14 @@ class Optislang:
 
     def run_python_file(
         self,
-        file_path: str,
+        file_path: Union[str, Path],
         args: Union[Sequence[object], None] = None,
     ) -> Tuple[str, str]:
         """Read python script from the file, load it in a project context and execute it.
 
         Parameters
         ----------
-        file_path : str
+        file_path : Union[str, Path]
             Path to the Python script file which content is supposed to be executed on the server.
         args : Sequence[object], None, optional
             Sequence of arguments used in Python script. Defaults to ``None``.
@@ -364,12 +365,12 @@ class Optislang:
         """
         return self.__osl_server.run_python_file(file_path, args)
 
-    def save_copy(self, file_path: str) -> None:
+    def save_copy(self, file_path: Union[str, Path]) -> None:
         """Save the current project as a copy to a location.
 
         Parameters
         ----------
-        file_path : str
+        file_path : Union[str, Path]
             Path where to save the project copy.
 
         Raises

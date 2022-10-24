@@ -1,14 +1,14 @@
 """Utitilies module."""
 import collections
-from glob import glob
 import os
+from pathlib import Path
 import re
 from typing import Dict, Iterable, OrderedDict, Tuple, Union
 
 from ansys.optislang.core import FIRST_SUPPORTED_VERSION
 
 
-def get_osl_exec(osl_version: Union[int, str, None] = None) -> Union[Tuple[int, str], None]:
+def get_osl_exec(osl_version: Union[int, str, None] = None) -> Union[Tuple[int, Path], None]:
     """Return path to the optiSLang executable file.
 
     Parameters
@@ -19,7 +19,7 @@ def get_osl_exec(osl_version: Union[int, str, None] = None) -> Union[Tuple[int, 
 
     Returns
     -------
-    Tuple[int, str], None
+    Tuple[int, Path], None
         optiSLang version and path to the corresponding executable, if exists. If both ANSYS
         and standalone installations are present, ANSYS installation is returned. If no executable
         is found for specified version, returns ``None``.
@@ -42,12 +42,12 @@ def get_osl_exec(osl_version: Union[int, str, None] = None) -> Union[Tuple[int, 
         return (osl_version, osl_execs[osl_version][0])
 
 
-def find_all_osl_exec() -> OrderedDict[int, Tuple[str, ...]]:
+def find_all_osl_exec() -> OrderedDict[int, Tuple[Path, ...]]:
     """Find available optiSLang executables.
 
     Returns
     -------
-    OrderedDict[int, Tuple[str, ...]]
+    OrderedDict[int, Tuple[Path, ...]]
         Ordered dictionary of found optiSLang executables. The dictionary key corresponds
         to the optiSLang version and value to the tuple of optiSLang executable paths (ansys
         installation is first in the tuple, standalone installations then). The dictionary is
@@ -69,12 +69,12 @@ def find_all_osl_exec() -> OrderedDict[int, Tuple[str, ...]]:
         raise NotImplementedError(f"Unsupported OS {os.name}.")
 
 
-def _find_all_osl_exec_in_windows() -> OrderedDict[int, Tuple[str, ...]]:
+def _find_all_osl_exec_in_windows() -> OrderedDict[int, Tuple[Path, ...]]:
     """Find all optiSLang executables on Windows operating system.
 
     Returns
     -------
-    OrderedDict[int, Tuple[str, ...]]
+    OrderedDict[int, Tuple[Path, ...]]
         Ordered dictionary of found optiSLang executables. The dictionary key corresponds
         to the optiSLang version and value to the tuple of optiSLang executable paths.
         The dictionary is sorted by the version number in descending order.
@@ -90,12 +90,12 @@ def _find_all_osl_exec_in_windows() -> OrderedDict[int, Tuple[str, ...]]:
     return _sort_osl_execs(all_osl_execs)
 
 
-def _find_all_osl_exec_in_posix() -> OrderedDict[int, Tuple[str, ...]]:
+def _find_all_osl_exec_in_posix() -> OrderedDict[int, Tuple[Path, ...]]:
     """Find all optiSLang executables on POSIX compliant operating systems.
 
     Returns
     -------
-    OrderedDict[int, Tuple[str, ...]]
+    OrderedDict[int, Tuple[Path, ...]]
         Ordered dictionary of found optiSLang executables. The dictionary key corresponds
         to the optiSLang version and value to the tuple of optiSLang executable paths.
         The dictionary is sorted by the version number in descending order.
@@ -107,7 +107,7 @@ def _find_all_osl_exec_in_posix() -> OrderedDict[int, Tuple[str, ...]]:
     return _sort_osl_execs(all_osl_execs)
 
 
-def _find_ansys_osl_execs_in_windows_envars() -> Dict[int, str]:
+def _find_ansys_osl_execs_in_windows_envars() -> Dict[int, Path]:
     """Find optiSLang executables based on environmental variables on Windows operating system.
 
     Ansys AWP_ROOT environment variable is used to determine the root directory of the ANSYS
@@ -115,61 +115,61 @@ def _find_ansys_osl_execs_in_windows_envars() -> Dict[int, str]:
 
     Returns
     -------
-    Dict[int, str]
+    Dict[int, Path]
         Dictionary of found optiSLang executables. Dictionary key is an optiSLang version and
         dictionary value is a path to the corresponding optiSLang executable.
     """
     osl_execs = {}
     awp_root_envars = _get_environ_vars(pattern=f"^AWP_ROOT.*")
     for awp_root_key, awp_root_value in awp_root_envars.items():
-        osl_exec_path = os.path.join(awp_root_value, "optiSLang", "optislang.com")
-        if os.path.isfile(osl_exec_path):
+        osl_exec_path = Path(awp_root_value) / "optiSLang" / "optislang.com"
+        if osl_exec_path.is_file():
             ansys_version = _try_cast_str_to_int(awp_root_key[-3:])
             if ansys_version >= FIRST_SUPPORTED_VERSION:
                 osl_execs[ansys_version] = osl_exec_path
     return osl_execs
 
 
-def _find_ansys_osl_execs_in_windows_program_files() -> Dict[int, str]:
+def _find_ansys_osl_execs_in_windows_program_files() -> Dict[int, Path]:
     """Find optiSLang executables in Program Files directory on Windows operating system.
 
     Search is performed in standard installation directory of ANSYS products.
 
     Returns
     -------
-    Dict[int, str]
+    Dict[int, Path]
         Dictionary of found optiSLang executables. Dictionary key is an optiSLang version and
         dictionary value is a path to the corresponding optiSLang executable.
     """
     osl_execs = {}
     program_files_path = _get_program_files_path()
-    for ansys_version_dir in glob(os.path.join(program_files_path, "ANSYS Inc", "v*")):
-        ansys_version = _try_cast_str_to_int(ansys_version_dir[-3:])
+    for ansys_version_dir in (program_files_path / "ANSYS Inc").glob("v*/"):
+        ansys_version = _try_cast_str_to_int(ansys_version_dir.name[1:])
         if ansys_version >= FIRST_SUPPORTED_VERSION:
-            osl_exec_path = os.path.join(ansys_version_dir, "optiSLang", "optislang.com")
-            if os.path.isfile(osl_exec_path):
+            osl_exec_path = ansys_version_dir / "optiSLang" / "optislang.com"
+            if osl_exec_path.is_file():
                 osl_execs[ansys_version] = osl_exec_path
     return osl_execs
 
 
-def _find_standalone_osl_execs_in_windows() -> Dict[int, str]:
+def _find_standalone_osl_execs_in_windows() -> Dict[int, Path]:
     """Find executables of standalone optiSLang installations on Windows operating system.
 
     Returns
     -------
-    Dict[int, str]
+    Dict[int, Path]
         Dictionary of found optiSLang executables. Dictionary key is an optiSLang version and
         dictionary value is a path to the corresponding optiSLang executable.
     """
     osl_execs = {}
-    root_install_dir = os.path.join(_get_program_files_path(), "Dynardo", "Ansys optiSLang")
-    if os.path.isdir(root_install_dir):
-        for osl_version_dir in glob(os.path.join(root_install_dir, "*")):
-            osl_exec_path = os.path.join(root_install_dir, osl_version_dir, "optislang.com")
+    root_install_dir = _get_program_files_path() / "Dynardo" / "Ansys optiSLang"
+    if root_install_dir.is_dir():
+        for osl_version_dir in root_install_dir.glob("*/"):
+            osl_exec_path = osl_version_dir / "optislang.com"
             if os.path.isfile(osl_exec_path):
                 # convert version fmt "yyyy Rx" to "yyx"
                 # TODO: add '$' at the end of regex pattern to disable dev version
-                match = re.findall("[2][0][1-9][0-9] R[1-9]", osl_version_dir)
+                match = re.findall("[2][0][1-9][0-9] R[1-9]", str(osl_version_dir))
                 if match:
                     ansys_version = _try_cast_str_to_int(match[0][2:4] + match[0][6])
                     if ansys_version >= FIRST_SUPPORTED_VERSION:
@@ -177,50 +177,50 @@ def _find_standalone_osl_execs_in_windows() -> Dict[int, str]:
     return osl_execs
 
 
-def _find_ansys_osl_execs_in_posix() -> Dict[int, str]:
+def _find_ansys_osl_execs_in_posix() -> Dict[int, Path]:
     """Find optiSLang executables in default ANSYS paths on POSIX compliant operating systems.
 
     Search is performed in standard installation paths of ANSYS products.
 
     Returns
     -------
-    Dict[int, str]
+    Dict[int, Path]
         Dictionary of found optiSLang executables. Dictionary key is an optiSLang version and
         dictionary value is a path to the corresponding optiSLang executable.
     """
     osl_execs = {}
     base_path = None
-    for ansys_dir in ["/usr/ansys_inc", "/ansys_inc"]:
-        if os.path.isdir(ansys_dir):
+    for ansys_dir in [Path("/usr/ansys_inc"), Path("/ansys_inc")]:
+        if ansys_dir.is_dir():
             base_path = ansys_dir
     if base_path is not None:
-        for ansys_version_dir in glob(os.path.join(base_path, "v*")):
-            ansys_version = _try_cast_str_to_int(ansys_version_dir[-3:])
+        for ansys_version_dir in base_path.glob("v*/"):
+            ansys_version = _try_cast_str_to_int(ansys_version_dir.name[1:])
             if ansys_version >= FIRST_SUPPORTED_VERSION:
-                osl_exec_path = os.path.join(ansys_version_dir, "optiSLang", "optislang")
-                if os.path.isfile(osl_exec_path):
+                osl_exec_path = ansys_version_dir / "optiSLang" / "optislang"
+                if osl_exec_path.is_file():
                     osl_execs[ansys_version] = osl_exec_path
     return osl_execs
 
 
-def _find_standalone_osl_execs_in_posix() -> Dict[int, str]:
+def _find_standalone_osl_execs_in_posix() -> Dict[int, Path]:
     """Find executables of standalone optiSLang installations on POSIX compliant operating systems.
 
     Returns
     -------
-    Dict[int, str]
+    Dict[int, Path]
         Dictionary of found optiSLang executables. Dictionary key is an optiSLang version and
         dictionary value is a path to the corresponding optiSLang executable.
     """
     osl_execs = {}
-    root_install_dir = "/opt/dynardo"
-    if os.path.isdir(root_install_dir):
-        for osl_version_dir in glob(os.path.join(root_install_dir, "*")):
-            osl_exec_path = os.path.join(root_install_dir, osl_version_dir, "optislang")
-            if os.path.isfile(osl_exec_path):
+    root_install_dir = Path("/opt/dynardo")
+    if root_install_dir.is_dir():
+        for osl_version_dir in root_install_dir.glob("*/"):
+            osl_exec_path = osl_version_dir / "optislang"
+            if osl_exec_path.is_file():
                 # convert version fmt "yyyy Rx" to "yyx"
                 # TODO: add '$' at the end of regex pattern to disable dev version
-                match = re.findall("[2][0][1-9][0-9]R[1-9]", osl_version_dir)
+                match = re.findall("[2][0][1-9][0-9]R[1-9]", str(osl_version_dir))
                 if match:
                     ansys_version = _try_cast_str_to_int(match[0][2:4] + match[0][5])
                     if ansys_version >= FIRST_SUPPORTED_VERSION:
@@ -228,18 +228,20 @@ def _find_standalone_osl_execs_in_posix() -> Dict[int, str]:
     return osl_execs
 
 
-def _merge_osl_exec_dicts(osl_execs_dicts: Iterable[Dict[int, str]]) -> Dict[int, Tuple[str, ...]]:
+def _merge_osl_exec_dicts(
+    osl_execs_dicts: Iterable[Dict[int, Path]]
+) -> Dict[int, Tuple[Path, ...]]:
     """Merge dictionaries of optiSLang executables into one dictionary.
 
     Parameters
     ----------
-    osl_execs_dicts : Iterable[Dict[int, str]]
+    osl_execs_dicts : Iterable[Dict[int, Path]]
         Iterable of dictionaries of optiSLang executables. In each dictionary, key is an optiSLang
         version and value is a corresponding path to the optiSLang executable.
 
     Returns
     -------
-    Dict[int, Tuple[str, ...]]
+    Dict[int, Tuple[Path, ...]]
         Merged dictionary in which the key is an optiSLang version and value is a tuple of paths
         to the corresponding optiSLang executables.
     """
@@ -277,7 +279,7 @@ def _sort_osl_execs(osl_execs: Dict[int, Tuple[str, ...]]) -> OrderedDict[int, T
     return collections.OrderedDict(sorted(osl_execs.items(), reverse=True))
 
 
-def _get_program_files_path() -> str:
+def _get_program_files_path() -> Path:
     """Get the "Program Files" directory path on Windows operating system.
 
     Returns
@@ -285,7 +287,7 @@ def _get_program_files_path() -> str:
     str
         Path to the "Program Files" directory.
     """
-    return os.environ.get("ProgramFiles", "C:\\Program Files")
+    return Path(os.environ.get("ProgramFiles", "C:\\Program Files"))
 
 
 def _get_environ_vars(pattern: str = ".*") -> Dict:
