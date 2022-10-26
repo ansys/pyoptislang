@@ -176,7 +176,7 @@ class Optislang:
         """
         return self.__osl_server.get_osl_version_string()
 
-    def get_osl_version(self) -> str:
+    def get_osl_version(self) -> Tuple[Union[int, None], ...]:
         """Get version of used optiSLang.
 
         Returns

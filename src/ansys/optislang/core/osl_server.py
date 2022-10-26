@@ -43,7 +43,7 @@ class OslServer(ABC):
         pass
 
     @abstractmethod
-    def get_osl_version(self) -> str:
+    def get_osl_version(self) -> Tuple[Union[int, None], ...]:
         """Get version of used optiSLang.
 
         Returns

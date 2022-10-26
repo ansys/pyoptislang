@@ -981,7 +981,7 @@ class TcpOslServer(OslServer):
         server_info = self._get_server_info()
         return server_info["application"]["version"]
 
-    def get_osl_version(self) -> str:
+    def get_osl_version(self) -> Tuple[Union[int, None], ...]:
         """Get version of used optiSLang.
 
         Returns
