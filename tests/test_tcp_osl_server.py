@@ -4,12 +4,14 @@ import time
 
 import pytest
 
-from ansys.optislang.core import OslServerProcess
+from ansys.optislang.core import OslServerProcess, examples
+from ansys.optislang.core.project_parametric import Design, ParameterManager
 import ansys.optislang.core.tcp_osl_server as tos
 
 _host = "127.0.0.1"
 _port = 5310
 _msg = '{ "What": "SYSTEMS_STATUS_INFO" }'
+parametric_project = examples.get_files("calculator_with_params")[1]
 
 pytestmark = pytest.mark.local_osl
 
@@ -285,3 +287,102 @@ def test_shutdown(tcp_osl_server):
     with does_not_raise() as dnr:
         server.shutdown()
     assert dnr is None
+
+
+# #######################################################################
+# TODO: TEST properly with implemented `open` method or remake all tests
+#       so that OslServer opens parametric_project.
+# #######################################################################
+
+
+def test_get_nodes_dict(tcp_osl_server):
+    "Test ``get_nodes_dict``."
+    node_dict = tcp_osl_server.get_nodes_dict()
+    assert isinstance(node_dict, dict)
+    # assert node_dict[0]['name'] == 'Calculator'
+    tcp_osl_server.shutdown()
+
+
+def test_get_parameter_manager(tcp_osl_server):
+    "Test ``get_parameter_manager``."
+    par_manager = tcp_osl_server.get_parameter_manager()
+    assert isinstance(par_manager, ParameterManager)
+    tcp_osl_server.shutdown()
+
+
+def test_get_parameters_list(tcp_osl_server):
+    "Test ``get_parameters_list``."
+    params = tcp_osl_server.get_parameters_list()
+    assert isinstance(params, list)
+    # assert len(params) > 0
+    # assert set(['a', 'b']) == set(params)
+    tcp_osl_server.shutdown()
+
+
+def test_create_design(tcp_osl_server):
+    "Test ``create_design``."
+    inputs = {"a": 5, "b": 10}
+    design = tcp_osl_server.create_design(inputs)
+    tcp_osl_server.shutdown()
+
+    assert isinstance(design, Design)
+    assert isinstance(design.parameters["a"], (int, float))
+    design.set_parameter("a", 10)
+    assert design.parameters["a"] == 10
+    design.set_parameters({"b": 20, "c": 30})
+    assert design.parameters["c"] == 30
+    direct_design = Design(inputs={"a": 5, "b": 10})
+    assert isinstance(direct_design, Design)
+    assert isinstance(direct_design.parameters["b"], (int, float))
+
+
+def test_evaluate_design(tcp_osl_server):
+    "Test ``evaluate_design``."
+    design = Design(inputs={"a": 5, "b": 10})
+    assert design.status == "IDLE"
+    assert design.id == "NOT ASSIGNED"
+    result = tcp_osl_server.evaluate_design(design)
+    tcp_osl_server.shutdown()
+
+    assert isinstance(result, tuple)
+    assert isinstance(result[0], dict)
+    assert isinstance(result[1], dict)
+    # assert design.status == 'SUCCEEDED'
+    assert isinstance(design.responses, dict)
+    # assert design.responses['c'] == 15
+    assert isinstance(design.criteria, dict)
+
+
+def test_evaluate_multiple_designs(tcp_osl_server):
+    designs = [
+        Design(inputs={"a": 1, "b": 2}),
+        Design(inputs={"a": 3, "b": 4}),
+        Design(inputs={"a": 5, "b": 6}),
+        Design(inputs={"e": 7, "f": 8}),
+    ]
+    results = tcp_osl_server.evaluate_multiple_designs(designs)
+    tcp_osl_server.shutdown()
+
+    for result in results:
+        assert isinstance(result, tuple)
+        assert isinstance(result[0], dict)
+        assert isinstance(result[1], dict)
+        # assert 'b' in result[0]
+        # assert 'c' in result[1]
+
+
+def test_validate_design():
+    tcp_osl_server = tos.TcpOslServer(host=_host, port=_port, project_path=parametric_project)
+    designs = [
+        Design(inputs={"a": 1, "b": 2}),
+        Design(inputs={"e": 3, "f": 4}),
+        Design(inputs={"a": 5, "g": 6}),
+    ]
+    for design in designs:
+        result = tcp_osl_server.validate_design(design)
+        print(result)
+        assert isinstance(result[0], str)
+        assert isinstance(result[1], bool)
+        assert isinstance(result[2], list)
+
+    tcp_osl_server.shutdown()

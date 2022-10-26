@@ -5,7 +5,7 @@ Ten bar truss
 -------------
 
 Create ARSM ten_bar_truss flow in batch (using ``arsm_ten_bar_truss.py``),
-modify this flow (using ``ten_bar_modify_parameters`` and ``ten_bar_truss_lc2``),
+modify this flow (using ``ten_bar_modify_parameters.py`` and ``ten_bar_truss_lc2.py``),
 run this project (and optionally save_copy). More details in individual python scripts and
 ten bar truss example in optiSLang tutorial section.
 """
@@ -16,9 +16,9 @@ ten bar truss example in optiSLang tutorial section.
 from ansys.optislang.core import Optislang
 import ansys.optislang.core.examples as examples
 
-#########################################################
-# Create ``Optislang()`` instance.
-#########################################################
+#################################################################################
+# Create :class:`Optislang <ansys.optislang.core.optislang.Optislang>` instance.
+#################################################################################
 osl = Optislang()
 print(osl)
 

@@ -66,7 +66,10 @@ example_files = {
     "python_node": None,
     "optimizer_settings": None,
     "sensitivity_settings": None,
-    "simple_calculator": None,
+    "simple_calculator": os.path.join(module_path, "00_run_script", "files", "calculator.opf"),
+    "calculator_with_params": os.path.join(
+        module_path, "00_run_script", "files", "calculator_with_params.opf"
+    ),
 }
 
 # dictionary of scripts to be run
@@ -136,4 +139,5 @@ example_scripts = {
     "simple_calculator": os.path.join(
         module_path, "00_run_script", "scripts", "simple_calculator.py"
     ),
+    "calculator_with_params": None,
 }

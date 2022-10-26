@@ -1,11 +1,14 @@
 """Contains Optislang class which provides python API for optiSLang application."""
-from typing import Sequence, Tuple, Union
+from typing import TYPE_CHECKING, Dict, Iterable, List, Sequence, Tuple, Union
 
 from importlib_metadata import version
 
 from ansys.optislang.core import LOG
-from ansys.optislang.core.osl_server import OslServer
 from ansys.optislang.core.tcp_osl_server import TcpOslServer
+
+if TYPE_CHECKING:
+    from ansys.optislang.core.osl_server import OslServer
+    from ansys.optislang.core.project_parametric import Design, ParameterManager
 
 
 class Optislang:
@@ -38,7 +41,7 @@ class Optislang:
     no_save : bool, optional
         Determines whether not to save the specified project after all other actions are completed.
         It is ignored when the host and port parameters are specified. Defaults to ``False``.
-    ini_timeout : Union[int, float], optional
+    ini_timeout : float, optional
         Time in seconds to connect to the optiSLang server. Defaults to 20 s.
     name : str, optional
         Identifier of the optiSLang instance.
@@ -95,7 +98,7 @@ class Optislang:
         self._logger = LOG.add_instance_logger(self.name, self, loglevel)
         self.__osl_server: OslServer = self.__init_osl_server("tcp")
 
-    def __init_osl_server(self, server_type: str) -> OslServer:
+    def __init_osl_server(self, server_type: str) -> "OslServer":
         """Initialize optiSLang server.
 
         Parameters
@@ -132,8 +135,12 @@ class Optislang:
     def __str__(self):
         """Return product name, version of optiSLang and PyOptiSLang version."""
         return (
-            f"Product name: optiSLang \nVersion: {self.get_osl_version()} \nPyOptiSLang: "
-            f"{version('ansys.optislang.core')}"
+            "----------------------------------------------------------------------\n"
+            f"Product name: optiSLang\n"
+            f"Version: {self.get_osl_version()}\n"
+            f"PyOptiSLang: {version('ansys.optislang.core')}\n"
+            f"Project name: {self.get_project_name()}\n"
+            "----------------------------------------------------------------------"
         )
 
     @property
@@ -501,3 +508,123 @@ class Optislang:
             Raised when the timeout float value expires.
         """
         self.__osl_server.stop_gently(wait_for_finish)
+
+    # new functionality
+    def get_nodes_dict(self) -> Dict:
+        """Return dictionary of nodes in root level."""
+        return self.__osl_server.get_nodes_dict()
+
+    def get_parameter_manager(self) -> "ParameterManager":
+        """Return instance of class ``ParameterManager``."""
+        return self.__osl_server.get_parameter_manager()
+
+    def get_parameters_list(self) -> List:
+        """Return list of defined parameters.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        # TODO: create test
+        return self.__osl_server.get_parameters_list()
+
+    def create_design(self, inputs: Dict = None) -> "Design":
+        """Return a new instance of ``Design`` class.
+
+        Parameters
+        ----------
+        inputs: Dict, opt
+            Dictionary of parameters and it's values {'parname': value, ...}.
+
+        Returns
+        -------
+        Design
+            Instance of ``Design`` class.
+        """
+        # TODO: create test
+        return self.__osl_server.create_design(inputs)
+
+    def evaluate_design(self, design: "Design") -> Tuple:
+        """Evaluate requested design.
+
+        Parameters
+        ----------
+        design: Design
+            Instance of ``Design`` class with defined parameters.
+
+        Returns
+        -------
+        Tuple[Dict, Dict]
+            0: Design parameters.
+            1: Responses.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        # TODO: create test
+        return self.__osl_server.evaluate_design(design)
+
+    def evaluate_multiple_designs(self, designs: Iterable["Design"]) -> Dict:
+        """Evaluate multiple designs.
+
+        Parameters
+        ----------
+        designs: Iterable[Design]
+            Iterable of ``Design`` class instances with defined parameters.
+
+        Returns
+        -------
+        multiple_design_output: List[Tuple[Dict, Dict]]
+            Tuple[Dict, Dict]:
+                0: Design parameters.
+                1: Responses.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        # TODO: create test
+        return self.__osl_server.evaluate_multiple_designs(designs)
+
+    def validate_design(self, design: "Design") -> Tuple[str, bool, List]:
+        """Compare parameters defined in design and project.
+
+        Parameters
+        ----------
+        design: Design
+            Instance of ``Design`` class with defined parameters.
+
+        Returns
+        -------
+        Tuple[str, bool, List]
+            0: str, Message describing differences.
+            1: bool, True if there are not any missing or redundant parameters.
+            2: List, Missing parameters.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        # TODO: create test
+        return self.__osl_server.validate_design(design)

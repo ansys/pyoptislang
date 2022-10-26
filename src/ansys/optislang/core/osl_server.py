@@ -1,7 +1,10 @@
 """Contains abstract optiSLang server class."""
 
 from abc import ABC, abstractmethod
-from typing import Sequence, Tuple, Union
+from typing import TYPE_CHECKING, Dict, Iterable, List, Sequence, Tuple, Union
+
+if TYPE_CHECKING:
+    from ansys.optislang.core.project_parametric import Design, ParameterManager
 
 
 class OslServer(ABC):
@@ -470,6 +473,128 @@ class OslServer(ABC):
         wait_for_finish : bool, optional
             Determines whether this function call should wait on the optiSlang to finish
             the project execution. Defaults to ``True``.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        pass
+
+    # new functionality
+    @abstractmethod
+    def get_nodes_dict(self) -> Dict:
+        """Return dictionary of nodes at root level."""
+        pass
+
+    @abstractmethod
+    def get_parameter_manager(self) -> "ParameterManager":
+        """Return instance of class ``ParameterManager``."""
+        pass
+
+    @abstractmethod
+    def get_parameters_list(self) -> Dict:
+        """Return list of defined parameters.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        pass
+
+    @abstractmethod
+    def create_design(self, inputs: Dict = None) -> None:
+        """Return a new instance of ``Design`` class.
+
+        Parameters
+        ----------
+        inputs: Dict, opt
+            Dictionary of parameters and it's values {'parname': value, ...}.
+
+        Returns
+        -------
+        Design
+            Instance of ``Design`` class.
+        """
+        pass
+
+    @abstractmethod
+    def evaluate_design(self, design: "Design") -> Tuple[Dict, Dict]:
+        """Evaluate requested design.
+
+        Parameters
+        ----------
+        design: Design
+            Instance of ``Design`` class with defined parameters.
+
+        Returns
+        -------
+        Tuple[Dict, Dict]
+            0: Design parameters.
+            1: Responses.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        pass
+
+    @abstractmethod
+    def validate_design(self, design: "Design") -> Tuple[str, bool, List[str]]:
+        """Compare parameters defined in design and project.
+
+        Parameters
+        ----------
+        design: Design
+            Instance of ``Design`` class with defined parameters.
+
+        Returns
+        -------
+        Tuple[str, bool, List]
+            0: str, Message describing differences.
+            1: bool, True if there are not any missing or redundant parameters.
+            2: List, Missing parameters.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        pass
+
+    @abstractmethod
+    def evaluate_multiple_designs(self, designs: Iterable["Design"]) -> Dict:
+        """Evaluate multiple designs.
+
+        Parameters
+        ----------
+        designs: Iterable[Design]
+            Iterable of ``Design`` class instances with defined parameters.
+
+        Returns
+        -------
+        multiple_design_output: List[Tuple[Dict, Dict]]
+            Tuple[Dict, Dict]:
+                0: Design parameters.
+                1: Responses.
 
         Raises
         ------

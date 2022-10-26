@@ -9,7 +9,7 @@ import socket
 import struct
 import threading
 import time
-from typing import Dict, Sequence, Tuple, Union
+from typing import Dict, Iterable, List, Sequence, Tuple, Union
 import uuid
 
 from ansys.optislang.core import server_commands as commands
@@ -25,6 +25,7 @@ from ansys.optislang.core.errors import (
 )
 from ansys.optislang.core.osl_process import OslServerProcess
 from ansys.optislang.core.osl_server import OslServer
+from ansys.optislang.core.project_parametric import Design, ParameterManager
 
 
 def _get_current_timeout(initial_timeout: Union[float, None], start_time: float) -> None:
@@ -600,6 +601,7 @@ class TcpOslServer(OslServer):
         self.__port = port
         self.__timeout = None
         self.__executable = executable
+        self.__project_uid = None
 
         if logger is None:
             self._logger = logging.getLogger(__name__)
@@ -613,6 +615,8 @@ class TcpOslServer(OslServer):
 
         if self.__host is None or self.__port is None:
             self._start_local(ini_timeout)
+
+        self.__parameter_manager = ParameterManager(self.project_uid, self)
 
     def _get_server_info(self) -> Dict:
         """Get information about the application, the server configuration and the open projects.
@@ -631,7 +635,7 @@ class TcpOslServer(OslServer):
         TimeoutError
             Raised when the timeout float value expires.
         """
-        return self._send_command(queries.server_info())
+        return self._send_command(queries.server_info(self.__password))
 
     def _get_basic_project_info(self) -> Dict:
         """Get basic project info, like name, location, global settings and status.
@@ -650,7 +654,7 @@ class TcpOslServer(OslServer):
         TimeoutError
             Raised when the timeout float value expires.
         """
-        return self._send_command(queries.basic_project_info())
+        return self._send_command(queries.basic_project_info(self.__password))
 
     def close(self) -> None:
         """Close the current project.
@@ -819,15 +823,6 @@ class TcpOslServer(OslServer):
     def new(self) -> None:
         """Create a new project.
 
-        Parameters
-        ----------
-        timeout : float, None, optional
-            Timeout in seconds to perform the command. It must be greater than zero or ``None``.
-            The function will raise a timeout exception if the timeout period value has
-            elapsed before the operation has completed. If ``None`` is given, the function
-            will wait until the function is finished (no timeout exception is raised).
-            Defaults to ``None``.
-
         Raises
         ------
         NotImplementedError
@@ -854,12 +849,6 @@ class TcpOslServer(OslServer):
             # TODO: description of this parameter is missing in ANSYS help
         reset : bool
             # TODO: description of this parameter is missing in ANSYS help
-        timeout : float, None, optional
-            Timeout in seconds to perform the command. It must be greater than zero or ``None``.
-            The function will raise a timeout exception if the timeout period value has
-            elapsed before the operation has completed. If ``None`` is given, the function
-            will wait until the function is finished (no timeout exception is raised).
-            Defaults to ``None``.
 
         Raises
         ------
@@ -1129,7 +1118,7 @@ class TcpOslServer(OslServer):
         self._send_command(commands.start(self.__password))
 
         if wait_for_finish:
-            self._wait_for_finish("FINISHED", _get_current_timeout(self.__timeout, start_time))
+            self._wait_for_finish(_get_current_timeout(self.__timeout, start_time))
 
     def stop(self, wait_for_finish: bool = True) -> None:
         """Stop project execution.
@@ -1153,11 +1142,21 @@ class TcpOslServer(OslServer):
         """
         start_time = time.time()
         status = self.get_project_status()
-        if status not in ["FINISHED", "STOPPED"]:
+
+        not_stopped_states = [
+            "IDLE",
+            "FINISHED",
+            "STOP_REQUESTED",
+            "STOPPED",
+            "ABORT_REQUESTED",
+            "ABORTED",
+        ]
+
+        if status not in not_stopped_states:
             self._send_command(commands.stop(self.__password))
 
             if wait_for_finish:
-                self._wait_for_finish("STOPPED", _get_current_timeout(self.__timeout, start_time))
+                self._wait_for_finish(_get_current_timeout(self.__timeout, start_time))
 
     def stop_gently(self, wait_for_finish: bool = True) -> None:
         """Stop project execution after the current design is finished.
@@ -1181,11 +1180,14 @@ class TcpOslServer(OslServer):
         """
         start_time = time.time()
         status = self.get_project_status()
-        if status not in ["FINISHED", "STOPPED"]:
+
+        not_gently_stopped_states = ["IDLE", "FINISHED", "STOPPED", "ABORT_REQUESTED", "ABORTED"]
+
+        if status not in not_gently_stopped_states:
             self._send_command(commands.stop_gently(self.__password))
 
             if wait_for_finish:
-                self._wait_for_finish("STOPPED", _get_current_timeout(self.__timeout, start_time))
+                self._wait_for_finish(_get_current_timeout(self.__timeout, start_time))
 
     def _unregister_listener(self, uuid: str) -> None:
         """Unregister a listener.
@@ -1211,7 +1213,7 @@ class TcpOslServer(OslServer):
 
         Parameters
         ----------
-        ini_timeout : Union[float], optional
+        ini_timeout : float, optional
             Time in seconds to listen to the optiSLang server port. If the port is not listened
             for specified time, the optiSLang server is not started and RuntimeError is raised.
 
@@ -1392,6 +1394,176 @@ class TcpOslServer(OslServer):
 
         return response
 
+    # new functionality
+
+    def get_nodes_dict(self):
+        """Return dictionary of nodes at root level."""
+        project_tree = self._send_command(queries.full_project_tree_with_properties())
+        children_dict = {}
+        for counter, node in enumerate(project_tree["projects"][0]["system"]["nodes"]):
+            children_dict[counter] = {
+                "type_": node["type"],
+                "name": node["name"],
+                "uid": node["uid"],
+                "kind": node["kind"],
+            }
+        return children_dict
+
+    def get_parameter_manager(self) -> ParameterManager:
+        """Return instance of class ``ParameterManager``."""
+        return self.__parameter_manager
+
+    def get_parameters_list(self) -> Dict:
+        """Return list of defined parameters.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        return self.__parameter_manager.parameters_list
+
+    def create_design(self, inputs: Dict = None) -> Design:
+        """Return a new instance of ``Design`` class.
+
+        Parameters
+        ----------
+        inputs: Dict, opt
+            Dictionary of parameters and it's values {'parname': value, ...}.
+
+        Returns
+        -------
+        Design
+            Instance of ``Design`` class.
+        """
+        return Design(inputs)
+
+    def evaluate_design(self, design: Design) -> Tuple[Dict, Dict]:
+        """Evaluate requested design.
+
+        Parameters
+        ----------
+        design: Design
+            Instance of ``Design`` class with defined parameters.
+
+        Returns
+        -------
+        Tuple[Dict, Dict]
+            0: Design parameters.
+            1: Responses.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        message, is_valid, missing_parameters = self.validate_design(design)
+        if not is_valid:
+            self._logger.error(message)
+
+        output_dict = self._send_command(
+            commands.evaluate_design(design.parameters, self.__password),
+        )
+        design._receive_results(output_dict[0])
+
+        for parameter in missing_parameters:
+            position = output_dict[0]["result_design"]["parameter_names"].index(parameter)
+            design.set_parameter(
+                parameter,
+                output_dict[0]["result_design"]["parameter_values"][position],
+                False,
+            )
+            self._logger.error(f"Design parameter {parameter} was added.")
+
+        return (design.parameters, design.responses)
+
+    def evaluate_multiple_designs(self, designs: Iterable[Design]) -> List[Tuple[Dict, Dict]]:
+        """Evaluate multiple designs.
+
+        Parameters
+        ----------
+        designs: Iterable[Design]
+            Iterable of ``Design`` class instances with defined parameters.
+
+        Returns
+        -------
+        multiple_design_output: List[Tuple[Dict, Dict]]
+            Tuple[Dict, Dict]:
+                0: Design parameters.
+                1: Responses.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        multiple_design_output = []
+        for design in designs:
+            design_output = self.evaluate_design(design)
+            multiple_design_output.append(design_output)
+        return multiple_design_output
+
+    def validate_design(self, design: Design) -> Tuple[str, bool, List]:
+        """Compare parameters defined in design and project.
+
+        Parameters
+        ----------
+        design: Design
+            Instance of ``Design`` class with defined parameters.
+
+        Returns
+        -------
+        Tuple[str, bool, List]
+            0: str, Message describing differences.
+            1: bool, True if there are not any missing or redundant parameters.
+            2: List, Missing parameters.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        design_parameters = design.parameters
+        defined_parameters = self.__parameter_manager.parameters_list
+        # compare design with defined parameters
+        missing_params = list(set(defined_parameters) - set(design_parameters.keys()))
+        redundant_params = list(set(design_parameters.keys()) - set(defined_parameters))
+        if missing_params or redundant_params:
+            message = (
+                f"Parameters {missing_params} not defined in design, values set to reference."
+                f"Parameters {redundant_params} are not defined in project, inputs ignored."
+            )
+            is_valid = False
+        else:
+            message = "Valid design."
+            is_valid = True
+        return (message, is_valid, missing_params)
+
+    @property
+    def project_uid(self):
+        """Return project uid."""
+        project_tree = self._send_command(
+            queries.full_project_tree_with_properties(self.__password)
+        )
+        self.__project_uid = project_tree["projects"][0]["system"]["uid"]
+        return self.__project_uid
+
     @staticmethod
     def __check_command_response(response: Dict) -> None:
         """Check whether the server response for a sent command contains any failure information.
@@ -1416,13 +1588,11 @@ class TcpOslServer(OslServer):
                 message = "Command error: " + str(response)
             raise OslCommandError(message)
 
-    def _wait_for_finish(self, desired_status: str, timeout: Union[float, None]) -> None:
+    def _wait_for_finish(self, timeout: Union[float, None]) -> None:
         """Wait on optiSLang to finish the project run.
 
         Parameters
         ----------
-        desired_status : str
-            The project status to wait for.
         timeout : Union[float, None], optional
             Timeout in seconds to wait on optiSlang to finish the project run. Must be greater
             than zero or ``None``. The function will raise a timeout exception if the timeout
@@ -1438,7 +1608,10 @@ class TcpOslServer(OslServer):
         while True:
             remain_time = _get_current_timeout(timeout, start_time)
             status = self.get_project_status()
-            if status == desired_status:
+
+            self._logger.debug(f"Current project status: {status}")
+
+            if status == "FINISHED" or status == "STOPPED" or status == "ABORTED":
                 return
 
             self._logger.debug("Waiting for project run to finish...")

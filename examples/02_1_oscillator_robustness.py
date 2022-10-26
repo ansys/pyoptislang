@@ -15,9 +15,9 @@ More details in python script and oscillator example in optiSLang tutorial secti
 from ansys.optislang.core import Optislang
 import ansys.optislang.core.examples as examples
 
-#########################################################
-# Create ``Optislang()`` instance.
-#########################################################
+#################################################################################
+# Create :class:`Optislang <ansys.optislang.core.optislang.Optislang>` instance.
+#################################################################################
 osl = Optislang()
 print(osl)
 

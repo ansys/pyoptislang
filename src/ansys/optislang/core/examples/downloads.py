@@ -36,6 +36,9 @@ def get_files(scriptname: str) -> str:
     else:
         file_path = None
 
-    script_path = _download_script(scriptname)
+    if examples.example_scripts[scriptname] is not None:
+        script_path = _download_script(scriptname)
+    else:
+        script_path = None
 
     return (script_path, file_path)

@@ -15,9 +15,9 @@ then. More details in python script.
 from ansys.optislang.core import Optislang
 import ansys.optislang.core.examples as examples
 
-#########################################################
-# Create ``Optislang()`` instance.
-#########################################################
+#################################################################################
+# Create :class:`Optislang <ansys.optislang.core.optislang.Optislang>` instance.
+#################################################################################
 # in current working directory, create dir for osl files
 osl = Optislang()
 print(osl)
