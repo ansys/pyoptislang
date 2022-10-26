@@ -143,6 +143,16 @@ def test_get_osl_version_string(osl_server_process, tcp_osl_server):
     assert bool(version)
 
 
+def test_get_osl_version(tcp_osl_server):
+    """Test ``get_osl_version``."""
+    major_version, minor_version, maintenance_version, revision = tcp_osl_server.get_osl_version()
+    tcp_osl_server.shutdown()
+    assert isinstance(major_version, int)
+    assert isinstance(minor_version, int)
+    assert isinstance(maintenance_version, int) or maintenance_version == None
+    assert isinstance(revision, int) or revision == None
+
+
 def test_get_project_description(osl_server_process, tcp_osl_server):
     """Test ``get_project_description``."""
     project_description = tcp_osl_server.get_project_description()

@@ -29,6 +29,18 @@ def test_get_osl_version_string(optislang):
     assert dnr is None
 
 
+def test_get_osl_version(optislang):
+    """Test ``get_osl_version``."""
+    major_version, minor_version, maintenance_version, revision = optislang.get_osl_version()
+    assert isinstance(major_version, int)
+    assert isinstance(minor_version, int)
+    assert isinstance(maintenance_version, int) or maintenance_version == None
+    assert isinstance(revision, int) or revision == None
+    with does_not_raise() as dnr:
+        optislang.shutdown()
+    assert dnr is None
+
+
 def test_get_project_description(optislang):
     "Test ``get_project_description``."
     description = optislang.get_project_description()
