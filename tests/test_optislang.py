@@ -20,7 +20,7 @@ def optislang(scope="function", autouse=True) -> Optislang:
     return Optislang()
 
 
-def test_get_osl_version(optislang):
+def test_get_osl_version_string(optislang):
     "Test ``get_osl_version_string``."
     version = optislang.get_osl_version_string()
     assert isinstance(version, str)
