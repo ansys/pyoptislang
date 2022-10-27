@@ -1,7 +1,8 @@
 .. _ref_launch:
 
+=====================================
 Initial setup and launching optiSLang
--------------------------------------
+=====================================
 In order to run, ``ansys.optislang.core`` needs to know the location of the optiSLang.
 Most of the time this can be automatically determined, but non-standard installs needs 
 to provide the location of optiSLang. You can start optiSLang by running:
@@ -11,7 +12,7 @@ to provide the location of optiSLang. You can start optiSLang by running:
     from ansys.optislang.core import Optislang
     osl = Optislang()
     print(osl)
-    osl.shutdown()
+    osl.dispose()
 
 
 List of all automatically detected, supported executables of optiSLang can be obtained by running:
@@ -30,7 +31,7 @@ from list preceding, launch :class:`Optislang <ansys.optislang.core.optislang.Op
     from ansys.optislang.core import Optislang
     osl = Optislang(executable = r'C:\\Program Files\\Dynardo\\Ansys optiSLang\\2023 R1\\optislang.com')
     print(osl)
-    osl.shutdown()
+    osl.dispose()
 
 In order to open specific project or create new one, launch 
 :class:`Optislang <ansys.optislang.core.optislang.Optislang>` with parameter
@@ -46,7 +47,7 @@ In order to open specific project or create new one, launch
 
     osl = Optislang(project_path = os.path.join(path, project_name))
     print(osl)
-    osl.shutdown()
+    osl.dispose()
 
 Connect to a remote instance of optiSLang
 -----------------------------------------
@@ -59,4 +60,4 @@ related to the execution of the new optiSLang server are ignored.
      from ansys.optislang.core import Optislang
      osl = Optislang(host = "127.0.0.1", port = 49690)
      print(osl)
-     osl.shutdown()
+     osl.dispose()

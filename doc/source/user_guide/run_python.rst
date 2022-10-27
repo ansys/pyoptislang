@@ -1,7 +1,8 @@
 .. _ref_run_python:
 
+============================================
 Executing commands from optiSLang Python API
------------------------------------------------
+============================================
 When optiSLang is active, you can send individual python commands to it as a genuine a
 Python class. For example, if you want to get general information about sensitivity actor, 
 you would call:
@@ -12,7 +13,7 @@ you would call:
     
     osl = Optislang()
     print(osl.run_python_script("""help(actors.SensitivityActor)"""))
-    osl.shutdown()
+    osl.dispose()
 
 .. note:: 
     Be aware that each time 
@@ -32,4 +33,4 @@ calculator (see example :ref:`ref_simple_calculator`):
     osl = Optislang()
     path_to_file = examples.get_files('simple_calculator')[0]
     osl.run_python_file(file_path=path_to_file)
-    osl.shutdown()
+    osl.dispose()

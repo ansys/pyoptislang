@@ -1330,7 +1330,7 @@ def stop_gently(password: str = None) -> str:
     Returns
     -------
     str
-        JSON string of ``shutdown`` command.
+        JSON string of ``stop_gently`` command.
     """
     return _to_json(_gen_server_command(command=_STOP_GENTLY, password=password))
 

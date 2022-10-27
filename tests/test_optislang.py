@@ -25,7 +25,7 @@ def test_get_osl_version(optislang):
     version = optislang.get_osl_version()
     assert isinstance(version, str)
     with does_not_raise() as dnr:
-        optislang.shutdown()
+        optislang.dispose()
     assert dnr is None
 
 
@@ -34,7 +34,7 @@ def test_get_project_description(optislang):
     description = optislang.get_project_description()
     assert isinstance(description, str)
     with does_not_raise() as dnr:
-        optislang.shutdown()
+        optislang.dispose()
     assert dnr is None
 
 
@@ -43,7 +43,7 @@ def test_get_project_location(optislang):
     location = optislang.get_project_location()
     assert isinstance(location, str)
     with does_not_raise() as dnr:
-        optislang.shutdown()
+        optislang.dispose()
     assert dnr is None
 
 
@@ -52,7 +52,7 @@ def test_get_project_name(optislang):
     name = optislang.get_project_name()
     assert isinstance(name, str)
     with does_not_raise() as dnr:
-        optislang.shutdown()
+        optislang.dispose()
     assert dnr is None
 
 
@@ -61,7 +61,7 @@ def test_get_project_status(optislang):
     status = optislang.get_project_status()
     assert isinstance(status, str)
     with does_not_raise() as dnr:
-        optislang.shutdown()
+        optislang.dispose()
     assert dnr is None
 
 
@@ -70,7 +70,7 @@ def test_get_working_dir(optislang):
     working_dir = optislang.get_working_dir()
     assert isinstance(working_dir, str)
     with does_not_raise() as dnr:
-        optislang.shutdown()
+        optislang.dispose()
     assert dnr is None
 
 
@@ -80,7 +80,7 @@ def test_reset(optislang):
         optislang.reset()
     assert dnr is None
     with does_not_raise() as dnr:
-        optislang.shutdown()
+        optislang.dispose()
     assert dnr is None
 
 
@@ -97,7 +97,7 @@ print(result)
     assert isinstance(run_script, tuple)
     assert run_script[0][0:2] == "15"
     with does_not_raise() as dnr:
-        optislang.shutdown()
+        optislang.dispose()
     assert dnr is None
 
 
@@ -115,7 +115,7 @@ print(result)
     run_file = optislang.run_python_file(file_path=cmd_path)
     assert isinstance(run_file, tuple)
     with does_not_raise() as dnr:
-        optislang.shutdown()
+        optislang.dispose()
     assert dnr is None
 
 
@@ -127,7 +127,7 @@ def test_save_copy(optislang, tmp_path):
     assert dnr is None
     assert os.path.isfile(copy_path)
     with does_not_raise() as dnr:
-        optislang.shutdown()
+        optislang.dispose()
     assert dnr is None
 
 
@@ -137,7 +137,7 @@ def test_start(optislang):
         optislang.start()
     assert dnr is None
     with does_not_raise() as dnr:
-        optislang.shutdown()
+        optislang.dispose()
     assert dnr is None
 
 
@@ -164,7 +164,7 @@ connect(python, "ODesign", sens, "IIDesign")
         optislang.stop()
     assert dnr is None
     with does_not_raise() as dnr:
-        optislang.shutdown()
+        optislang.dispose()
     assert dnr is None
 
 
@@ -191,12 +191,12 @@ connect(python, "ODesign", sens, "IIDesign")
         optislang.stop()
     assert dnr is None
     with does_not_raise() as dnr:
-        optislang.shutdown()
+        optislang.dispose()
     assert dnr is None
 
 
-def test_shutdown(optislang):
-    "Test ``shutdown``."
+def test_dispose(optislang):
+    "Test ``dispose``."
     with does_not_raise() as dnr:
-        optislang.shutdown()
+        optislang.dispose()
     assert dnr is None

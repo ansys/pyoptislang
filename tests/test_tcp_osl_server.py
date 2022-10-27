@@ -122,7 +122,7 @@ def test_receive_file(osl_server_process, tcp_client, tmp_path):
 def test_get_server_info(osl_server_process, tcp_osl_server):
     """Test ``_get_server_info``."""
     server_info = tcp_osl_server._get_server_info()
-    tcp_osl_server.shutdown()
+    tcp_osl_server.dispose()
     assert isinstance(server_info, dict)
     assert bool(server_info)
 
@@ -130,7 +130,7 @@ def test_get_server_info(osl_server_process, tcp_osl_server):
 def test_get_basic_project_info(osl_server_process, tcp_osl_server):
     """Test ``_get_basic_project_info``."""
     basic_project_info = tcp_osl_server._get_basic_project_info()
-    tcp_osl_server.shutdown()
+    tcp_osl_server.dispose()
     assert isinstance(basic_project_info, dict)
     assert bool(basic_project_info)
 
@@ -138,7 +138,7 @@ def test_get_basic_project_info(osl_server_process, tcp_osl_server):
 def test_get_osl_version(osl_server_process, tcp_osl_server):
     """Test ``get_osl_version``."""
     version = tcp_osl_server.get_osl_version()
-    tcp_osl_server.shutdown()
+    tcp_osl_server.dispose()
     assert isinstance(version, str)
     assert bool(version)
 
@@ -146,7 +146,7 @@ def test_get_osl_version(osl_server_process, tcp_osl_server):
 def test_get_project_description(osl_server_process, tcp_osl_server):
     """Test ``get_project_description``."""
     project_description = tcp_osl_server.get_project_description()
-    tcp_osl_server.shutdown()
+    tcp_osl_server.dispose()
     assert isinstance(project_description, str)
     assert not bool(project_description)
 
@@ -154,7 +154,7 @@ def test_get_project_description(osl_server_process, tcp_osl_server):
 def test_get_project_location(osl_server_process, tcp_osl_server):
     """Test ``get_project_location``."""
     project_location = tcp_osl_server.get_project_location()
-    tcp_osl_server.shutdown()
+    tcp_osl_server.dispose()
     assert isinstance(project_location, str)
     assert bool(project_location)
 
@@ -162,7 +162,7 @@ def test_get_project_location(osl_server_process, tcp_osl_server):
 def test_get_project_name(osl_server_process, tcp_osl_server):
     """Test ``get_project_name``."""
     project_name = tcp_osl_server.get_project_name()
-    tcp_osl_server.shutdown()
+    tcp_osl_server.dispose()
     assert isinstance(project_name, str)
     assert bool(project_name)
 
@@ -170,7 +170,7 @@ def test_get_project_name(osl_server_process, tcp_osl_server):
 def test_get_project_status(osl_server_process, tcp_osl_server):
     """Test ``get_get_project_status``."""
     project_status = tcp_osl_server.get_project_status()
-    tcp_osl_server.shutdown()
+    tcp_osl_server.dispose()
     assert isinstance(project_status, str)
     assert bool(project_status)
 
@@ -178,7 +178,7 @@ def test_get_project_status(osl_server_process, tcp_osl_server):
 def test_get_working_dir(osl_server_process, tcp_osl_server):
     """Test ``get_working_dir``."""
     working_dir = tcp_osl_server.get_working_dir()
-    tcp_osl_server.shutdown()
+    tcp_osl_server.dispose()
     assert isinstance(working_dir, str)
     assert bool(working_dir)
 
@@ -188,7 +188,7 @@ def test_new(osl_server_process, tcp_osl_server):
     """Test ``new``."""
     with pytest.raises(NotImplementedError):
         tcp_osl_server.new()
-    tcp_osl_server.shutdown()
+    tcp_osl_server.dispose()
 
 
 # not implemented
@@ -196,14 +196,14 @@ def test_open(osl_server_process, tcp_osl_server):
     """Test ``open``."""
     with pytest.raises(NotImplementedError):
         tcp_osl_server.open("string", False, False, False)
-    tcp_osl_server.shutdown()
+    tcp_osl_server.dispose()
 
 
 def test_reset(osl_server_process, tcp_osl_server):
     """Test ``reset``."""
     with does_not_raise() as dnr:
         tcp_osl_server.reset()
-    tcp_osl_server.shutdown()
+    tcp_osl_server.dispose()
     assert dnr is None
 
 
@@ -219,7 +219,7 @@ print(result)
     with open(cmd_path, "w") as f:
         f.write(cmd)
     run_file = tcp_osl_server.run_python_file(file_path=cmd_path)
-    tcp_osl_server.shutdown()
+    tcp_osl_server.dispose()
     assert isinstance(run_file, tuple)
 
 
@@ -232,7 +232,7 @@ result = a + b
 print(result)
 """
     run_script = tcp_osl_server.run_python_script(script=cmd)
-    tcp_osl_server.shutdown()
+    tcp_osl_server.dispose()
     assert isinstance(run_script, tuple)
 
 
@@ -241,7 +241,7 @@ def test_save(osl_server_process, tcp_osl_server):
     """Test ``save``."""
     with pytest.raises(NotImplementedError):
         tcp_osl_server.save()
-    tcp_osl_server.shutdown()
+    tcp_osl_server.dispose()
 
 
 # not implemented
@@ -249,14 +249,14 @@ def test_save_as(osl_server_process, tcp_osl_server):
     """Test ``save_as``."""
     with pytest.raises(NotImplementedError):
         tcp_osl_server.save_as("string", False, False, False)
-    tcp_osl_server.shutdown()
+    tcp_osl_server.dispose()
 
 
 def test_save_copy(osl_server_process, tmp_path, tcp_osl_server):
     """Test ``save_copy``."""
     copy_path = os.path.join(tmp_path, "test_save_copy.opf")
     tcp_osl_server.save_copy(copy_path)
-    tcp_osl_server.shutdown()
+    tcp_osl_server.dispose()
     assert os.path.isfile(copy_path)
 
 
@@ -264,7 +264,7 @@ def test_start(osl_server_process, tcp_osl_server):
     """Test ``start``."""
     with does_not_raise() as dnr:
         tcp_osl_server.start()
-    tcp_osl_server.shutdown()
+    tcp_osl_server.dispose()
     assert dnr is None
 
 
@@ -272,7 +272,7 @@ def test_stop(osl_server_process, tcp_osl_server):
     """Test ``stop``."""
     with does_not_raise() as dnr:
         tcp_osl_server.stop()
-    tcp_osl_server.shutdown()
+    tcp_osl_server.dispose()
     assert dnr is None
 
 
@@ -280,12 +280,12 @@ def test_stop_gently(osl_server_process, tcp_osl_server):
     """Test ``stop_gently``."""
     with does_not_raise() as dnr:
         tcp_osl_server.stop_gently()
-    tcp_osl_server.shutdown()
+    tcp_osl_server.dispose()
     assert dnr is None
 
 
 def test_shutdown(osl_server_process, tcp_osl_server):
     """Test ``shutdown``."""
     with does_not_raise() as dnr:
-        tcp_osl_server.shutdown()
+        tcp_osl_server.dispose()
     assert dnr is None

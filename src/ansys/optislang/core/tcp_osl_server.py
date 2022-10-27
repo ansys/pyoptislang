@@ -1343,8 +1343,8 @@ class TcpOslServer(OslServer):
         for listener in self.__listeners.values():
             listener.timeout = timeout
 
-    def shutdown(self, force: bool = False) -> None:
-        """Shutdown the server.
+    def dispose(self, shutdown_optislang: bool = True, force: bool = False) -> None:
+        """Finish all local processes and optionally shutdown the server.
 
         Stop listening for incoming connections, discard pending requests, and shut down
         the server. Batch mode exclusive: Continue project run until execution finished.
@@ -1352,12 +1352,15 @@ class TcpOslServer(OslServer):
 
         Parameters
         ----------
+        shutdown_optislang: bool, optional
+            Determines whether shutdown command will be sent. Defaults to ``True``.
         force : bool, optional
-            Determines whether to force shutdown the local optiSLang server. Has no effect when
-            the connection is established to the remote optiSLang server. In all cases, it is tried
-            to shutdown the optiSLang server process in a proper way. However, if the force
-            parameter is ``True``, after a while, the process is forced to terminate and
-            no exception is raised. Defaults to ``False``.
+            Determines whether to force shutdown the local optiSLang server. Used only when
+            ``shutdown_optislang = True ``. Has no effect when the connection is established
+            to the remote optiSLang server. In all cases, it is tried to shutdown the optiSLang
+            server process in a proper way. However, if the force parameter is ``True``,
+            after a while, the process is forced to terminate and no exception is raised.
+            Defaults to ``False``.
 
         Raises
         ------
@@ -1371,15 +1374,16 @@ class TcpOslServer(OslServer):
         """
         self.__finish_all_threads()
 
-        # Only in case shutdown_on_finished option is not set, actively send shutdown command
-        if self.__osl_process is None or (
-            self.__osl_process is not None and not self.__osl_process.shutdown_on_finished
-        ):
-            try:
-                self._send_command(commands.shutdown(self.__password))
-            except Exception:
-                if not force or self.__osl_process is None:
-                    raise
+        if shutdown_optislang:
+            # Only in case shutdown_on_finished option is not set, actively send shutdown command
+            if self.__osl_process is None or (
+                self.__osl_process is not None and not self.__osl_process.shutdown_on_finished
+            ):
+                try:
+                    self._send_command(commands.shutdown(self.__password))
+                except Exception:
+                    if not force or self.__osl_process is None:
+                        raise
 
         # If desired actively force osl process to terminate
         if force and self.__osl_process is not None:

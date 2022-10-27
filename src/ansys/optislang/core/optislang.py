@@ -70,7 +70,7 @@ class Optislang:
     >>> osl = Optislang()
     >>> osl_version = osl.get_osl_version()
     >>> print(osl_version)
-    >>> osl.shutdown()
+    >>> osl.dispose()
     """
 
     def __init__(
@@ -141,6 +141,26 @@ class Optislang:
             f"Version: {self.get_osl_version()}\n"
             f"PyOptiSLang: {version('ansys.optislang.core')}"
         )
+
+    def __enter__(self):
+        """Enter the context."""
+        self.log.debug("Enter the context.")
+        return self
+
+    def __exit__(self, exc_type, exc_value, exc_tb):
+        """Exit the context.
+
+        If optiSLang was started locally, send ``shutdown`` on exit.
+        If connected to remote, do NOT send ``shutdown``, just finish all threads on exit.
+        """
+        self.log.debug("Exit the context.")
+        if (self.__host and self.__port) or self.__shutdown_on_finished:
+            shutdown_osl = False
+        else:
+            shutdown_osl = True
+
+        if self.__osl_server:
+            self.dispose(shutdown_osl)
 
     @property
     def name(self) -> str:
@@ -419,8 +439,8 @@ class Optislang:
         """
         self.__osl_server.set_timeout(timeout)
 
-    def shutdown(self, force: bool = False) -> None:
-        """Shutdown the server.
+    def dispose(self, shutdown_optislang: bool = True, force: bool = False) -> None:
+        """Finish all local processes and optionally shutdown the server.
 
         Stop listening for incoming connections, discard pending requests, and shut down
         the server. Batch mode exclusive: Continue project run until execution finished.
@@ -428,12 +448,15 @@ class Optislang:
 
         Parameters
         ----------
+        shutdown_optislang: bool, optional
+            Determines whether shutdown command will be sent. Defaults to ``True``.
         force : bool, optional
-            Determines whether to force shutdown the local optiSLang server. Has no effect when
-            the connection is established to the remote optiSLang server. In all cases, it is tried
-            to shutdown the optiSLang server process in a proper way. However, if the force
-            parameter is ``True``, after a while, the process is forced to terminate and
-            no exception is raised. Defaults to ``False``.
+            Determines whether to force shutdown the local optiSLang server. Used only when
+            ``shutdown_optislang = True ``. Has no effect when the connection is established
+            to the remote optiSLang server. In all cases, it is tried to shutdown the optiSLang
+            server process in a proper way. However, if the force parameter is ``True``,
+            after a while, the process is forced to terminate and no exception is raised.
+            Defaults to ``False``.
 
         Raises
         ------
@@ -445,7 +468,8 @@ class Optislang:
         TimeoutError
             Raised when the parameter force is ``False`` and the timeout float value expires.
         """
-        self.__osl_server.shutdown(force)
+        self.__osl_server.dispose(shutdown_optislang, force)
+        self.__osl_server = None
 
     def start(self, wait_for_started: bool = True, wait_for_finished: bool = True) -> None:
         """Start project execution.
