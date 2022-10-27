@@ -143,7 +143,7 @@ class Design:
 
     Parameters
     ----------
-    inputs: Dict, opt
+    parameters: Dict, opt
         Dictionary of parameters and it's values {'parname': value, ...}.
 
     Examples
@@ -151,7 +151,7 @@ class Design:
     Create new design from Optislang class:
     >>> from ansys.optislang.core import Optislang
     >>> osl = Optislang()
-    >>> design = osl.create_design(inputs = {'a': 1})
+    >>> design = osl.create_design(parameters = {'a': 1})
     >>> design.set_parameter(parameter = 'b', value = 2)
     >>> design.set_parameters(parameters = {'c': 3, 'd': 4})
     >>> print(design)
@@ -159,10 +159,10 @@ class Design:
 
     Create new design independently of Optislang class:
     >>> from ansys.optislang.core.nodes import Design
-    >>> design = Design(inputs = {'a': 5})
+    >>> design = Design(parameters = {'a': 5})
     """
 
-    def __init__(self, inputs: Dict = None):
+    def __init__(self, parameters: Dict = None):
         """Initialize a new instance of ``Design`` class."""
         self.__criteria = {}
         self.__feasibility = "NOT_EVALUATED"
@@ -171,8 +171,8 @@ class Design:
         self.__responses = {}
         self.__status = DesignStatus.IDLE.name
 
-        if inputs is not None:
-            self.set_parameters(inputs)
+        if parameters is not None:
+            self.set_parameters(parameters)
 
     def __str__(self) -> str:
         """Return info about design."""
@@ -204,7 +204,7 @@ class Design:
 
     @property
     def parameters(self) -> Dict:
-        """Return all parameters input values."""
+        """Return all parameters."""
         return self.__parameters
 
     @property
@@ -236,7 +236,7 @@ class Design:
         self.__responses = {}
 
     def set_parameter(self, parameter: str, value: float, reset_output: bool = True) -> None:
-        """Set input value of parameter.
+        """Set value of parameter.
 
         Parameters
         ----------
@@ -252,7 +252,7 @@ class Design:
         self.__parameters[parameter] = value
 
     def set_parameters(self, parameters: Dict, reset_output: bool = True) -> None:
-        """Set multiple input values of parameters.
+        """Set multiple parameters values.
 
         Parameters
         ----------

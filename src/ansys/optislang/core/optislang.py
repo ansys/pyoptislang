@@ -533,12 +533,12 @@ class Optislang:
         # TODO: create test
         return self.__osl_server.get_parameters_list()
 
-    def create_design(self, inputs: Dict = None) -> "Design":
+    def create_design(self, parameters: Dict = None) -> "Design":
         """Return a new instance of ``Design`` class.
 
         Parameters
         ----------
-        inputs: Dict, opt
+        parameters: Dict, opt
             Dictionary of parameters and it's values {'parname': value, ...}.
 
         Returns
@@ -547,7 +547,7 @@ class Optislang:
             Instance of ``Design`` class.
         """
         # TODO: create test
-        return self.__osl_server.create_design(inputs)
+        return self.__osl_server.create_design(parameters)
 
     def evaluate_design(self, design: "Design") -> Tuple:
         """Evaluate requested design.

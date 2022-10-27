@@ -1427,12 +1427,12 @@ class TcpOslServer(OslServer):
         """
         return self.__parameter_manager.parameters_list
 
-    def create_design(self, inputs: Dict = None) -> Design:
+    def create_design(self, parameters: Dict = None) -> Design:
         """Return a new instance of ``Design`` class.
 
         Parameters
         ----------
-        inputs: Dict, opt
+        parameters: Dict, opt
             Dictionary of parameters and it's values {'parname': value, ...}.
 
         Returns
@@ -1440,7 +1440,7 @@ class TcpOslServer(OslServer):
         Design
             Instance of ``Design`` class.
         """
-        return Design(inputs)
+        return Design(parameters)
 
     def evaluate_design(self, design: Design) -> Tuple[Dict, Dict]:
         """Evaluate requested design.
@@ -1547,7 +1547,7 @@ class TcpOslServer(OslServer):
         if missing_params or redundant_params:
             message = (
                 f"Parameters {missing_params} not defined in design, values set to reference."
-                f"Parameters {redundant_params} are not defined in project, inputs ignored."
+                f"Parameters {redundant_params} are not defined in project and weren't used."
             )
             is_valid = False
         else:

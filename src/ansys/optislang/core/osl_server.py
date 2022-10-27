@@ -512,12 +512,12 @@ class OslServer(ABC):
         pass
 
     @abstractmethod
-    def create_design(self, inputs: Dict = None) -> None:
+    def create_design(self, parameters: Dict = None) -> None:
         """Return a new instance of ``Design`` class.
 
         Parameters
         ----------
-        inputs: Dict, opt
+        parameters: Dict, opt
             Dictionary of parameters and it's values {'parname': value, ...}.
 
         Returns
