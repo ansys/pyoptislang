@@ -62,7 +62,7 @@ def tcp_osl_server() -> tos.TcpOslServer:
 
 
 # TcpClient
-def test_connect_and_disconnect(osl_server_process, tcp_client):
+def test_connect_and_disconnect(osl_server_process: OslServerProcess, tcp_client: tos.TcpClient):
     "Test ``connect``."
     with does_not_raise() as dnr:
         tcp_client.connect(host=_host, port=_port)
@@ -71,7 +71,7 @@ def test_connect_and_disconnect(osl_server_process, tcp_client):
     assert dnr is None
 
 
-def test_send_msg(osl_server_process, tcp_client):
+def test_send_msg(osl_server_process: OslServerProcess, tcp_client: tos.TcpClient):
     "Test ``send_msg`"
     with does_not_raise() as dnr:
         tcp_client.connect(host=_host, port=_port)
@@ -81,7 +81,7 @@ def test_send_msg(osl_server_process, tcp_client):
     assert dnr is None
 
 
-def test_send_file(osl_server_process, tcp_client, tmp_path):
+def test_send_file(osl_server_process: OslServerProcess, tcp_client: tos.TcpClient, tmp_path):
     "Test ``send_file`"
     file_path = os.path.join(tmp_path, "testfile.txt")
     with open(file_path, "w") as testfile:
@@ -94,7 +94,7 @@ def test_send_file(osl_server_process, tcp_client, tmp_path):
     assert dnr is None
 
 
-def test_receive_msg(osl_server_process, tcp_client):
+def test_receive_msg(osl_server_process: OslServerProcess, tcp_client: tos.TcpClient):
     "Test ``receive_msg``."
     tcp_client.connect(host=_host, port=_port)
     tcp_client.send_msg(_msg)
@@ -104,7 +104,7 @@ def test_receive_msg(osl_server_process, tcp_client):
     assert isinstance(msg, str)
 
 
-def test_receive_file(osl_server_process, tcp_client, tmp_path):
+def test_receive_file(osl_server_process: OslServerProcess, tcp_client: tos.TcpClient, tmp_path):
     "Test ``receive_file`"
     file_path = os.path.join(tmp_path, "testfile.txt")
     with open(file_path, "w") as testfile:
@@ -119,95 +119,95 @@ def test_receive_file(osl_server_process, tcp_client, tmp_path):
 
 
 # TcpOslServer
-def test_get_server_info(osl_server_process, tcp_osl_server):
+def test_get_server_info(tcp_osl_server: tos.TcpOslServer):
     """Test ``_get_server_info``."""
     server_info = tcp_osl_server._get_server_info()
-    tcp_osl_server.dispose()
+    tcp_osl_server.shutdown()
     assert isinstance(server_info, dict)
     assert bool(server_info)
 
 
-def test_get_basic_project_info(osl_server_process, tcp_osl_server):
+def test_get_basic_project_info(tcp_osl_server: tos.TcpOslServer):
     """Test ``_get_basic_project_info``."""
     basic_project_info = tcp_osl_server._get_basic_project_info()
-    tcp_osl_server.dispose()
+    tcp_osl_server.shutdown()
     assert isinstance(basic_project_info, dict)
     assert bool(basic_project_info)
 
 
-def test_get_osl_version(osl_server_process, tcp_osl_server):
+def test_get_osl_version(tcp_osl_server: tos.TcpOslServer):
     """Test ``get_osl_version``."""
     version = tcp_osl_server.get_osl_version()
-    tcp_osl_server.dispose()
+    tcp_osl_server.shutdown()
     assert isinstance(version, str)
     assert bool(version)
 
 
-def test_get_project_description(osl_server_process, tcp_osl_server):
+def test_get_project_description(tcp_osl_server: tos.TcpOslServer):
     """Test ``get_project_description``."""
     project_description = tcp_osl_server.get_project_description()
-    tcp_osl_server.dispose()
+    tcp_osl_server.shutdown()
     assert isinstance(project_description, str)
     assert not bool(project_description)
 
 
-def test_get_project_location(osl_server_process, tcp_osl_server):
+def test_get_project_location(tcp_osl_server: tos.TcpOslServer):
     """Test ``get_project_location``."""
     project_location = tcp_osl_server.get_project_location()
-    tcp_osl_server.dispose()
+    tcp_osl_server.shutdown()
     assert isinstance(project_location, str)
     assert bool(project_location)
 
 
-def test_get_project_name(osl_server_process, tcp_osl_server):
+def test_get_project_name(tcp_osl_server: tos.TcpOslServer):
     """Test ``get_project_name``."""
     project_name = tcp_osl_server.get_project_name()
-    tcp_osl_server.dispose()
+    tcp_osl_server.shutdown()
     assert isinstance(project_name, str)
     assert bool(project_name)
 
 
-def test_get_project_status(osl_server_process, tcp_osl_server):
+def test_get_project_status(tcp_osl_server: tos.TcpOslServer):
     """Test ``get_get_project_status``."""
     project_status = tcp_osl_server.get_project_status()
-    tcp_osl_server.dispose()
+    tcp_osl_server.shutdown()
     assert isinstance(project_status, str)
     assert bool(project_status)
 
 
-def test_get_working_dir(osl_server_process, tcp_osl_server):
+def test_get_working_dir(tcp_osl_server: tos.TcpOslServer):
     """Test ``get_working_dir``."""
     working_dir = tcp_osl_server.get_working_dir()
-    tcp_osl_server.dispose()
+    tcp_osl_server.shutdown()
     assert isinstance(working_dir, str)
     assert bool(working_dir)
 
 
 # not implemented
-def test_new(osl_server_process, tcp_osl_server):
+def test_new(tcp_osl_server: tos.TcpOslServer):
     """Test ``new``."""
     with pytest.raises(NotImplementedError):
         tcp_osl_server.new()
-    tcp_osl_server.dispose()
+    tcp_osl_server.shutdown()
 
 
 # not implemented
-def test_open(osl_server_process, tcp_osl_server):
+def test_open(tcp_osl_server: tos.TcpOslServer):
     """Test ``open``."""
     with pytest.raises(NotImplementedError):
         tcp_osl_server.open("string", False, False, False)
-    tcp_osl_server.dispose()
+    tcp_osl_server.shutdown()
 
 
-def test_reset(osl_server_process, tcp_osl_server):
+def test_reset(tcp_osl_server: tos.TcpOslServer):
     """Test ``reset``."""
     with does_not_raise() as dnr:
         tcp_osl_server.reset()
-    tcp_osl_server.dispose()
+    tcp_osl_server.shutdown()
     assert dnr is None
 
 
-def test_run_python_file(osl_server_process, tcp_osl_server, tmp_path):
+def test_run_python_file(tcp_osl_server: tos.TcpOslServer, tmp_path):
     """Test ``run_python_file``."""
     cmd = """
 a = 5
@@ -219,11 +219,11 @@ print(result)
     with open(cmd_path, "w") as f:
         f.write(cmd)
     run_file = tcp_osl_server.run_python_file(file_path=cmd_path)
-    tcp_osl_server.dispose()
+    tcp_osl_server.shutdown()
     assert isinstance(run_file, tuple)
 
 
-def test_run_python_script(osl_server_process, tcp_osl_server):
+def test_run_python_script(tcp_osl_server: tos.TcpOslServer):
     """Test ``run_python_script``."""
     cmd = """
 a = 5
@@ -232,60 +232,60 @@ result = a + b
 print(result)
 """
     run_script = tcp_osl_server.run_python_script(script=cmd)
-    tcp_osl_server.dispose()
+    tcp_osl_server.shutdown()
     assert isinstance(run_script, tuple)
 
 
 # not implemented
-def test_save(osl_server_process, tcp_osl_server):
+def test_save(tcp_osl_server: tos.TcpOslServer):
     """Test ``save``."""
     with pytest.raises(NotImplementedError):
         tcp_osl_server.save()
-    tcp_osl_server.dispose()
+    tcp_osl_server.shutdown()
 
 
 # not implemented
-def test_save_as(osl_server_process, tcp_osl_server):
+def test_save_as(tcp_osl_server: tos.TcpOslServer):
     """Test ``save_as``."""
     with pytest.raises(NotImplementedError):
         tcp_osl_server.save_as("string", False, False, False)
-    tcp_osl_server.dispose()
+    tcp_osl_server.shutdown()
 
 
-def test_save_copy(osl_server_process, tmp_path, tcp_osl_server):
+def test_save_copy(tmp_path, tcp_osl_server: tos.TcpOslServer):
     """Test ``save_copy``."""
     copy_path = os.path.join(tmp_path, "test_save_copy.opf")
     tcp_osl_server.save_copy(copy_path)
-    tcp_osl_server.dispose()
+    tcp_osl_server.shutdown()
     assert os.path.isfile(copy_path)
 
 
-def test_start(osl_server_process, tcp_osl_server):
+def test_start(tcp_osl_server: tos.TcpOslServer):
     """Test ``start``."""
     with does_not_raise() as dnr:
         tcp_osl_server.start()
-    tcp_osl_server.dispose()
+    tcp_osl_server.shutdown()
     assert dnr is None
 
 
-def test_stop(osl_server_process, tcp_osl_server):
+def test_stop(tcp_osl_server: tos.TcpOslServer):
     """Test ``stop``."""
     with does_not_raise() as dnr:
         tcp_osl_server.stop()
-    tcp_osl_server.dispose()
+    tcp_osl_server.shutdown()
     assert dnr is None
 
 
-def test_stop_gently(osl_server_process, tcp_osl_server):
+def test_stop_gently(tcp_osl_server: tos.TcpOslServer):
     """Test ``stop_gently``."""
     with does_not_raise() as dnr:
         tcp_osl_server.stop_gently()
-    tcp_osl_server.dispose()
+    tcp_osl_server.shutdown()
     assert dnr is None
 
 
-def test_shutdown(osl_server_process, tcp_osl_server):
+def test_shutdown(tcp_osl_server: tos.TcpOslServer):
     """Test ``shutdown``."""
     with does_not_raise() as dnr:
-        tcp_osl_server.dispose()
+        tcp_osl_server.shutdown()
     assert dnr is None

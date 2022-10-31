@@ -14,7 +14,6 @@ PyOptiSLang library.
    functions
    run_python
    context_manager
-   project_parametric
    troubleshooting
 
 
@@ -41,9 +40,21 @@ by the ``project_path`` parameter of the
 
 
 If the project file exists, it is opened; otherwise, a new project file is created on the specified 
-path. Please note that the :func:`dispose() <ansys.optislang.core.optislang.Optislang.dispose>` 
-function should be executed when the :class:`Optislang <ansys.optislang.core.optislang.Optislang>` 
-instance is no more needed.
+path. Please note that :class:`Optislang <ansys.optislang.core.optislang.Optislang>` 
+instance should be gracefully terminated either via 
+:func:`dispose() <ansys.optislang.core.optislang.Optislang.dispose>` or
+:func:`shutdown() <ansys.optislang.core.optislang.Optislang.shutdown>` when it's no longer in use.
+
+
+Difference in these termination methods is that method
+:func:`dispose() <ansys.optislang.core.optislang.Optislang.dispose>` only terminates connection
+with optiSLang server, method
+:func:`shutdown() <ansys.optislang.core.optislang.Optislang.shutdown>` additionally sends command
+to terminate server, which is necessary when (server is started locally by instance of
+:class:`Optislang <ansys.optislang.core.optislang.Optislang>` with parameter 
+`shutdown_on_finished=False` or connected to a remote optiSLang server) AND termination of optiSLang
+server is requested. 
+
 
 The :class:`Optislang <ansys.optislang.core.Optislang>` class provides several functions which 
 enable to control or query the project. The following example shows how to open an existing project 

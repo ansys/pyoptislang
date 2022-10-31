@@ -439,7 +439,7 @@ class Optislang:
         """
         self.__osl_server.set_timeout(timeout)
 
-    def dispose(self, shutdown_optislang: bool = True, force: bool = False) -> None:
+    def shutdown(self, force: bool = False) -> None:
         """Finish all local processes and optionally shutdown the server.
 
         Stop listening for incoming connections, discard pending requests, and shut down
@@ -448,15 +448,12 @@ class Optislang:
 
         Parameters
         ----------
-        shutdown_optislang: bool, optional
-            Determines whether shutdown command will be sent. Defaults to ``True``.
         force : bool, optional
-            Determines whether to force shutdown the local optiSLang server. Used only when
-            ``shutdown_optislang = True ``. Has no effect when the connection is established
-            to the remote optiSLang server. In all cases, it is tried to shutdown the optiSLang
-            server process in a proper way. However, if the force parameter is ``True``,
-            after a while, the process is forced to terminate and no exception is raised.
-            Defaults to ``False``.
+            Determines whether to force shutdown the local optiSLang server. Has no effect when
+            the connection is established to the remote optiSLang server. In all cases, it is tried
+            to shutdown the optiSLang server process in a proper way. However, if the force
+            parameter is ``True``, after a while, the process is forced to terminate and no
+            exception is raised. Defaults to ``False``.
 
         Raises
         ------
@@ -468,7 +465,7 @@ class Optislang:
         TimeoutError
             Raised when the parameter force is ``False`` and the timeout float value expires.
         """
-        self.__osl_server.dispose(shutdown_optislang, force)
+        self.__osl_server.shutdown(force)
         self.__osl_server = None
 
     def start(self, wait_for_started: bool = True, wait_for_finished: bool = True) -> None:

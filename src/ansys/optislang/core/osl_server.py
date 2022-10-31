@@ -391,7 +391,7 @@ class OslServer(ABC):
         pass
 
     @abstractmethod
-    def dispose(self, force: bool = False) -> None:
+    def shutdown(self, force: bool = False) -> None:
         """Finish all local processes and optionally shutdown the server.
 
         Stop listening for incoming connections, discard pending requests, and shut down
@@ -400,15 +400,12 @@ class OslServer(ABC):
 
         Parameters
         ----------
-        shutdown_optislang: bool, optional
-            Determines whether shutdown command will be sent. Defaults to ``True``.
         force : bool, optional
-            Determines whether to force shutdown the local optiSLang server. Used only when
-            ``shutdown_optislang = True ``. Has no effect when the connection is established
-            to the remote optiSLang server. In all cases, it is tried to shutdown the optiSLang
-            server process in a proper way. However, if the force parameter is ``True``,
-            after a while, the process is forced to terminate and no exception is raised.
-            Defaults to ``False``.
+            Determines whether to force shutdown the local optiSLang server. Has no effect when
+            the connection is established to the remote optiSLang server. In all cases, it is tried
+            to shutdown the optiSLang server process in a proper way. However, if the force
+            parameter is ``True``, after a while, the process is forced to terminate and no
+            exception is raised. Defaults to ``False``.
 
         Raises
         ------

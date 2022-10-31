@@ -57,7 +57,19 @@ related to the execution of the new optiSLang server are ignored.
 
 .. code:: python
 
-     from ansys.optislang.core import Optislang
-     osl = Optislang(host = "127.0.0.1", port = 49690)
+     from ansys.optislang.core import Optislang, OslServerProcess
+     import time
+     
+     server_process = OslServerProcess(shutdown_on_finished=False, logger=logger)
+     server_process.start()
+     time.sleep(5)  # wait for launching of server process
+     
+     # connect to optiSLang server and terminate connection afterward
+     osl = Optislang(host = "127.0.0.1", port = 5310)
      print(osl)
      osl.dispose()
+
+     # connect to optiSLang server and terminate it afterward
+     osl = Optislang(host = "127.0.0.1", port = 5310)
+     print(osl)
+     osl.shutdown()
