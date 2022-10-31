@@ -10,8 +10,8 @@ import ansys.optislang.core.examples as examples
 # EXAMPLE_REPO = "https://github.com/pyansys/pyoptislang/tree/main/examples/files"
 
 
-def _download_file(scriptname: str) -> Tuple[Path, ...]:
-    """Check if file exists, otherwise download it. Return path to file then."""
+def _download_files(scriptname: str) -> Tuple[Path, ...]:
+    """Check if files exists, otherwise download them. Return path to files then."""
     # check if file was downloaded
     for file_path in examples.example_files[scriptname]:
         if not file_path.is_file():
@@ -32,9 +32,21 @@ def _download_script(scriptname: str) -> Path:
 
 
 def get_files(scriptname: str) -> Tuple[Path, Tuple[Path, ...]]:
-    """Insert name of the example script (without ``.py``) and get local_path."""
+    """Get tuple of files necessary for running example.
+
+    Parameters
+    ----------
+    scriptname: str
+        Name of the example script (without ``.py``).
+
+    Returns
+    -------
+    Tuple[Path, Tuple[Path, ...]]
+        Tuple[0]: path to script
+        Tuple[1]: tuple of paths to files necessary for running script
+    """
     if examples.example_files[scriptname] is not None:
-        file_path = _download_file(scriptname)
+        file_path = _download_files(scriptname)
     else:
         file_path = None
 

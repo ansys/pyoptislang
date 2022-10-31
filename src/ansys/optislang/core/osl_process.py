@@ -156,20 +156,21 @@ class OslServerProcess:
         self.__tempdir = None
         if project_path is None:
             self.__tempdir = tempfile.TemporaryDirectory()
-            project_path = os.path.join(self.__tempdir.name, self.__class__.DEFAULT_PROJECT_FILE)
-        elif isinstance(project_path, str):
-            if not project_path.endswith(".opf"):
-                raise ValueError("Invalid optiSLang project file.")
-        elif isinstance(project_path, Path):
-            if not project_path.suffix == ".opf":
-                raise ValueError("Invalid optiSLang project file.")
-        else:
+            project_path = Path(self.__tempdir.name) / self.__class__.DEFAULT_PROJECT_FILE
+
+        if isinstance(project_path, str):
+            project_path = Path(project_path)
+
+        if not isinstance(project_path, Path):
             raise TypeError(
                 f"Invalid type of project_path: {type(project_path)},"
                 "Union[str, Path] is supported."
             )
 
-        self.__project_path = Path(project_path)
+        if not project_path.suffix == ".opf":
+            raise ValueError("Invalid optiSLang project file.")
+
+        self.__project_path = project_path
 
         if isinstance(server_info, str):
             server_info = Path(server_info)
