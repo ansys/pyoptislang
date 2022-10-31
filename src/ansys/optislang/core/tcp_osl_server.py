@@ -1493,20 +1493,18 @@ class TcpOslServer(OslServer):
         if not already_running and (wait_for_started or wait_for_finished):
             self._logger.info(f"Waiting for started")
             successfully_started = wait_for_started_queue.get()
+            self.__delete_exec_started_listener()
             if successfully_started == "Terminate":
-                self.shutdown()
                 raise TimeoutError("Waiting for started timed out.")
             self._logger.info(f"Successfully started: {successfully_started}.")
-            self.__delete_exec_started_listener
 
         if wait_for_finished and (successfully_started or already_running):
             self._logger.info(f"Waiting for finished")
             successfully_finished = wait_for_finished_queue.get()
+            self.__delete_exec_finished_listener()
             if successfully_finished == "Terminate":
-                self.shutdown()
                 raise TimeoutError("Waiting for finished timed out.")
             self._logger.info(f"Successfully finished: {successfully_finished}.")
-            self.__delete_exec_finished_listener()
 
     def stop(self, wait_for_finished: bool = True) -> None:
         """Stop project execution.
@@ -1562,11 +1560,10 @@ class TcpOslServer(OslServer):
         if wait_for_finished and cmd_sent:
             self._logger.info(f"Waiting for finished")
             successfully_finished = wait_for_finished_queue.get()
+            self.__delete_exec_finished_listener()
             if successfully_finished == "Terminate":
-                self.shutdown()
                 raise TimeoutError("Waiting for finished timed out.")
             self._logger.info(f"Successfully_finished: {successfully_finished}.")
-            self.__delete_exec_finished_listener()
 
     def stop_gently(self, wait_for_finished: bool = True) -> None:
         """Stop project execution after the current design is finished.
@@ -1621,11 +1618,10 @@ class TcpOslServer(OslServer):
         if wait_for_finished and cmd_sent:
             self._logger.info(f"Waiting for finished")
             successfully_finished = wait_for_finished_queue.get()
+            self.__delete_exec_finished_listener()
             if successfully_finished == "Terminate":
-                self.shutdown()
                 raise TimeoutError("Waiting for finished timed out.")
             self._logger.info(f"Successfully_finished: {successfully_finished}.")
-            self.__delete_exec_finished_listener()
 
     def _is_status_in_stopped_states(self, status: str) -> bool:
         """Compare current project status with list."""
@@ -2069,23 +2065,18 @@ class TcpOslServer(OslServer):
     ) -> None:
         """Terminate listener thread if execution finished or failed."""
         type = response.get("type", None)
-        if type in [ServerNotification.EXEC_FAILED.name, ServerNotification.CHECK_FAILED.name]:
+        if type is not None:
             sender.stop_listening()
             sender.clear_callbacks()
             sender.refresh_listener_registration = False
-            target_queue.put(False)
-            logger.error(f"Listener {sender.name} received error notification.")
-        elif type in target_notifications:
-            sender.stop_listening()
-            sender.clear_callbacks()
-            sender.refresh_listener_registration = False
-            target_queue.put(True)
-            logger.debug(f"Listener {sender.name} received expected notification.")
-        elif type == "TimeoutError":
-            sender.stop_listening()
-            sender.clear_callbacks()
-            sender.refresh_listener_registration = False
-            target_queue.put("Terminate")
-            logger.error(f"Listener {sender.name} timed out.")
-        elif type is None:
+            if type in [ServerNotification.EXEC_FAILED.name, ServerNotification.CHECK_FAILED.name]:
+                target_queue.put(False)
+                logger.error(f"Listener {sender.name} received error notification.")
+            elif type in target_notifications:
+                target_queue.put(True)
+                logger.debug(f"Listener {sender.name} received expected notification.")
+            elif type == "TimeoutError":
+                target_queue.put("Terminate")
+                logger.error(f"Listener {sender.name} timed out.")
+        else:
             logger.error("Invalid response from server, push notification not evaluated.")
