@@ -23,6 +23,21 @@ class OslServer(ABC):
         pass
 
     @abstractmethod
+    def dispose(self) -> None:
+        """Terminate all local threads and unregister listeners.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        pass
+
+    @abstractmethod
     def get_osl_version(self) -> str:
         """Get version of used optiSLang.
 
