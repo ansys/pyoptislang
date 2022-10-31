@@ -1368,7 +1368,8 @@ class TcpOslServer(OslServer):
         TimeoutError
             Raised when the parameter force is ``False`` and the timeout float value expires.
         """
-        self.__finish_all_threads()
+        self.__stop_listeners_registration_thread()
+        self.__unregister_all_listeners()
 
         # Only in case shutdown_on_finished option is not set, actively send shutdown command
         if self.__osl_process is None or (
@@ -1901,9 +1902,8 @@ class TcpOslServer(OslServer):
             time.sleep(check_for_refresh)
         self._logger.debug("Stop refreshing listener registration, self.__refresh = False")
 
-    def __finish_all_threads(self) -> None:
-        """Stop listeners registration and unregister them."""
-        self.__stop_listeners_registration_thread()
+    def __unregister_all_listeners(self) -> None:
+        """Unregister all instance listeners."""
         for listener in self.__listeners.values():
             if listener.uid is not None:
                 try:

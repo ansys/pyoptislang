@@ -1,5 +1,4 @@
 """Contains class which starts and controls local opstiSLang server process."""
-import atexit
 from enum import Enum
 import logging
 import os
@@ -155,8 +154,6 @@ class OslServerProcess:
                 )
             else:
                 raise RuntimeError("No optiSLang executable could be found.")
-
-        atexit.register(self.terminate)
 
         self.__process = None
         self.__handle_process_output_thread = None
@@ -685,10 +682,6 @@ class OslServerProcess:
             daemon=True,
         )
         self.__handle_process_output_thread.start()
-
-    def __del__(self):
-        """Terminates optiSLang server process."""
-        self.terminate()
 
     @staticmethod
     def __handle_process_output(
