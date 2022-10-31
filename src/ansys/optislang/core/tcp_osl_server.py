@@ -5,6 +5,7 @@ import logging
 import os
 from queue import Queue
 import select
+import signal
 import socket
 import struct
 import threading
@@ -882,6 +883,7 @@ class TcpOslServer(OslServer):
         self.__listeners_registration_thread = None
         self.__refresh_listeners = threading.Event()
         self.__listeners_refresh_interval = 20
+        signal.signal(signal.SIGINT, self.__signal_handler)
 
         if self.__host is None or self.__port is None:
             self.__host = self.__class__._LOCALHOST
@@ -1369,11 +1371,14 @@ class TcpOslServer(OslServer):
         TimeoutError
             Raised when the parameter force is ``False`` and the timeout float value expires.
         """
-        self.__finish_all_threads()
+        self.__stop_listeners_registration_thread()
+        self.__unregister_all_listeners()
 
         # Only in case shutdown_on_finished option is not set, actively send shutdown command
         if self.__osl_process is None or (
-            self.__osl_process is not None and not self.__osl_process.shutdown_on_finished
+            self.__osl_process is not None
+            and self.__osl_process is None
+            or (self.__osl_process is not None and not self.__osl_process.shutdown_on_finished)
         ):
             try:
                 self._send_command(commands.shutdown(self.__password))
@@ -1691,6 +1696,12 @@ class TcpOslServer(OslServer):
         self.__listeners["main_listener"] = listener
         self.__start_listeners_registration_thread()
 
+    def __signal_handler(self, signum, frame):
+        self._logger.warning("Interrupt from keyboard (CTRL + C), terminating execution.")
+        self.__stop_listeners_registration_thread()
+        self.__osl_process = None
+        quit()
+
     def __create_listener(self, timeout: float, name: str, uid: str = None) -> TcpOslListener:
         """Create new listener.
 
@@ -1897,9 +1908,8 @@ class TcpOslServer(OslServer):
             time.sleep(check_for_refresh)
         self._logger.debug("Stop refreshing listener registration, self.__refresh = False")
 
-    def __finish_all_threads(self) -> None:
-        """Stop listeners registration and unregister them."""
-        self.__stop_listeners_registration_thread()
+    def __unregister_all_listeners(self) -> None:
+        """Unregister all instance listeners."""
         for listener in self.__listeners.values():
             if listener.uid is not None:
                 try:

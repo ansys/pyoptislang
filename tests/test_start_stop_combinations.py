@@ -34,7 +34,7 @@ def optislang() -> Optislang:
         ((("start", True, True), ("start", True, True), ("start", True, True)), None),
     ],
 )
-def test_combinations(optislang, input, expected):
+def test_combinations(optislang: Optislang, input, expected):
     "Test combinations."
     with does_not_raise() as dnr:
         for method in input:
