@@ -139,6 +139,11 @@ class OslServerProcess:
         else:
             self._logger = logger
 
+        self.__process = None
+        self.__handle_process_output_thread = None
+
+        self.__tempdir = None
+
         if executable is not None:
             if not os.path.isfile(executable):
                 raise FileNotFoundError(f"optiSLang executable cannot be found: {executable}")
@@ -155,10 +160,6 @@ class OslServerProcess:
             else:
                 raise RuntimeError("No optiSLang executable could be found.")
 
-        self.__process = None
-        self.__handle_process_output_thread = None
-
-        self.__tempdir = None
         if project_path == None:
             self.__tempdir = tempfile.TemporaryDirectory()
             self.__project_path = os.path.join(

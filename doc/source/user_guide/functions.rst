@@ -33,7 +33,7 @@ Or via running specific requests:
 
 .. code:: python
 
-    print(f'Version: {osl.get_osl_version()}')
+    print(f'Version: {osl.get_osl_version_string()}')
     print(f'Description: {osl.get_project_description()}')
     print(f'Location: {osl.get_project_location()}')
     print(f'Name: {osl.get_project_name()}')
