@@ -232,7 +232,6 @@ def test_reset(osl_server_process, tcp_osl_server):
     assert dnr is None
 
 
-
 @pytest.mark.parametrize("path_type", [str, Path])
 def test_run_python_file(tcp_osl_server, tmp_path, path_type):
     """Test ``run_python_file``."""
