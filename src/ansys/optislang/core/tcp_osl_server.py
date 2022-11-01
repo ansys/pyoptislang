@@ -1,4 +1,5 @@
 """Contains classes for plain TCP/IP communication with server."""
+import atexit
 from datetime import datetime
 import json
 import logging
@@ -884,6 +885,7 @@ class TcpOslServer(OslServer):
         self.__refresh_listeners = threading.Event()
         self.__listeners_refresh_interval = 20
         signal.signal(signal.SIGINT, self.__signal_handler)
+        atexit.register(self.dispose)
 
         if self.__host is None or self.__port is None:
             self.__host = self.__class__._LOCALHOST
@@ -1712,10 +1714,9 @@ class TcpOslServer(OslServer):
         self.__start_listeners_registration_thread()
 
     def __signal_handler(self, signum, frame):
-        self._logger.warning("Interrupt from keyboard (CTRL + C), terminating execution.")
-        self.__stop_listeners_registration_thread()
-        self.__osl_process = None
-        quit()
+        self._logger.error("Interrupt from keyboard (CTRL + C), terminating execution.")
+        self.dispose()
+        raise KeyboardInterrupt
 
     def __create_listener(self, timeout: float, name: str, uid: str = None) -> TcpOslListener:
         """Create new listener.

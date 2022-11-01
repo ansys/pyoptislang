@@ -154,13 +154,8 @@ class Optislang:
         If connected to remote, do NOT send ``shutdown``, just finish all threads on exit.
         """
         self.log.debug("Exit the context.")
-        if (self.__host and self.__port) or self.__shutdown_on_finished:
-            shutdown_osl = False
-        else:
-            shutdown_osl = True
-
         if self.__osl_server:
-            self.dispose(shutdown_osl)
+            self.dispose()
 
     @property
     def name(self) -> str:
@@ -190,6 +185,7 @@ class Optislang:
             Raised when the timeout float value expires.
         """
         self.__osl_server.dispose()
+        self.__osl_server = None
 
     def get_osl_version(self) -> str:
         """Get version of used optiSLang.
