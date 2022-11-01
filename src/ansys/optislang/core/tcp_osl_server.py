@@ -4,6 +4,7 @@ import json
 import logging
 import os
 from queue import Queue
+import re
 import select
 import socket
 import struct
@@ -833,7 +834,7 @@ class TcpOslServer(OslServer):
     Start local optiSLang server, get optiSLang version and shutdown the server.
     >>> from ansys.optislang.core.tcp_osl_server import TcpOslServer
     >>> osl_server = TcpOslServer()
-    >>> osl_version = osl_server.get_osl_version()
+    >>> osl_version = osl_server.get_osl_version_string()
     >>> print(osl_version)
     >>> osl_server.shutdown()
 
@@ -842,7 +843,7 @@ class TcpOslServer(OslServer):
     >>> host = "192.168.101.1"  # IP address of the remote host
     >>> port = 49200            # Port of the remote optiSLang server
     >>> osl_server = TcpOslServer(host, port)
-    >>> osl_version = osl_server.get_osl_version()
+    >>> osl_version = osl_server.get_osl_version_string()
     >>> print(osl_version)
     >>> osl_server.shutdown()
     """
@@ -902,6 +903,16 @@ class TcpOslServer(OslServer):
             self.__listeners["main"] = listener
             self.__start_listeners_registration_thread()
 
+        osl_version = self.get_osl_version()
+        osl_version_string = self.get_osl_version_string()
+
+        if osl_version[0] is not None:
+            if osl_version[0] < 23:
+                self._logger.warning(
+                    f"The version of the used Ansys optiSLang ({osl_version_string})"
+                    " is not fully supported. Please use at least version 23.1."
+                )
+
     def _get_server_info(self) -> Dict:
         """Get information about the application, the server configuration and the open projects.
 
@@ -950,7 +961,7 @@ class TcpOslServer(OslServer):
         """
         raise NotImplementedError("Currently, command is not supported in batch mode.")
 
-    def get_osl_version(self) -> str:
+    def get_osl_version_string(self) -> str:
         """Get version of used optiSLang.
 
         Returns
@@ -969,6 +980,56 @@ class TcpOslServer(OslServer):
         """
         server_info = self._get_server_info()
         return server_info["application"]["version"]
+
+    def get_osl_version(self) -> Tuple[Union[int, None], ...]:
+        """Get version of used optiSLang.
+
+        Returns
+        -------
+        tuple
+            optiSLang version as tuple containing
+            major version, minor version, maintenance version and revision.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        osl_version_str = self.get_osl_version_string()
+
+        osl_version_entries = re.findall(r"[\w']+", osl_version_str)
+
+        major_version = None
+        minor_version = None
+        maint_version = None
+        revision = None
+
+        if len(osl_version_entries) > 0:
+            try:
+                major_version = int(osl_version_entries[0])
+            except:
+                pass
+        if len(osl_version_entries) > 1:
+            try:
+                minor_version = int(osl_version_entries[1])
+            except:
+                pass
+        if len(osl_version_entries) > 2:
+            try:
+                maint_version = int(osl_version_entries[2])
+            except:
+                pass
+        if len(osl_version_entries) > 3:
+            try:
+                revision = int(osl_version_entries[3])
+            except:
+                pass
+
+        return major_version, minor_version, maint_version, revision
 
     def get_project_description(self) -> str:
         """Get description of optiSLang project.
@@ -1684,9 +1745,10 @@ class TcpOslServer(OslServer):
 
         finally:
             if self.__port is None:
-                self.__osl_process.terminate()
-                self.__osl_process = None
-                raise RuntimeError("Cannot get optiSLang server port.")
+                if self.__osl_process is not None:
+                    self.__osl_process.terminate()
+                    self.__osl_process = None
+                    raise RuntimeError("Cannot get optiSLang server port.")
 
         self.__listeners["main_listener"] = listener
         self.__start_listeners_registration_thread()
