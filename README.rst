@@ -34,10 +34,10 @@ PyOptiSLang
 Overview
 --------
 The PyOptiSLang project is a python wrapper for Ansys optiSLang applicattion. It supports Pythonic
-access to OptiSLang to be able to communicate with OptiSLang process directly from python.
+access to optiSLang to be able to communicate with optiSLang process directly from python.
 The latest ansys-optislang-core package supports:
 
-- Remote connections to OptiSLang via TCP/IP.
+- Remote connections to optiSLang via TCP/IP.
 - Basic server commands, queries and running of python scripts.
 
 Documentation and issues
@@ -94,7 +94,7 @@ command as above.
 
 Dependencies
 --------------
-Local licensed copy or remote instance of Optislang needs to be installed. The first supported
+Local licensed copy or remote instance of optiSLang needs to be installed. The first supported
 version is 2023R1.
 
 Getting started
@@ -115,7 +115,7 @@ must be ``None``, other parameters can be optionally specified.:
 Connect to a remote optiSLang server
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-For remote connection, it is assumed that the OptiSLang server process is already running
+For remote connection, it is assumed that the optiSLang server process is already running
 on remote (or local) host. In that case, the host and port must be specified and parameters
 related to the execution of the new optiSLang server are ignored.:
 
@@ -145,8 +145,8 @@ License and acknowledgments
 PyOptiSLang is licensed under the MIT license.
 
 This module, ``ansys-optislang-core`` makes no commercial claim over Ansys whatsoever. This module
-extends the functionality of ``OptiSLang`` by adding a Python interface to OptiSLang without
+extends the functionality of ``optiSLang`` by adding a Python interface to optiSLang without
 changing the core behavior or license of the original software. The use of the interactive control
-of ``PyOptiSLang`` requires a legally licensed local copy of OptiSLang. For more information about
-OptiSLang, visit the `OptiSLang <https://www.ansys.com/products/connect/ansys-optislang>`_ page
+of ``PyOptiSLang`` requires a legally licensed local copy of optiSLang. For more information about
+optiSLang, visit the `optiSLang <https://www.ansys.com/products/connect/ansys-optislang>`_ page
 on the Ansys website.

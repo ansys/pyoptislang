@@ -25,16 +25,18 @@ class ServerNotification(Enum):
     LOG_WARNING = 3
     LOG_ERROR = 4
     LOG_DEBUG = 5
-    EXECUTION_FINISHED = 6
-    NOTHING_PROCESSED = 7
-    CHECK_FAILED = 8
-    EXEC_FAILED = 9
-    ACTOR_STATE_CHANGED = 10
-    ACTOR_ACTIVE_CHANGED = 11
-    ACTOR_NAME_CHANGED = 12
-    ACTOR_CONTENTS_CHANGED = 13
-    ACTOR_DATA_CHANGED = 14
-    NUM_NOTIFICATIONS = 15
+    EXECUTION_STARTED = 6
+    PROCESSING_STARTED = 7
+    EXECUTION_FINISHED = 8
+    NOTHING_PROCESSED = 9
+    CHECK_FAILED = 10
+    EXEC_FAILED = 11
+    ACTOR_STATE_CHANGED = 12
+    ACTOR_ACTIVE_CHANGED = 13
+    ACTOR_NAME_CHANGED = 14
+    ACTOR_CONTENTS_CHANGED = 15
+    ACTOR_DATA_CHANGED = 16
+    ALL = 17
 
 
 class OslServerProcess:
@@ -73,6 +75,9 @@ class OslServerProcess:
         Specific unique ID for the TCP listener. Defaults to ``None``.
     notifications : Iterable[ServerNotification], optional
         Notifications to be sent to the listener. Defaults to ``None``.
+    shutdown_on_finished: bool, optional
+        Shut down when execution is finished. Defaults to ``True``.
+
     env_vars : Mapping[str, str], optional
         Additional environmental variables (key and value) for the optiSLang server process.
         Defaults to ``None``.
@@ -122,6 +127,7 @@ class OslServerProcess:
         listener: Tuple[str, int] = None,
         listener_id: str = None,
         notifications: Iterable[ServerNotification] = None,
+        shutdown_on_finished: bool = True,
         env_vars: Mapping[str, str] = None,
         logger=None,
         log_process_stdout: bool = True,
@@ -133,6 +139,11 @@ class OslServerProcess:
             self._logger = logging.getLogger(__name__)
         else:
             self._logger = logger
+
+        self.__process = None
+        self.__handle_process_output_thread = None
+
+        self.__tempdir = None
 
         if executable is not None:
             if not os.path.isfile(executable):
@@ -150,11 +161,7 @@ class OslServerProcess:
             else:
                 raise RuntimeError("No optiSLang executable could be found.")
 
-        self.__process = None
-        self.__handle_process_output_thread = None
-
-        self.__tempdir = None
-        if project_path is None:
+        if project_path == None:
             self.__tempdir = tempfile.TemporaryDirectory()
             project_path = Path(self.__tempdir.name) / self.__class__.DEFAULT_PROJECT_FILE
 
@@ -189,6 +196,7 @@ class OslServerProcess:
         self.__listener = listener
         self.__listener_id = listener_id
         self.__notifications = tuple(notifications) if notifications is not None else None
+        self.__shutdown_on_finished = shutdown_on_finished
         self.__env_vars = dict(env_vars) if env_vars is not None else None
         self.__log_process_stdout = log_process_stdout
         self.__log_process_stderr = log_process_stderr
@@ -391,6 +399,17 @@ class OslServerProcess:
 
         return self.__process.pid
 
+    @property
+    def shutdown_on_finished(self) -> str:
+        """Whether to shut down when execution is finished.
+
+        Returns
+        -------
+        str
+            Whether to shut down when execution is finished.
+        """
+        return self.__shutdown_on_finished
+
     def __enter__(self):
         """Enter the context."""
         return self
@@ -469,16 +488,16 @@ class OslServerProcess:
 
         if self.__notifications is not None:
             # Subscribe to push notifications sent to the listener.
-            cmd_arg = ""
+            args.append("--enable-notifications")
             for notification in self.__notifications:
-                cmd_arg += notification.name
-                cmd_arg += " "
-            args.append(f"--enable-notifications={cmd_arg.strip()}")
+                args.append(notification.name)
 
         if self.__additional_args is not None:
             for arg_name, arg_value in self.__additional_args.items():
                 args.append(f"{arg_name}={arg_value}")
 
+        if self.__shutdown_on_finished:
+            args.append("--shutdown-on-finished")
         return args
 
     def __remove_server_info_files(self):
@@ -601,7 +620,6 @@ class OslServerProcess:
             stdout=subprocess.PIPE,
             shell=False,
         )
-
         self._logger.debug("optiSLang server process has started with PID: %d", self.__process.pid)
 
     def __terminate_osl_child_processes(self):
@@ -617,21 +635,16 @@ class OslServerProcess:
                 process.terminate()
             except psutil.NoSuchProcess:
                 self._logger.debug(
-                    "Cannot terminate child process PID: %s. " "The process does not exist.",
-                    process.pid,
+                    f"Cannot terminate child process PID: {process.pid}. "
+                    "The process does not exist."
                 )
 
         gone, alive = psutil.wait_procs(children, timeout=3)
-        for process in gone:
-            self._logger.debug(
-                "optiSLang server child process %s terminated with exit code %s.",
-                process,
-                process.returncode,
-            )
+
         for process in alive:
             self._logger.debug(
-                "optiSLang server child process %s could not be terminated and will be killed.",
-                process,
+                f"optiSLang server child process {process} could not be terminated "
+                "and will be killed.",
             )
             process.kill()
 

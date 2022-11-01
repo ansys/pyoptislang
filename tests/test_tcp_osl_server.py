@@ -142,7 +142,7 @@ def test_get_server_info(tcp_osl_server):
     assert bool(server_info)
 
 
-def test_get_basic_project_info(tcp_osl_server):
+def test_get_basic_project_info(osl_server_process, tcp_osl_server):
     """Test ``_get_basic_project_info``."""
     basic_project_info = tcp_osl_server._get_basic_project_info()
     tcp_osl_server.shutdown()
@@ -150,15 +150,25 @@ def test_get_basic_project_info(tcp_osl_server):
     assert bool(basic_project_info)
 
 
-def test_get_osl_version(tcp_osl_server):
-    """Test ``get_osl_version``."""
-    version = tcp_osl_server.get_osl_version()
+def test_get_osl_version_string(osl_server_process, tcp_osl_server):
+    """Test ``get_osl_version_string``."""
+    version = tcp_osl_server.get_osl_version_string()
     tcp_osl_server.shutdown()
     assert isinstance(version, str)
     assert bool(version)
 
 
-def test_get_project_description(tcp_osl_server):
+def test_get_osl_version(tcp_osl_server):
+    """Test ``get_osl_version``."""
+    major_version, minor_version, maintenance_version, revision = tcp_osl_server.get_osl_version()
+    tcp_osl_server.shutdown()
+    assert isinstance(major_version, int)
+    assert isinstance(minor_version, int)
+    assert isinstance(maintenance_version, int) or maintenance_version == None
+    assert isinstance(revision, int) or revision == None
+
+
+def test_get_project_description(osl_server_process, tcp_osl_server):
     """Test ``get_project_description``."""
     project_description = tcp_osl_server.get_project_description()
     tcp_osl_server.shutdown()
@@ -166,7 +176,7 @@ def test_get_project_description(tcp_osl_server):
     assert not bool(project_description)
 
 
-def test_get_project_location(tcp_osl_server):
+def test_get_project_location(osl_server_process, tcp_osl_server):
     """Test ``get_project_location``."""
     project_location = tcp_osl_server.get_project_location()
     tcp_osl_server.shutdown()
@@ -174,7 +184,7 @@ def test_get_project_location(tcp_osl_server):
     assert bool(project_location)
 
 
-def test_get_project_name(tcp_osl_server):
+def test_get_project_name(osl_server_process, tcp_osl_server):
     """Test ``get_project_name``."""
     project_name = tcp_osl_server.get_project_name()
     tcp_osl_server.shutdown()
@@ -182,7 +192,7 @@ def test_get_project_name(tcp_osl_server):
     assert bool(project_name)
 
 
-def test_get_project_status(tcp_osl_server):
+def test_get_project_status(osl_server_process, tcp_osl_server):
     """Test ``get_get_project_status``."""
     project_status = tcp_osl_server.get_project_status()
     tcp_osl_server.shutdown()
@@ -190,7 +200,7 @@ def test_get_project_status(tcp_osl_server):
     assert bool(project_status)
 
 
-def test_get_working_dir(tcp_osl_server):
+def test_get_working_dir(osl_server_process, tcp_osl_server):
     """Test ``get_working_dir``."""
     working_dir = tcp_osl_server.get_working_dir()
     tcp_osl_server.shutdown()
@@ -199,7 +209,7 @@ def test_get_working_dir(tcp_osl_server):
 
 
 # not implemented
-def test_new(tcp_osl_server):
+def test_new(osl_server_process, tcp_osl_server):
     """Test ``new``."""
     with pytest.raises(NotImplementedError):
         tcp_osl_server.new()
@@ -207,19 +217,20 @@ def test_new(tcp_osl_server):
 
 
 # not implemented
-def test_open(tcp_osl_server):
+def test_open(osl_server_process, tcp_osl_server):
     """Test ``open``."""
     with pytest.raises(NotImplementedError):
         tcp_osl_server.open("string", False, False, False)
     tcp_osl_server.shutdown()
 
 
-def test_reset(tcp_osl_server):
+def test_reset(osl_server_process, tcp_osl_server):
     """Test ``reset``."""
     with does_not_raise() as dnr:
         tcp_osl_server.reset()
     tcp_osl_server.shutdown()
     assert dnr is None
+
 
 
 @pytest.mark.parametrize("path_type", [str, Path])
@@ -244,7 +255,7 @@ print(result)
     assert isinstance(run_file, tuple)
 
 
-def test_run_python_script(tcp_osl_server):
+def test_run_python_script(osl_server_process, tcp_osl_server):
     """Test ``run_python_script``."""
     cmd = """
 a = 5
@@ -258,7 +269,7 @@ print(result)
 
 
 # not implemented
-def test_save(tcp_osl_server):
+def test_save(osl_server_process, tcp_osl_server):
     """Test ``save``."""
     with pytest.raises(NotImplementedError):
         tcp_osl_server.save()
@@ -266,14 +277,14 @@ def test_save(tcp_osl_server):
 
 
 # not implemented
-def test_save_as(tcp_osl_server):
+def test_save_as(osl_server_process, tcp_osl_server):
     """Test ``save_as``."""
     with pytest.raises(NotImplementedError):
         tcp_osl_server.save_as("string", False, False, False)
     tcp_osl_server.shutdown()
 
 
-def test_save_copy(tmp_path, tcp_osl_server):
+def test_save_copy(osl_server_process, tmp_path, tcp_osl_server):
     """Test ``save_copy``."""
     copy_path = os.path.join(tmp_path, "test_save_copy.opf")
     tcp_osl_server.save_copy(copy_path)
@@ -281,7 +292,7 @@ def test_save_copy(tmp_path, tcp_osl_server):
     assert os.path.isfile(copy_path)
 
 
-def test_start(tcp_osl_server):
+def test_start(osl_server_process, tcp_osl_server):
     """Test ``start``."""
     with does_not_raise() as dnr:
         tcp_osl_server.start()
@@ -289,7 +300,7 @@ def test_start(tcp_osl_server):
     assert dnr is None
 
 
-def test_stop(tcp_osl_server):
+def test_stop(osl_server_process, tcp_osl_server):
     """Test ``stop``."""
     with does_not_raise() as dnr:
         tcp_osl_server.stop()
@@ -297,7 +308,7 @@ def test_stop(tcp_osl_server):
     assert dnr is None
 
 
-def test_stop_gently(tcp_osl_server):
+def test_stop_gently(osl_server_process, tcp_osl_server):
     """Test ``stop_gently``."""
     with does_not_raise() as dnr:
         tcp_osl_server.stop_gently()
@@ -305,7 +316,7 @@ def test_stop_gently(tcp_osl_server):
     assert dnr is None
 
 
-def test_shutdown(tcp_osl_server):
+def test_shutdown(osl_server_process, tcp_osl_server):
     """Test ``shutdown``."""
     with does_not_raise() as dnr:
         tcp_osl_server.shutdown()

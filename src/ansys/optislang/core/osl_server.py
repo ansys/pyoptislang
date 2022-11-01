@@ -24,13 +24,34 @@ class OslServer(ABC):
         pass
 
     @abstractmethod
-    def get_osl_version(self) -> str:
+    def get_osl_version_string(self) -> str:
         """Get version of used optiSLang.
 
         Returns
         -------
         str
             optiSLang version.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        pass
+
+    @abstractmethod
+    def get_osl_version(self) -> Tuple[Union[int, None], ...]:
+        """Get version of used optiSLang.
+
+        Returns
+        -------
+        tuple
+            optiSLang version as tuple containing
+            major version, minor version, maintenance version and revision.
 
         Raises
         ------
@@ -421,14 +442,17 @@ class OslServer(ABC):
         pass
 
     @abstractmethod
-    def start(self, wait_for_finish: bool = True) -> None:
+    def start(self, wait_for_started: bool = True, wait_for_finished: bool = True) -> None:
         """Start project execution.
 
         Parameters
         ----------
-        wait_for_finish : bool, optional
+        wait_for_started : bool, optional
+            Determines whether this function call should wait on the optiSlang to start
+            the command execution. Defaults to ``True``.
+        wait_for_finished : bool, optional
             Determines whether this function call should wait on the optiSlang to finish
-            the project execution. Defaults to ``True``.
+            the command execution. Defaults to ``True``.
 
         Raises
         ------
@@ -442,12 +466,12 @@ class OslServer(ABC):
         pass
 
     @abstractmethod
-    def stop(self, wait_for_finish: bool = True) -> None:
+    def stop(self, wait_for_finished: bool = True) -> None:
         """Stop project execution.
 
         Parameters
         ----------
-        wait_for_finish : bool, optional
+        wait_for_finished : bool, optional
             Determines whether this function call should wait on the optiSlang to finish
             the project execution. Defaults to ``True``.
 
@@ -463,12 +487,12 @@ class OslServer(ABC):
         pass
 
     @abstractmethod
-    def stop_gently(self, wait_for_finish: bool = True) -> None:
+    def stop_gently(self, wait_for_finished: bool = True) -> None:
         """Stop project execution after the current design is finished.
 
         Parameters
         ----------
-        wait_for_finish : bool, optional
+        wait_for_finished : bool, optional
             Determines whether this function call should wait on the optiSlang to finish
             the project execution. Defaults to ``True``.
 
