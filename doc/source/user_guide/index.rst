@@ -13,7 +13,6 @@ PyOptiSLang library.
    launch
    functions
    run_python
-   context_manager
    troubleshooting
 
 
