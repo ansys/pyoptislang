@@ -38,13 +38,34 @@ class OslServer(ABC):
         pass
 
     @abstractmethod
-    def get_osl_version(self) -> str:
+    def get_osl_version_string(self) -> str:
         """Get version of used optiSLang.
 
         Returns
         -------
         str
             optiSLang version.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        pass
+
+    @abstractmethod
+    def get_osl_version(self) -> Tuple[Union[int, None], ...]:
+        """Get version of used optiSLang.
+
+        Returns
+        -------
+        tuple
+            optiSLang version as tuple containing
+            major version, minor version, maintenance version and revision.
 
         Raises
         ------
