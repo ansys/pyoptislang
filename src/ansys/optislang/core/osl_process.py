@@ -2,6 +2,7 @@
 from enum import Enum
 import logging
 import os
+from pathlib import Path
 import subprocess
 import tempfile
 from threading import Thread
@@ -43,9 +44,9 @@ class OslServerProcess:
 
     Parameters
     ----------
-    executable : str
+    executable : Union[str, Path]
         Path to the optiSLang executable file.
-    project_path : str, optional
+    project_path : Union[str, Path], optional
         Path to the optiSLang project file.
         - If the project file exists, it is opened.
         - If the project file does not exist, a new project is created on the specified path.
@@ -61,7 +62,7 @@ class OslServerProcess:
     no_save : bool, optional
         Determines whether not to save the specified project after all other actions are completed.
         Defaults to ``False``.
-    server_info : str, optional
+    server_info : Union[str, Path], optional
         Path to the server information file. If an absolute path is not supplied, it is considered
         to be relative to the project working directory. If ``None``, no server information file
         will be written. Defaults to ``None``.
@@ -115,13 +116,13 @@ class OslServerProcess:
 
     def __init__(
         self,
-        executable: str = None,
-        project_path: str = None,
+        executable: Union[str, Path] = None,
+        project_path: Union[str, Path] = None,
         batch: bool = True,
         port_range: Tuple[int, int] = None,
         password: str = None,
         no_save: bool = False,
-        server_info: str = None,
+        server_info: Union[str, Path] = None,
         log_server_events: bool = False,
         listener: Tuple[str, int] = None,
         listener_id: str = None,
@@ -147,7 +148,7 @@ class OslServerProcess:
         if executable is not None:
             if not os.path.isfile(executable):
                 raise FileNotFoundError(f"optiSLang executable cannot be found: {executable}")
-            self.__executable = executable
+            self.__executable = Path(executable)
         else:
             osl_exec = utils.get_osl_exec()
             if osl_exec is not None:
@@ -162,19 +163,35 @@ class OslServerProcess:
 
         if project_path == None:
             self.__tempdir = tempfile.TemporaryDirectory()
-            self.__project_path = os.path.join(
-                self.__tempdir.name, self.__class__.DEFAULT_PROJECT_FILE
+            project_path = Path(self.__tempdir.name) / self.__class__.DEFAULT_PROJECT_FILE
+
+        if isinstance(project_path, str):
+            project_path = Path(project_path)
+
+        if not isinstance(project_path, Path):
+            raise TypeError(
+                f"Invalid type of project_path: {type(project_path)},"
+                "Union[str, Path] is supported."
             )
-        else:
-            if not project_path.endswith(".opf"):
-                raise ValueError("Invalid optiSLang project file.")
-            self.__project_path = project_path
+
+        if not project_path.suffix == ".opf":
+            raise ValueError("Invalid optiSLang project file.")
+
+        self.__project_path = project_path
+
+        if isinstance(server_info, str):
+            server_info = Path(server_info)
+        elif not (isinstance(server_info, Path) or server_info is None):
+            raise TypeError(
+                f"Invalid type of server_info: {type(server_info)},"
+                "Union[str, Path] is supported."
+            )
+        self.__server_info = server_info
 
         self.__batch = batch
         self.__port_range = port_range
         self.__password = password
         self.__no_save = no_save
-        self.__server_info = server_info
         self.__log_server_events = log_server_events
         self.__listener = listener
         self.__listener_id = listener_id
@@ -186,23 +203,23 @@ class OslServerProcess:
         self.__additional_args = kwargs
 
     @property
-    def executable(self) -> str:
+    def executable(self) -> Path:
         """Path to the optiSLang executable file.
 
         Returns
         -------
-        str
+        Path
             Path to the optiSLang executable file.
         """
         return self.__executable
 
     @property
-    def project_path(self) -> str:
+    def project_path(self) -> Path:
         """Path to the optiSLang project file.
 
         Returns
         -------
-        str
+        Path
             Path to the optiSLang project file.
         """
         return self.__project_path
@@ -254,12 +271,12 @@ class OslServerProcess:
         return self.__no_save
 
     @property
-    def server_info(self) -> str:
+    def server_info(self) -> Union[Path, None]:
         """Path to the server information file.
 
         Returns
         -------
-        str
+        Union[Path, None]
             Path to the server information file, if defined; ``None`` otherwise.
         """
         return self.__server_info
@@ -410,23 +427,23 @@ class OslServerProcess:
             List of command line arguments.
         """
         args = []
-        args.append(self.__executable)
+        args.append(str(self.__executable))
 
         if self.__batch:
             args.append("-b")  # Start batch mode
 
-        if not os.path.isfile(self.__project_path):
+        if not self.__project_path.is_file():
             # Creates a new project in the provided path.
             if IRON_PYTHON:
-                args.append(f'--new="{self.__project_path}"')
+                args.append(f'--new="{str(self.__project_path)}"')
             else:
-                args.append(f"--new={self.__project_path}")
+                args.append(f"--new={str(self.__project_path)}")
         else:
             # Opens existing project
             if IRON_PYTHON:
-                args.append(f'"{self.__project_path}"')
+                args.append(f'"{str(self.__project_path)}"')
             else:
-                args.append(self.__project_path)
+                args.append(str(self.__project_path))
 
         if self.__batch:
             args.append("--no-run")  # Does not run the specified projects.
@@ -449,9 +466,9 @@ class OslServerProcess:
             # Writes the server information file using the file path specified. If an absolute path
             # is not supplied, it is considered to be relative to the project working directory.
             if IRON_PYTHON:
-                args.append(f'--write-server-info="{self.__server_info}"')
+                args.append(f'--write-server-info="{str(self.__server_info)}"')
             else:
-                args.append(f"--write-server-info={self.__server_info}")
+                args.append(f"--write-server-info={str(self.__server_info)}")
 
         if self.__no_save:
             # Do not save the specified projects after all other actions have been completed.

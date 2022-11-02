@@ -1,5 +1,6 @@
 from contextlib import nullcontext as does_not_raise
 import os
+from pathlib import Path
 import socket
 import time
 
@@ -36,8 +37,7 @@ def tcp_client() -> tos.TcpClient:
     TcpOslServer:
         Class which provides access to optiSLang server using plain TCP/IP communication protocol.
     """
-    client = tos.TcpClient()
-    return client
+    return tos.TcpClient()
 
 
 @pytest.fixture(scope="function", autouse=False)
@@ -81,9 +81,20 @@ def test_send_msg(osl_server_process: OslServerProcess, tcp_client: tos.TcpClien
     assert dnr is None
 
 
-def test_send_file(osl_server_process: OslServerProcess, tcp_client: tos.TcpClient, tmp_path):
-    "Test ``send_file`"
-    file_path = os.path.join(tmp_path, "testfile.txt")
+@pytest.mark.parametrize("path_type", [str, Path])
+def test_send_file(
+  osl_server_process: OslServerProcess, 
+  tcp_client: tos.TcpClient, 
+  tmp_path: Path, 
+  path_type,
+  ):
+    "Test ``send_file``"
+    file_path = tmp_path / "testfile.txt"
+    if path_type == str:
+        file_path = str(file_path)
+    elif path_type != Path:
+        assert False
+        
     with open(file_path, "w") as testfile:
         testfile.write(_msg)
     with does_not_raise() as dnr:
@@ -104,15 +115,29 @@ def test_receive_msg(osl_server_process: OslServerProcess, tcp_client: tos.TcpCl
     assert isinstance(msg, str)
 
 
-def test_receive_file(osl_server_process: OslServerProcess, tcp_client: tos.TcpClient, tmp_path):
+@pytest.mark.parametrize("path_type", [str, Path])
+def test_receive_file(
+  osl_server_process: OslServerProcess, 
+  tcp_client: tos.TcpClient, 
+  tmp_path: Path, 
+  path_type,
+):
     "Test ``receive_file`"
-    file_path = os.path.join(tmp_path, "testfile.txt")
+    file_path = tmp_path / "testfile.txt"
+    received_path = tmp_path / "received.txt"
+    if path_type == str:
+        file_path = str(file_path)
+        received_path = str(received_path)
+    elif path_type != Path:
+        assert False
+
     with open(file_path, "w") as testfile:
         testfile.write(_msg)
     tcp_client.connect(host=_host, port=_port)
     tcp_client.send_file(file_path)
     with does_not_raise() as dnr:
-        tcp_client.receive_file(os.path.join(tmp_path, "received.txt"))
+        tcp_client.receive_file(received_path)
+    assert os.path.isfile(received_path)
     tcp_client.disconnect()
     osl_server_process.terminate()
     assert dnr is None
@@ -165,7 +190,7 @@ def test_get_project_location(tcp_osl_server: tos.TcpOslServer):
     """Test ``get_project_location``."""
     project_location = tcp_osl_server.get_project_location()
     tcp_osl_server.shutdown()
-    assert isinstance(project_location, str)
+    assert isinstance(project_location, Path)
     assert bool(project_location)
 
 
@@ -189,7 +214,7 @@ def test_get_working_dir(tcp_osl_server: tos.TcpOslServer):
     """Test ``get_working_dir``."""
     working_dir = tcp_osl_server.get_working_dir()
     tcp_osl_server.shutdown()
-    assert isinstance(working_dir, str)
+    assert isinstance(working_dir, Path)
     assert bool(working_dir)
 
 
@@ -217,7 +242,9 @@ def test_reset(tcp_osl_server: tos.TcpOslServer):
     assert dnr is None
 
 
-def test_run_python_file(tcp_osl_server: tos.TcpOslServer, tmp_path):
+
+@pytest.mark.parametrize("path_type", [str, Path])
+def test_run_python_file(tcp_osl_server: tos.TcpOslServer, tmp_path: Path, path_type):
     """Test ``run_python_file``."""
     cmd = """
 a = 5
@@ -225,7 +252,12 @@ b = 10
 result = a + b
 print(result)
 """
-    cmd_path = os.path.join(tmp_path, "commands.txt")
+    cmd_path = tmp_path / "commands.txt"
+    if path_type == str:
+        cmd_path = str(cmd_path)
+    elif path_type != Path:
+        assert False
+
     with open(cmd_path, "w") as f:
         f.write(cmd)
     run_file = tcp_osl_server.run_python_file(file_path=cmd_path)
@@ -262,9 +294,9 @@ def test_save_as(tcp_osl_server: tos.TcpOslServer):
     tcp_osl_server.shutdown()
 
 
-def test_save_copy(tmp_path, tcp_osl_server: tos.TcpOslServer):
+def test_save_copy(tmp_path: Path, tcp_osl_server: tos.TcpOslServer):
     """Test ``save_copy``."""
-    copy_path = os.path.join(tmp_path, "test_save_copy.opf")
+    copy_path = tmp_path / "test_save_copy.opf"
     tcp_osl_server.save_copy(copy_path)
     tcp_osl_server.shutdown()
     assert os.path.isfile(copy_path)
