@@ -1,5 +1,6 @@
 from contextlib import nullcontext as does_not_raise
 import os
+from pathlib import Path
 
 import pytest
 
@@ -17,7 +18,9 @@ def optislang(scope="function", autouse=True) -> Optislang:
     Optislang:
         Connects to the optiSLang application and provides an API to control it.
     """
-    return Optislang()
+    osl = Optislang()
+    osl.set_timeout(20)
+    return osl
 
 
 def test_get_osl_version_string(optislang):
@@ -53,7 +56,7 @@ def test_get_project_description(optislang):
 def test_get_project_location(optislang):
     "Test ``get_project_location``."
     location = optislang.get_project_location()
-    assert isinstance(location, str)
+    assert isinstance(location, Path)
     with does_not_raise() as dnr:
         optislang.shutdown()
     assert dnr is None
@@ -80,7 +83,7 @@ def test_get_project_status(optislang):
 def test_get_working_dir(optislang):
     "Test ``get_working_dir``."
     working_dir = optislang.get_working_dir()
-    assert isinstance(working_dir, str)
+    assert isinstance(working_dir, Path)
     with does_not_raise() as dnr:
         optislang.shutdown()
     assert dnr is None
@@ -172,8 +175,6 @@ connect(python, "ODesign", sens, "IIDesign")
         )
         optislang.start(wait_for_finished=False)
         optislang.stop()
-        optislang.start()
-        optislang.stop()
     assert dnr is None
     with does_not_raise() as dnr:
         optislang.shutdown()
@@ -199,8 +200,6 @@ connect(python, "ODesign", sens, "IIDesign")
         )
         optislang.start(wait_for_finished=False)
         optislang.stop_gently()
-        optislang.start()
-        optislang.stop()
     assert dnr is None
     with does_not_raise() as dnr:
         optislang.shutdown()

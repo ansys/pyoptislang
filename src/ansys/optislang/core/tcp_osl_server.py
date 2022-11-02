@@ -3,6 +3,7 @@ from datetime import datetime
 import json
 import logging
 import os
+from pathlib import Path
 from queue import Queue
 import re
 import select
@@ -227,12 +228,12 @@ class TcpClient:
         self.__socket.settimeout(timeout)
         self.__socket.sendall(header + data)
 
-    def send_file(self, file_path: str, timeout: Union[float, None] = 5) -> None:
+    def send_file(self, file_path: Union[str, Path], timeout: Union[float, None] = 5) -> None:
         """Send content of the file to the server.
 
         Parameters
         ----------
-        file_path : str
+        file_path : Union[str, Path]
             Path to the file whose content is to be sent to the server.
         timeout : Union[float, None], optional
             Timeout in seconds to send the buffer of the read part of the file. If a non-zero value
@@ -321,12 +322,12 @@ class TcpClient:
 
         return force_text(data)
 
-    def receive_file(self, file_path: str, timeout: Union[float, None] = 5) -> None:
+    def receive_file(self, file_path: Union[str, Path], timeout: Union[float, None] = 5) -> None:
         """Receive file from the server.
 
         Parameters
         ----------
-        file_path : str
+        file_path : Union[str, Path]
             Path where the received file is to be saved.
         timeout : Union[float, None], optional
             Timeout in seconds to receive a buffer of the file part. The function will raise
@@ -472,14 +473,16 @@ class TcpClient:
             received_len += len(chunk)
         return received
 
-    def _fetch_file(self, file_len: int, file_path: str, timeout: Union[float, None]) -> None:
+    def _fetch_file(
+        self, file_len: int, file_path: Union[str, Path], timeout: Union[float, None]
+    ) -> None:
         """Write received bytes from the server to the file.
 
         Parameters
         ----------
         file_len : int
             Number of bytes to be written.
-        file_path : str
+        file_path : Union[str, Path]
             Path to the file to which the received data is to be written.
         timeout : Union[float, None], optional
             Timeout in seconds to receive bytes from the server and write them to the file.
@@ -812,10 +815,10 @@ class TcpOslServer(OslServer):
         Defaults to ``None``.
     port : int, optional
         A numeric port number of running optiSLang server. Defaults to ``None``.
-    executable : str, optional
+    executable : Union[str, Path], optional
         Path to the optiSLang executable file which supposed to be executed on localhost.
         It is ignored when the host and port parameters are specified. Defaults to ``None``.
-    project_path : str, optional
+    project_path : Union[str, Path], optional
         Path to the optiSLang project file which is supposed to be used by new local optiSLang
         server. It is ignored when the host and port parameters are specified.
         - If the project file exists, it is opened.
@@ -872,8 +875,8 @@ class TcpOslServer(OslServer):
         self,
         host: str = None,
         port: int = None,
-        executable: str = None,
-        project_path: str = None,
+        executable: Union[str, Path] = None,
+        project_path: Union[str, Path] = None,
         no_save: bool = False,
         ini_timeout: float = 20,
         password: str = None,
@@ -884,14 +887,14 @@ class TcpOslServer(OslServer):
         self.__host = host
         self.__port = port
         self.__timeout = None
-        self.__executable = executable
 
         if logger is None:
             self._logger = logging.getLogger(__name__)
         else:
             self._logger = logger
 
-        self.__project_path = project_path
+        self.__executable = Path(executable) if executable is not None else None
+        self.__project_path = Path(project_path) if project_path is not None else None
         self.__no_save = no_save
         self.__password = password
         self.__osl_process = None
@@ -1070,12 +1073,12 @@ class TcpOslServer(OslServer):
             return None
         return project_info["projects"][0]["settings"]["short_description"]
 
-    def get_project_location(self) -> str:
+    def get_project_location(self) -> Path:
         """Get path to the optiSLang project file.
 
         Returns
         -------
-        str
+        Path
             Path to the optiSLang project file. If no project is loaded in the optiSLang,
             returns ``None``.
 
@@ -1091,7 +1094,7 @@ class TcpOslServer(OslServer):
         project_info = self._get_basic_project_info()
         if len(project_info["projects"]) == 0:
             return None
-        return project_info["projects"][0]["location"]
+        return Path(project_info["projects"][0]["location"])
 
     def get_project_name(self) -> str:
         """Get name of the optiSLang project.
@@ -1158,12 +1161,12 @@ class TcpOslServer(OslServer):
         """
         return self.__timeout
 
-    def get_working_dir(self) -> str:
+    def get_working_dir(self) -> Path:
         """Get path to the optiSLang project working directory.
 
         Returns
         -------
-        str
+        Path
             Path to the optiSLang project working directory. If no project is loaded
             in the optiSLang, returns ``None``.
 
@@ -1179,7 +1182,7 @@ class TcpOslServer(OslServer):
         project_info = self._get_basic_project_info()
         if len(project_info["projects"]) == 0:
             return None
-        return project_info["projects"][0]["working_dir"]
+        return Path(project_info["projects"][0]["working_dir"])
 
     def new(self) -> None:
         """Create a new project.
@@ -1202,7 +1205,7 @@ class TcpOslServer(OslServer):
 
     def open(
         self,
-        file_path: str,
+        file_path: Union[str, Path],
         force: bool,
         restore: bool,
         reset: bool,
@@ -1211,7 +1214,7 @@ class TcpOslServer(OslServer):
 
         Parameters
         ----------
-        file_path : str
+        file_path : Union[str, Path]
             Path to the optiSLang project file to open.
         force : bool
             # TODO: description of this parameter is missing in ANSYS help
@@ -1286,14 +1289,14 @@ class TcpOslServer(OslServer):
 
     def run_python_file(
         self,
-        file_path: str,
+        file_path: Union[str, Path],
         args: Union[Sequence[object], None] = None,
     ) -> Tuple[str, str]:
         """Read python script from the file, load it in a project context and execute it.
 
         Parameters
         ----------
-        file_path : str
+        file_path : Union[str, Path]
             Path to the Python script file which content is supposed to be executed on the server.
         args : Sequence[object], None, optional
             Sequence of arguments used in Python script. Defaults to ``None``.
@@ -1334,7 +1337,7 @@ class TcpOslServer(OslServer):
 
     def save_as(
         self,
-        file_path: str,
+        file_path: Union[str, Path],
         force: bool,
         restore: bool,
         reset: bool,
@@ -1343,7 +1346,7 @@ class TcpOslServer(OslServer):
 
         Parameters
         ----------
-        file_path : str
+        file_path : Union[str, Path]
             Path where to save the project file.
         force : bool
             # TODO: description of this parameter is missing in ANSYS help
@@ -1359,12 +1362,12 @@ class TcpOslServer(OslServer):
         """
         raise NotImplementedError("Currently, command is not supported in batch mode.")
 
-    def save_copy(self, file_path: str) -> None:
+    def save_copy(self, file_path: Union[str, Path]) -> None:
         """Save the current project as a copy to a location.
 
         Parameters
         ----------
-        file_path : str
+        file_path : Union[str, Path]
             Path where to save the project copy.
 
         Raises
@@ -1376,7 +1379,7 @@ class TcpOslServer(OslServer):
         TimeoutError
             Raised when the timeout float value expires.
         """
-        self._send_command(commands.save_copy(file_path, self.__password))
+        self._send_command(commands.save_copy(str(file_path), self.__password))
 
     def set_timeout(self, timeout: Union[float, None] = None) -> None:
         """Set timeout value for execution of commands.
