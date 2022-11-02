@@ -83,18 +83,18 @@ def test_send_msg(osl_server_process: OslServerProcess, tcp_client: tos.TcpClien
 
 @pytest.mark.parametrize("path_type", [str, Path])
 def test_send_file(
-  osl_server_process: OslServerProcess, 
-  tcp_client: tos.TcpClient, 
-  tmp_path: Path, 
-  path_type,
-  ):
+    osl_server_process: OslServerProcess,
+    tcp_client: tos.TcpClient,
+    tmp_path: Path,
+    path_type,
+):
     "Test ``send_file``"
     file_path = tmp_path / "testfile.txt"
     if path_type == str:
         file_path = str(file_path)
     elif path_type != Path:
         assert False
-        
+
     with open(file_path, "w") as testfile:
         testfile.write(_msg)
     with does_not_raise() as dnr:
@@ -117,10 +117,10 @@ def test_receive_msg(osl_server_process: OslServerProcess, tcp_client: tos.TcpCl
 
 @pytest.mark.parametrize("path_type", [str, Path])
 def test_receive_file(
-  osl_server_process: OslServerProcess, 
-  tcp_client: tos.TcpClient, 
-  tmp_path: Path, 
-  path_type,
+    osl_server_process: OslServerProcess,
+    tcp_client: tos.TcpClient,
+    tmp_path: Path,
+    path_type,
 ):
     "Test ``receive_file`"
     file_path = tmp_path / "testfile.txt"
@@ -240,7 +240,6 @@ def test_reset(tcp_osl_server: tos.TcpOslServer):
         tcp_osl_server.reset()
     tcp_osl_server.shutdown()
     assert dnr is None
-
 
 
 @pytest.mark.parametrize("path_type", [str, Path])
