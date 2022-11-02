@@ -1,7 +1,8 @@
 .. _ref_functions:
 
+===========
 Basic usage
------------
+===========
 In order to start project, use :func:`start <ansys.optislang.core.optislang.Optislang.start>`
 (example :ref:`ref_simple_calculator` can be used):
 
@@ -37,3 +38,10 @@ Or via running specific requests:
     print(f'Location: {osl.get_project_location()}')
     print(f'Name: {osl.get_project_name()}')
     print(f'Status: {osl.get_project_status()}')
+
+When the :class:`Optislang() <ansys.optislang.core.optislang.Optislang>` instance is no longer 
+needed, terminate connection with optiSLang server by running:
+
+.. code:: python
+
+    osl.dispose()

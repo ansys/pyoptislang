@@ -24,6 +24,21 @@ class OslServer(ABC):
         pass
 
     @abstractmethod
+    def dispose(self) -> None:
+        """Terminate all local threads and unregister listeners.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        pass
+
+    @abstractmethod
     def get_osl_version_string(self) -> str:
         """Get version of used optiSLang.
 
@@ -414,7 +429,7 @@ class OslServer(ABC):
 
     @abstractmethod
     def shutdown(self, force: bool = False) -> None:
-        """Shutdown the server.
+        """Shutdown the optiSLang server.
 
         Stop listening for incoming connections, discard pending requests, and shut down
         the server. Batch mode exclusive: Continue project run until execution finished.
@@ -426,8 +441,8 @@ class OslServer(ABC):
             Determines whether to force shutdown the local optiSLang server. Has no effect when
             the connection is established to the remote optiSLang server. In all cases, it is tried
             to shutdown the optiSLang server process in a proper way. However, if the force
-            parameter is ``True``, after a while, the process is forced to terminate and
-            no exception is raised. Defaults to ``False``.
+            parameter is ``True``, after a while, the process is forced to terminate and no
+            exception is raised. Defaults to ``False``.
 
         Raises
         ------
