@@ -110,7 +110,7 @@ must be ``None``, other parameters can be optionally specified.:
 
     from ansys.optislang.core import Optislang
     osl = Optislang()
-    osl.shutdown()
+    osl.dispose()
 
 Connect to a remote optiSLang server
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -125,7 +125,7 @@ related to the execution of the new optiSLang server are ignored.:
     host = "127.0.0.1"
     port = 5310
     osl = Optislang(host=host, port=port)
-    osl.shutdown()
+    osl.dispose()
 
 Basic usage
 ~~~~~~~~~~~
@@ -137,7 +137,7 @@ Basic usage
     file_path = r"C:\Users\Username\my_scripts\myscript.py"
     osl.run_python_file(path=script_path)
     osl.save_copy("MyNewProject.opf")
-    osl.shutdown()
+    osl.dispose()
 
 License and acknowledgments
 ---------------------------

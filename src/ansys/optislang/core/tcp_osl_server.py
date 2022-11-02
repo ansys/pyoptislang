@@ -1,4 +1,5 @@
 """Contains classes for plain TCP/IP communication with server."""
+import atexit
 from datetime import datetime
 import json
 import logging
@@ -7,6 +8,7 @@ from pathlib import Path
 from queue import Queue
 import re
 import select
+import signal
 import socket
 import struct
 import threading
@@ -902,6 +904,8 @@ class TcpOslServer(OslServer):
         self.__listeners_registration_thread = None
         self.__refresh_listeners = threading.Event()
         self.__listeners_refresh_interval = 20
+        signal.signal(signal.SIGINT, self.__signal_handler)
+        atexit.register(self.dispose)
 
         if self.__host is None or self.__port is None:
             self.__host = self.__class__._LOCALHOST
@@ -979,6 +983,21 @@ class TcpOslServer(OslServer):
             Currently, command is not supported in batch mode.
         """
         raise NotImplementedError("Currently, command is not supported in batch mode.")
+
+    def dispose(self) -> None:
+        """Terminate all local threads and unregister listeners.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        self.__stop_listeners_registration_thread()
+        self.__unregister_all_listeners()
 
     def get_osl_version_string(self) -> str:
         """Get version of used optiSLang.
@@ -1424,7 +1443,7 @@ class TcpOslServer(OslServer):
             listener.timeout = timeout
 
     def shutdown(self, force: bool = False) -> None:
-        """Shutdown the server.
+        """Shutdown the optiSLang server.
 
         Stop listening for incoming connections, discard pending requests, and shut down
         the server. Batch mode exclusive: Continue project run until execution finished.
@@ -1436,8 +1455,8 @@ class TcpOslServer(OslServer):
             Determines whether to force shutdown the local optiSLang server. Has no effect when
             the connection is established to the remote optiSLang server. In all cases, it is tried
             to shutdown the optiSLang server process in a proper way. However, if the force
-            parameter is ``True``, after a while, the process is forced to terminate and
-            no exception is raised. Defaults to ``False``.
+            parameter is ``True``, after a while, the process is forced to terminate and no
+            exception is raised. Defaults to ``False``.
 
         Raises
         ------
@@ -1449,11 +1468,14 @@ class TcpOslServer(OslServer):
         TimeoutError
             Raised when the parameter force is ``False`` and the timeout float value expires.
         """
-        self.__finish_all_threads()
+        self.__stop_listeners_registration_thread()
+        self.__unregister_all_listeners()
 
         # Only in case shutdown_on_finished option is not set, actively send shutdown command
         if self.__osl_process is None or (
-            self.__osl_process is not None and not self.__osl_process.shutdown_on_finished
+            self.__osl_process is not None
+            and self.__osl_process is None
+            or (self.__osl_process is not None and not self.__osl_process.shutdown_on_finished)
         ):
             try:
                 self._send_command(commands.shutdown(self.__password))
@@ -1786,6 +1808,11 @@ class TcpOslServer(OslServer):
         self.__listeners["main_listener"] = listener
         self.__start_listeners_registration_thread()
 
+    def __signal_handler(self, signum, frame):
+        self._logger.error("Interrupt from keyboard (CTRL + C), terminating execution.")
+        self.dispose()
+        raise KeyboardInterrupt
+
     def __create_listener(self, timeout: float, name: str, uid: str = None) -> TcpOslListener:
         """Create new listener.
 
@@ -2011,9 +2038,8 @@ class TcpOslServer(OslServer):
             time.sleep(check_for_refresh)
         self._logger.debug("Stop refreshing listener registration, self.__refresh = False")
 
-    def __finish_all_threads(self) -> None:
-        """Stop listeners registration and unregister them."""
-        self.__stop_listeners_registration_thread()
+    def __unregister_all_listeners(self) -> None:
+        """Unregister all instance listeners."""
         for listener in self.__listeners.values():
             if listener.uid is not None:
                 try:
