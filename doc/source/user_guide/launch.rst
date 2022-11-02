@@ -6,9 +6,8 @@ Initial setup and launching optiSLang
 Instance of
 :class:`Optislang <ansys.optislang.core.optislang.Optislang>` can either launch optiSLang server
 locally or it may connect to already running optiSLang server. This instance should be terminated 
-gracefully when it's no longer use, either via 
-:func:`dispose() <ansys.optislang.core.optislang.Optislang.dispose>` or 
-:func:`shutdown() <ansys.optislang.core.optislang.Optislang.shutdown>` method. Therefore it is 
+gracefully when it's no longer in use by calling
+:func:`dispose() <ansys.optislang.core.optislang.Optislang.dispose>` method. Therefore, it is 
 recommended to use instance of :class:`Optislang <ansys.optislang.core.optislang.Optislang>` 
 as a context manager, that will execute 
 :func:`dispose() <ansys.optislang.core.optislang.Optislang.dispose>` method automatically even
@@ -65,9 +64,11 @@ In order to open specific project or create new one, launch
 Keep optiSLang server running
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Default setting of optiSLang server is ``shutdown_on_finished=True``. This means that optiSLang
-server will be terminated automatically, when all requests are finished and there are no registered
-listeners. This may be changed if user wishes to keep optiSLang server running after execution 
-of python script is finished by setting ``shutdown_on_finished=False``.
+server is terminated automatically after 
+:func:`dispose() <ansys.optislang.core.optislang.Optislang.dispose>` method was called. 
+If user wishes to keep optiSLang server running even after disposing
+:class:`Optislang <ansys.optislang.core.optislang.Optislang>` instance, parameter 
+``shutdown_on_finished=False`` must be used when creating new instance.
 
 .. code:: python
 
@@ -76,13 +77,6 @@ of python script is finished by setting ``shutdown_on_finished=False``.
     osl = Optislang(shutdown_on_finished=False)
     print(osl)
     osl.dispose()
-
-.. note::
-
-    Be aware that optiSLang server is a child process of terminal, where commands above 
-    were executed. When this terminal is killed, optiSLang server will be terminated as well then.
-    This functionality might not work properly in `debug mode` like executions of python code 
-    (e. g. debug mode in Visual Studio Code). 
 
 In order to terminate optiSLang server launched this way, use
 :func:`shutdown() <ansys.optislang.core.optislang.Optislang.shutdown>` method:
@@ -94,6 +88,7 @@ In order to terminate optiSLang server launched this way, use
     osl = Optislang(shutdown_on_finished=False)
     print(osl)
     osl.shutdown()
+    osl.dispose()
 
 Connect to a remote instance of optiSLang
 -----------------------------------------
@@ -119,6 +114,7 @@ related to the execution of the new optiSLang server are ignored.
      osl = Optislang(host = "127.0.0.1", port = 5310)
      print(osl)
      osl.shutdown()
+     osl.dispose()
 
 Context manager
 ---------------
@@ -138,7 +134,7 @@ and connection to optiSLang server will be terminated gracefully even if an erro
 .. note::
 
     When instance of :class:`Optislang <ansys.optislang.core.optislang.Optislang>` is started
-    with argument ``shutdown_on_finished=True`` or connected to optiSLang server started with
+    with argument ``shutdown_on_finished=False`` or connected to optiSLang server started with
     such setting, default behaviour is to terminate connection and keep optiSLang server running.
     In order to terminate optiSLang server, method 
     :func:`shutdown() <ansys.optislang.core.optislang.Optislang.shutdown>` has to be used.
@@ -146,7 +142,7 @@ and connection to optiSLang server will be terminated gracefully even if an erro
     .. code:: python
     
         from ansys.optislang.core import Optislang
-        with Optislang() as osl:
+        with Optislang(shutdown_on_finished=False) as osl:
             print(osl)
             osl.start()
             osl.shutdown()

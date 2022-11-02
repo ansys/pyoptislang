@@ -40,18 +40,20 @@ by the ``project_path`` parameter of the
 
 If the project file exists, it is opened; otherwise, a new project file is created on the specified 
 path. Please note that :class:`Optislang <ansys.optislang.core.optislang.Optislang>` 
-instance should be gracefully terminated either via 
-:func:`dispose() <ansys.optislang.core.optislang.Optislang.dispose>` or
-:func:`shutdown() <ansys.optislang.core.optislang.Optislang.shutdown>` when it's no longer in use.
+instance should be always gracefully terminated when it's no longer in use by 
+:func:`dispose() <ansys.optislang.core.optislang.Optislang.dispose>` method. OptiSLang server may be
+optionally terminated by :func:`shutdown() <ansys.optislang.core.optislang.Optislang.shutdown>` 
+(this must be done before :func:`dispose() <ansys.optislang.core.optislang.Optislang.dispose>`
+method and it's not needed when started with default parameter ``shutdown_on_finished=True``).
 
 
 Difference in these termination methods is that method
 :func:`dispose() <ansys.optislang.core.optislang.Optislang.dispose>` only terminates connection
 with optiSLang server, method
-:func:`shutdown() <ansys.optislang.core.optislang.Optislang.shutdown>` additionally sends command
+:func:`shutdown() <ansys.optislang.core.optislang.Optislang.shutdown>` sends command
 to terminate server, which is necessary when (server is started locally by instance of
 :class:`Optislang <ansys.optislang.core.optislang.Optislang>` with parameter 
-`shutdown_on_finished=False` or connected to a remote optiSLang server) AND termination of optiSLang
+``shutdown_on_finished=False`` or connected to a remote optiSLang server) AND termination of optiSLang
 server is requested. 
 
 

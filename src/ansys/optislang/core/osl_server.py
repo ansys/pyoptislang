@@ -428,7 +428,7 @@ class OslServer(ABC):
 
     @abstractmethod
     def shutdown(self, force: bool = False) -> None:
-        """Finish all local processes and optionally shutdown the server.
+        """Shutdown the optiSLang server.
 
         Stop listening for incoming connections, discard pending requests, and shut down
         the server. Batch mode exclusive: Continue project run until execution finished.

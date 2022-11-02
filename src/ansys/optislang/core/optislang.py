@@ -150,8 +150,16 @@ class Optislang:
     def __exit__(self, exc_type, exc_value, exc_tb):
         """Exit the context.
 
-        If optiSLang was started locally, send ``shutdown`` on exit.
-        If connected to remote, do NOT send ``shutdown``, just finish all threads on exit.
+        Disposes instance of Optislang.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
         """
         self.log.debug("Exit the context.")
         if self.__osl_server:
@@ -470,7 +478,7 @@ class Optislang:
         self.__osl_server.set_timeout(timeout)
 
     def shutdown(self, force: bool = False) -> None:
-        """Finish all local processes and optionally shutdown the server.
+        """Shutdown the optiSLang server.
 
         Stop listening for incoming connections, discard pending requests, and shut down
         the server. Batch mode exclusive: Continue project run until execution finished.
