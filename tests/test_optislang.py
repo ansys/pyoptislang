@@ -42,7 +42,7 @@ def test_get_osl_version(optislang):
     assert isinstance(maintenance_version, int) or maintenance_version == None
     assert isinstance(revision, int) or revision == None
     with does_not_raise() as dnr:
-        optislang.shutdown()
+        optislang.dispose()
     assert dnr is None
 
 

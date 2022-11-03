@@ -873,6 +873,16 @@ class TcpOslServer(OslServer):
     _LOCALHOST = "127.0.0.1"
     _PRIVATE_PORTS_RANGE = (49152, 65535)
     _SHUTDOWN_WAIT = 5  # wait for local server to shutdown in second
+    _STOPPED_STATES = ["IDLE", "FINISHED", "STOPPED", "ABORTED"]
+    _STOP_REQUESTS_PRIORITIES = {
+        "STOP": 20,
+        "STOP_GENTLY": 10,
+    }
+    _STOP_REQUESTED_STATES_PRIORITIES = {
+        "ABORT_REQUESTED": 30,
+        "STOP_REQUESTED": 20,
+        "GENTLE_STOP_REQUESTED": 10,
+    }
 
     def __init__(
         self,
@@ -1634,18 +1644,26 @@ class TcpOslServer(OslServer):
 
         status = self.get_project_status()
 
-        if not self._is_status_in_stopped_states(status):
-            self._send_command(commands.stop(self.__password))
-            cmd_sent = True
-        else:
-            cmd_sent = False
+        # do not send stop request if project is already stopped or request
+        # with higher or equal priority was already sent
+        if status in self._STOPPED_STATES:
             self._logger.debug(f"Do not send STOP request, project status is: {status}")
             if wait_for_finished:
                 exec_finished_listener.stop_listening()
                 exec_finished_listener.clear_callbacks()
                 self.__delete_exec_finished_listener()
+            return
+        elif status in self._STOP_REQUESTS_PRIORITIES:
+            stop_request_priority = self._STOP_REQUESTS_PRIORITIES["STOP"]
+            current_status_priority = self._STOP_REQUESTED_STATES_PRIORITIES[status]
+            if stop_request_priority > current_status_priority:
+                self._send_command(commands.stop(self.__password))
+            else:
+                self._logger.debug(f"Do not send STOP request, project status is: {status}")
+        else:
+            self._send_command(commands.stop(self.__password))
 
-        if wait_for_finished and cmd_sent:
+        if wait_for_finished:
             self._logger.info(f"Waiting for finished")
             successfully_finished = wait_for_finished_queue.get()
             self.__delete_exec_finished_listener()
@@ -1692,36 +1710,33 @@ class TcpOslServer(OslServer):
             self._logger.debug("Wait for finished thread was created.")
 
         status = self.get_project_status()
-        if not self._is_status_in_stopped_states(status):
-            self._send_command(commands.stop_gently(self.__password))
-            cmd_sent = True
-        else:
-            cmd_sent = False
+
+        # do not send stop_gently request if project is already stopped or request
+        # with higher or equal priority was already sent
+        if status in self._STOPPED_STATES:
             self._logger.debug(f"Do not send STOP request, project status is: {status}")
             if wait_for_finished:
                 exec_finished_listener.stop_listening()
                 exec_finished_listener.clear_callbacks()
                 self.__delete_exec_finished_listener()
+            return
+        elif status in self._STOP_REQUESTS_PRIORITIES:
+            stop_request_priority = self._STOP_REQUESTS_PRIORITIES["STOP_GENTLY"]
+            current_status_priority = self._STOP_REQUESTED_STATES_PRIORITIES[status]
+            if stop_request_priority > current_status_priority:
+                self._send_command(commands.stop(self.__password))
+            else:
+                self._logger.debug(f"Do not send STOP request, project status is: {status}")
+        else:
+            self._send_command(commands.stop(self.__password))
 
-        if wait_for_finished and cmd_sent:
+        if wait_for_finished:
             self._logger.info(f"Waiting for finished")
             successfully_finished = wait_for_finished_queue.get()
             self.__delete_exec_finished_listener()
             if successfully_finished == "Terminate":
                 raise TimeoutError("Waiting for finished timed out.")
             self._logger.info(f"Successfully_finished: {successfully_finished}.")
-
-    def _is_status_in_stopped_states(self, status: str) -> bool:
-        """Compare current project status with list."""
-        stopped_states = [
-            "IDLE",
-            "FINISHED",
-            "STOP_REQUESTED",
-            "STOPPED",
-            "ABORT_REQUESTED",
-            "ABORTED",
-        ]
-        return status in stopped_states
 
     def _unregister_listener(self, listener: TcpOslListener) -> None:
         """Unregister a listener.
