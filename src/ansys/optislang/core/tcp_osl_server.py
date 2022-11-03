@@ -921,8 +921,10 @@ class TcpOslServer(OslServer):
 
         if self.__host is None or self.__port is None:
             self.__host = self.__class__._LOCALHOST
+            self.__shutdown_on_finished = shutdown_on_finished
             self._start_local(ini_timeout, shutdown_on_finished)
         else:
+            self.__shutdown_on_finished = None
             listener = self.__create_listener(
                 timeout=self.__timeout,
                 name="Main",
@@ -1489,11 +1491,12 @@ class TcpOslServer(OslServer):
         self.__unregister_all_listeners()
         self.__dispose_all_listeners()
 
-        try:
-            self._send_command(commands.shutdown(self.__password))
-        except Exception:
-            if not force or self.__osl_process is None:
-                raise
+        if self.__shutdown_on_finished in (False, None):
+            try:
+                self._send_command(commands.shutdown(self.__password))
+            except Exception:
+                if not force or self.__osl_process is None:
+                    raise
 
         # If desired actively force osl process to terminate
         if force and self.__osl_process is not None:

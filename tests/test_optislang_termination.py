@@ -28,8 +28,7 @@ def test_local_default_cm(send_dispose, send_shutdown, osl_none):
         if send_dispose:
             osl.dispose()
         if send_shutdown:
-            with pytest.raises(OslCommunicationError):
-                osl.shutdown()
+            osl.shutdown()
         if osl_none:
             osl = None
 
@@ -150,8 +149,7 @@ def test_local_default_wocm(send_dispose, send_shutdown):
     if send_dispose:
         osl.dispose()
     if send_shutdown:
-        with pytest.raises(OslCommunicationError):
-            osl.shutdown()
+        osl.shutdown()
 
     # server not running
     time.sleep(5)
