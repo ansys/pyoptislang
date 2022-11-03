@@ -25,6 +25,7 @@ from ansys.optislang.core.errors import (
     EmptyResponseError,
     OslCommandError,
     OslCommunicationError,
+    OslDisposedError,
     ResponseFormatError,
 )
 from ansys.optislang.core.osl_process import OslServerProcess, ServerNotification
@@ -904,6 +905,7 @@ class TcpOslServer(OslServer):
         self.__listeners_registration_thread = None
         self.__refresh_listeners = threading.Event()
         self.__listeners_refresh_interval = 20
+        self.__disposed = False
         signal.signal(signal.SIGINT, self.__signal_handler)
         atexit.register(self.dispose)
 
@@ -996,8 +998,13 @@ class TcpOslServer(OslServer):
         TimeoutError
             Raised when the timeout float value expires.
         """
+        if self.__disposed:
+            return
+
         self.__stop_listeners_registration_thread()
         self.__unregister_all_listeners()
+        self.__dispose_all_listeners()
+        self.__disposed = True
 
     def get_osl_version_string(self) -> str:
         """Get version of used optiSLang.
@@ -1470,18 +1477,13 @@ class TcpOslServer(OslServer):
         """
         self.__stop_listeners_registration_thread()
         self.__unregister_all_listeners()
+        self.__dispose_all_listeners()
 
-        # Only in case shutdown_on_finished option is not set, actively send shutdown command
-        if self.__osl_process is None or (
-            self.__osl_process is not None
-            and self.__osl_process is None
-            or (self.__osl_process is not None and not self.__osl_process.shutdown_on_finished)
-        ):
-            try:
-                self._send_command(commands.shutdown(self.__password))
-            except Exception:
-                if not force or self.__osl_process is None:
-                    raise
+        try:
+            self._send_command(commands.shutdown(self.__password))
+        except Exception:
+            if not force or self.__osl_process is None:
+                raise
 
         # If desired actively force osl process to terminate
         if force and self.__osl_process is not None:
@@ -2046,8 +2048,12 @@ class TcpOslServer(OslServer):
                     self._unregister_listener(listener)
                 except Exception as ex:
                     self._logger.warn("Cannot unregister port listener: %s", ex)
-            if listener.is_listening():
-                listener.dispose()
+
+    def __dispose_all_listeners(self) -> None:
+        """Dispose all listeners."""
+        for listener in self.__listeners.values():
+            listener.dispose()
+        self.__listeners = {}
 
     def _send_command(self, command: str) -> Dict:
         """Send command or query to the optiSLang server.
@@ -2073,6 +2079,8 @@ class TcpOslServer(OslServer):
         TimeoutError
             Raised when the timeout expires.
         """
+        if self.__disposed:
+            raise OslDisposedError("Cannot send command, instance was already disposed.")
         if self.__host is None or self.__port is None:
             raise RuntimeError("optiSLang server is not started.")
 

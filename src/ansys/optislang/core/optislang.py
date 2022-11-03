@@ -163,8 +163,7 @@ class Optislang:
             Raised when the timeout float value expires.
         """
         self.log.debug("Exit the context.")
-        if self.__osl_server:
-            self.dispose()
+        self.dispose()
 
     @property
     def name(self) -> str:
@@ -194,7 +193,6 @@ class Optislang:
             Raised when the timeout float value expires.
         """
         self.__osl_server.dispose()
-        self.__osl_server = None
 
     def get_osl_version_string(self) -> str:
         """Get version of used optiSLang.
@@ -505,7 +503,6 @@ class Optislang:
             Raised when the parameter force is ``False`` and the timeout float value expires.
         """
         self.__osl_server.shutdown(force)
-        self.__osl_server = None
 
     def start(self, wait_for_started: bool = True, wait_for_finished: bool = True) -> None:
         """Start project execution.
