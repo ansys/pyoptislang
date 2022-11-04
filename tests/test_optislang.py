@@ -1,6 +1,7 @@
 from contextlib import nullcontext as does_not_raise
 import os
 from pathlib import Path
+import time
 
 import pytest
 
@@ -29,6 +30,7 @@ def test_get_osl_version_string(optislang):
     assert isinstance(version, str)
     with does_not_raise() as dnr:
         optislang.dispose()
+        time.sleep(3)
     assert dnr is None
 
 
@@ -50,6 +52,7 @@ def test_get_project_description(optislang):
     assert isinstance(description, str)
     with does_not_raise() as dnr:
         optislang.dispose()
+        time.sleep(3)
     assert dnr is None
 
 
@@ -59,6 +62,7 @@ def test_get_project_location(optislang):
     assert isinstance(location, Path)
     with does_not_raise() as dnr:
         optislang.dispose()
+        time.sleep(3)
     assert dnr is None
 
 
@@ -68,6 +72,7 @@ def test_get_project_name(optislang):
     assert isinstance(name, str)
     with does_not_raise() as dnr:
         optislang.dispose()
+        time.sleep(3)
     assert dnr is None
 
 
@@ -77,6 +82,7 @@ def test_get_project_status(optislang):
     assert isinstance(status, str)
     with does_not_raise() as dnr:
         optislang.dispose()
+        time.sleep(3)
     assert dnr is None
 
 
@@ -86,6 +92,7 @@ def test_get_working_dir(optislang):
     assert isinstance(working_dir, Path)
     with does_not_raise() as dnr:
         optislang.dispose()
+        time.sleep(3)
     assert dnr is None
 
 
@@ -96,6 +103,7 @@ def test_reset(optislang):
     assert dnr is None
     with does_not_raise() as dnr:
         optislang.dispose()
+        time.sleep(3)
     assert dnr is None
 
 
@@ -113,6 +121,7 @@ print(result)
     assert run_script[0][0:2] == "15"
     with does_not_raise() as dnr:
         optislang.dispose()
+        time.sleep(3)
     assert dnr is None
 
 
@@ -131,6 +140,7 @@ print(result)
     assert isinstance(run_file, tuple)
     with does_not_raise() as dnr:
         optislang.dispose()
+        time.sleep(3)
     assert dnr is None
 
 
@@ -143,6 +153,7 @@ def test_save_copy(optislang, tmp_path):
     assert os.path.isfile(copy_path)
     with does_not_raise() as dnr:
         optislang.dispose()
+        time.sleep(3)
     assert dnr is None
 
 
@@ -153,6 +164,7 @@ def test_start(optislang):
     assert dnr is None
     with does_not_raise() as dnr:
         optislang.dispose()
+        time.sleep(3)
     assert dnr is None
 
 
@@ -178,6 +190,7 @@ connect(python, "ODesign", sens, "IIDesign")
     assert dnr is None
     with does_not_raise() as dnr:
         optislang.dispose()
+        time.sleep(3)
     assert dnr is None
 
 
@@ -203,6 +216,7 @@ connect(python, "ODesign", sens, "IIDesign")
     assert dnr is None
     with does_not_raise() as dnr:
         optislang.dispose()
+        time.sleep(3)
     assert dnr is None
 
 
@@ -210,4 +224,5 @@ def test_dispose(optislang):
     "Test ``dispose``."
     with does_not_raise() as dnr:
         optislang.dispose()
+        time.sleep(3)
     assert dnr is None

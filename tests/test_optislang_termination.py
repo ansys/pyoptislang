@@ -39,10 +39,12 @@ def test_local_default_cm(send_dispose, send_shutdown, osl_none):
             ConnectionNotEstablishedError,
             ConnectionRefusedError,
             OslCommunicationError,
+            RuntimeError,
         )
     ):
-        osl = Optislang(host="127.0.0.1", port=5310, ini_timeout=5)
+        osl = Optislang(host="127.0.0.1", port=5310, ini_timeout=10)
         osl.shutdown()
+        time.sleep(5)
 
 
 @pytest.mark.parametrize(
@@ -67,9 +69,9 @@ def test_local_shutdown_on_finished_false_cm(send_dispose, send_shutdown, osl_no
 
     if not send_shutdown:
         with does_not_raise() as dnr:
-            time.sleep(5)
-            osl = Optislang(host="127.0.0.1", port=5310, ini_timeout=5)
+            osl = Optislang(host="127.0.0.1", port=5310, ini_timeout=10)
             osl.shutdown()
+            time.sleep(5)
         assert dnr is None
     else:
         time.sleep(5)
@@ -78,10 +80,12 @@ def test_local_shutdown_on_finished_false_cm(send_dispose, send_shutdown, osl_no
                 ConnectionNotEstablishedError,
                 ConnectionRefusedError,
                 OslCommunicationError,
+                RuntimeError,
             )
         ):
-            osl = Optislang(host="127.0.0.1", port=5310, ini_timeout=5)
+            osl = Optislang(host="127.0.0.1", port=5310, ini_timeout=10)
             osl.shutdown()
+            time.sleep(5)
 
 
 @pytest.mark.parametrize(
@@ -95,7 +99,6 @@ def test_local_shutdown_on_finished_false_cm(send_dispose, send_shutdown, osl_no
 )
 def test_remote_cm(send_dispose, send_shutdown, osl_none):
     # start optiSLang server
-    time.sleep(2)
     osl_server_process = OslServerProcess(shutdown_on_finished=False)
     osl_server_process.start()
     time.sleep(5)
@@ -112,9 +115,9 @@ def test_remote_cm(send_dispose, send_shutdown, osl_none):
 
     if not send_shutdown:
         with does_not_raise() as dnr:
-            time.sleep(5)
             osl = Optislang(host="127.0.0.1", port=5310, ini_timeout=10)
             osl.shutdown()
+            time.sleep(5)
         assert dnr is None
     else:
         time.sleep(5)
@@ -123,10 +126,12 @@ def test_remote_cm(send_dispose, send_shutdown, osl_none):
                 ConnectionNotEstablishedError,
                 ConnectionRefusedError,
                 OslCommunicationError,
+                RuntimeError,
             )
         ):
             osl = Optislang(host="127.0.0.1", port=5310, ini_timeout=10)
             osl.shutdown()
+            time.sleep(5)
 
 
 #%% WITHOUT CM
@@ -153,10 +158,12 @@ def test_local_default_wocm(send_dispose, send_shutdown):
             ConnectionNotEstablishedError,
             ConnectionRefusedError,
             OslCommunicationError,
+            RuntimeError,
         )
     ):
-        osl = Optislang(host="127.0.0.1", port=5310, ini_timeout=5)
+        osl = Optislang(host="127.0.0.1", port=5310, ini_timeout=10)
         osl.shutdown()
+        time.sleep(5)
 
 
 @pytest.mark.parametrize(
@@ -177,9 +184,9 @@ def test_local_shutdown_on_finished_false_wocm(send_dispose, send_shutdown):
 
     if not send_shutdown:
         with does_not_raise() as dnr:
-            time.sleep(5)
-            osl = Optislang(host="127.0.0.1", port=5310, ini_timeout=5)
+            osl = Optislang(host="127.0.0.1", port=5310, ini_timeout=10)
             osl.shutdown()
+            time.sleep(5)
         assert dnr is None
     else:
         time.sleep(5)
@@ -188,10 +195,12 @@ def test_local_shutdown_on_finished_false_wocm(send_dispose, send_shutdown):
                 ConnectionNotEstablishedError,
                 ConnectionRefusedError,
                 OslCommunicationError,
+                RuntimeError,
             )
         ):
-            osl = Optislang(host="127.0.0.1", port=5310, ini_timeout=5)
+            osl = Optislang(host="127.0.0.1", port=5310, ini_timeout=10)
             osl.shutdown()
+            time.sleep(5)
 
 
 @pytest.mark.parametrize(
@@ -203,7 +212,6 @@ def test_local_shutdown_on_finished_false_wocm(send_dispose, send_shutdown):
 )
 def test_remote_wocm(send_dispose, send_shutdown):
     # start optiSLang server
-    time.sleep(2)
     osl_server_process = OslServerProcess(shutdown_on_finished=False)
     osl_server_process.start()
     time.sleep(5)
@@ -218,9 +226,9 @@ def test_remote_wocm(send_dispose, send_shutdown):
 
     if not send_shutdown:
         with does_not_raise() as dnr:
-            time.sleep(5)
             osl = Optislang(host="127.0.0.1", port=5310, ini_timeout=10)
             osl.shutdown()
+            time.sleep(5)
         assert dnr is None
     else:
         time.sleep(5)
@@ -229,7 +237,9 @@ def test_remote_wocm(send_dispose, send_shutdown):
                 ConnectionNotEstablishedError,
                 ConnectionRefusedError,
                 OslCommunicationError,
+                RuntimeError,
             )
         ):
             osl = Optislang(host="127.0.0.1", port=5310, ini_timeout=10)
             osl.shutdown()
+            time.sleep(5)
