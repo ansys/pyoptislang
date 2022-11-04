@@ -1,6 +1,7 @@
 from contextlib import nullcontext as does_not_raise
 import os
 import pathlib
+import time
 
 import pytest
 
@@ -25,6 +26,7 @@ def test_01_ten_bar_truss():
     with does_not_raise() as dnr:
         file = list(filter(lambda path: name in path, example_files_paths))[0]
         exec(open(file).read())
+        time.sleep(5)
     assert dnr is None
 
 
@@ -33,6 +35,7 @@ def test_02_1_oscillator_robustness():
     with does_not_raise() as dnr:
         file = list(filter(lambda path: name in path, example_files_paths))[0]
         exec(open(file).read())
+        time.sleep(5)
     assert dnr is None
 
 
@@ -41,6 +44,7 @@ def test_02_2_oscillator_python_system():
     with does_not_raise() as dnr:
         file = list(filter(lambda path: name in path, example_files_paths))[0]
         exec(open(file).read())
+        time.sleep(5)
     assert dnr is None
 
 
@@ -49,6 +53,7 @@ def test_02_3_oscillator_optimization_on_EA():
     with does_not_raise() as dnr:
         file = list(filter(lambda path: name in path, example_files_paths))[0]
         exec(open(file).read())
+        time.sleep(5)
     assert dnr is None
 
 
@@ -57,6 +62,7 @@ def test_02_4_oscillator_MOP_sensitivity_and_optimization():
     with does_not_raise() as dnr:
         file = list(filter(lambda path: name in path, example_files_paths))[0]
         exec(open(file).read())
+        time.sleep(5)
     assert dnr is None
 
 
@@ -65,6 +71,7 @@ def test_02_5_oscillator_calibration_systems():
     with does_not_raise() as dnr:
         file = list(filter(lambda path: name in path, example_files_paths))[0]
         exec(open(file).read())
+        time.sleep(5)
     assert dnr is None
 
 
@@ -73,6 +80,7 @@ def test_03_etk_abaqus():
     with does_not_raise() as dnr:
         file = list(filter(lambda path: name in path, example_files_paths))[0]
         exec(open(file).read())
+        time.sleep(5)
     assert dnr is None
 
 
@@ -81,6 +89,7 @@ def test_04_python_node_and_help():
     with does_not_raise() as dnr:
         file = list(filter(lambda path: name in path, example_files_paths))[0]
         exec(open(file).read())
+        time.sleep(5)
     assert dnr is None
 
 
@@ -89,6 +98,7 @@ def test_05_optimizer_settings():
     with does_not_raise() as dnr:
         file = list(filter(lambda path: name in path, example_files_paths))[0]
         exec(open(file).read())
+        time.sleep(5)
     assert dnr is None
 
 
@@ -97,6 +107,7 @@ def test_06_sensitivity_settings():
     with does_not_raise() as dnr:
         file = list(filter(lambda path: name in path, example_files_paths))[0]
         exec(open(file).read())
+        time.sleep(5)
     assert dnr is None
 
 
@@ -105,4 +116,5 @@ def test_07_simple_calculator():
     with does_not_raise() as dnr:
         file = list(filter(lambda path: name in path, example_files_paths))[0]
         exec(open(file).read())
+        time.sleep(5)
     assert dnr is None
