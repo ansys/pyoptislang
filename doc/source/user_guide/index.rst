@@ -34,30 +34,12 @@ by the ``project_path`` parameter of the
 
     path = os.getcwd()
     file_name = 'test_optislang.opf'
-    osl = Optislang(project_path = os.path.join(path, file_name))
-    osl.dispose()
+    with Optislang(project_path = os.path.join(path, file_name)) as osl:
+        print(osl)
 
 
 If the project file exists, it is opened; otherwise, a new project file is created on the specified 
-path. Please note that :class:`Optislang <ansys.optislang.core.optislang.Optislang>` 
-instance should be always gracefully terminated when it's no longer in use by 
-:func:`dispose() <ansys.optislang.core.optislang.Optislang.dispose>` method. OptiSLang server may be
-optionally terminated by :func:`shutdown() <ansys.optislang.core.optislang.Optislang.shutdown>` 
-(this must be done before :func:`dispose() <ansys.optislang.core.optislang.Optislang.dispose>`
-method and it's not needed when started with default parameter ``shutdown_on_finished=True``).
-
-
-Difference in these termination methods is that method
-:func:`dispose() <ansys.optislang.core.optislang.Optislang.dispose>` only terminates connection
-with optiSLang server, method
-:func:`shutdown() <ansys.optislang.core.optislang.Optislang.shutdown>` sends command
-to terminate server, which is necessary when (server is started locally by instance of
-:class:`Optislang <ansys.optislang.core.optislang.Optislang>` with parameter 
-``shutdown_on_finished=False`` or connected to a remote optiSLang server) AND termination of optiSLang
-server is requested. 
-
-
-The :class:`Optislang <ansys.optislang.core.Optislang>` class provides several functions which 
+path. The :class:`Optislang <ansys.optislang.core.Optislang>` class provides several functions which 
 enable to control or query the project. The following example shows how to open an existing project 
 and run it using the :func:`start() <ansys.optislang.core.optislang.Optislang.start>` function.
 
@@ -67,9 +49,13 @@ and run it using the :func:`start() <ansys.optislang.core.optislang.Optislang.st
     from ansys.optislang.core import examples
     
     project_path = examples.get_files('simple_calculator')[1]
-    osl = Optislang(project_path = project_path)
-    osl.start()
-    osl.dispose()
+    with Optislang(project_path = project_path) as osl:
+        osl.start()
+
+.. note:: 
+    
+    For more information, see :ref:`ref_launch`.
+
 
 Currently, the capabilities provided by the ``ansys-optislang-core`` library are limited. 
 However, this can be overcome using the 
@@ -79,4 +65,7 @@ the :class:`Optislang <ansys.optislang.core.optislang.Optislang>` class.
 Both functions provide the ability to execute commands of the ``optiSLang Python API``. 
 Executing commands from ``optiSLang Python API`` is currently the only possibility to create and edit 
 new nodes, parameters etc. These features may be added in the future versions of the ``ansys-optislang-core`` library. 
-For more information, see :ref:`ref_run_python`.
+
+.. note::
+
+    For more information, see :ref:`ref_run_python`.

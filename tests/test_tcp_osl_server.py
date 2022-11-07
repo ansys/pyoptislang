@@ -317,12 +317,12 @@ def test_stop(tcp_osl_server: tos.TcpOslServer):
     assert dnr is None
 
 
-def test_stop_gently(tcp_osl_server: tos.TcpOslServer):
-    """Test ``stop_gently``."""
-    with does_not_raise() as dnr:
-        tcp_osl_server.stop_gently()
-    tcp_osl_server.shutdown()
-    assert dnr is None
+# def test_stop_gently(tcp_osl_server: tos.TcpOslServer):
+#     """Test ``stop_gently``."""
+#     with does_not_raise() as dnr:
+#         tcp_osl_server.stop_gently()
+#     tcp_osl_server.shutdown()
+#     assert dnr is None
 
 
 def test_shutdown(tcp_osl_server: tos.TcpOslServer):

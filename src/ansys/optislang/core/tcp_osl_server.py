@@ -25,6 +25,7 @@ from ansys.optislang.core.errors import (
     EmptyResponseError,
     OslCommandError,
     OslCommunicationError,
+    OslDisposedError,
     ResponseFormatError,
 )
 from ansys.optislang.core.osl_process import OslServerProcess, ServerNotification
@@ -872,6 +873,16 @@ class TcpOslServer(OslServer):
     _LOCALHOST = "127.0.0.1"
     _PRIVATE_PORTS_RANGE = (49152, 65535)
     _SHUTDOWN_WAIT = 5  # wait for local server to shutdown in second
+    _STOPPED_STATES = ["IDLE", "FINISHED", "STOPPED", "ABORTED"]
+    _STOP_REQUESTS_PRIORITIES = {
+        "STOP": 20,
+        "STOP_GENTLY": 10,
+    }
+    _STOP_REQUESTED_STATES_PRIORITIES = {
+        "ABORT_REQUESTED": 30,
+        "STOP_REQUESTED": 20,
+        "GENTLE_STOP_REQUESTED": 10,
+    }
 
     def __init__(
         self,
@@ -904,13 +915,16 @@ class TcpOslServer(OslServer):
         self.__listeners_registration_thread = None
         self.__refresh_listeners = threading.Event()
         self.__listeners_refresh_interval = 20
+        self.__disposed = False
         signal.signal(signal.SIGINT, self.__signal_handler)
         atexit.register(self.dispose)
 
         if self.__host is None or self.__port is None:
             self.__host = self.__class__._LOCALHOST
+            self.__shutdown_on_finished = shutdown_on_finished
             self._start_local(ini_timeout, shutdown_on_finished)
         else:
+            self.__shutdown_on_finished = None
             listener = self.__create_listener(
                 timeout=self.__timeout,
                 name="Main",
@@ -996,8 +1010,13 @@ class TcpOslServer(OslServer):
         TimeoutError
             Raised when the timeout float value expires.
         """
+        if self.__disposed:
+            return
+
         self.__stop_listeners_registration_thread()
         self.__unregister_all_listeners()
+        self.__dispose_all_listeners()
+        self.__disposed = True
 
     def get_osl_version_string(self) -> str:
         """Get version of used optiSLang.
@@ -1470,13 +1489,9 @@ class TcpOslServer(OslServer):
         """
         self.__stop_listeners_registration_thread()
         self.__unregister_all_listeners()
+        self.__dispose_all_listeners()
 
-        # Only in case shutdown_on_finished option is not set, actively send shutdown command
-        if self.__osl_process is None or (
-            self.__osl_process is not None
-            and self.__osl_process is None
-            or (self.__osl_process is not None and not self.__osl_process.shutdown_on_finished)
-        ):
+        if self.__shutdown_on_finished in (False, None):
             try:
                 self._send_command(commands.shutdown(self.__password))
             except Exception:
@@ -1632,76 +1647,26 @@ class TcpOslServer(OslServer):
 
         status = self.get_project_status()
 
-        if not self._is_status_in_stopped_states(status):
+        # do not send stop request if project is already stopped or request
+        # with higher or equal priority was already sent
+        if status in self._STOPPED_STATES:
+            self._logger.debug(f"Do not send STOP request, project status is: {status}")
+            if wait_for_finished:
+                exec_finished_listener.stop_listening()
+                exec_finished_listener.clear_callbacks()
+                self.__delete_exec_finished_listener()
+            return
+        elif status in self._STOP_REQUESTS_PRIORITIES:
+            stop_request_priority = self._STOP_REQUESTS_PRIORITIES["STOP"]
+            current_status_priority = self._STOP_REQUESTED_STATES_PRIORITIES[status]
+            if stop_request_priority > current_status_priority:
+                self._send_command(commands.stop(self.__password))
+            else:
+                self._logger.debug(f"Do not send STOP request, project status is: {status}")
+        else:
             self._send_command(commands.stop(self.__password))
-            cmd_sent = True
-        else:
-            cmd_sent = False
-            self._logger.debug(f"Do not send STOP request, project status is: {status}")
-            if wait_for_finished:
-                exec_finished_listener.stop_listening()
-                exec_finished_listener.clear_callbacks()
-                self.__delete_exec_finished_listener()
 
-        if wait_for_finished and cmd_sent:
-            self._logger.info(f"Waiting for finished")
-            successfully_finished = wait_for_finished_queue.get()
-            self.__delete_exec_finished_listener()
-            if successfully_finished == "Terminate":
-                raise TimeoutError("Waiting for finished timed out.")
-            self._logger.info(f"Successfully_finished: {successfully_finished}.")
-
-    def stop_gently(self, wait_for_finished: bool = True) -> None:
-        """Stop project execution after the current design is finished.
-
-        Parameters
-        ----------
-        wait_for_finished : bool, optional
-            Determines whether this function call should wait on the optiSlang to finish
-            the command execution. I.e. don't continue on next line of python script after command
-            was successfully sent to optiSLang but wait for execution of command inside optiSLang.
-            Defaults to ``True``.
-
-        Raises
-        ------
-        OslCommunicationError
-            Raised when an error occurs while communicating with server.
-        OslCommandError
-            Raised when the command or query fails.
-        TimeoutError
-            Raised when the timeout float value expires.
-        """
         if wait_for_finished:
-            exec_finished_listener = self.__create_exec_finished_listener()
-            exec_finished_listener.cleanup_notifications()
-            wait_for_finished_queue = Queue()
-            exec_finished_listener.add_callback(
-                self.__class__.__terminate_listener_thread,
-                (
-                    [
-                        ServerNotification.EXECUTION_FINISHED.name,
-                        ServerNotification.NOTHING_PROCESSED.name,
-                    ],
-                    wait_for_finished_queue,
-                    self._logger,
-                ),
-            )
-            exec_finished_listener.start_listening()
-            self._logger.debug("Wait for finished thread was created.")
-
-        status = self.get_project_status()
-        if not self._is_status_in_stopped_states(status):
-            self._send_command(commands.stop_gently(self.__password))
-            cmd_sent = True
-        else:
-            cmd_sent = False
-            self._logger.debug(f"Do not send STOP request, project status is: {status}")
-            if wait_for_finished:
-                exec_finished_listener.stop_listening()
-                exec_finished_listener.clear_callbacks()
-                self.__delete_exec_finished_listener()
-
-        if wait_for_finished and cmd_sent:
             self._logger.info(f"Waiting for finished")
             successfully_finished = wait_for_finished_queue.get()
             self.__delete_exec_finished_listener()
@@ -1709,17 +1674,74 @@ class TcpOslServer(OslServer):
                 raise TimeoutError("Waiting for finished timed out.")
             self._logger.info(f"Successfully_finished: {successfully_finished}.")
 
-    def _is_status_in_stopped_states(self, status: str) -> bool:
-        """Compare current project status with list."""
-        stopped_states = [
-            "IDLE",
-            "FINISHED",
-            "STOP_REQUESTED",
-            "STOPPED",
-            "ABORT_REQUESTED",
-            "ABORTED",
-        ]
-        return status in stopped_states
+    # stop_gently method doesn't work properly in optiSLang 2023R1, therefore it was commented out
+
+    # def stop_gently(self, wait_for_finished: bool = True) -> None:
+    #     """Stop project execution after the current design is finished.
+
+    #     Parameters
+    #     ----------
+    #     wait_for_finished : bool, optional
+    #         Determines whether this function call should wait on the optiSlang to finish
+    #         the command execution. I.e. don't continue on next line of python script after command
+    #         was successfully sent to optiSLang but wait for execution of command inside optiSLang.
+    #         Defaults to ``True``.
+
+    #     Raises
+    #     ------
+    #     OslCommunicationError
+    #         Raised when an error occurs while communicating with server.
+    #     OslCommandError
+    #         Raised when the command or query fails.
+    #     TimeoutError
+    #         Raised when the timeout float value expires.
+    #     """
+    #     if wait_for_finished:
+    #         exec_finished_listener = self.__create_exec_finished_listener()
+    #         exec_finished_listener.cleanup_notifications()
+    #         wait_for_finished_queue = Queue()
+    #         exec_finished_listener.add_callback(
+    #             self.__class__.__terminate_listener_thread,
+    #             (
+    #                 [
+    #                     ServerNotification.EXECUTION_FINISHED.name,
+    #                     ServerNotification.NOTHING_PROCESSED.name,
+    #                 ],
+    #                 wait_for_finished_queue,
+    #                 self._logger,
+    #             ),
+    #         )
+    #         exec_finished_listener.start_listening()
+    #         self._logger.debug("Wait for finished thread was created.")
+
+    #     status = self.get_project_status()
+
+    #     # do not send stop_gently request if project is already stopped or request
+    #     # with higher or equal priority was already sent
+    #     if status in self._STOPPED_STATES:
+    #         self._logger.debug(f"Do not send STOP request, project status is: {status}")
+    #         if wait_for_finished:
+    #             exec_finished_listener.stop_listening()
+    #             exec_finished_listener.clear_callbacks()
+    #             self.__delete_exec_finished_listener()
+    #         return
+    #     elif status in self._STOP_REQUESTS_PRIORITIES:
+    #         stop_request_priority = self._STOP_REQUESTS_PRIORITIES["STOP_GENTLY"]
+    #         current_status_priority = self._STOP_REQUESTED_STATES_PRIORITIES[status]
+    #         if stop_request_priority > current_status_priority:
+    #             self._send_command(commands.stop(self.__password))
+    #         else:
+    #             self._logger.debug(f"Do not send STOP request, project status is: {status}")
+    #     else:
+    #         self._send_command(commands.stop(self.__password))
+
+    #     if wait_for_finished:
+    #         self._logger.info(f"Waiting for finished")
+    #         successfully_finished = wait_for_finished_queue.get()
+    #         self.__delete_exec_finished_listener()
+    #         if successfully_finished == "Terminate":
+    #             raise TimeoutError("Waiting for finished timed out.")
+    #         self._logger.info(f"Successfully_finished: {successfully_finished}.")
 
     def _unregister_listener(self, listener: TcpOslListener) -> None:
         """Unregister a listener.
@@ -2046,8 +2068,12 @@ class TcpOslServer(OslServer):
                     self._unregister_listener(listener)
                 except Exception as ex:
                     self._logger.warn("Cannot unregister port listener: %s", ex)
-            if listener.is_listening():
-                listener.dispose()
+
+    def __dispose_all_listeners(self) -> None:
+        """Dispose all listeners."""
+        for listener in self.__listeners.values():
+            listener.dispose()
+        self.__listeners = {}
 
     def _send_command(self, command: str) -> Dict:
         """Send command or query to the optiSLang server.
@@ -2073,6 +2099,8 @@ class TcpOslServer(OslServer):
         TimeoutError
             Raised when the timeout expires.
         """
+        if self.__disposed:
+            raise OslDisposedError("Cannot send command, instance was already disposed.")
         if self.__host is None or self.__port is None:
             raise RuntimeError("optiSLang server is not started.")
 

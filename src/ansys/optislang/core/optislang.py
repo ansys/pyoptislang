@@ -163,8 +163,7 @@ class Optislang:
             Raised when the timeout float value expires.
         """
         self.log.debug("Exit the context.")
-        if self.__osl_server:
-            self.dispose()
+        self.dispose()
 
     @property
     def name(self) -> str:
@@ -194,7 +193,6 @@ class Optislang:
             Raised when the timeout float value expires.
         """
         self.__osl_server.dispose()
-        self.__osl_server = None
 
     def get_osl_version_string(self) -> str:
         """Get version of used optiSLang.
@@ -505,7 +503,6 @@ class Optislang:
             Raised when the parameter force is ``False`` and the timeout float value expires.
         """
         self.__osl_server.shutdown(force)
-        self.__osl_server = None
 
     def start(self, wait_for_started: bool = True, wait_for_finished: bool = True) -> None:
         """Start project execution.
@@ -559,24 +556,26 @@ class Optislang:
         """
         self.__osl_server.stop(wait_for_finished)
 
-    def stop_gently(self, wait_for_finished: bool = True) -> None:
-        """Stop project execution after the current design is finished.
+    # stop_gently method doesn't work properly in optiSLang 2023R1, therefore it was commented out
 
-        Parameters
-        ----------
-        wait_for_finished : bool, optional
-            Determines whether this function call should wait for optiSLang to finish
-            the command execution. I.e. don't continue on next line of python script after command
-            was successfully sent to optiSLang but wait for execution of command inside optiSLang.
-            Defaults to ``True``.
+    # def stop_gently(self, wait_for_finished: bool = True) -> None:
+    #     """Stop project execution after the current design is finished.
 
-        Raises
-        ------
-        OslCommunicationError
-            Raised when an error occurs while communicating with server.
-        OslCommandError
-            Raised when the command or query fails.
-        TimeoutError
-            Raised when the timeout float value expires.
-        """
-        self.__osl_server.stop_gently(wait_for_finished)
+    #     Parameters
+    #     ----------
+    #     wait_for_finished : bool, optional
+    #         Determines whether this function call should wait for optiSLang to finish
+    #         the command execution. I.e. don't continue on next line of python script after command
+    #         was successfully sent to optiSLang but wait for execution of command inside optiSLang.
+    #         Defaults to ``True``.
+
+    #     Raises
+    #     ------
+    #     OslCommunicationError
+    #         Raised when an error occurs while communicating with server.
+    #     OslCommandError
+    #         Raised when the command or query fails.
+    #     TimeoutError
+    #         Raised when the timeout float value expires.
+    #     """
+    #     self.__osl_server.stop_gently(wait_for_finished)

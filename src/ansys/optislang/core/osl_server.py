@@ -501,23 +501,25 @@ class OslServer(ABC):
         """
         pass
 
-    @abstractmethod
-    def stop_gently(self, wait_for_finished: bool = True) -> None:
-        """Stop project execution after the current design is finished.
+    # stop_gently method doesn't work properly in optiSLang 2023R1, therefore it was commented out
 
-        Parameters
-        ----------
-        wait_for_finished : bool, optional
-            Determines whether this function call should wait on the optiSlang to finish
-            the project execution. Defaults to ``True``.
+    # @abstractmethod
+    # def stop_gently(self, wait_for_finished: bool = True) -> None:
+    #     """Stop project execution after the current design is finished.
 
-        Raises
-        ------
-        OslCommunicationError
-            Raised when an error occurs while communicating with server.
-        OslCommandError
-            Raised when the command or query fails.
-        TimeoutError
-            Raised when the timeout float value expires.
-        """
-        pass
+    #     Parameters
+    #     ----------
+    #     wait_for_finished : bool, optional
+    #         Determines whether this function call should wait on the optiSlang to finish
+    #         the project execution. Defaults to ``True``.
+
+    #     Raises
+    #     ------
+    #     OslCommunicationError
+    #         Raised when an error occurs while communicating with server.
+    #     OslCommandError
+    #         Raised when the command or query fails.
+    #     TimeoutError
+    #         Raised when the timeout float value expires.
+    #     """
+    #     pass
