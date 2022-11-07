@@ -1674,72 +1674,72 @@ class TcpOslServer(OslServer):
                 raise TimeoutError("Waiting for finished timed out.")
             self._logger.info(f"Successfully_finished: {successfully_finished}.")
 
-    def stop_gently(self, wait_for_finished: bool = True) -> None:
-        """Stop project execution after the current design is finished.
+    # def stop_gently(self, wait_for_finished: bool = True) -> None:
+    #     """Stop project execution after the current design is finished.
 
-        Parameters
-        ----------
-        wait_for_finished : bool, optional
-            Determines whether this function call should wait on the optiSlang to finish
-            the command execution. I.e. don't continue on next line of python script after command
-            was successfully sent to optiSLang but wait for execution of command inside optiSLang.
-            Defaults to ``True``.
+    #     Parameters
+    #     ----------
+    #     wait_for_finished : bool, optional
+    #         Determines whether this function call should wait on the optiSlang to finish
+    #         the command execution. I.e. don't continue on next line of python script after command
+    #         was successfully sent to optiSLang but wait for execution of command inside optiSLang.
+    #         Defaults to ``True``.
 
-        Raises
-        ------
-        OslCommunicationError
-            Raised when an error occurs while communicating with server.
-        OslCommandError
-            Raised when the command or query fails.
-        TimeoutError
-            Raised when the timeout float value expires.
-        """
-        if wait_for_finished:
-            exec_finished_listener = self.__create_exec_finished_listener()
-            exec_finished_listener.cleanup_notifications()
-            wait_for_finished_queue = Queue()
-            exec_finished_listener.add_callback(
-                self.__class__.__terminate_listener_thread,
-                (
-                    [
-                        ServerNotification.EXECUTION_FINISHED.name,
-                        ServerNotification.NOTHING_PROCESSED.name,
-                    ],
-                    wait_for_finished_queue,
-                    self._logger,
-                ),
-            )
-            exec_finished_listener.start_listening()
-            self._logger.debug("Wait for finished thread was created.")
+    #     Raises
+    #     ------
+    #     OslCommunicationError
+    #         Raised when an error occurs while communicating with server.
+    #     OslCommandError
+    #         Raised when the command or query fails.
+    #     TimeoutError
+    #         Raised when the timeout float value expires.
+    #     """
+    #     if wait_for_finished:
+    #         exec_finished_listener = self.__create_exec_finished_listener()
+    #         exec_finished_listener.cleanup_notifications()
+    #         wait_for_finished_queue = Queue()
+    #         exec_finished_listener.add_callback(
+    #             self.__class__.__terminate_listener_thread,
+    #             (
+    #                 [
+    #                     ServerNotification.EXECUTION_FINISHED.name,
+    #                     ServerNotification.NOTHING_PROCESSED.name,
+    #                 ],
+    #                 wait_for_finished_queue,
+    #                 self._logger,
+    #             ),
+    #         )
+    #         exec_finished_listener.start_listening()
+    #         self._logger.debug("Wait for finished thread was created.")
 
-        status = self.get_project_status()
+    #     status = self.get_project_status()
 
-        # do not send stop_gently request if project is already stopped or request
-        # with higher or equal priority was already sent
-        if status in self._STOPPED_STATES:
-            self._logger.debug(f"Do not send STOP request, project status is: {status}")
-            if wait_for_finished:
-                exec_finished_listener.stop_listening()
-                exec_finished_listener.clear_callbacks()
-                self.__delete_exec_finished_listener()
-            return
-        elif status in self._STOP_REQUESTS_PRIORITIES:
-            stop_request_priority = self._STOP_REQUESTS_PRIORITIES["STOP_GENTLY"]
-            current_status_priority = self._STOP_REQUESTED_STATES_PRIORITIES[status]
-            if stop_request_priority > current_status_priority:
-                self._send_command(commands.stop(self.__password))
-            else:
-                self._logger.debug(f"Do not send STOP request, project status is: {status}")
-        else:
-            self._send_command(commands.stop(self.__password))
+    #     # do not send stop_gently request if project is already stopped or request
+    #     # with higher or equal priority was already sent
+    #     if status in self._STOPPED_STATES:
+    #         self._logger.debug(f"Do not send STOP request, project status is: {status}")
+    #         if wait_for_finished:
+    #             exec_finished_listener.stop_listening()
+    #             exec_finished_listener.clear_callbacks()
+    #             self.__delete_exec_finished_listener()
+    #         return
+    #     elif status in self._STOP_REQUESTS_PRIORITIES:
+    #         stop_request_priority = self._STOP_REQUESTS_PRIORITIES["STOP_GENTLY"]
+    #         current_status_priority = self._STOP_REQUESTED_STATES_PRIORITIES[status]
+    #         if stop_request_priority > current_status_priority:
+    #             self._send_command(commands.stop(self.__password))
+    #         else:
+    #             self._logger.debug(f"Do not send STOP request, project status is: {status}")
+    #     else:
+    #         self._send_command(commands.stop(self.__password))
 
-        if wait_for_finished:
-            self._logger.info(f"Waiting for finished")
-            successfully_finished = wait_for_finished_queue.get()
-            self.__delete_exec_finished_listener()
-            if successfully_finished == "Terminate":
-                raise TimeoutError("Waiting for finished timed out.")
-            self._logger.info(f"Successfully_finished: {successfully_finished}.")
+    #     if wait_for_finished:
+    #         self._logger.info(f"Waiting for finished")
+    #         successfully_finished = wait_for_finished_queue.get()
+    #         self.__delete_exec_finished_listener()
+    #         if successfully_finished == "Terminate":
+    #             raise TimeoutError("Waiting for finished timed out.")
+    #         self._logger.info(f"Successfully_finished: {successfully_finished}.")
 
     def _unregister_listener(self, listener: TcpOslListener) -> None:
         """Unregister a listener.

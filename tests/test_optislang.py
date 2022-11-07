@@ -194,30 +194,30 @@ connect(python, "ODesign", sens, "IIDesign")
     assert dnr is None
 
 
-def test_stop_gently(optislang):
-    "Test ``stop_gently``."
-    with does_not_raise() as dnr:
-        optislang.run_python_script(
-            r"""
-from py_os_design import *
-sens = actors.SensitivityActor("Sensitivity")
-add_actor(sens)
-python = actors.PythonActor('python_sleep')
-sens.add_actor(python)
-python.source = 'import time\ntime.sleep(0.1)\noutput_value = input_value*2'
-python.add_parameter("input_value", PyOSDesignEntry(5.0))
-python.add_response(("output_value", PyOSDesignEntry(10)))
-connect(sens, "IODesign", python, "IDesign")
-connect(python, "ODesign", sens, "IIDesign")
-"""
-        )
-        optislang.start(wait_for_finished=False)
-        optislang.stop_gently()
-    assert dnr is None
-    with does_not_raise() as dnr:
-        optislang.dispose()
-        time.sleep(3)
-    assert dnr is None
+# def test_stop_gently(optislang):
+#     "Test ``stop_gently``."
+#     with does_not_raise() as dnr:
+#         optislang.run_python_script(
+#             r"""
+# from py_os_design import *
+# sens = actors.SensitivityActor("Sensitivity")
+# add_actor(sens)
+# python = actors.PythonActor('python_sleep')
+# sens.add_actor(python)
+# python.source = 'import time\ntime.sleep(0.1)\noutput_value = input_value*2'
+# python.add_parameter("input_value", PyOSDesignEntry(5.0))
+# python.add_response(("output_value", PyOSDesignEntry(10)))
+# connect(sens, "IODesign", python, "IDesign")
+# connect(python, "ODesign", sens, "IIDesign")
+# """
+#         )
+#         optislang.start(wait_for_finished=False)
+#         optislang.stop_gently()
+#     assert dnr is None
+#     with does_not_raise() as dnr:
+#         optislang.dispose()
+#         time.sleep(3)
+#     assert dnr is None
 
 
 def test_dispose(optislang):
