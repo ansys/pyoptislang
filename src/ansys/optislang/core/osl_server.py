@@ -501,6 +501,8 @@ class OslServer(ABC):
         """
         pass
 
+    # stop_gently method doesn't work properly in optiSLang 2023R1, therefore it was commented out
+
     # @abstractmethod
     # def stop_gently(self, wait_for_finished: bool = True) -> None:
     #     """Stop project execution after the current design is finished.

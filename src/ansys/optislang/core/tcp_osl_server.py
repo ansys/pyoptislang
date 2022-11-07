@@ -1674,6 +1674,8 @@ class TcpOslServer(OslServer):
                 raise TimeoutError("Waiting for finished timed out.")
             self._logger.info(f"Successfully_finished: {successfully_finished}.")
 
+    # stop_gently method doesn't work properly in optiSLang 2023R1, therefore it was commented out
+
     # def stop_gently(self, wait_for_finished: bool = True) -> None:
     #     """Stop project execution after the current design is finished.
 
