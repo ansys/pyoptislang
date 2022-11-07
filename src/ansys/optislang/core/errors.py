@@ -41,3 +41,9 @@ class OslCommunicationError(Exception):
     """Raised when error occurs during communication with a server."""
 
     pass
+
+
+class OslDisposedError(Exception):
+    """Raised when command was sent and Optislang instance was already disposed."""
+
+    pass
