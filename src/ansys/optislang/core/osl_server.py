@@ -209,8 +209,13 @@ class OslServer(ABC):
         pass
 
     @abstractmethod
-    def new(self) -> None:
-        """Create a new project.
+    def new(self, file_path: Union[str, Path] = None) -> None:
+        """Create a new project and save it if path is specified.
+
+        Parameters
+        ----------
+        file_path : Union[str, Path], optional
+            Path to the new optiSLang project.
 
         Raises
         ------
@@ -227,9 +232,9 @@ class OslServer(ABC):
     def open(
         self,
         file_path: Union[str, Path],
-        force: bool,
-        restore: bool,
-        reset: bool,
+        force: bool = True,
+        restore: bool = False,
+        reset: bool = False,
     ) -> None:
         """Open a new project.
 
@@ -237,11 +242,11 @@ class OslServer(ABC):
         ----------
         file_path : Union[str, Path]
             Path to the optiSLang project file to open.
-        force : bool
+        force : bool, optional
             # TODO: description of this parameter is missing in ANSYS help
-        restore : bool
+        restore : bool, optional
             # TODO: description of this parameter is missing in ANSYS help
-        reset : bool
+        reset : bool, optional
             # TODO: description of this parameter is missing in ANSYS help
 
         Raises
