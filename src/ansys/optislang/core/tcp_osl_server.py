@@ -11,9 +11,10 @@ import select
 import signal
 import socket
 import struct
+import tempfile
 import threading
 import time
-from typing import Callable, Dict, List, Sequence, Tuple, Union
+from typing import Any, Callable, Dict, List, Sequence, Tuple, Union
 import uuid
 
 from ansys.optislang.core import server_commands as commands
@@ -883,6 +884,7 @@ class TcpOslServer(OslServer):
         "STOP_REQUESTED": 20,
         "GENTLE_STOP_REQUESTED": 10,
     }
+    _DEFAULT_PROJECT_FILE = "project.opf"
 
     def __init__(
         self,
@@ -993,10 +995,15 @@ class TcpOslServer(OslServer):
 
         Raises
         ------
-        NotImplementedError
-            Currently, command is not supported in batch mode.
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
         """
-        raise NotImplementedError("Currently, command is not supported in batch mode.")
+        self._send_command(commands.close(password=self.__password))
+        self.__project_path = None
 
     def dispose(self) -> None:
         """Terminate all local threads and unregister listeners.
@@ -1130,9 +1137,8 @@ class TcpOslServer(OslServer):
             Raised when the timeout float value expires.
         """
         project_info = self._get_basic_project_info()
-        if len(project_info["projects"]) == 0:
-            return None
-        return Path(project_info["projects"][0]["location"])
+        project_path = project_info.get("projects", [{}])[0].get("location", None)
+        return None if not project_path else Path(project_path)
 
     def get_project_name(self) -> str:
         """Get name of the optiSLang project.
@@ -1222,31 +1228,40 @@ class TcpOslServer(OslServer):
             return None
         return Path(project_info["projects"][0]["working_dir"])
 
-    def new(self) -> None:
-        """Create a new project.
+    def new(self, file_path: Union[str, Path] = None) -> None:
+        """Create a new project and save it if path is specified.
 
         Parameters
         ----------
-        timeout : float, None, optional
-            Timeout in seconds to perform the command. It must be greater than zero or ``None``.
-            The function will raise a timeout exception if the timeout period value has
-            elapsed before the operation has completed. If ``None`` is given, the function
-            will wait until the function is finished (no timeout exception is raised).
-            Defaults to ``None``.
+        file_path : Union[str, Path], optional
+            Path to the new optiSLang project.
 
         Raises
         ------
-        NotImplementedError
-            Currently, command is not supported in batch mode.
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
         """
-        raise NotImplementedError("Currently, command is not supported in batch mode.")
+        self._send_command(commands.new(password=self.__password))
+
+        if file_path is None:
+            self.__tempdir = tempfile.TemporaryDirectory()
+            file_path = Path(self.__tempdir.name) / self.__class__._DEFAULT_PROJECT_FILE
+            self.__project_path = None
+        else:
+            file_path = self.__validate_path(file_path=file_path)
+            self.__project_path = file_path
+        self.save_as(file_path)
 
     def open(
         self,
         file_path: Union[str, Path],
-        force: bool,
-        restore: bool,
-        reset: bool,
+        force: bool = True,
+        restore: bool = False,
+        reset: bool = False,
     ) -> None:
         """Open a new project.
 
@@ -1254,25 +1269,37 @@ class TcpOslServer(OslServer):
         ----------
         file_path : Union[str, Path]
             Path to the optiSLang project file to open.
-        force : bool
+        force : bool, optional
             # TODO: description of this parameter is missing in ANSYS help
-        restore : bool
+        restore : bool, optional
             # TODO: description of this parameter is missing in ANSYS help
-        reset : bool
+        reset : bool, optional
             # TODO: description of this parameter is missing in ANSYS help
-        timeout : float, None, optional
-            Timeout in seconds to perform the command. It must be greater than zero or ``None``.
-            The function will raise a timeout exception if the timeout period value has
-            elapsed before the operation has completed. If ``None`` is given, the function
-            will wait until the function is finished (no timeout exception is raised).
-            Defaults to ``None``.
 
         Raises
         ------
-        NotImplementedError
-            Currently, command is not supported in batch mode.
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
         """
-        raise NotImplementedError("Currently, command is not supported in batch mode.")
+        file_path = self.__validate_path(file_path=file_path)
+
+        if not file_path.is_file():
+            raise ValueError("File doesn't exist.")
+
+        self._send_command(
+            commands.open(
+                path=str(file_path.as_posix()),
+                do_force=force,
+                do_restore=restore,
+                do_reset=reset,
+                password=self.__password,
+            )
+        )
+        self.__project_path = file_path
 
     def reset(self):
         """Reset complete project.
@@ -1368,17 +1395,21 @@ class TcpOslServer(OslServer):
 
         Raises
         ------
-        NotImplementedError
-            Currently, command is not supported in batch mode.
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
         """
-        raise NotImplementedError("Currently, command is not supported in batch mode.")
+        self._send_command(commands.save(password=self.__password))
 
     def save_as(
         self,
         file_path: Union[str, Path],
-        force: bool,
-        restore: bool,
-        reset: bool,
+        force: bool = True,
+        restore: bool = False,
+        reset: bool = False,
     ) -> None:
         """Save and open the current project at a new location.
 
@@ -1386,19 +1417,35 @@ class TcpOslServer(OslServer):
         ----------
         file_path : Union[str, Path]
             Path where to save the project file.
-        force : bool
+        force : bool, optional
             # TODO: description of this parameter is missing in ANSYS help
-        restore : bool
+        restore : bool, optional
             # TODO: description of this parameter is missing in ANSYS help
-        reset : bool
+        reset : bool, optional
             # TODO: description of this parameter is missing in ANSYS help
 
         Raises
         ------
-        NotImplementedError
-            Currently, command is not supported in batch mode.
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
         """
-        raise NotImplementedError("Currently, command is not supported in batch mode.")
+        file_path = self.__validate_path(file_path=file_path)
+
+        self._send_command(
+            commands.save_as(
+                path=str(file_path.as_posix()),
+                do_force=force,
+                do_restore=restore,
+                do_reset=reset,
+                password=self.__password,
+            )
+        )
+
+        self.__project_path = file_path
 
     def save_copy(self, file_path: Union[str, Path]) -> None:
         """Save the current project as a copy to a location.
@@ -1417,7 +1464,9 @@ class TcpOslServer(OslServer):
         TimeoutError
             Raised when the timeout float value expires.
         """
-        self._send_command(commands.save_copy(str(file_path), self.__password))
+        file_path = self.__validate_path(file_path=file_path)
+        self._send_command(commands.save_copy(str(file_path.as_posix()), self.__password))
+        self.__project_path = file_path
 
     def set_timeout(self, timeout: Union[float, None] = None) -> None:
         """Set timeout value for execution of commands.
@@ -2074,6 +2123,18 @@ class TcpOslServer(OslServer):
         for listener in self.__listeners.values():
             listener.dispose()
         self.__listeners = {}
+
+    def __validate_path(self, file_path: Any) -> Path:
+        """Check type and suffix of project_file path."""
+        if isinstance(file_path, str):
+            file_path = Path(file_path)
+        if not isinstance(file_path, Path):
+            raise TypeError(
+                f"Invalid type of project_path: {type(file_path)}," "Union[str, Path] is supported."
+            )
+        if not file_path.suffix == ".opf":
+            raise ValueError("Invalid optiSLang project file, project must end with `.opf`.")
+        return file_path
 
     def _send_command(self, command: str) -> Dict:
         """Send command or query to the optiSLang server.

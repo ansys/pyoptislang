@@ -180,6 +180,20 @@ class Optislang:
         """Return instance logger."""
         return self.__logger
 
+    def close(self) -> None:
+        """Close the current project.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        self.__osl_server.close()
+
     def dispose(self) -> None:
         """Terminate all local threads and unregister listeners.
 
@@ -356,6 +370,56 @@ class Optislang:
         """
         return self.__osl_server.get_working_dir()
 
+    def new(self, file_path: Union[str, Path] = None) -> None:
+        """Create a new project and save it if path is specified.
+
+        Parameters
+        ----------
+        file_path : Union[str, Path], optional
+            Path to the new optiSLang project.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        self.__osl_server.new(file_path=file_path)
+
+    def open(
+        self,
+        file_path: Union[str, Path],
+        force: bool = True,
+        restore: bool = False,
+        reset: bool = False,
+    ) -> None:
+        """Open a new project.
+
+        Parameters
+        ----------
+        file_path : Union[str, Path]
+            Path to the optiSLang project file to open.
+        force : bool, optional
+            # TODO: description of this parameter is missing in ANSYS help
+        restore : bool, optional
+            # TODO: description of this parameter is missing in ANSYS help
+        reset : bool, optional
+            # TODO: description of this parameter is missing in ANSYS help
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        self.__osl_server.open(file_path=file_path, force=force, restore=restore, reset=reset)
+
     def reset(self) -> None:
         """Reset complete project.
 
@@ -431,6 +495,53 @@ class Optislang:
             Raised when the timeout float value expires.
         """
         return self.__osl_server.run_python_file(file_path, args)
+
+    def save(self) -> None:
+        """Save the changed data and settings of the current project.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        return self.__osl_server.save()
+
+    def save_as(
+        self,
+        file_path: Union[str, Path],
+        force: bool = True,
+        restore: bool = False,
+        reset: bool = False,
+    ) -> None:
+        """Save and open the current project at a new location.
+
+        Parameters
+        ----------
+        file_path : Union[str, Path]
+            Path where to save the project file.
+        force : bool, optional
+            # TODO: description of this parameter is missing in ANSYS help
+        restore : bool, optional
+            # TODO: description of this parameter is missing in ANSYS help
+        reset : bool, optional
+            # TODO: description of this parameter is missing in ANSYS help
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        return self.__osl_server.save_as(
+            file_path=file_path, force=force, restore=restore, reset=reset
+        )
 
     def save_copy(self, file_path: Union[str, Path]) -> None:
         """Save the current project as a copy to a location.

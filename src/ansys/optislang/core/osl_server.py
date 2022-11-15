@@ -353,9 +353,9 @@ class OslServer(ABC):
     def save_as(
         self,
         file_path: Union[str, Path],
-        force: bool,
-        restore: bool,
-        reset: bool,
+        force: bool = True,
+        restore: bool = False,
+        reset: bool = False,
     ) -> None:
         """Save and open the current project at a new location.
 
@@ -363,11 +363,11 @@ class OslServer(ABC):
         ----------
         file_path : Union[str, Path]
             Path where to save the project file.
-        force : bool
+        force : bool, optional
             # TODO: description of this parameter is missing in ANSYS help
-        restore : bool
+        restore : bool, optional
             # TODO: description of this parameter is missing in ANSYS help
-        reset : bool
+        reset : bool, optional
             # TODO: description of this parameter is missing in ANSYS help
 
         Raises
