@@ -1,7 +1,7 @@
 """Sphinx documentation configuration file."""
 from datetime import datetime
 
-from pyansys_sphinx_theme import pyansys_logo_black
+from ansys_sphinx_theme import pyansys_logo_black
 from sphinx_gallery.sorting import FileNameSortKey
 
 import ansys.optislang.core as pyoptislang
@@ -15,7 +15,7 @@ release = version = __version__
 
 # use the default pyansys logo
 html_logo = pyansys_logo_black
-html_theme = "pyansys_sphinx_theme"
+html_theme = "ansys_sphinx_theme"
 
 html_short_title = html_title = "ansys-optislang-core"
 

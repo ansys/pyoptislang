@@ -1,6 +1,7 @@
 """Contains abstract optiSLang server class."""
 
 from abc import ABC, abstractmethod
+from pathlib import Path
 from typing import TYPE_CHECKING, Dict, Iterable, List, Sequence, Tuple, Union
 
 if TYPE_CHECKING:
@@ -26,13 +27,49 @@ class OslServer(ABC):
         pass
 
     @abstractmethod
-    def get_osl_version(self) -> str:
+    def dispose(self) -> None:
+        """Terminate all local threads and unregister listeners.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        pass
+
+    @abstractmethod
+    def get_osl_version_string(self) -> str:
         """Get version of used optiSLang.
 
         Returns
         -------
         str
             optiSLang version.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        pass
+
+    @abstractmethod
+    def get_osl_version(self) -> Tuple[Union[int, None], ...]:
+        """Get version of used optiSLang.
+
+        Returns
+        -------
+        tuple
+            optiSLang version as tuple containing
+            major version, minor version, maintenance version and revision.
 
         Raises
         ------
@@ -67,12 +104,12 @@ class OslServer(ABC):
         pass
 
     @abstractmethod
-    def get_project_location(self) -> str:
+    def get_project_location(self) -> Path:
         """Get path to the optiSLang project file.
 
         Returns
         -------
-        str
+        Path
             Path to the optiSLang project file. If no project is loaded in the optiSLang,
             returns ``None``.
 
@@ -154,12 +191,12 @@ class OslServer(ABC):
         pass
 
     @abstractmethod
-    def get_working_dir(self) -> str:
+    def get_working_dir(self) -> Path:
         """Get path to the optiSLang project working directory.
 
         Returns
         -------
-        str
+        Path
             Path to the optiSLang project working directory. If no project is loaded
             in the optiSLang, returns ``None``.
 
@@ -192,7 +229,7 @@ class OslServer(ABC):
     @abstractmethod
     def open(
         self,
-        file_path: str,
+        file_path: Union[str, Path],
         force: bool,
         restore: bool,
         reset: bool,
@@ -201,7 +238,7 @@ class OslServer(ABC):
 
         Parameters
         ----------
-        file_path : str
+        file_path : Union[str, Path]
             Path to the optiSLang project file to open.
         force : bool
             # TODO: description of this parameter is missing in ANSYS help
@@ -270,14 +307,14 @@ class OslServer(ABC):
     @abstractmethod
     def run_python_file(
         self,
-        file_path: str,
+        file_path: Union[str, Path],
         args: Union[Sequence[object], None] = None,
     ) -> Tuple[str, str]:
         """Read python script from the file, load it in a project context and execute it.
 
         Parameters
         ----------
-        file_path : str
+        file_path : Union[str, Path]
             Path to the Python script file which content is supposed to be executed on the server.
         args : Sequence[object], None, optional
             Sequence of arguments used in Python script. Defaults to ``None``.
@@ -318,7 +355,7 @@ class OslServer(ABC):
     @abstractmethod
     def save_as(
         self,
-        file_path: str,
+        file_path: Union[str, Path],
         force: bool,
         restore: bool,
         reset: bool,
@@ -327,7 +364,7 @@ class OslServer(ABC):
 
         Parameters
         ----------
-        file_path : str
+        file_path : Union[str, Path]
             Path where to save the project file.
         force : bool
             # TODO: description of this parameter is missing in ANSYS help
@@ -348,12 +385,12 @@ class OslServer(ABC):
         pass
 
     @abstractmethod
-    def save_copy(self, file_path: str) -> None:
+    def save_copy(self, file_path: Union[str, Path]) -> None:
         """Save the current project as a copy to a location.
 
         Parameters
         ----------
-        file_path : str
+        file_path : Union[str, Path]
             Path where to save the project copy.
 
         Raises
@@ -395,7 +432,7 @@ class OslServer(ABC):
 
     @abstractmethod
     def shutdown(self, force: bool = False) -> None:
-        """Shutdown the server.
+        """Shutdown the optiSLang server.
 
         Stop listening for incoming connections, discard pending requests, and shut down
         the server. Batch mode exclusive: Continue project run until execution finished.
@@ -407,8 +444,8 @@ class OslServer(ABC):
             Determines whether to force shutdown the local optiSLang server. Has no effect when
             the connection is established to the remote optiSLang server. In all cases, it is tried
             to shutdown the optiSLang server process in a proper way. However, if the force
-            parameter is ``True``, after a while, the process is forced to terminate and
-            no exception is raised. Defaults to ``False``.
+            parameter is ``True``, after a while, the process is forced to terminate and no
+            exception is raised. Defaults to ``False``.
 
         Raises
         ------
@@ -423,14 +460,17 @@ class OslServer(ABC):
         pass
 
     @abstractmethod
-    def start(self, wait_for_finish: bool = True) -> None:
+    def start(self, wait_for_started: bool = True, wait_for_finished: bool = True) -> None:
         """Start project execution.
 
         Parameters
         ----------
-        wait_for_finish : bool, optional
+        wait_for_started : bool, optional
+            Determines whether this function call should wait on the optiSlang to start
+            the command execution. Defaults to ``True``.
+        wait_for_finished : bool, optional
             Determines whether this function call should wait on the optiSlang to finish
-            the project execution. Defaults to ``True``.
+            the command execution. Defaults to ``True``.
 
         Raises
         ------
@@ -444,12 +484,12 @@ class OslServer(ABC):
         pass
 
     @abstractmethod
-    def stop(self, wait_for_finish: bool = True) -> None:
+    def stop(self, wait_for_finished: bool = True) -> None:
         """Stop project execution.
 
         Parameters
         ----------
-        wait_for_finish : bool, optional
+        wait_for_finished : bool, optional
             Determines whether this function call should wait on the optiSlang to finish
             the project execution. Defaults to ``True``.
 
@@ -464,15 +504,139 @@ class OslServer(ABC):
         """
         pass
 
+    # stop_gently method doesn't work properly in optiSLang 2023R1, therefore it was commented out
+
+    # @abstractmethod
+    # def stop_gently(self, wait_for_finished: bool = True) -> None:
+    #     """Stop project execution after the current design is finished.
+
+    #     Parameters
+    #     ----------
+    #     wait_for_finished : bool, optional
+    #         Determines whether this function call should wait on the optiSlang to finish
+    #         the project execution. Defaults to ``True``.
+
+    #     Raises
+    #     ------
+    #     OslCommunicationError
+    #         Raised when an error occurs while communicating with server.
+    #     OslCommandError
+    #         Raised when the command or query fails.
+    #     TimeoutError
+    #         Raised when the timeout float value expires.
+    #     """
+    #     pass
+
+    # new functionality
     @abstractmethod
-    def stop_gently(self, wait_for_finish: bool = True) -> None:
-        """Stop project execution after the current design is finished.
+    def get_nodes_dict(self) -> Dict:
+        """Return dictionary of nodes at root level."""
+        pass
+
+    @abstractmethod
+    def get_parameter_manager(self) -> "ParameterManager":
+        """Return instance of class ``ParameterManager``."""
+        pass
+
+    @abstractmethod
+    def get_parameters_list(self) -> Dict:
+        """Return list of defined parameters.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        pass
+
+    @abstractmethod
+    def create_design(self, parameters: Dict = None) -> None:
+        """Return a new instance of ``Design`` class.
 
         Parameters
         ----------
-        wait_for_finish : bool, optional
-            Determines whether this function call should wait on the optiSlang to finish
-            the project execution. Defaults to ``True``.
+        parameters: Dict, opt
+            Dictionary of parameters and it's values {'parname': value, ...}.
+
+        Returns
+        -------
+        Design
+            Instance of ``Design`` class.
+        """
+        pass
+
+    @abstractmethod
+    def evaluate_design(self, design: "Design") -> Tuple[Dict, Dict]:
+        """Evaluate requested design.
+
+        Parameters
+        ----------
+        design: Design
+            Instance of ``Design`` class with defined parameters.
+
+        Returns
+        -------
+        Tuple[Dict, Dict]
+            0: Design parameters.
+            1: Responses.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        pass
+
+    @abstractmethod
+    def validate_design(self, design: "Design") -> Tuple[str, bool, List[str]]:
+        """Compare parameters defined in design and project.
+
+        Parameters
+        ----------
+        design: Design
+            Instance of ``Design`` class with defined parameters.
+
+        Returns
+        -------
+        Tuple[str, bool, List]
+            0: str, Message describing differences.
+            1: bool, True if there are not any missing or redundant parameters.
+            2: List, Missing parameters.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        pass
+
+    @abstractmethod
+    def evaluate_multiple_designs(self, designs: Iterable["Design"]) -> Dict:
+        """Evaluate multiple designs.
+
+        Parameters
+        ----------
+        designs: Iterable[Design]
+            Iterable of ``Design`` class instances with defined parameters.
+
+        Returns
+        -------
+        multiple_design_output: List[Tuple[Dict, Dict]]
+            Tuple[Dict, Dict]:
+                0: Design parameters.
+                1: Responses.
 
         Raises
         ------
@@ -584,7 +748,7 @@ class OslServer(ABC):
     def evaluate_multiple_designs(self, designs: Iterable["Design"]) -> Dict:
         """Evaluate multiple designs.
 
-        Parameters
+         Parameters
         ----------
         designs: Iterable[Design]
             Iterable of ``Design`` class instances with defined parameters.

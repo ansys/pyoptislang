@@ -1,27 +1,31 @@
 .. _ref_user_guide:
 
 ==========
-User Guide
+User guide
 ==========
 This guide provides a general overview of the basics and usage of the
 PyOptiSLang library.
 
+.. toctree::
+   :maxdepth: 1
+   :hidden:
+   
+   launch
+   functions
+   run_python
+   troubleshooting
 
-PyOptiSLang Basic Overview
-==========================
 
-The :func:`Optislang() <ansys.optislang.core.Optislang>` function
-within the ``ansys-optislang-core`` library creates an instance of of
-:class:`Optislang <ansys.optislang.core.optislang.Optislang>` in the background and sends
-commands to that service.  Errors and warnings are processed
-Pythonically letting the user develop a script real-time without
-worrying about if it will function correctly when deployed in batch
-mode.
+PyOptiSLang basic overview
+--------------------------
+The instance of the :class:`Optislang <ansys.optislang.core.optislang.Optislang>` class 
+within the ``ansys-optislang-core`` library can be used to control and query the optiSLang project.
 
-OptiSLang can be started from python using
-:func:`Optislang() <ansys.optislang.core.Optislang>`. This starts
-optiSLang in a temporary directory by default.  You can change this to
-your current directory with:
+OptiSLang can be started from Python using
+:class:`Optislang() <ansys.optislang.core.optislang.Optislang>`. This starts
+optiSLang in a temporary directory by default. Path to the project file can be specified 
+by the ``project_path`` parameter of the 
+:func:`Optislang() <ansys.optislang.core.optislang.Optislang>` as follows:
 
 .. code:: python
 
@@ -29,41 +33,39 @@ your current directory with:
     from ansys.optislang.core import Optislang
 
     path = os.getcwd()
-    osl = Optislang(run_location=path)
+    file_name = 'test_optislang.opf'
+    with Optislang(project_path = os.path.join(path, file_name)) as osl:
+        print(osl)
 
-optiSLang is now active and you can send individual python commands to it as a genuine a
-Python class.  For example, if we wanted to create sensitivity node and change it's number of
-sampling points and sampling method, we would run:
 
-.. code:: python
-
-    from ansys.optislang.core import Optislang
-    
-    osl = Optislang()
-    osl.run_python_commands(
-    """
-    import py_doe_settings
-    from dynardo_py_algorithms import DOETYPES
-    sensitivity = actors.SensitivityActor('My_Sensitivity_Actor_Commands')
-    add_actor(sensitivity)
-    sensitivity_system = find_actor('My_Sensitivity_Actor_Commands')
-    new_settings = sensitivity_system.algorithm_settings
-    new_settings.num_discretization = 200
-    new_settings.sampling_method = DOETYPES.PLAINMONTECARLO
-    sensitivity_system.algorithm_settings = new_settings
-    """
-    )
-
-.. note:: 
-    Be aware that each time ``run_python_commands`` is called, new python console is created 
-    inside optiSLang, so variable from previous calls won't be available.
-
-For longer scripts, instead of sending string to optiSLang as in the above example, we can instead 
-send path to script and it's converted to string automatically:
+If the project file exists, it is opened; otherwise, a new project file is created on the specified 
+path. The :class:`Optislang <ansys.optislang.core.Optislang>` class provides several functions which 
+enable to control or query the project. The following example shows how to open an existing project 
+and run it using the :func:`start() <ansys.optislang.core.optislang.Optislang.start>` function.
 
 .. code:: python
 
     from ansys.optislang.core import Optislang
     from ansys.optislang.core import examples
-    path_to_script = examples.get_files('sensitivity_settings')[0]
-    osl.run_python_script(script_path=path_to_script)
+    
+    project_path = examples.get_files('simple_calculator')[1]
+    with Optislang(project_path = project_path) as osl:
+        osl.start()
+
+.. note:: 
+    
+    For more information, see :ref:`ref_launch`.
+
+
+Currently, the capabilities provided by the ``ansys-optislang-core`` library are limited. 
+However, this can be overcome using the 
+:func:`run_python_script() <ansys.optislang.core.optislang.Optislang.run_python_script>` or
+:func:`run_python_file() <ansys.optislang.core.optislang.Optislang.run_python_file>` functions of 
+the :class:`Optislang <ansys.optislang.core.optislang.Optislang>` class. 
+Both functions provide the ability to execute commands of the ``optiSLang Python API``. 
+Executing commands from ``optiSLang Python API`` is currently the only possibility to create and edit 
+new nodes, parameters etc. These features may be added in the future versions of the ``ansys-optislang-core`` library. 
+
+.. note::
+
+    For more information, see :ref:`ref_run_python`.

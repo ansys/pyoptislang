@@ -1,6 +1,6 @@
 Logging
 =======
-To make the logging of events consistent, PyOptislang has a specific
+To make the logging of events consistent, PyOptiSLang has a specific
 logging architecture with global and local logging instances.
 
 For these two types of loggers, the default log message format is:
@@ -9,7 +9,7 @@ For these two types of loggers, the default log message format is:
 
     >>> from ansys.optislang.core import Optislang
     >>> osl = Optislang(loglevel='INFO')
-    >>> osl._logger.info('This is an useful message')
+    >>> osl.log.info('This is an useful message')
     
 .. code:: bash
 

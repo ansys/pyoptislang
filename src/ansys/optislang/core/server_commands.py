@@ -1,6 +1,6 @@
 """Module for generation of all server commands."""
 import json
-from typing import Dict, Sequence, Union
+from typing import Dict, Iterable, Sequence, Union
 
 _APPLY_WIZARD = "APPLY_WIZARD"
 _CLOSE = "CLOSE"
@@ -599,7 +599,7 @@ def register_listener(
     host: str = None,
     port: int = None,
     timeout: int = None,
-    notifications: Sequence = None,
+    notifications: Iterable[str] = None,
     password: str = None,
 ) -> str:
     """Generate JSON string of register_listener command.
@@ -1330,7 +1330,7 @@ def stop_gently(password: str = None) -> str:
     Returns
     -------
     str
-        JSON string of ``shutdown`` command.
+        JSON string of ``stop_gently`` command.
     """
     return _to_json(_gen_server_command(command=_STOP_GENTLY, password=password))
 
@@ -1348,7 +1348,8 @@ def subscribe_for_push_notifications(
         Either ["ALL"] or Sequence picked from below options:
             Server: [ "SERVER_UP", "SERVER_DOWN" ] (always be sent by default).
             Logging: [ "LOG_INFO", "LOG_WARNING", "LOG_ERROR", "LOG_DEBUG" ].
-            Project: [ "EXECUTION_FINISHED", "NOTHING_PROCESSED", "CHECK_FAILED", "EXEC_FAILED" ].
+            Project: [ "EXECUTION_STARTED", "PROCESSING_STARTED", "EXECUTION_FINISHED",
+                "NOTHING_PROCESSED", "CHECK_FAILED", "EXEC_FAILED" ].
             Nodes: [ "ACTOR_STATE_CHANGED", "ACTOR_ACTIVE_CHANGED", "ACTOR_NAME_CHANGED",
                 "ACTOR_CONTENTS_CHANGED", "ACTOR_DATA_CHANGED" ].
     node_types: Sequence, opt
@@ -1363,7 +1364,14 @@ def subscribe_for_push_notifications(
     """
     server = ["SERVER_UP", "SERVER_DOWN"]
     logging = ["LOG_INFO", "LOG_WARNING", "LOG_ERROR", "LOG_DEBUG"]
-    project = ["EXECUTION_FINISHED", "NOTHING_PROCESSED", "CHECK_FAILED", "EXEC_FAILED"]
+    project = [
+        "EXECUTION_STARTED",
+        "PROCESSING_STARTED",
+        "EXECUTION_FINISHED",
+        "NOTHING_PROCESSED",
+        "CHECK_FAILED",
+        "EXEC_FAILED",
+    ]
     nodes = [
         "ACTOR_STATE_CHANGED",
         "ACTOR_ACTIVE_CHANGED",
@@ -1384,10 +1392,10 @@ def subscribe_for_push_notifications(
             raise TypeError(
                 f"Unsuppored values of ``notifications``: {invalid_items}, "
                 "supported options are: \n"
-                "server: {server},\n"
-                "logging: {logging},\n"
-                "project: {project},\n"
-                "nodes: {nodes}"
+                f"server: {server},\n"
+                f"logging: {logging},\n"
+                f"project: {project},\n"
+                f"nodes: {nodes}"
             )
         args["notifications"] = notifications
 
