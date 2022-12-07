@@ -8,7 +8,7 @@ In order to start project, use :func:`start <ansys.optislang.core.optislang.Opti
 
 .. code:: python
     
-    import os
+    from pathlib import Path
     from ansys.optislang.core import Optislang
     from ansys.optislang.core import examples
     osl = Optislang()
@@ -16,12 +16,29 @@ In order to start project, use :func:`start <ansys.optislang.core.optislang.Opti
     osl.run_python_file(file_path=path_to_file)
     osl.start()
 
-In order to save current project, use 
+In order to save the current project, use either
+:func:`save() <ansys.optislang.core.optislang.Optislang.save>`,
+:func:`save_as() <ansys.optislang.core.optislang.Optislang.save_as>` or
 :func:`save_copy() <ansys.optislang.core.optislang.Optislang.save_copy>`:
 
 .. code:: python
+    project_path = Path().cwd() / "test_project.opf"
+    osl.save_as(project_path)
 
-    osl.save_copy(os.path.join(os.getcwd(), "test_project.opf"))
+Please note that optiSLang project is located in a temporary directory if an instance 
+of :class:`Optislang() <ansys.optislang.core.optislang.Optislang>` was created with default 
+settings, so either :func:`save_as() <ansys.optislang.core.optislang.Optislang.save_as>` or
+:func:`save_copy() <ansys.optislang.core.optislang.Optislang.save_copy>` must be used at first.
+
+
+In order to create or open existing or create new project, methods
+:func:`new() <ansys.optislang.core.optislang.Optislang.save>` or
+:func:`open() <ansys.optislang.core.optislang.Optislang.save_as>` may be used. 
+
+.. code:: python
+    new_project = Path().cwd() / "new_project.opf"
+    osl.new()
+    osl.save_as(new_project)
 
 Some general info about project can be obtained by running:
 

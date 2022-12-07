@@ -370,13 +370,8 @@ class Optislang:
         """
         return self.__osl_server.get_working_dir()
 
-    def new(self, file_path: Union[str, Path] = None) -> None:
-        """Create a new project and save it if path is specified.
-
-        Parameters
-        ----------
-        file_path : Union[str, Path], optional
-            Path to the new optiSLang project.
+    def new(self) -> None:
+        """Create a new project.
 
         Raises
         ------
@@ -387,7 +382,7 @@ class Optislang:
         TimeoutError
             Raised when the timeout float value expires.
         """
-        self.__osl_server.new(file_path=file_path)
+        self.__osl_server.new()
 
     def open(
         self,

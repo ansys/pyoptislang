@@ -11,7 +11,6 @@ import select
 import signal
 import socket
 import struct
-import tempfile
 import threading
 import time
 from typing import Any, Callable, Dict, List, Sequence, Tuple, Union
@@ -1003,7 +1002,6 @@ class TcpOslServer(OslServer):
             Raised when the timeout float value expires.
         """
         self._send_command(commands.close(password=self.__password))
-        self.__project_path = None
 
     def dispose(self) -> None:
         """Terminate all local threads and unregister listeners.
@@ -1228,13 +1226,8 @@ class TcpOslServer(OslServer):
             return None
         return Path(project_info["projects"][0]["working_dir"])
 
-    def new(self, file_path: Union[str, Path] = None) -> None:
-        """Create a new project and save it if path is specified.
-
-        Parameters
-        ----------
-        file_path : Union[str, Path], optional
-            Path to the new optiSLang project.
+    def new(self) -> None:
+        """Create a new project.
 
         Raises
         ------
@@ -1246,15 +1239,6 @@ class TcpOslServer(OslServer):
             Raised when the timeout float value expires.
         """
         self._send_command(commands.new(password=self.__password))
-
-        if file_path is None:
-            self.__tempdir = tempfile.TemporaryDirectory()
-            file_path = Path(self.__tempdir.name) / self.__class__._DEFAULT_PROJECT_FILE
-            self.__project_path = None
-        else:
-            file_path = self.__validate_path(file_path=file_path)
-            self.__project_path = file_path
-        self.save_as(file_path)
 
     def open(
         self,
@@ -1299,7 +1283,6 @@ class TcpOslServer(OslServer):
                 password=self.__password,
             )
         )
-        self.__project_path = file_path
 
     def reset(self):
         """Reset complete project.
@@ -1445,8 +1428,6 @@ class TcpOslServer(OslServer):
             )
         )
 
-        self.__project_path = file_path
-
     def save_copy(self, file_path: Union[str, Path]) -> None:
         """Save the current project as a copy to a location.
 
@@ -1466,7 +1447,6 @@ class TcpOslServer(OslServer):
         """
         file_path = self.__validate_path(file_path=file_path)
         self._send_command(commands.save_copy(str(file_path.as_posix()), self.__password))
-        self.__project_path = file_path
 
     def set_timeout(self, timeout: Union[float, None] = None) -> None:
         """Set timeout value for execution of commands.
@@ -2112,6 +2092,7 @@ class TcpOslServer(OslServer):
     def __unregister_all_listeners(self) -> None:
         """Unregister all instance listeners."""
         for listener in self.__listeners.values():
+            listener: TcpOslListener
             if listener.uid is not None:
                 try:
                     self._unregister_listener(listener)

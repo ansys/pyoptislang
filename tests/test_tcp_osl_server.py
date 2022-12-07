@@ -6,7 +6,7 @@ import time
 
 import pytest
 
-from ansys.optislang.core import OslServerProcess
+from ansys.optislang.core import OslServerProcess, examples
 import ansys.optislang.core.tcp_osl_server as tos
 
 _host = socket.gethostbyname(socket.gethostname())
@@ -144,10 +144,19 @@ def test_receive_file(
 
 
 # TcpOslServer
+def test_close(tcp_osl_server: tos.TcpOslServer):
+    with does_not_raise() as dnr:
+        tcp_osl_server.close()
+        tcp_osl_server.new()
+        tcp_osl_server.dispose()
+    assert dnr is None
+
+
 def test_get_server_info(tcp_osl_server: tos.TcpOslServer):
     """Test ``_get_server_info``."""
     server_info = tcp_osl_server._get_server_info()
     tcp_osl_server.shutdown()
+    tcp_osl_server.dispose()
     assert isinstance(server_info, dict)
     assert bool(server_info)
 
@@ -156,6 +165,7 @@ def test_get_basic_project_info(tcp_osl_server: tos.TcpOslServer):
     """Test ``_get_basic_project_info``."""
     basic_project_info = tcp_osl_server._get_basic_project_info()
     tcp_osl_server.shutdown()
+    tcp_osl_server.dispose()
     assert isinstance(basic_project_info, dict)
     assert bool(basic_project_info)
 
@@ -164,6 +174,7 @@ def test_get_osl_version_string(osl_server_process, tcp_osl_server):
     """Test ``get_osl_version_string``."""
     version = tcp_osl_server.get_osl_version_string()
     tcp_osl_server.shutdown()
+    tcp_osl_server.dispose()
     assert isinstance(version, str)
     assert bool(version)
 
@@ -172,6 +183,7 @@ def test_get_osl_version(tcp_osl_server):
     """Test ``get_osl_version``."""
     major_version, minor_version, maintenance_version, revision = tcp_osl_server.get_osl_version()
     tcp_osl_server.shutdown()
+    tcp_osl_server.dispose()
     assert isinstance(major_version, int)
     assert isinstance(minor_version, int)
     assert isinstance(maintenance_version, int) or maintenance_version == None
@@ -182,6 +194,7 @@ def test_get_project_description(osl_server_process, tcp_osl_server):
     """Test ``get_project_description``."""
     project_description = tcp_osl_server.get_project_description()
     tcp_osl_server.shutdown()
+    tcp_osl_server.dispose()
     assert isinstance(project_description, str)
     assert not bool(project_description)
 
@@ -190,6 +203,7 @@ def test_get_project_location(tcp_osl_server: tos.TcpOslServer):
     """Test ``get_project_location``."""
     project_location = tcp_osl_server.get_project_location()
     tcp_osl_server.shutdown()
+    tcp_osl_server.dispose()
     assert isinstance(project_location, Path)
     assert bool(project_location)
 
@@ -198,6 +212,7 @@ def test_get_project_name(tcp_osl_server: tos.TcpOslServer):
     """Test ``get_project_name``."""
     project_name = tcp_osl_server.get_project_name()
     tcp_osl_server.shutdown()
+    tcp_osl_server.dispose()
     assert isinstance(project_name, str)
     assert bool(project_name)
 
@@ -206,6 +221,7 @@ def test_get_project_status(tcp_osl_server: tos.TcpOslServer):
     """Test ``get_get_project_status``."""
     project_status = tcp_osl_server.get_project_status()
     tcp_osl_server.shutdown()
+    tcp_osl_server.dispose()
     assert isinstance(project_status, str)
     assert bool(project_status)
 
@@ -214,24 +230,30 @@ def test_get_working_dir(tcp_osl_server: tos.TcpOslServer):
     """Test ``get_working_dir``."""
     working_dir = tcp_osl_server.get_working_dir()
     tcp_osl_server.shutdown()
+    tcp_osl_server.dispose()
     assert isinstance(working_dir, Path)
     assert bool(working_dir)
 
 
-# not implemented
 def test_new(tcp_osl_server: tos.TcpOslServer):
     """Test ``new``."""
-    with pytest.raises(NotImplementedError):
-        tcp_osl_server.new()
+    tcp_osl_server.new()
+    assert tcp_osl_server.get_project_name() == "Unnamed project"
     tcp_osl_server.shutdown()
+    tcp_osl_server.dispose()
 
 
-# not implemented
-def test_open(tcp_osl_server: tos.TcpOslServer):
+@pytest.mark.parametrize("path_type", [str, Path])
+def test_open(tcp_osl_server: tos.TcpOslServer, path_type):
     """Test ``open``."""
-    with pytest.raises(NotImplementedError):
-        tcp_osl_server.open("string", False, False, False)
+    project = examples.get_files("simple_calculator")[1][0]
+    assert project.is_file()
+    if path_type == str:
+        project = str(project)
+    tcp_osl_server.open(project)
+    assert tcp_osl_server.get_project_name() == "calculator"
     tcp_osl_server.shutdown()
+    tcp_osl_server.dispose()
 
 
 def test_reset(tcp_osl_server: tos.TcpOslServer):
@@ -239,6 +261,7 @@ def test_reset(tcp_osl_server: tos.TcpOslServer):
     with does_not_raise() as dnr:
         tcp_osl_server.reset()
     tcp_osl_server.shutdown()
+    tcp_osl_server.dispose()
     assert dnr is None
 
 
@@ -261,6 +284,7 @@ print(result)
         f.write(cmd)
     run_file = tcp_osl_server.run_python_file(file_path=cmd_path)
     tcp_osl_server.shutdown()
+    tcp_osl_server.dispose()
     assert isinstance(run_file, tuple)
 
 
@@ -274,31 +298,50 @@ print(result)
 """
     run_script = tcp_osl_server.run_python_script(script=cmd)
     tcp_osl_server.shutdown()
+    tcp_osl_server.dispose()
     assert isinstance(run_script, tuple)
 
 
-# not implemented
 def test_save(tcp_osl_server: tos.TcpOslServer):
     """Test ``save``."""
-    with pytest.raises(NotImplementedError):
-        tcp_osl_server.save()
+    file_path = tcp_osl_server.get_project_location()
+    assert file_path.is_file()
+    mod_time = os.path.getmtime(str(file_path))
+    tcp_osl_server.save()
+    save_time = os.path.getmtime(str(file_path))
+    assert mod_time != save_time
     tcp_osl_server.shutdown()
+    tcp_osl_server.dispose()
 
 
-# not implemented
-def test_save_as(tcp_osl_server: tos.TcpOslServer):
+@pytest.mark.parametrize("path_type", [str, Path])
+def test_save_as(tcp_osl_server: tos.TcpOslServer, tmp_path: Path, path_type):
     """Test ``save_as``."""
-    with pytest.raises(NotImplementedError):
-        tcp_osl_server.save_as("string", False, False, False)
+    file_path = tmp_path / "test_save.opf"
+    if path_type == str:
+        arg_path = str(file_path)
+    elif path_type == Path:
+        arg_path = file_path
+
+    tcp_osl_server.save_as(file_path=arg_path)
+    assert file_path.is_file()
     tcp_osl_server.shutdown()
+    tcp_osl_server.dispose()
 
 
-def test_save_copy(tmp_path: Path, tcp_osl_server: tos.TcpOslServer):
+@pytest.mark.parametrize("path_type", [str, Path])
+def test_save_copy(tmp_path: Path, tcp_osl_server: tos.TcpOslServer, path_type):
     """Test ``save_copy``."""
     copy_path = tmp_path / "test_save_copy.opf"
-    tcp_osl_server.save_copy(copy_path)
+    if path_type == str:
+        arg_path = str(copy_path)
+    elif path_type == Path:
+        arg_path = copy_path
+
+    tcp_osl_server.save_copy(arg_path)
     tcp_osl_server.shutdown()
-    assert os.path.isfile(copy_path)
+    tcp_osl_server.dispose()
+    assert copy_path.is_file()
 
 
 def test_start(tcp_osl_server: tos.TcpOslServer):
@@ -306,6 +349,7 @@ def test_start(tcp_osl_server: tos.TcpOslServer):
     with does_not_raise() as dnr:
         tcp_osl_server.start()
     tcp_osl_server.shutdown()
+    tcp_osl_server.dispose()
     assert dnr is None
 
 
@@ -314,6 +358,7 @@ def test_stop(tcp_osl_server: tos.TcpOslServer):
     with does_not_raise() as dnr:
         tcp_osl_server.stop()
     tcp_osl_server.shutdown()
+    tcp_osl_server.dispose()
     assert dnr is None
 
 
@@ -329,4 +374,5 @@ def test_shutdown(tcp_osl_server: tos.TcpOslServer):
     """Test ``shutdown``."""
     with does_not_raise() as dnr:
         tcp_osl_server.shutdown()
+        tcp_osl_server.dispose()
     assert dnr is None
