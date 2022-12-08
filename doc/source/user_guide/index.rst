@@ -12,6 +12,7 @@ PyOptiSLang library.
    
    launch
    functions
+   project_parametric
    run_python
    troubleshooting
 
