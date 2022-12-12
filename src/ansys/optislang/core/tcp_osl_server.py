@@ -1112,9 +1112,11 @@ class TcpOslServer(OslServer):
             Raised when the timeout float value expires.
         """
         project_info = self._get_basic_project_info()
-        if len(project_info["projects"]) == 0:
+        if len(project_info.get("projects", [])) == 0:
             return None
-        return project_info["projects"][0]["settings"]["short_description"]
+        return (
+            project_info.get("projects", [{}])[0].get("settings", {}).get("short_description", None)
+        )
 
     def get_project_location(self) -> Path:
         """Get path to the optiSLang project file.
@@ -1157,9 +1159,9 @@ class TcpOslServer(OslServer):
             Raised when the timeout float value expires.
         """
         project_info = self._get_basic_project_info()
-        if len(project_info["projects"]) == 0:
+        if len(project_info.get("projects", [])) == 0:
             return None
-        return project_info["projects"][0]["name"]
+        return project_info.get("projects", [{}])[0].get("name", None)
 
     def get_project_status(self) -> str:
         """Get status of the optiSLang project.
@@ -1180,9 +1182,9 @@ class TcpOslServer(OslServer):
             Raised when the timeout float value expires.
         """
         project_info = self._get_basic_project_info()
-        if len(project_info["projects"]) == 0:
+        if len(project_info.get("projects", [])) == 0:
             return None
-        return project_info["projects"][0]["state"]
+        return project_info.get("projects", [{}])[0].get("state", None)
 
     def get_timeout(self) -> Union[float, None]:
         """Get current timeout value for execution of commands.
@@ -1222,9 +1224,9 @@ class TcpOslServer(OslServer):
             Raised when the timeout float value expires.
         """
         project_info = self._get_basic_project_info()
-        if len(project_info["projects"]) == 0:
+        if len(project_info.get("projects", [])) == 0:
             return None
-        return Path(project_info["projects"][0]["working_dir"])
+        return Path(project_info.get("projects", [{}])[0].get("working_dir", None))
 
     def new(self) -> None:
         """Create a new project.
