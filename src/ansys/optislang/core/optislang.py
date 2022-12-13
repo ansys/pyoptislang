@@ -1,4 +1,6 @@
 """Contains Optislang class which provides python API for optiSLang application."""
+from __future__ import annotations
+
 from pathlib import Path
 from typing import TYPE_CHECKING, Dict, Iterable, List, Sequence, Tuple, Union
 
@@ -103,7 +105,7 @@ class Optislang:
         self.__logger = LOG.add_instance_logger(self.name, self, loglevel)
         self.__osl_server: OslServer = self.__init_osl_server("tcp")
 
-    def __init_osl_server(self, server_type: str) -> "OslServer":
+    def __init_osl_server(self, server_type: str) -> OslServer:
         """Initialize optiSLang server.
 
         Parameters
@@ -560,40 +562,89 @@ class Optislang:
         self.__osl_server.stop(wait_for_finished)
 
     # stop_gently method doesn't work properly in optiSLang 2023R1, therefore it was commented out
-
     # def stop_gently(self, wait_for_finished: bool = True) -> None:
-    #     """Stop project execution after the current design is finished.
+    # """Stop project execution after the current design is finished.
 
-    #     Parameters
-    #     ----------
-    #     wait_for_finished : bool, optional
-    #         Determines whether this function call should wait for optiSLang to finish
-    #         the command execution. I.e. don't continue on next line of python script after command
-    #         was successfully sent to optiSLang but wait for execution of command inside optiSLang.
-    #         Defaults to ``True``.
+    # Parameters
+    # ----------
+    # wait_for_finished : bool, optional
+    #     Determines whether this function call should wait for optiSLang to finish
+    #     the command execution. I.e. don't continue on next line of python script after command
+    #     was successfully sent to optiSLang but wait for execution of command inside optiSLang.
+    #     Defaults to ``True``.
 
-    #     Raises
-    #     ------
-    #     OslCommunicationError
-    #         Raised when an error occurs while communicating with server.
-    #     OslCommandError
-    #         Raised when the command or query fails.
-    #     TimeoutError
-    #         Raised when the timeout float value expires.
-    #     """
-    #     self.__osl_server.stop_gently(wait_for_finished)
+    # Raises
+    # ------
+    # OslCommunicationError
+    #     Raised when an error occurs while communicating with server.
+    # OslCommandError
+    #     Raised when the command or query fails.
+    # TimeoutError
+    #     Raised when the timeout float value expires.
+    # """
+    # self.__osl_server.stop_gently(wait_for_finished)
 
     # new functionality
+    def get_actor_properties(self, uid: str) -> Dict:
+        """Get properties of actor defined by uid.
+
+        Parameters
+        ----------
+        uid : str
+            Actor uid.
+
+        Returns
+        -------
+        Dict
+            Properties of actor defined by uid.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        return self.__osl_server.get_actor_properties(uid=uid)
+
     def get_nodes_dict(self) -> Dict:
-        """Return dictionary of nodes in root level."""
+        """Get dictionary of nodes at root level.
+
+        Returns
+        -------
+        Dict
+            Dictionary of nodes defined at root level.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
         return self.__osl_server.get_nodes_dict()
 
-    def get_parameter_manager(self) -> "ParameterManager":
-        """Return instance of class ``ParameterManager``."""
+    def get_parameter_manager(self) -> ParameterManager:
+        """Get instance of class ``ParameterManager``.
+
+        Returns
+        -------
+        ParameterManager
+            Class containing methods to obtain parameters.
+        """
         return self.__osl_server.get_parameter_manager()
 
     def get_parameters_list(self) -> List:
-        """Return list of defined parameters.
+        """Get list of defined parameters.
+
+        Returns
+        -------
+        Dict
+            List of defined parameters.
 
         Raises
         ------
@@ -607,8 +658,8 @@ class Optislang:
         # TODO: create test
         return self.__osl_server.get_parameters_list()
 
-    def create_design(self, parameters: Dict = None) -> "Design":
-        """Return a new instance of ``Design`` class.
+    def create_design(self, parameters: Dict = None) -> Design:
+        """Create a new instance of ``Design`` class.
 
         Parameters
         ----------
@@ -623,7 +674,7 @@ class Optislang:
         # TODO: create test
         return self.__osl_server.create_design(parameters)
 
-    def evaluate_design(self, design: "Design") -> Tuple:
+    def evaluate_design(self, design: Design) -> Tuple:
         """Evaluate requested design.
 
         Parameters
@@ -649,7 +700,7 @@ class Optislang:
         # TODO: create test
         return self.__osl_server.evaluate_design(design)
 
-    def evaluate_multiple_designs(self, designs: Iterable["Design"]) -> Dict:
+    def evaluate_multiple_designs(self, designs: Iterable[Design]) -> Dict:
         """Evaluate multiple designs.
 
         Parameters
@@ -676,7 +727,7 @@ class Optislang:
         # TODO: create test
         return self.__osl_server.evaluate_multiple_designs(designs)
 
-    def validate_design(self, design: "Design") -> Tuple[str, bool, List]:
+    def validate_design(self, design: Design) -> Tuple[str, bool, List]:
         """Compare parameters defined in design and project.
 
         Parameters

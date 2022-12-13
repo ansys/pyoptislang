@@ -13,7 +13,7 @@ import socket
 import struct
 import threading
 import time
-from typing import Callable, Dict, Iterable, List, Sequence, Tuple, Union
+from typing import Any, Callable, Dict, Iterable, List, Sequence, Tuple, Union
 import uuid
 
 from ansys.optislang.core import server_commands as commands
@@ -30,7 +30,7 @@ from ansys.optislang.core.errors import (
 )
 from ansys.optislang.core.osl_process import OslServerProcess, ServerNotification
 from ansys.optislang.core.osl_server import OslServer
-from ansys.optislang.core.project_parametric import Design, ParameterManager
+from ansys.optislang.core.project_parametric import Design, Parameter, ParameterManager
 
 
 def _get_current_timeout(initial_timeout: Union[float, None], start_time: float) -> None:
@@ -901,7 +901,6 @@ class TcpOslServer(OslServer):
         self.__host = host
         self.__port = port
         self.__timeout = None
-        self.__project_uid = None
 
         if logger is None:
             self._logger = logging.getLogger(__name__)
@@ -997,10 +996,14 @@ class TcpOslServer(OslServer):
 
         Raises
         ------
-        NotImplementedError
-            Currently, command is not supported in batch mode.
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
         """
-        raise NotImplementedError("Currently, command is not supported in batch mode.")
+        self._send_command(commands.close(password=self.__password))
 
     def dispose(self) -> None:
         """Terminate all local threads and unregister listeners.
@@ -1111,9 +1114,11 @@ class TcpOslServer(OslServer):
             Raised when the timeout float value expires.
         """
         project_info = self._get_basic_project_info()
-        if len(project_info["projects"]) == 0:
+        if len(project_info.get("projects", [])) == 0:
             return None
-        return project_info["projects"][0]["settings"]["short_description"]
+        return (
+            project_info.get("projects", [{}])[0].get("settings", {}).get("short_description", None)
+        )
 
     def get_project_location(self) -> Path:
         """Get path to the optiSLang project file.
@@ -1134,9 +1139,8 @@ class TcpOslServer(OslServer):
             Raised when the timeout float value expires.
         """
         project_info = self._get_basic_project_info()
-        if len(project_info["projects"]) == 0:
-            return None
-        return Path(project_info["projects"][0]["location"])
+        project_path = project_info.get("projects", [{}])[0].get("location", None)
+        return None if not project_path else Path(project_path)
 
     def get_project_name(self) -> str:
         """Get name of the optiSLang project.
@@ -1157,9 +1161,9 @@ class TcpOslServer(OslServer):
             Raised when the timeout float value expires.
         """
         project_info = self._get_basic_project_info()
-        if len(project_info["projects"]) == 0:
+        if len(project_info.get("projects", [])) == 0:
             return None
-        return project_info["projects"][0]["name"]
+        return project_info.get("projects", [{}])[0].get("name", None)
 
     def get_project_status(self) -> str:
         """Get status of the optiSLang project.
@@ -1180,9 +1184,9 @@ class TcpOslServer(OslServer):
             Raised when the timeout float value expires.
         """
         project_info = self._get_basic_project_info()
-        if len(project_info["projects"]) == 0:
+        if len(project_info.get("projects", [])) == 0:
             return None
-        return project_info["projects"][0]["state"]
+        return project_info.get("projects", [{}])[0].get("state", None)
 
     def get_timeout(self) -> Union[float, None]:
         """Get current timeout value for execution of commands.
@@ -1222,26 +1226,30 @@ class TcpOslServer(OslServer):
             Raised when the timeout float value expires.
         """
         project_info = self._get_basic_project_info()
-        if len(project_info["projects"]) == 0:
+        if len(project_info.get("projects", [])) == 0:
             return None
-        return Path(project_info["projects"][0]["working_dir"])
+        return Path(project_info.get("projects", [{}])[0].get("working_dir", None))
 
     def new(self) -> None:
         """Create a new project.
 
         Raises
         ------
-        NotImplementedError
-            Currently, command is not supported in batch mode.
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
         """
-        raise NotImplementedError("Currently, command is not supported in batch mode.")
+        self._send_command(commands.new(password=self.__password))
 
     def open(
         self,
         file_path: Union[str, Path],
-        force: bool,
-        restore: bool,
-        reset: bool,
+        force: bool = True,
+        restore: bool = False,
+        reset: bool = False,
     ) -> None:
         """Open a new project.
 
@@ -1249,19 +1257,36 @@ class TcpOslServer(OslServer):
         ----------
         file_path : Union[str, Path]
             Path to the optiSLang project file to open.
-        force : bool
+        force : bool, optional
             # TODO: description of this parameter is missing in ANSYS help
-        restore : bool
+        restore : bool, optional
             # TODO: description of this parameter is missing in ANSYS help
-        reset : bool
+        reset : bool, optional
             # TODO: description of this parameter is missing in ANSYS help
 
         Raises
         ------
-        NotImplementedError
-            Currently, command is not supported in batch mode.
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
         """
-        raise NotImplementedError("Currently, command is not supported in batch mode.")
+        file_path = self.__validate_path(file_path=file_path)
+
+        if not file_path.is_file():
+            raise ValueError("File doesn't exist.")
+
+        self._send_command(
+            commands.open(
+                path=str(file_path.as_posix()),
+                do_force=force,
+                do_restore=restore,
+                do_reset=reset,
+                password=self.__password,
+            )
+        )
 
     def reset(self):
         """Reset complete project.
@@ -1357,17 +1382,21 @@ class TcpOslServer(OslServer):
 
         Raises
         ------
-        NotImplementedError
-            Currently, command is not supported in batch mode.
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
         """
-        raise NotImplementedError("Currently, command is not supported in batch mode.")
+        self._send_command(commands.save(password=self.__password))
 
     def save_as(
         self,
         file_path: Union[str, Path],
-        force: bool,
-        restore: bool,
-        reset: bool,
+        force: bool = True,
+        restore: bool = False,
+        reset: bool = False,
     ) -> None:
         """Save and open the current project at a new location.
 
@@ -1375,19 +1404,33 @@ class TcpOslServer(OslServer):
         ----------
         file_path : Union[str, Path]
             Path where to save the project file.
-        force : bool
+        force : bool, optional
             # TODO: description of this parameter is missing in ANSYS help
-        restore : bool
+        restore : bool, optional
             # TODO: description of this parameter is missing in ANSYS help
-        reset : bool
+        reset : bool, optional
             # TODO: description of this parameter is missing in ANSYS help
 
         Raises
         ------
-        NotImplementedError
-            Currently, command is not supported in batch mode.
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
         """
-        raise NotImplementedError("Currently, command is not supported in batch mode.")
+        file_path = self.__validate_path(file_path=file_path)
+
+        self._send_command(
+            commands.save_as(
+                path=str(file_path.as_posix()),
+                do_force=force,
+                do_restore=restore,
+                do_reset=reset,
+                password=self.__password,
+            )
+        )
 
     def save_copy(self, file_path: Union[str, Path]) -> None:
         """Save the current project as a copy to a location.
@@ -1406,7 +1449,8 @@ class TcpOslServer(OslServer):
         TimeoutError
             Raised when the timeout float value expires.
         """
-        self._send_command(commands.save_copy(str(file_path), self.__password))
+        file_path = self.__validate_path(file_path=file_path)
+        self._send_command(commands.save_copy(str(file_path.as_posix()), self.__password))
 
     def set_timeout(self, timeout: Union[float, None] = None) -> None:
         """Set timeout value for execution of commands.
@@ -2052,6 +2096,7 @@ class TcpOslServer(OslServer):
     def __unregister_all_listeners(self) -> None:
         """Unregister all instance listeners."""
         for listener in self.__listeners.values():
+            listener: TcpOslListener
             if listener.uid is not None:
                 try:
                     self._unregister_listener(listener)
@@ -2063,6 +2108,19 @@ class TcpOslServer(OslServer):
         for listener in self.__listeners.values():
             listener.dispose()
         self.__listeners = {}
+
+    def __validate_path(self, file_path: Any) -> Path:
+        """Check type and suffix of project_file path."""
+        if isinstance(file_path, str):
+            file_path = Path(file_path)
+        if not isinstance(file_path, Path):
+            raise TypeError(
+                f"Invalid type of project_path: {type(file_path)}, "
+                "Union[str, Path] is supported."
+            )
+        if not file_path.suffix == ".opf":
+            raise ValueError("Invalid optiSLang project file, project must end with `.opf`.")
+        return file_path
 
     def _send_command(self, command: str) -> Dict:
         """Send command or query to the optiSLang server.
@@ -2126,10 +2184,50 @@ class TcpOslServer(OslServer):
         return response
 
     # new functionality
+    def get_actor_properties(self, uid: str) -> Dict:
+        """Get properties of actor defined by uid.
+
+        Parameters
+        ----------
+        uid : str
+            Actor uid.
+
+        Returns
+        -------
+        Dict
+            Properties of actor defined by uid.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        return self._send_command(queries.actor_properties(uid=uid, password=self.__password))
 
     def get_nodes_dict(self):
-        """Return dictionary of nodes at root level."""
-        project_tree = self._send_command(queries.full_project_tree_with_properties())
+        """Get dictionary of nodes at root level.
+
+        Returns
+        -------
+        Dict
+            Dictionary of nodes defined at root level.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        project_tree = self._send_command(
+            queries.full_project_tree_with_properties(password=self.__password)
+        )
         children_dict = {}
         for counter, node in enumerate(project_tree["projects"][0]["system"]["nodes"]):
             children_dict[counter] = {
@@ -2141,11 +2239,22 @@ class TcpOslServer(OslServer):
         return children_dict
 
     def get_parameter_manager(self) -> ParameterManager:
-        """Return instance of class ``ParameterManager``."""
+        """Get instance of class ``ParameterManager``.
+
+        Returns
+        -------
+        ParameterManager
+            Class containing methods to obtain parameters.
+        """
         return self.__parameter_manager
 
     def get_parameters_list(self) -> Dict:
-        """Return list of defined parameters.
+        """Get list of defined parameters.
+
+        Returns
+        -------
+        Dict
+            List of defined parameters.
 
         Raises
         ------
@@ -2158,8 +2267,8 @@ class TcpOslServer(OslServer):
         """
         return self.__parameter_manager.parameters_list
 
-    def create_design(self, parameters: Dict = None) -> Design:
-        """Return a new instance of ``Design`` class.
+    def create_design(self, parameters: Dict[str, Union[int, float, Parameter]] = None) -> Design:
+        """Create a new instance of ``Design`` class.
 
         Parameters
         ----------
@@ -2198,10 +2307,14 @@ class TcpOslServer(OslServer):
         """
         message, is_valid, missing_parameters = self.validate_design(design)
         if not is_valid:
-            self._logger.error(message)
+            self._logger.warning(message)
+
+        evaluate_dict = {}
+        for name, parameter in design.parameters.items():
+            evaluate_dict[name] = parameter.reference_value
 
         output_dict = self._send_command(
-            commands.evaluate_design(design.parameters, self.__password),
+            commands.evaluate_design(evaluate_dict, self.__password),
         )
         design._receive_results(output_dict[0])
 
@@ -2212,7 +2325,7 @@ class TcpOslServer(OslServer):
                 output_dict[0]["result_design"]["parameter_values"][position],
                 False,
             )
-            self._logger.error(f"Design parameter {parameter} was added.")
+            self._logger.debug(f"Design parameter {parameter} was added.")
 
         return (design.parameters, design.responses)
 
@@ -2288,12 +2401,27 @@ class TcpOslServer(OslServer):
 
     @property
     def project_uid(self):
-        """Return project uid."""
+        """Get project uid.
+
+        Returns
+        -------
+        str
+            Project uid. If no project is loaded in the optiSLang, returns `None`.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
         project_tree = self._send_command(
             queries.full_project_tree_with_properties(self.__password)
         )
-        self.__project_uid = project_tree["projects"][0]["system"]["uid"]
-        return self.__project_uid
+        project_uid = project_tree.get("projects", [{}])[0].get("system", {}).get("uid", None)
+        return project_uid
 
     @staticmethod
     def __check_command_response(response: Dict) -> None:

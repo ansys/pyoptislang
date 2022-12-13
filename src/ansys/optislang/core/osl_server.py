@@ -1,4 +1,5 @@
 """Contains abstract optiSLang server class."""
+from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from pathlib import Path
@@ -505,42 +506,93 @@ class OslServer(ABC):
         pass
 
     # stop_gently method doesn't work properly in optiSLang 2023R1, therefore it was commented out
-
     # @abstractmethod
     # def stop_gently(self, wait_for_finished: bool = True) -> None:
-    #     """Stop project execution after the current design is finished.
+    # """Stop project execution after the current design is finished.
 
-    #     Parameters
-    #     ----------
-    #     wait_for_finished : bool, optional
-    #         Determines whether this function call should wait on the optiSlang to finish
-    #         the project execution. Defaults to ``True``.
+    # Parameters
+    # ----------
+    # wait_for_finished : bool, optional
+    #     Determines whether this function call should wait on the optiSlang to finish
+    #     the project execution. Defaults to ``True``.
 
-    #     Raises
-    #     ------
-    #     OslCommunicationError
-    #         Raised when an error occurs while communicating with server.
-    #     OslCommandError
-    #         Raised when the command or query fails.
-    #     TimeoutError
-    #         Raised when the timeout float value expires.
-    #     """
-    #     pass
+    # Raises
+    # ------
+    # OslCommunicationError
+    #     Raised when an error occurs while communicating with server.
+    # OslCommandError
+    #     Raised when the command or query fails.
+    # TimeoutError
+    #     Raised when the timeout float value expires.
+    # """
+    # pass
 
     # new functionality
+
     @abstractmethod
-    def get_nodes_dict(self) -> Dict:
-        """Return dictionary of nodes at root level."""
+    def get_actor_properties(self, uid: str) -> Dict:
+        """Get properties of actor defined by uid.
+
+        Parameters
+        ----------
+        uid : str
+            Actor uid.
+
+        Returns
+        -------
+        Dict
+            Properties of actor defined by uid.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
         pass
 
     @abstractmethod
-    def get_parameter_manager(self) -> "ParameterManager":
-        """Return instance of class ``ParameterManager``."""
+    def get_nodes_dict(self) -> Dict:
+        """Get dictionary of nodes at root level.
+
+        Returns
+        -------
+        Dict
+            Dictionary of nodes defined at root level.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        pass
+
+    @abstractmethod
+    def get_parameter_manager(self) -> ParameterManager:
+        """Get instance of class ``ParameterManager``.
+
+        Returns
+        -------
+        ParameterManager
+            Class containing methods to obtain parameters.
+        """
         pass
 
     @abstractmethod
     def get_parameters_list(self) -> Dict:
-        """Return list of defined parameters.
+        """Get list of defined parameters.
+
+        Returns
+        -------
+        Dict
+            List of defined parameters.
 
         Raises
         ------
@@ -555,7 +607,7 @@ class OslServer(ABC):
 
     @abstractmethod
     def create_design(self, parameters: Dict = None) -> None:
-        """Return a new instance of ``Design`` class.
+        """Create a new instance of ``Design`` class.
 
         Parameters
         ----------
@@ -570,7 +622,7 @@ class OslServer(ABC):
         pass
 
     @abstractmethod
-    def evaluate_design(self, design: "Design") -> Tuple[Dict, Dict]:
+    def evaluate_design(self, design: Design) -> Tuple[Dict, Dict]:
         """Evaluate requested design.
 
         Parameters
@@ -596,7 +648,7 @@ class OslServer(ABC):
         pass
 
     @abstractmethod
-    def validate_design(self, design: "Design") -> Tuple[str, bool, List[str]]:
+    def validate_design(self, design: Design) -> Tuple[str, bool, List[str]]:
         """Compare parameters defined in design and project.
 
         Parameters
@@ -623,132 +675,10 @@ class OslServer(ABC):
         pass
 
     @abstractmethod
-    def evaluate_multiple_designs(self, designs: Iterable["Design"]) -> Dict:
+    def evaluate_multiple_designs(self, designs: Iterable[Design]) -> Dict:
         """Evaluate multiple designs.
 
         Parameters
-        ----------
-        designs: Iterable[Design]
-            Iterable of ``Design`` class instances with defined parameters.
-
-        Returns
-        -------
-        multiple_design_output: List[Tuple[Dict, Dict]]
-            Tuple[Dict, Dict]:
-                0: Design parameters.
-                1: Responses.
-
-        Raises
-        ------
-        OslCommunicationError
-            Raised when an error occurs while communicating with server.
-        OslCommandError
-            Raised when the command or query fails.
-        TimeoutError
-            Raised when the timeout float value expires.
-        """
-        pass
-
-    # new functionality
-    @abstractmethod
-    def get_nodes_dict(self) -> Dict:
-        """Return dictionary of nodes at root level."""
-        pass
-
-    @abstractmethod
-    def get_parameter_manager(self) -> "ParameterManager":
-        """Return instance of class ``ParameterManager``."""
-        pass
-
-    @abstractmethod
-    def get_parameters_list(self) -> Dict:
-        """Return list of defined parameters.
-
-        Raises
-        ------
-        OslCommunicationError
-            Raised when an error occurs while communicating with server.
-        OslCommandError
-            Raised when the command or query fails.
-        TimeoutError
-            Raised when the timeout float value expires.
-        """
-        pass
-
-    @abstractmethod
-    def create_design(self, parameters: Dict = None) -> None:
-        """Return a new instance of ``Design`` class.
-
-        Parameters
-        ----------
-        parameters: Dict, opt
-            Dictionary of parameters and it's values {'parname': value, ...}.
-
-        Returns
-        -------
-        Design
-            Instance of ``Design`` class.
-        """
-        pass
-
-    @abstractmethod
-    def evaluate_design(self, design: "Design") -> Tuple[Dict, Dict]:
-        """Evaluate requested design.
-
-        Parameters
-        ----------
-        design: Design
-            Instance of ``Design`` class with defined parameters.
-
-        Returns
-        -------
-        Tuple[Dict, Dict]
-            0: Design parameters.
-            1: Responses.
-
-        Raises
-        ------
-        OslCommunicationError
-            Raised when an error occurs while communicating with server.
-        OslCommandError
-            Raised when the command or query fails.
-        TimeoutError
-            Raised when the timeout float value expires.
-        """
-        pass
-
-    @abstractmethod
-    def validate_design(self, design: "Design") -> Tuple[str, bool, List[str]]:
-        """Compare parameters defined in design and project.
-
-        Parameters
-        ----------
-        design: Design
-            Instance of ``Design`` class with defined parameters.
-
-        Returns
-        -------
-        Tuple[str, bool, List]
-            0: str, Message describing differences.
-            1: bool, True if there are not any missing or redundant parameters.
-            2: List, Missing parameters.
-
-        Raises
-        ------
-        OslCommunicationError
-            Raised when an error occurs while communicating with server.
-        OslCommandError
-            Raised when the command or query fails.
-        TimeoutError
-            Raised when the timeout float value expires.
-        """
-        pass
-
-    @abstractmethod
-    def evaluate_multiple_designs(self, designs: Iterable["Design"]) -> Dict:
-        """Evaluate multiple designs.
-
-         Parameters
         ----------
         designs: Iterable[Design]
             Iterable of ``Design`` class instances with defined parameters.

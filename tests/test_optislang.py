@@ -5,11 +5,11 @@ import time
 
 import pytest
 
-from ansys.optislang.core import Optislang, examples
-from ansys.optislang.core.project_parametric import Design, ParameterManager
+from ansys.optislang.core import Optislang, errors, examples
+from ansys.optislang.core.project_parametric import Design, Parameter, ParameterManager
 
 pytestmark = pytest.mark.local_osl
-parametric_project = examples.get_files("calculator_with_params")[1]
+parametric_project = examples.get_files("calculator_with_params")[1][0]
 
 
 @pytest.fixture()
@@ -230,14 +230,31 @@ def test_dispose(optislang):
     assert dnr is None
 
 
+@pytest.mark.parametrize(
+    "uid, expected",
+    [
+        ("3577cb69-15b9-4ad1-a53c-ac8af8aaea82", dict),
+        ("3577cb69-15b9-4ad1-a53c-ac8af8aaea83", errors.OslCommandError),
+    ],
+)
+def test_get_actor_properties(uid, expected):
+    optislang = Optislang(project_path=parametric_project)
+    if expected == errors.OslCommandError:
+        with pytest.raises(expected):
+            properties = optislang.get_actor_properties(uid)
+    else:
+        properties = optislang.get_actor_properties(uid)
+        assert isinstance(properties, expected)
+    optislang.dispose()
+
+
 def test_get_nodes_dict():
     "Test ``get_nodes_dict``."
     optislang = Optislang(project_path=parametric_project)
     node_dict = optislang.get_nodes_dict()
-    print(node_dict)
     assert isinstance(node_dict, dict)
     assert node_dict[0]["name"] == "Calculator"
-    optislang.shutdown()
+    optislang.dispose()
 
 
 def test_get_parameter_manager():
@@ -254,7 +271,7 @@ def test_get_parameters_list():
     "Test ``get_parameters_list``."
     optislang = Optislang(project_path=parametric_project)
     params = optislang.get_parameters_list()
-    optislang.shutdown()
+    optislang.dispose()
     assert isinstance(params, list)
     assert len(params) > 0
     assert set(["a", "b"]) == set(params)
@@ -265,47 +282,52 @@ def test_create_design():
     optislang = Optislang(project_path=parametric_project)
     inputs = {"a": 5, "b": 10}
     design = optislang.create_design(inputs)
-    optislang.shutdown()
+    optislang.dispose()
 
     assert isinstance(design, Design)
-    assert isinstance(design.parameters["a"], (int, float))
+    assert isinstance(design.parameters["a"], Parameter)
     design.set_parameter("a", 10)
-    assert design.parameters["a"] == 10
+    assert design.parameters["a"].reference_value == 10
     design.set_parameters({"b": 20, "c": 30})
-    assert design.parameters["c"] == 30
-    direct_design = Design(inputs={"a": 5, "b": 10})
+    assert design.parameters["c"].reference_value == 30
+    direct_design = Design(parameters={"a": 5, "b": 10})
     assert isinstance(direct_design, Design)
-    assert isinstance(direct_design.parameters["b"], (int, float))
+    assert isinstance(direct_design.parameters["b"], Parameter)
 
 
 def test_evaluate_design():
     "Test ``evaluate_design``."
     optislang = Optislang(project_path=parametric_project)
-    design = Design(inputs={"a": 5, "b": 10})
+    design = Design(parameters={"a": 5, "b": 10})
     assert design.status == "IDLE"
     assert design.id == "NOT ASSIGNED"
     result = optislang.evaluate_design(design)
-    print(result)
-    optislang.shutdown()
+    optislang.dispose()
     assert isinstance(result, tuple)
     assert isinstance(result[0], dict)
     assert isinstance(result[1], dict)
     assert design.status == "SUCCEEDED"
     assert isinstance(design.responses, dict)
-    assert design.responses["c"] == 15
+    assert design.responses["c"].reference_value == 15
     assert isinstance(design.criteria, dict)
 
 
 def test_evaluate_multiple_designs():
     optislang = Optislang(project_path=parametric_project)
     designs = [
-        Design(inputs={"a": 1, "b": 2}),
-        Design(inputs={"a": 3, "b": 4}),
-        Design(inputs={"a": 5, "d": 6}),
-        Design(inputs={"e": 7, "f": 8}),
+        Design(parameters={"a": 1, "b": 2.0}),
+        Design(parameters={"a": 3, "b": 4}),
+        Design(parameters={"a": 5, "d": 6}),
+        Design(parameters={"e": 7, "f": 8}),
+        Design(
+            parameters={
+                "a": Parameter(name="a", reference_value=9),
+                "b": Parameter(name="b", reference_value=10.0),
+            }
+        ),
     ]
     results = optislang.evaluate_multiple_designs(designs)
-    optislang.shutdown()
+    optislang.dispose()
 
     for result in results:
         assert isinstance(result, tuple)
@@ -318,9 +340,15 @@ def test_evaluate_multiple_designs():
 def test_validate_design():
     optislang = Optislang(project_path=parametric_project)
     designs = [
-        Design(inputs={"a": 1, "b": 2}),
-        Design(inputs={"e": 3, "f": 4}),
-        Design(inputs={"a": 5, "g": 6}),
+        Design(parameters={"a": 1, "b": 2}),
+        Design(parameters={"e": 3, "f": 4}),
+        Design(parameters={"a": 5, "g": 6}),
+        Design(
+            parameters={
+                "a": Parameter(name="a", reference_value=9),
+                "b": Parameter(name="b", reference_value=10.0),
+            }
+        ),
     ]
     for design in designs:
         result = optislang.validate_design(design)
@@ -328,4 +356,4 @@ def test_validate_design():
         assert isinstance(result[1], bool)
         assert isinstance(result[2], list)
 
-    optislang.shutdown()
+    optislang.dispose()
