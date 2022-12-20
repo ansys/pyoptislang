@@ -188,7 +188,7 @@ class Optislang:
         Returns
         -------
         bool
-            True if project is loaded, false otherwise.
+            ``True`` if project is loaded; ``False`` otherwise.
 
         Raises
         ------
@@ -199,7 +199,7 @@ class Optislang:
         TimeoutError
             Raised when the timeout float value expires.
         """
-        return True if self.__osl_server.get_project_name() is not None else False
+        return self.__osl_server.get_project_name() is not None
 
     # def close(self) -> None:
     #     """Close the current project.

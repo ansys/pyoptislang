@@ -13,7 +13,7 @@ import socket
 import struct
 import threading
 import time
-from typing import Any, Callable, Dict, List, Sequence, Tuple, Union
+from typing import Callable, Dict, List, Sequence, Tuple, Union
 import uuid
 
 from ansys.optislang.core import server_commands as commands
@@ -1271,10 +1271,11 @@ class TcpOslServer(OslServer):
         TimeoutError
             Raised when the timeout float value expires.
         """
-        file_path = self.__validate_path(file_path=file_path)
+        file_path = self.__cast_to_path(file_path=file_path)
+        self.__validate_path(file_path=file_path)
 
         if not file_path.is_file():
-            raise ValueError("File doesn't exist.")
+            raise FileNotFoundError(f'File "{file_path}" doesn\'t exist.')
 
         self._send_command(
             commands.open(
@@ -1418,7 +1419,8 @@ class TcpOslServer(OslServer):
         TimeoutError
             Raised when the timeout float value expires.
         """
-        file_path = self.__validate_path(file_path=file_path)
+        file_path = self.__cast_to_path(file_path=file_path)
+        self.__validate_path(file_path=file_path)
 
         self._send_command(
             commands.save_as(
@@ -1447,7 +1449,8 @@ class TcpOslServer(OslServer):
         TimeoutError
             Raised when the timeout float value expires.
         """
-        file_path = self.__validate_path(file_path=file_path)
+        file_path = self.__cast_to_path(file_path=file_path)
+        self.__validate_path(file_path=file_path)
         self._send_command(commands.save_copy(str(file_path.as_posix()), self.__password))
 
     def set_timeout(self, timeout: Union[float, None] = None) -> None:
@@ -2107,17 +2110,21 @@ class TcpOslServer(OslServer):
             listener.dispose()
         self.__listeners = {}
 
-    def __validate_path(self, file_path: Any) -> Path:
+    def __cast_to_path(self, path: Union[str, Path]) -> Path:
+        """Cast path to Path."""
+        if isinstance(path, Path):
+            return path
+        else:
+            return Path(path)
+
+    def __validate_path(self, file_path: Path) -> None:
         """Check type and suffix of project_file path."""
-        if isinstance(file_path, str):
-            file_path = Path(file_path)
         if not isinstance(file_path, Path):
             raise TypeError(
-                f"Invalid type of project_path: {type(file_path)}," "Union[str, Path] is supported."
+                f'Invalid type of project_path: "{type(file_path)}", "Path" is supported.'
             )
         if not file_path.suffix == ".opf":
-            raise ValueError("Invalid optiSLang project file, project must end with `.opf`.")
-        return file_path
+            raise ValueError('Invalid optiSLang project file, project must end with ".opf".')
 
     def _send_command(self, command: str) -> Dict:
         """Send command or query to the optiSLang server.

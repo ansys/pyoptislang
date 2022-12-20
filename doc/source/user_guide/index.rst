@@ -40,7 +40,7 @@ by the ``project_path`` parameter of the
 
 If the project file exists, it is opened; otherwise, a new project file is created on the specified 
 path. The :class:`Optislang <ansys.optislang.core.Optislang>` class provides several functions which 
-enable to control or query the project . The following example shows how to open an existing project 
+enable to control or query the project. The following example shows how to open an existing project 
 and run it using the :func:`start() <ansys.optislang.core.optislang.Optislang.start>` function.
 
 .. code:: python

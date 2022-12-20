@@ -26,15 +26,16 @@ In order to save the current project, use either
     project_path = Path().cwd() / "test_project.opf"
     osl.save_as(project_path)
 
-Please note that optiSLang project is located in a temporary directory if an instance 
-of :class:`Optislang() <ansys.optislang.core.optislang.Optislang>` was created with default 
-settings, so either :func:`save_as() <ansys.optislang.core.optislang.Optislang.save_as>` or
-:func:`save_copy() <ansys.optislang.core.optislang.Optislang.save_copy>` must be used at first.
+Please note that the optiSLang project is located in a temporary directory if an instance 
+of :class:`Optislang() <ansys.optislang.core.optislang.Optislang>` was created with the default 
+parameters. Therefore, if the project should be preserved permanently, either 
+:func:`save_as() <ansys.optislang.core.optislang.Optislang.save_as>` or
+:func:`save_copy() <ansys.optislang.core.optislang.Optislang.save_copy>` should be used.
 
 
-In order to create or open existing or create new project, methods
-:func:`new() <ansys.optislang.core.optislang.Optislang.save>` or
-:func:`open() <ansys.optislang.core.optislang.Optislang.save_as>` may be used. 
+In order to create a new project or open an existing one, methods
+:func:`new() <ansys.optislang.core.optislang.Optislang.new>` or
+:func:`open() <ansys.optislang.core.optislang.Optislang.open>` may be used. 
 
 .. code:: python
     
