@@ -559,7 +559,7 @@ class TcpOslListener:
     Create listener
     >>> from ansys.optislang.core.tcp_osl_server import TcpOslListener
     >>> general_listener = TcpOslListener(
-    >>>     port_range = self.__class__._PRIVATE_PORTS_RANGE,
+    >>>     port_range = (49152, 65535),
     >>>     timeout = 30,
     >>>     name = 'GeneralListener',
     >>>     host = '127.0.0.1',
@@ -766,7 +766,7 @@ class TcpOslListener:
         for callback, args in self.__callbacks:
             callback(self, response, *args)
 
-    def is_listening(self) -> None:
+    def is_listening(self) -> bool:
         """Return True if listener is listening."""
         return self.is_initialized() and self.__thread is not None and self.__thread.is_alive()
 
@@ -989,19 +989,19 @@ class TcpOslServer(OslServer):
         """
         return self._send_command(queries.basic_project_info())
 
-    def close(self) -> None:
-        """Close the current project.
+    # def close(self) -> None:
+    #     """Close the current project.
 
-        Raises
-        ------
-        OslCommunicationError
-            Raised when an error occurs while communicating with server.
-        OslCommandError
-            Raised when the command or query fails.
-        TimeoutError
-            Raised when the timeout float value expires.
-        """
-        self._send_command(commands.close(password=self.__password))
+    #     Raises
+    #     ------
+    #     OslCommunicationError
+    #         Raised when an error occurs while communicating with server.
+    #     OslCommandError
+    #         Raised when the command or query fails.
+    #     TimeoutError
+    #         Raised when the timeout float value expires.
+    #     """
+    #     self._send_command(commands.close(password=self.__password))
 
     def dispose(self) -> None:
         """Terminate all local threads and unregister listeners.

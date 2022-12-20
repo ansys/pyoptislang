@@ -1,8 +1,10 @@
 from contextlib import nullcontext as does_not_raise
+import logging
 import os
 from pathlib import Path
 import socket
 import time
+import uuid
 
 import pytest
 
@@ -26,6 +28,18 @@ def osl_server_process():
     osl_server_process.start()
     time.sleep(5)
     return osl_server_process
+
+
+@pytest.fixture(scope="function", autouse=False)
+def tcp_listener():
+    return tos.TcpOslListener(
+        port_range=(49152, 65535),
+        timeout=30,
+        name="GeneralListener",
+        host="127.0.0.1",
+        uid=str(uuid.uuid4()),
+        logger=logging.getLogger(__name__),
+    )
 
 
 @pytest.fixture(scope="function", autouse=False)
@@ -62,6 +76,23 @@ def tcp_osl_server() -> tos.TcpOslServer:
 
 
 # TcpClient
+def test_client_properties(osl_server_process: OslServerProcess, tcp_client: tos.TcpClient):
+    "Test ``local_address`` and ``remote_address``."
+    with does_not_raise() as dnr:
+        tcp_client.connect(host=_host, port=_port)
+        ra = tcp_client.remote_address
+        assert isinstance(ra, tuple)
+        assert isinstance(ra[0], str)
+        assert isinstance(ra[1], int)
+        la = tcp_client.local_address
+        assert isinstance(la, tuple)
+        assert isinstance(la[0], str)
+        assert isinstance(la[1], int)
+        tcp_client.disconnect()
+        osl_server_process.terminate()
+    assert dnr is None
+
+
 def test_connect_and_disconnect(osl_server_process: OslServerProcess, tcp_client: tos.TcpClient):
     "Test ``connect``."
     with does_not_raise() as dnr:
@@ -143,11 +174,80 @@ def test_receive_file(
     assert dnr is None
 
 
-# TcpOslServer
-def test_close(tcp_osl_server: tos.TcpOslServer):
+# TcpListener
+def test_is_initialized(osl_server_process: OslServerProcess, tcp_listener: tos.TcpOslListener):
+    """Test `is_initialized`."""
+    assert tcp_listener.is_initialized()
+    tcp_listener.dispose()
+    osl_server_process.terminate()
+
+
+def test_listener_properties(
+    osl_server_process: OslServerProcess, tcp_listener: tos.TcpOslListener
+):
+    """Test `name`, `uid`, `timeout`, `host`, `port`, `refresh_listener..`."""
+    assert isinstance(tcp_listener.uid, str)
+    new_uid = str(uuid.uuid4())
+    tcp_listener.uid = new_uid
+    assert tcp_listener.uid == new_uid
+    name = tcp_listener.name
+    assert isinstance(name, str)
+    assert name == "GeneralListener"
+    timeout = tcp_listener.timeout
+    assert isinstance(timeout, (float, int))
+    assert timeout == 30
+    tcp_listener.timeout = 15
+    new_timeout = tcp_listener.timeout
+    assert isinstance(new_timeout, (float, int))
+    assert new_timeout == 15
+    assert isinstance(tcp_listener.host, str)
+    assert isinstance(tcp_listener.port, int)
+    refresh = tcp_listener.refresh_listener_registration
+    assert isinstance(refresh, bool)
+    assert refresh == False
+    tcp_listener.refresh_listener_registration = True
+    new_refresh = tcp_listener.refresh_listener_registration
+    assert isinstance(new_refresh, bool)
+    assert new_refresh == True
+    tcp_listener.dispose()
+    osl_server_process.terminate()
+
+
+def test_add_clear_callback(osl_server_process: OslServerProcess, tcp_listener: tos.TcpOslListener):
+    """Test add and clear callback."""
     with does_not_raise() as dnr:
-        tcp_osl_server.close()
-        tcp_osl_server.new()
+        tcp_listener.add_callback(print, "print-this")
+        tcp_listener.clear_callbacks()
+    assert dnr is None
+    tcp_listener.dispose()
+    osl_server_process.terminate()
+
+
+def test_start_stop_listening(
+    osl_server_process: OslServerProcess, tcp_listener: tos.TcpOslListener
+):
+    """Test add and clear callback."""
+    tcp_listener.start_listening()
+    assert tcp_listener.is_listening()
+    tcp_listener.stop_listening()
+    assert not tcp_listener.is_listening()
+    tcp_listener.dispose()
+    osl_server_process.terminate()
+
+
+# TcpOslServer
+# def test_close(tcp_osl_server: tos.TcpOslServer):
+#     with does_not_raise() as dnr:
+#         tcp_osl_server.close()
+#         tcp_osl_server.new()
+#         tcp_osl_server.dispose()
+#     assert dnr is None
+
+
+def test_dispose(tcp_osl_server: tos.TcpOslServer):
+    """Test `dispose`."""
+    with does_not_raise() as dnr:
+        tcp_osl_server.shutdown()
         tcp_osl_server.dispose()
     assert dnr is None
 
@@ -224,6 +324,19 @@ def test_get_project_status(tcp_osl_server: tos.TcpOslServer):
     tcp_osl_server.dispose()
     assert isinstance(project_status, str)
     assert bool(project_status)
+
+
+def test_get_set_timeout(tcp_osl_server: tos.TcpOslServer):
+    """Test ``get_get_timeout``."""
+    timeout = tcp_osl_server.get_timeout()
+    assert isinstance(timeout, (int, float))
+    assert timeout == 10
+    tcp_osl_server.set_timeout(15)
+    new_timeout = tcp_osl_server.get_timeout()
+    assert isinstance(new_timeout, (int, float))
+    assert new_timeout == 15
+    tcp_osl_server.shutdown()
+    tcp_osl_server.dispose()
 
 
 def test_get_working_dir(tcp_osl_server: tos.TcpOslServer):

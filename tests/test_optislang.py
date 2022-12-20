@@ -24,12 +24,30 @@ def optislang(scope="function", autouse=True) -> Optislang:
     return osl
 
 
-def test_close(optislang: Optislang):
-    "Test ``close`` (close opened and create new project)."
+# def test_close(optislang: Optislang):
+#     "Test ``close`` (close opened and create new project)."
+#     with does_not_raise() as dnr:
+#         optislang.close()
+#         optislang.new()
+#         optislang.dispose()
+#     assert dnr is None
+
+
+def test_dispose(optislang: Optislang):
+    "Test ``dispose``."
     with does_not_raise() as dnr:
-        optislang.close()
-        optislang.new()
         optislang.dispose()
+        time.sleep(3)
+    assert dnr is None
+
+
+def test_has_active_project(optislang: Optislang):
+    """Test `has_active_project`"""
+    print(optislang)
+    assert optislang.has_active_project
+    with does_not_raise() as dnr:
+        optislang.dispose()
+        time.sleep(3)
     assert dnr is None
 
 
@@ -89,6 +107,19 @@ def test_get_project_status(optislang: Optislang):
     "Test ``get_project_status``."
     status = optislang.get_project_status()
     assert isinstance(status, str)
+    with does_not_raise() as dnr:
+        optislang.dispose()
+        time.sleep(3)
+    assert dnr is None
+
+
+def test_get_set_timeout(optislang: Optislang):
+    """Test `get_timeout` and `set_timeout`.
+    Note: default value is `None` but timeout set to 20 in @pytest.fixture optislang.
+    """
+    timeout = optislang.get_timeout()
+    assert isinstance(timeout, (float, int))
+    assert timeout == 20
     with does_not_raise() as dnr:
         optislang.dispose()
         time.sleep(3)
@@ -280,11 +311,3 @@ connect(python, "ODesign", sens, "IIDesign")
 #         optislang.dispose()
 #         time.sleep(3)
 #     assert dnr is None
-
-
-def test_dispose(optislang: Optislang):
-    "Test ``dispose``."
-    with does_not_raise() as dnr:
-        optislang.dispose()
-        time.sleep(3)
-    assert dnr is None

@@ -180,8 +180,15 @@ class Optislang:
         """Return instance logger."""
         return self.__logger
 
-    def close(self) -> None:
-        """Close the current project.
+    @property
+    def has_active_project(self) -> bool:
+        """
+        Get info whether project is loaded.
+
+        Returns
+        -------
+        bool
+            True if project is loaded, false otherwise.
 
         Raises
         ------
@@ -192,7 +199,21 @@ class Optislang:
         TimeoutError
             Raised when the timeout float value expires.
         """
-        self.__osl_server.close()
+        return True if self.__osl_server.get_project_name() is not None else False
+
+    # def close(self) -> None:
+    #     """Close the current project.
+
+    #     Raises
+    #     ------
+    #     OslCommunicationError
+    #         Raised when an error occurs while communicating with server.
+    #     OslCommandError
+    #         Raised when the command or query fails.
+    #     TimeoutError
+    #         Raised when the timeout float value expires.
+    #     """
+    #     self.__osl_server.close()
 
     def dispose(self) -> None:
         """Terminate all local threads and unregister listeners.

@@ -8,20 +8,20 @@ from typing import Sequence, Tuple, Union
 class OslServer(ABC):
     """Base class for classes which provide access to optiSLang server."""
 
-    @abstractmethod
-    def close(self) -> None:
-        """Close the current project.
+    # @abstractmethod
+    # def close(self) -> None:
+    #     """Close the current project.
 
-        Raises
-        ------
-        OslCommunicationError
-            Raised when an error occurs while communicating with server.
-        OslCommandError
-            Raised when the command or query fails.
-        TimeoutError
-            Raised when the timeout float value expires.
-        """
-        pass
+    #     Raises
+    #     ------
+    #     OslCommunicationError
+    #         Raised when an error occurs while communicating with server.
+    #     OslCommandError
+    #         Raised when the command or query fails.
+    #     TimeoutError
+    #         Raised when the timeout float value expires.
+    #     """
+    #     pass
 
     @abstractmethod
     def dispose(self) -> None:
