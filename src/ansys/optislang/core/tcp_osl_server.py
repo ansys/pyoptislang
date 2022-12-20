@@ -2099,7 +2099,7 @@ class TcpOslServer(OslServer):
                 try:
                     self._unregister_listener(listener)
                 except Exception as ex:
-                    self._logger.warn("Cannot unregister port listener: %s", ex)
+                    self._logger.warning("Cannot unregister port listener: %s", ex)
 
     def __dispose_all_listeners(self) -> None:
         """Dispose all listeners."""

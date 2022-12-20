@@ -22,6 +22,7 @@ In order to save the current project, use either
 :func:`save_copy() <ansys.optislang.core.optislang.Optislang.save_copy>`:
 
 .. code:: python
+
     project_path = Path().cwd() / "test_project.opf"
     osl.save_as(project_path)
 
@@ -36,6 +37,7 @@ In order to create or open existing or create new project, methods
 :func:`open() <ansys.optislang.core.optislang.Optislang.save_as>` may be used. 
 
 .. code:: python
+    
     new_project = Path().cwd() / "new_project.opf"
     osl.new()
     osl.save_as(new_project)
