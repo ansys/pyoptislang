@@ -419,11 +419,14 @@ class Optislang:
         file_path : Union[str, Path]
             Path to the optiSLang project file to open.
         force : bool, optional
-            # TODO: description of this parameter is missing in ANSYS help
+            Whether to force opening of project even if (non-critical) errors occur.
+            Non-critical errors include:
+                - Timestamp of (auto) save point newer than project timestamp
+                - Project (file) incomplete
         restore : bool, optional
-            # TODO: description of this parameter is missing in ANSYS help
+            Whether to restore project from last (auto) save point (if present).
         reset : bool, optional
-            # TODO: description of this parameter is missing in ANSYS help
+            Whether to reset project after load.
 
         Raises
         ------
@@ -540,11 +543,14 @@ class Optislang:
         file_path : Union[str, Path]
             Path where to save the project file.
         force : bool, optional
-            # TODO: description of this parameter is missing in ANSYS help
+            Whether to force opening of project even if (non-critical) errors occur.
+            Non-critical errors include:
+                - Timestamp of (auto) save point newer than project timestamp
+                - Project (file) incomplete
         restore : bool, optional
-            # TODO: description of this parameter is missing in ANSYS help
+            Whether to restore project from last (auto) save point (if present).
         reset : bool, optional
-            # TODO: description of this parameter is missing in ANSYS help
+            Whether to reset project after load.
 
         Raises
         ------
