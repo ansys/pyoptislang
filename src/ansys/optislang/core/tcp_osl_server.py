@@ -2116,12 +2116,12 @@ class TcpOslServer(OslServer):
             listener.dispose()
         self.__listeners = {}
 
-    def __cast_to_path(self, path: Union[str, Path]) -> Path:
+    def __cast_to_path(self, file_path: Union[str, Path]) -> Path:
         """Cast path to Path."""
-        if isinstance(path, Path):
-            return path
+        if isinstance(file_path, Path):
+            return file_path
         else:
-            return Path(path)
+            return Path(file_path)
 
     def __validate_path(self, file_path: Path) -> None:
         """Check type and suffix of project_file path."""
