@@ -8,20 +8,20 @@ from typing import Sequence, Tuple, Union
 class OslServer(ABC):
     """Base class for classes which provide access to optiSLang server."""
 
-    @abstractmethod
-    def close(self) -> None:
-        """Close the current project.
+    # @abstractmethod
+    # def close(self) -> None:
+    #     """Close the current project.
 
-        Raises
-        ------
-        OslCommunicationError
-            Raised when an error occurs while communicating with server.
-        OslCommandError
-            Raised when the command or query fails.
-        TimeoutError
-            Raised when the timeout float value expires.
-        """
-        pass
+    #     Raises
+    #     ------
+    #     OslCommunicationError
+    #         Raised when an error occurs while communicating with server.
+    #     OslCommandError
+    #         Raised when the command or query fails.
+    #     TimeoutError
+    #         Raised when the timeout float value expires.
+    #     """
+    #     pass
 
     @abstractmethod
     def dispose(self) -> None:
@@ -227,9 +227,9 @@ class OslServer(ABC):
     def open(
         self,
         file_path: Union[str, Path],
-        force: bool,
-        restore: bool,
-        reset: bool,
+        force: bool = True,
+        restore: bool = False,
+        reset: bool = False,
     ) -> None:
         """Open a new project.
 
@@ -237,12 +237,15 @@ class OslServer(ABC):
         ----------
         file_path : Union[str, Path]
             Path to the optiSLang project file to open.
-        force : bool
-            # TODO: description of this parameter is missing in ANSYS help
-        restore : bool
-            # TODO: description of this parameter is missing in ANSYS help
-        reset : bool
-            # TODO: description of this parameter is missing in ANSYS help
+        force : bool, optional
+            Whether to force opening of project even if (non-critical) errors occur.
+            Non-critical errors include:
+            - Timestamp of (auto) save point newer than project timestamp
+            - Project (file) incomplete
+        restore : bool, optional
+            Whether to restore project from last (auto) save point (if present).
+        reset : bool, optional
+            Whether to reset project after load.
 
         Raises
         ------
@@ -353,9 +356,9 @@ class OslServer(ABC):
     def save_as(
         self,
         file_path: Union[str, Path],
-        force: bool,
-        restore: bool,
-        reset: bool,
+        force: bool = True,
+        restore: bool = False,
+        reset: bool = False,
     ) -> None:
         """Save and open the current project at a new location.
 
@@ -363,12 +366,15 @@ class OslServer(ABC):
         ----------
         file_path : Union[str, Path]
             Path where to save the project file.
-        force : bool
-            # TODO: description of this parameter is missing in ANSYS help
-        restore : bool
-            # TODO: description of this parameter is missing in ANSYS help
-        reset : bool
-            # TODO: description of this parameter is missing in ANSYS help
+        force : bool, optional
+            Whether to force opening of project even if (non-critical) errors occur.
+            Non-critical errors include:
+            - Timestamp of (auto) save point newer than project timestamp
+            - Project (file) incomplete
+        restore : bool, optional
+            Whether to restore project from last (auto) save point (if present).
+        reset : bool, optional
+            Whether to reset project after load.
 
         Raises
         ------

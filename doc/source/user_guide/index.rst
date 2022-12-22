@@ -48,14 +48,13 @@ and run it using the :func:`start() <ansys.optislang.core.optislang.Optislang.st
     from ansys.optislang.core import Optislang
     from ansys.optislang.core import examples
     
-    project_path = examples.get_files('simple_calculator')[1]
+    project_path = examples.get_files('simple_calculator')[1][0]
     with Optislang(project_path = project_path) as osl:
         osl.start()
 
 .. note:: 
     
     For more information, see :ref:`ref_launch`.
-
 
 Currently, the capabilities provided by the ``ansys-optislang-core`` library are limited. 
 However, this can be overcome using the 

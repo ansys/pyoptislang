@@ -559,7 +559,7 @@ class TcpOslListener:
     Create listener
     >>> from ansys.optislang.core.tcp_osl_server import TcpOslListener
     >>> general_listener = TcpOslListener(
-    >>>     port_range = self.__class__._PRIVATE_PORTS_RANGE,
+    >>>     port_range = (49152, 65535),
     >>>     timeout = 30,
     >>>     name = 'GeneralListener',
     >>>     host = '127.0.0.1',
@@ -766,7 +766,7 @@ class TcpOslListener:
         for callback, args in self.__callbacks:
             callback(self, response, *args)
 
-    def is_listening(self) -> None:
+    def is_listening(self) -> bool:
         """Return True if listener is listening."""
         return self.is_initialized() and self.__thread is not None and self.__thread.is_alive()
 
@@ -883,6 +883,7 @@ class TcpOslServer(OslServer):
         "STOP_REQUESTED": 20,
         "GENTLE_STOP_REQUESTED": 10,
     }
+    _DEFAULT_PROJECT_FILE = "project.opf"
 
     def __init__(
         self,
@@ -988,15 +989,19 @@ class TcpOslServer(OslServer):
         """
         return self._send_command(queries.basic_project_info())
 
-    def close(self) -> None:
-        """Close the current project.
+    # def close(self) -> None:
+    #     """Close the current project.
 
-        Raises
-        ------
-        NotImplementedError
-            Currently, command is not supported in batch mode.
-        """
-        raise NotImplementedError("Currently, command is not supported in batch mode.")
+    #     Raises
+    #     ------
+    #     OslCommunicationError
+    #         Raised when an error occurs while communicating with server.
+    #     OslCommandError
+    #         Raised when the command or query fails.
+    #     TimeoutError
+    #         Raised when the timeout float value expires.
+    #     """
+    #     self._send_command(commands.close(password=self.__password))
 
     def dispose(self) -> None:
         """Terminate all local threads and unregister listeners.
@@ -1107,9 +1112,11 @@ class TcpOslServer(OslServer):
             Raised when the timeout float value expires.
         """
         project_info = self._get_basic_project_info()
-        if len(project_info["projects"]) == 0:
+        if len(project_info.get("projects", [])) == 0:
             return None
-        return project_info["projects"][0]["settings"]["short_description"]
+        return (
+            project_info.get("projects", [{}])[0].get("settings", {}).get("short_description", None)
+        )
 
     def get_project_location(self) -> Path:
         """Get path to the optiSLang project file.
@@ -1130,9 +1137,8 @@ class TcpOslServer(OslServer):
             Raised when the timeout float value expires.
         """
         project_info = self._get_basic_project_info()
-        if len(project_info["projects"]) == 0:
-            return None
-        return Path(project_info["projects"][0]["location"])
+        project_path = project_info.get("projects", [{}])[0].get("location", None)
+        return None if not project_path else Path(project_path)
 
     def get_project_name(self) -> str:
         """Get name of the optiSLang project.
@@ -1153,9 +1159,9 @@ class TcpOslServer(OslServer):
             Raised when the timeout float value expires.
         """
         project_info = self._get_basic_project_info()
-        if len(project_info["projects"]) == 0:
+        if len(project_info.get("projects", [])) == 0:
             return None
-        return project_info["projects"][0]["name"]
+        return project_info.get("projects", [{}])[0].get("name", None)
 
     def get_project_status(self) -> str:
         """Get status of the optiSLang project.
@@ -1176,9 +1182,9 @@ class TcpOslServer(OslServer):
             Raised when the timeout float value expires.
         """
         project_info = self._get_basic_project_info()
-        if len(project_info["projects"]) == 0:
+        if len(project_info.get("projects", [])) == 0:
             return None
-        return project_info["projects"][0]["state"]
+        return project_info.get("projects", [{}])[0].get("state", None)
 
     def get_timeout(self) -> Union[float, None]:
         """Get current timeout value for execution of commands.
@@ -1218,35 +1224,30 @@ class TcpOslServer(OslServer):
             Raised when the timeout float value expires.
         """
         project_info = self._get_basic_project_info()
-        if len(project_info["projects"]) == 0:
+        if len(project_info.get("projects", [])) == 0:
             return None
-        return Path(project_info["projects"][0]["working_dir"])
+        return Path(project_info.get("projects", [{}])[0].get("working_dir", None))
 
     def new(self) -> None:
         """Create a new project.
 
-        Parameters
-        ----------
-        timeout : float, None, optional
-            Timeout in seconds to perform the command. It must be greater than zero or ``None``.
-            The function will raise a timeout exception if the timeout period value has
-            elapsed before the operation has completed. If ``None`` is given, the function
-            will wait until the function is finished (no timeout exception is raised).
-            Defaults to ``None``.
-
         Raises
         ------
-        NotImplementedError
-            Currently, command is not supported in batch mode.
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
         """
-        raise NotImplementedError("Currently, command is not supported in batch mode.")
+        self._send_command(commands.new(password=self.__password))
 
     def open(
         self,
         file_path: Union[str, Path],
-        force: bool,
-        restore: bool,
-        reset: bool,
+        force: bool = True,
+        restore: bool = False,
+        reset: bool = False,
     ) -> None:
         """Open a new project.
 
@@ -1254,25 +1255,40 @@ class TcpOslServer(OslServer):
         ----------
         file_path : Union[str, Path]
             Path to the optiSLang project file to open.
-        force : bool
-            # TODO: description of this parameter is missing in ANSYS help
-        restore : bool
-            # TODO: description of this parameter is missing in ANSYS help
-        reset : bool
-            # TODO: description of this parameter is missing in ANSYS help
-        timeout : float, None, optional
-            Timeout in seconds to perform the command. It must be greater than zero or ``None``.
-            The function will raise a timeout exception if the timeout period value has
-            elapsed before the operation has completed. If ``None`` is given, the function
-            will wait until the function is finished (no timeout exception is raised).
-            Defaults to ``None``.
+        force : bool, optional
+            Whether to force opening of project even if (non-critical) errors occur.
+            Non-critical errors include:
+            - Timestamp of (auto) save point newer than project timestamp
+            - Project (file) incomplete
+        restore : bool, optional
+            Whether to restore project from last (auto) save point (if present).
+        reset : bool, optional
+            Whether to reset project after load.
 
         Raises
         ------
-        NotImplementedError
-            Currently, command is not supported in batch mode.
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
         """
-        raise NotImplementedError("Currently, command is not supported in batch mode.")
+        file_path = self.__cast_to_path(file_path=file_path)
+        self.__validate_path(file_path=file_path)
+
+        if not file_path.is_file():
+            raise FileNotFoundError(f'File "{file_path}" doesn\'t exist.')
+
+        self._send_command(
+            commands.open(
+                path=str(file_path.as_posix()),
+                do_force=force,
+                do_restore=restore,
+                do_reset=reset,
+                password=self.__password,
+            )
+        )
 
     def reset(self):
         """Reset complete project.
@@ -1368,17 +1384,21 @@ class TcpOslServer(OslServer):
 
         Raises
         ------
-        NotImplementedError
-            Currently, command is not supported in batch mode.
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
         """
-        raise NotImplementedError("Currently, command is not supported in batch mode.")
+        self._send_command(commands.save(password=self.__password))
 
     def save_as(
         self,
         file_path: Union[str, Path],
-        force: bool,
-        restore: bool,
-        reset: bool,
+        force: bool = True,
+        restore: bool = False,
+        reset: bool = False,
     ) -> None:
         """Save and open the current project at a new location.
 
@@ -1386,19 +1406,37 @@ class TcpOslServer(OslServer):
         ----------
         file_path : Union[str, Path]
             Path where to save the project file.
-        force : bool
-            # TODO: description of this parameter is missing in ANSYS help
-        restore : bool
-            # TODO: description of this parameter is missing in ANSYS help
-        reset : bool
-            # TODO: description of this parameter is missing in ANSYS help
+        force : bool, optional
+            Whether to force opening of project even if (non-critical) errors occur.
+            Non-critical errors include:
+            - Timestamp of (auto) save point newer than project timestamp
+            - Project (file) incomplete
+        restore : bool, optional
+            Whether to restore project from last (auto) save point (if present).
+        reset : bool, optional
+            Whether to reset project after load.
 
         Raises
         ------
-        NotImplementedError
-            Currently, command is not supported in batch mode.
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
         """
-        raise NotImplementedError("Currently, command is not supported in batch mode.")
+        file_path = self.__cast_to_path(file_path=file_path)
+        self.__validate_path(file_path=file_path)
+
+        self._send_command(
+            commands.save_as(
+                path=str(file_path.as_posix()),
+                do_force=force,
+                do_restore=restore,
+                do_reset=reset,
+                password=self.__password,
+            )
+        )
 
     def save_copy(self, file_path: Union[str, Path]) -> None:
         """Save the current project as a copy to a location.
@@ -1417,7 +1455,9 @@ class TcpOslServer(OslServer):
         TimeoutError
             Raised when the timeout float value expires.
         """
-        self._send_command(commands.save_copy(str(file_path), self.__password))
+        file_path = self.__cast_to_path(file_path=file_path)
+        self.__validate_path(file_path=file_path)
+        self._send_command(commands.save_copy(str(file_path.as_posix()), self.__password))
 
     def set_timeout(self, timeout: Union[float, None] = None) -> None:
         """Set timeout value for execution of commands.
@@ -2063,17 +2103,34 @@ class TcpOslServer(OslServer):
     def __unregister_all_listeners(self) -> None:
         """Unregister all instance listeners."""
         for listener in self.__listeners.values():
+            listener: TcpOslListener
             if listener.uid is not None:
                 try:
                     self._unregister_listener(listener)
                 except Exception as ex:
-                    self._logger.warn("Cannot unregister port listener: %s", ex)
+                    self._logger.warning("Cannot unregister port listener: %s", ex)
 
     def __dispose_all_listeners(self) -> None:
         """Dispose all listeners."""
         for listener in self.__listeners.values():
             listener.dispose()
         self.__listeners = {}
+
+    def __cast_to_path(self, path: Union[str, Path]) -> Path:
+        """Cast path to Path."""
+        if isinstance(path, Path):
+            return path
+        else:
+            return Path(path)
+
+    def __validate_path(self, file_path: Path) -> None:
+        """Check type and suffix of project_file path."""
+        if not isinstance(file_path, Path):
+            raise TypeError(
+                f'Invalid type of project_path: "{type(file_path)}", "Path" is supported.'
+            )
+        if not file_path.suffix == ".opf":
+            raise ValueError('Invalid optiSLang project file, project must end with ".opf".')
 
     def _send_command(self, command: str) -> Dict:
         """Send command or query to the optiSLang server.

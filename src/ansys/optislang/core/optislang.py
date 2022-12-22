@@ -180,6 +180,41 @@ class Optislang:
         """Return instance logger."""
         return self.__logger
 
+    @property
+    def has_active_project(self) -> bool:
+        """
+        Get info whether project is loaded.
+
+        Returns
+        -------
+        bool
+            ``True`` if project is loaded; ``False`` otherwise.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        return self.__osl_server.get_project_name() is not None
+
+    # def close(self) -> None:
+    #     """Close the current project.
+
+    #     Raises
+    #     ------
+    #     OslCommunicationError
+    #         Raised when an error occurs while communicating with server.
+    #     OslCommandError
+    #         Raised when the command or query fails.
+    #     TimeoutError
+    #         Raised when the timeout float value expires.
+    #     """
+    #     self.__osl_server.close()
+
     def dispose(self) -> None:
         """Terminate all local threads and unregister listeners.
 
@@ -356,6 +391,54 @@ class Optislang:
         """
         return self.__osl_server.get_working_dir()
 
+    def new(self) -> None:
+        """Create a new project.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        self.__osl_server.new()
+
+    def open(
+        self,
+        file_path: Union[str, Path],
+        force: bool = True,
+        restore: bool = False,
+        reset: bool = False,
+    ) -> None:
+        """Open a new project.
+
+        Parameters
+        ----------
+        file_path : Union[str, Path]
+            Path to the optiSLang project file to open.
+        force : bool, optional
+            Whether to force opening of project even if (non-critical) errors occur.
+            Non-critical errors include:
+            - Timestamp of (auto) save point newer than project timestamp
+            - Project (file) incomplete
+        restore : bool, optional
+            Whether to restore project from last (auto) save point (if present).
+        reset : bool, optional
+            Whether to reset project after load.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        self.__osl_server.open(file_path=file_path, force=force, restore=restore, reset=reset)
+
     def reset(self) -> None:
         """Reset complete project.
 
@@ -431,6 +514,56 @@ class Optislang:
             Raised when the timeout float value expires.
         """
         return self.__osl_server.run_python_file(file_path, args)
+
+    def save(self) -> None:
+        """Save the changed data and settings of the current project.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        return self.__osl_server.save()
+
+    def save_as(
+        self,
+        file_path: Union[str, Path],
+        force: bool = True,
+        restore: bool = False,
+        reset: bool = False,
+    ) -> None:
+        """Save and open the current project at a new location.
+
+        Parameters
+        ----------
+        file_path : Union[str, Path]
+            Path where to save the project file.
+        force : bool, optional
+            Whether to force opening of project even if (non-critical) errors occur.
+            Non-critical errors include:
+            - Timestamp of (auto) save point newer than project timestamp
+            - Project (file) incomplete
+        restore : bool, optional
+            Whether to restore project from last (auto) save point (if present).
+        reset : bool, optional
+            Whether to reset project after load.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        return self.__osl_server.save_as(
+            file_path=file_path, force=force, restore=restore, reset=reset
+        )
 
     def save_copy(self, file_path: Union[str, Path]) -> None:
         """Save the current project as a copy to a location.

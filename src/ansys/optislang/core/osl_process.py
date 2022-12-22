@@ -806,7 +806,7 @@ class OslServerProcess:
                 name="PyOptiSLang." + name + "HandlerThread",
                 args=(cmdline, name, stream, decode_streams, handler),
             )
-            thread.setDaemon(True)
+            thread.daemon = True
             thread.start()
             threads.append(thread)
 
