@@ -421,8 +421,8 @@ class Optislang:
         force : bool, optional
             Whether to force opening of project even if (non-critical) errors occur.
             Non-critical errors include:
-                - Timestamp of (auto) save point newer than project timestamp
-                - Project (file) incomplete
+            - Timestamp of (auto) save point newer than project timestamp
+            - Project (file) incomplete
         restore : bool, optional
             Whether to restore project from last (auto) save point (if present).
         reset : bool, optional
@@ -545,8 +545,8 @@ class Optislang:
         force : bool, optional
             Whether to force opening of project even if (non-critical) errors occur.
             Non-critical errors include:
-                - Timestamp of (auto) save point newer than project timestamp
-                - Project (file) incomplete
+            - Timestamp of (auto) save point newer than project timestamp
+            - Project (file) incomplete
         restore : bool, optional
             Whether to restore project from last (auto) save point (if present).
         reset : bool, optional
