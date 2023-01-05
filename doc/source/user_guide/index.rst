@@ -12,6 +12,8 @@ PyOptiSLang library.
    
    launch
    functions
+   project_content
+   design_evaluation
    run_python
    troubleshooting
 
@@ -31,10 +33,11 @@ by the ``project_path`` parameter of the
 
     import os
     from ansys.optislang.core import Optislang
+    from pathlib import Path
 
-    path = os.getcwd()
+    path = Path.cwd()
     file_name = 'test_optislang.opf'
-    with Optislang(project_path = os.path.join(path, file_name)) as osl:
+    with Optislang(project_path = path / file_name) as osl:
         print(osl)
 
 

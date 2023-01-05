@@ -1,8 +1,9 @@
 """Contains abstract optiSLang server class."""
+from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import Sequence, Tuple, Union
+from typing import Dict, List, Sequence, Tuple, Union
 
 
 class OslServer(ABC):
@@ -24,7 +25,7 @@ class OslServer(ABC):
     #     pass
 
     @abstractmethod
-    def dispose(self) -> None:
+    def dispose(self) -> None:  # pragma: no cover
         """Terminate all local threads and unregister listeners.
 
         Raises
@@ -39,7 +40,122 @@ class OslServer(ABC):
         pass
 
     @abstractmethod
-    def get_osl_version_string(self) -> str:
+    def evaluate_design(self, evaluate_dict: Dict[str, float]) -> List[dict]:  # pragma: no cover
+        """Evaluate requested design.
+
+        Parameters
+        ----------
+        evaluate_dict: Dict[str, float]
+            {'parName': value, ...}
+
+        Returns
+        -------
+        List[dict]
+            Output from optislang server.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        pass
+
+    @abstractmethod
+    def get_actor_info(self, uid: str) -> Dict:  # pragma: no cover
+        """Get info about actor defined by uid.
+
+        Parameters
+        ----------
+        uid : str
+            Actor uid.
+
+        Returns
+        -------
+        Dict
+            Info about actor defined by uid.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        pass
+
+    @abstractmethod
+    def get_actor_properties(self, uid: str) -> Dict:  # pragma: no cover
+        """Get properties of actor defined by uid.
+
+        Parameters
+        ----------
+        uid : str
+            Actor uid.
+
+        Returns
+        -------
+        Dict
+            Properties of actor defined by uid.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        pass
+
+    @abstractmethod
+    def get_full_project_tree_with_properties(self) -> Dict:  # pragma: no cover
+        """Get full project tree with properties..
+
+        Returns
+        -------
+        Dict
+            Properties of actor defined by uid.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        pass
+
+    @abstractmethod
+    def get_project_uid(self) -> str:  # pragma: no cover
+        """Get project uid.
+
+        Returns
+        -------
+        str
+            Project uid. If no project is loaded in the optiSLang, returns `None`.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        pass
+
+    @abstractmethod
+    def get_osl_version_string(self) -> str:  # pragma: no cover
         """Get version of used optiSLang.
 
         Returns
@@ -59,7 +175,7 @@ class OslServer(ABC):
         pass
 
     @abstractmethod
-    def get_osl_version(self) -> Tuple[Union[int, None], ...]:
+    def get_osl_version(self) -> Tuple[Union[int, None], ...]:  # pragma: no cover
         """Get version of used optiSLang.
 
         Returns
@@ -80,7 +196,7 @@ class OslServer(ABC):
         pass
 
     @abstractmethod
-    def get_project_description(self) -> str:
+    def get_project_description(self) -> str:  # pragma: no cover
         """Get description of optiSLang project.
 
         Returns
@@ -101,7 +217,7 @@ class OslServer(ABC):
         pass
 
     @abstractmethod
-    def get_project_location(self) -> Path:
+    def get_project_location(self) -> Path:  # pragma: no cover
         """Get path to the optiSLang project file.
 
         Returns
@@ -122,7 +238,7 @@ class OslServer(ABC):
         pass
 
     @abstractmethod
-    def get_project_name(self) -> str:
+    def get_project_name(self) -> str:  # pragma: no cover
         """Get name of the optiSLang project.
 
         Returns
@@ -143,7 +259,7 @@ class OslServer(ABC):
         pass
 
     @abstractmethod
-    def get_project_status(self) -> str:
+    def get_project_status(self) -> str:  # pragma: no cover
         """Get status of the optiSLang project.
 
         Returns
@@ -164,7 +280,7 @@ class OslServer(ABC):
         pass
 
     @abstractmethod
-    def get_timeout(self) -> Union[float, None]:
+    def get_timeout(self) -> Union[float, None]:  # pragma: no cover
         """Get current timeout value for execution of commands.
 
         Returns
@@ -188,7 +304,7 @@ class OslServer(ABC):
         pass
 
     @abstractmethod
-    def get_working_dir(self) -> Path:
+    def get_working_dir(self) -> Path:  # pragma: no cover
         """Get path to the optiSLang project working directory.
 
         Returns
@@ -209,7 +325,7 @@ class OslServer(ABC):
         pass
 
     @abstractmethod
-    def new(self) -> None:
+    def new(self) -> None:  # pragma: no cover
         """Create a new project.
 
         Raises
@@ -230,7 +346,7 @@ class OslServer(ABC):
         force: bool = True,
         restore: bool = False,
         reset: bool = False,
-    ) -> None:
+    ) -> None:  # pragma: no cover
         """Open a new project.
 
         Parameters
@@ -259,7 +375,7 @@ class OslServer(ABC):
         pass
 
     @abstractmethod
-    def reset(self):
+    def reset(self):  # pragma: no cover
         """Reset complete project.
 
         Raises
@@ -278,7 +394,7 @@ class OslServer(ABC):
         self,
         script: str,
         args: Union[Sequence[object], None] = None,
-    ) -> Tuple[str, str]:
+    ) -> Tuple[str, str]:  # pragma: no cover
         """Load a Python script in a project context and execute it.
 
         Parameters
@@ -309,7 +425,7 @@ class OslServer(ABC):
         self,
         file_path: Union[str, Path],
         args: Union[Sequence[object], None] = None,
-    ) -> Tuple[str, str]:
+    ) -> Tuple[str, str]:  # pragma: no cover
         """Read python script from the file, load it in a project context and execute it.
 
         Parameters
@@ -338,7 +454,7 @@ class OslServer(ABC):
         pass
 
     @abstractmethod
-    def save(self) -> None:
+    def save(self) -> None:  # pragma: no cover
         """Save the changed data and settings of the current project.
 
         Raises
@@ -359,7 +475,7 @@ class OslServer(ABC):
         force: bool = True,
         restore: bool = False,
         reset: bool = False,
-    ) -> None:
+    ) -> None:  # pragma: no cover
         """Save and open the current project at a new location.
 
         Parameters
@@ -388,7 +504,7 @@ class OslServer(ABC):
         pass
 
     @abstractmethod
-    def save_copy(self, file_path: Union[str, Path]) -> None:
+    def save_copy(self, file_path: Union[str, Path]) -> None:  # pragma: no cover
         """Save the current project as a copy to a location.
 
         Parameters
@@ -408,7 +524,7 @@ class OslServer(ABC):
         pass
 
     @abstractmethod
-    def set_timeout(self, timeout: Union[float, None] = None) -> None:
+    def set_timeout(self, timeout: Union[float, None] = None) -> None:  # pragma: no cover
         """Set timeout value for execution of commands.
 
         Parameters
@@ -434,7 +550,7 @@ class OslServer(ABC):
         pass
 
     @abstractmethod
-    def shutdown(self, force: bool = False) -> None:
+    def shutdown(self, force: bool = False) -> None:  # pragma: no cover
         """Shutdown the optiSLang server.
 
         Stop listening for incoming connections, discard pending requests, and shut down
@@ -463,7 +579,9 @@ class OslServer(ABC):
         pass
 
     @abstractmethod
-    def start(self, wait_for_started: bool = True, wait_for_finished: bool = True) -> None:
+    def start(
+        self, wait_for_started: bool = True, wait_for_finished: bool = True
+    ) -> None:  # pragma: no cover
         """Start project execution.
 
         Parameters
@@ -487,7 +605,7 @@ class OslServer(ABC):
         pass
 
     @abstractmethod
-    def stop(self, wait_for_finished: bool = True) -> None:
+    def stop(self, wait_for_finished: bool = True) -> None:  # pragma: no cover
         """Stop project execution.
 
         Parameters
@@ -507,10 +625,26 @@ class OslServer(ABC):
         """
         pass
 
-    # stop_gently method doesn't work properly in optiSLang 2023R1, therefore it was commented out
-
+    # to be fixed in 2023R2:
+    # close method doesn't work properly in optiSLang 2023R1, therefore it was commented out
     # @abstractmethod
-    # def stop_gently(self, wait_for_finished: bool = True) -> None:
+    # def close(self) -> None:  # pragma: no cover
+    #     """Close the current project.
+
+    #     Raises
+    #     ------
+    #     OslCommunicationError
+    #         Raised when an error occurs while communicating with server.
+    #     OslCommandError
+    #         Raised when the command or query fails.
+    #     TimeoutError
+    #         Raised when the timeout float value expires.
+    #     """
+    #     pass
+
+    # stop_gently method doesn't work properly in optiSLang 2023R1, therefore it was commented out
+    # @abstractmethod
+    # def stop_gently(self, wait_for_finished: bool = True) -> None:  # pragma: no cover
     #     """Stop project execution after the current design is finished.
 
     #     Parameters
