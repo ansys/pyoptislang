@@ -3,12 +3,12 @@ from pathlib import Path
 import pytest
 
 from ansys.optislang.core import Optislang, examples
-from ansys.optislang.core.project_parametric import Design, DesignParameter
+from ansys.optislang.core.project_parametric import Design, DesignStatus, DesignVariable
 
 pytestmark = pytest.mark.local_osl
 parametric_project = examples.get_files("calculator_with_params")[1][0]
 parameters_dict = {"a": 5, "b": 10}
-parameters = [DesignParameter("a", 5), DesignParameter("b", 10)]
+parameters = [DesignVariable("a", 5), DesignVariable("b", 10)]
 
 
 @pytest.fixture()
@@ -33,7 +33,8 @@ def test_create_design(optislang: Optislang, tmp_path: Path, parameters):
     design = root_system.create_design(parameters=parameters)
     optislang.dispose()
     assert isinstance(design, Design)
-    assert isinstance(design.parameters["a"], DesignParameter)
+    assert isinstance(design.parameters, tuple)
+    assert isinstance(design.parameters[0], DesignVariable)
 
 
 def test_get_refence_design(optislang: Optislang):
@@ -43,7 +44,8 @@ def test_get_refence_design(optislang: Optislang):
     design = root_system.get_reference_design()
     optislang.dispose()
     assert isinstance(design, Design)
-    assert isinstance(design.parameters["a"], DesignParameter)
+    assert isinstance(design.parameters, tuple)
+    assert isinstance(design.parameters[0], DesignVariable)
 
 
 def test_evaluate_design(optislang: Optislang, tmp_path: Path):
@@ -53,18 +55,31 @@ def test_evaluate_design(optislang: Optislang, tmp_path: Path):
     project = optislang.project
     root_system = project.root_system
     design = Design(parameters=parameters)
-    assert design.status == "IDLE"
-    assert design.id == "NOT_ASSIGNED"
+    assert design.status == DesignStatus.IDLE
+    assert design.id == None
+    assert design.feasibility == None
+    assert isinstance(design.variables, tuple)
     result = root_system.evaluate_design(design)
     optislang.dispose()
-    assert isinstance(result, tuple)
-    assert isinstance(result[0], dict)
-    assert isinstance(result[1], dict)
-    assert design.status == "SUCCEEDED"
-    assert isinstance(design.responses, dict)
-    assert isinstance(design.responses["c"], DesignParameter)
-    assert design.responses["c"].reference_value == 15
-    assert isinstance(design.criteria, dict)
+    assert isinstance(result, Design)
+    assert result.status == DesignStatus.SUCCEEDED
+    assert design.status == DesignStatus.SUCCEEDED
+    assert isinstance(result.responses, tuple)
+    assert isinstance(design.responses, tuple)
+    assert isinstance(result.responses[0], DesignVariable)
+    assert isinstance(design.responses[0], DesignVariable)
+    assert result.responses[0].value == 15
+    assert design.responses[0].value == 15
+    assert isinstance(result.constraints, tuple)
+    assert isinstance(design.constraints, tuple)
+    assert isinstance(result.limit_states, tuple)
+    assert isinstance(design.limit_states, tuple)
+    assert isinstance(result.objectives, tuple)
+    assert isinstance(design.objectives, tuple)
+    assert isinstance(result.variables, tuple)
+    assert isinstance(design.variables, tuple)
+    assert result.feasibility
+    assert design.feasibility
 
 
 def test_evaluate_multiple_designs(optislang: Optislang, tmp_path: Path):
@@ -81,25 +96,28 @@ def test_evaluate_multiple_designs(optislang: Optislang, tmp_path: Path):
     ]
     expected_results = (15, 7, 5, 1)
     for design in designs:
-        assert design.status == "IDLE"
-        assert design.id == "NOT_ASSIGNED"
+        assert design.status == DesignStatus.IDLE
+        assert design.id == None
+        assert design.feasibility == None
     results = root_system.evaluate_multiple_designs(designs)
     assert isinstance(results, tuple)
     optislang.dispose()
     for index, result in enumerate(results):
-        assert isinstance(result, tuple)
-        assert isinstance(result[0], dict)
-        assert isinstance(result[1], dict)
-        assert designs[index].status == "SUCCEEDED"
-        assert isinstance(designs[index].responses, dict)
-        assert isinstance(designs[index].responses["c"], DesignParameter)
-        assert designs[index].responses["c"].reference_value == expected_results[index]
-        assert isinstance(designs[index].criteria, dict)
-        assert len(set(["a", "b"]) - set(designs[index].parameters)) == 0
+        assert isinstance(result, Design)
+        assert result.status == DesignStatus.SUCCEEDED
+        assert result.feasibility
+        assert isinstance(result.responses, tuple)
+        assert isinstance(result.responses[0], DesignVariable)
+        assert result.responses[0].value == expected_results[index]
+        assert isinstance(result.constraints, tuple)
+        assert isinstance(result.limit_states, tuple)
+        assert isinstance(result.objectives, tuple)
+        assert isinstance(result.variables, tuple)
+        assert len(set(["a", "b"]) - set(result.parameter_names)) == 0
 
 
-def test_validate_design(optislang: Optislang):
-    """Test ``validate_design``."""
+def test_check_design_structure(optislang: Optislang):
+    """Test ``check_design_structure``."""
     project = optislang.project
     root_system = project.root_system
     designs = [
@@ -109,29 +127,17 @@ def test_validate_design(optislang: Optislang):
         Design(parameters={"par1": 7, "par2": 8}),
     ]
     expected_outputs = (
-        ("Valid design.", True, []),
-        ("Valid design.", True, []),
-        (
-            "Parameters ['b'] not defined in design, values set to reference."
-            "Parameters ['par1'] are not defined in project and weren't used.",
-            False,
-            ["b"],
-        ),
-        (
-            "Parameters ['a', 'b'] not defined in design, values set to reference."
-            "Parameters ['par1', 'par2'] are not defined in project and weren't used.",
-            False,
-            ["a", "b"],
-        ),
+        (tuple([]), tuple([])),
+        (tuple([]), tuple([])),
+        (tuple(["b"]), tuple(["par1"])),
+        (tuple(["a", "b"]), tuple(["par1", "par2"])),
     )
     for index, design in enumerate(designs):
-        output = root_system.validate_design(design)
+        output = root_system.check_design_structure(design)
         assert isinstance(output, tuple)
-        assert len(output) == 3
-        assert isinstance(output[0], str)
+        assert len(output) == 2
+        assert isinstance(output[0], tuple)
+        assert isinstance(output[1], tuple)
         assert output[0] == expected_outputs[index][0]
-        assert isinstance(output[1], bool)
         assert output[1] == expected_outputs[index][1]
-        assert isinstance(output[2], list)
-        assert output[2] == expected_outputs[index][2]
     optislang.dispose()

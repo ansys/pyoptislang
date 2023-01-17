@@ -10,7 +10,7 @@ These classes are specific to the :mod:`ansys.optislang.core.project_parametric 
 
    ParameterManager
    Design
-   DesignParameter
+   DesignVariable
    DependentParameter
    MixedParameter
    OptimizationParameter

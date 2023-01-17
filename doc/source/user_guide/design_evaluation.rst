@@ -5,7 +5,7 @@ Design evaluation
 ==================
 Instance of the :class:`RootSystem() <ansys.optislang.core.nodes.RootSystem>` allows user to
 create new designs and evaluate them. This feature is currently supported only 
-on the project level and parameters have to be defined beforehand. Instance of the 
+on the project level and parameters have to be already defined in the project. Instance of the 
 :class:`RootSystem() <ansys.optislang.core.nodes.RootSystem>` is accessible from instance of the 
 :class:`Optislang() <ansys.optislang.core.optislang.Optislang>`.
 
@@ -31,9 +31,19 @@ Parameters values may be modified by methods of the instance of
 
 .. code:: python
     
-    reference_design = root_system.get_reference_design()
-    # modify value of first parameter
-    reference_design.set_parameter(parameter = 'a', value = 12)
+    from ansys.optislang.core.project_parametric import DesignVariable
+    reference_design1 = root_system.get_reference_design()
+    # modify value of parameter using either ``parameter`` and ``value``
+    reference_design1.set_parameter_value(parameter = 'a', value = 12)
+    # instance of DesignVariable or Parameter may be used as well
+    a = DesignVariable(name='a', value=12)
+    reference_design1.set_parameter_value(parameter=a)
+    # multiple values may be set simultaneously, using either dictionary
+    reference_design2 = root_system.get_reference_design()
+    reference_design2.set_parameter_values(parameters={'a': 12, 'b':10})
+    # instances of DesignVariable or Parameter may be used as well
+    b = DesignVariable(name='b', value=10)
+    reference_design2.set_parameter_values(parameters=[a, b])
 
 
 Create new design
@@ -59,15 +69,16 @@ Parameters don't have to be provided when initializing new design.
     design.remove_parameters(to_be_removed = ['d', 'f'])
 
 
-Validate design
----------------
+Check design structure
+----------------------
 In order to check whether design contains all parameters defined in project, method
-:func:`validate_design() <ansys.optislang.core.optislang.Optislang.validate_design>` may be used.
-This step is not necessary though, because this is always done internally when evaluating design.
+:func:`check_design_structure() <ansys.optislang.core.nodes.RootSystem.check_design_structure>` 
+may be used. This step is not necessary though, because this is always done internally when 
+evaluating design.
 
 .. code:: python
 
-    root_system.validate_design(direct_design)
+    missing_parameters, redundant_parameters = root_system.check_design_structure(direct_design)
 
 
 Evaluate design
@@ -83,16 +94,16 @@ may be accessed later.
 .. code:: python
 
     # single design
-    parameters, responses = root_system.evaluate_design(design = design_by_osl)
-    print(f'Input parameters: {parameters}')
-    print(f'Responses: {responses}')
+    result_design = root_system.evaluate_design(design = reference_design1)
     
     # multiple designs
-    outputs = osl.evaluate_multiple_designs(designs = [direct_design, design])
-    for index, output in enumerate(outputs):
-        print(f'---{index}---')
-        print(f'Input parameters: {output[0]}')
-        print(f'Responses: {output[1]}')
+    result_designs = osl.evaluate_multiple_designs(designs = [reference_design1, reference_design2])
+
+.. note:: 
+    
+    Please note that optiSLang retains only last evaluated design at RootSystem level. Therefore
+    results of previous designs have to be stored locally if they are required for further usage,
+    e.g. as an instance of :class:`Design() <ansys.optislang.core.project_parametric.Design>` class.
     
 Finally, when everything is done and 
 :class:`Optislang() <ansys.optislang.core.optislang.Optislang>` instance is not needed any more,

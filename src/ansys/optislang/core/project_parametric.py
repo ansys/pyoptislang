@@ -1,8 +1,9 @@
 """Contains classes Parameter, ParameterManager and Design."""
 from __future__ import annotations
 
+import copy
 from enum import Enum
-from typing import TYPE_CHECKING, Dict, Iterable, Tuple, Union
+from typing import TYPE_CHECKING, Any, Dict, Iterable, List, Tuple, Union
 import uuid
 
 if TYPE_CHECKING:
@@ -23,15 +24,10 @@ class ParameterType(Enum):
         if not isinstance(label, str):
             raise TypeError(f"String was expected, but `{type(label)}` was given.")
         label = label.upper()
-        if label == "DETERMINISTIC":
-            return ParameterType.DETERMINISTIC
-        elif label == "STOCHASTIC":
-            return ParameterType.STOCHASTIC
-        elif label == "MIXED":
-            return ParameterType.MIXED
-        elif label == "DEPENDENT":
-            return ParameterType.DEPENDENT
-        else:
+        try:
+            parameter_type = eval("ParameterType." + label)
+            return parameter_type
+        except:
             raise ValueError(f"Status `{label}` not available in ParameterType types.")
 
 
@@ -55,23 +51,10 @@ class ParameterResolution(Enum):
         if not isinstance(label, str):
             raise TypeError(f"String was expected, but `{type(label)}` was given.")
         label = label.upper()
-        if label == "CONTINUOUS":
-            return ParameterResolution.CONTINUOUS
-        elif label == "ORDINALDISCRETE_VALUE":
-            return ParameterResolution.ORDINALDISCRETE_VALUE
-        elif label == "ORDINALDISCRETE_INDEX":
-            return ParameterResolution.ORDINALDISCRETE_INDEX
-        elif label == "NOMINALDISCRETE":
-            return ParameterResolution.NOMINALDISCRETE
-        elif label == "DETERMINISTIC":
-            return ParameterResolution.DETERMINISTIC
-        elif label == "MARGINALDISTRIBUTION":
-            return ParameterResolution.MARGINALDISTRIBUTION
-        elif label == "EMPIRICAL_DISCRETE":
-            return ParameterResolution.EMPIRICAL_DISCRETE
-        elif label == "EMPIRICAL_CONTINUOUS":
-            return ParameterResolution.EMPIRICAL_CONTINUOUS
-        else:
+        try:
+            parameter_resolution = eval("ParameterResolution." + label)
+            return parameter_resolution
+        except:
             raise ValueError(f"Status `{label}` not available in ParameterResolution kinds.")
 
 
@@ -91,19 +74,10 @@ class ParameterValueType(Enum):
         if not isinstance(label, str):
             raise TypeError(f"String was expected, but `{type(label)}` was given.")
         label = label.upper()
-        if label == "UNINITIALIZED":
-            return ParameterValueType.UNINITIALIZED
-        elif label == "BOOL":
-            return ParameterValueType.BOOL
-        elif label == "REAL":
-            return ParameterValueType.REAL
-        elif label == "INTEGER":
-            return ParameterValueType.INTEGER
-        elif label == "STRING":
-            return ParameterValueType.STRING
-        elif label == "VARIANT":
-            return ParameterValueType.VARIANT
-        else:
+        try:
+            parameter_value_type = eval("ParameterValueType." + label)
+            return parameter_value_type
+        except:
             raise ValueError(f"Status `{label}` not available in ParameterValueType types.")
 
 
@@ -163,153 +137,32 @@ class DistributionType(Enum):
         if not isinstance(label, str):
             raise TypeError(f"String was expected, but `{type(label)}` was given.")
         label = label.upper()
-        if label == "EXTERNALCOHERENCE":
-            return DistributionType.EXTERNALCOHERENCE
-        elif label == "UNTYPED":
-            return DistributionType.UNTYPED
-        elif label == "EXTERNAL":
-            return DistributionType.EXTERNAL
-        elif label == "UNIFORM":
-            return DistributionType.UNIFORM
-        elif label == "NORMAL":
-            return DistributionType.NORMAL
-        elif label == "TRUNCATEDNORMAL":
-            return DistributionType.TRUNCATEDNORMAL
-        elif label == "LOGNORMAL":
-            return DistributionType.LOGNORMAL
-        elif label == "EXPONENTIAL":
-            return DistributionType.EXPONENTIAL
-        elif label == "RAYLEIGH":
-            return DistributionType.RAYLEIGH
-        elif label == "SMALL_I":
-            return DistributionType.SMALL_I
-        elif label == "LARGE_I":
-            return DistributionType.LARGE_I
-        elif label == "SMALL_II":
-            return DistributionType.SMALL_II
-        elif label == "LARGE_II":
-            return DistributionType.LARGE_II
-        elif label == "SMALL_III":
-            return DistributionType.SMALL_III
-        elif label == "LARGE_III":
-            return DistributionType.LARGE_III
-        elif label == "TRIANGULAR":
-            return DistributionType.TRIANGULAR
-        elif label == "BETA":
-            return DistributionType.BETA
-        elif label == "CHI_SQUARE":
-            return DistributionType.CHI_SQUARE
-        elif label == "ERLANG":
-            return DistributionType.ERLANG
-        elif label == "FISHER_F":
-            return DistributionType.FISHER_F
-        elif label == "GAMMA":
-            return DistributionType.GAMMA
-        elif label == "PARETO":
-            return DistributionType.PARETO
-        elif label == "WEIBULL":
-            return DistributionType.WEIBULL
-        elif label == "EXTREME_VALUE":
-            return DistributionType.EXTREME_VALUE
-        elif label == "STUDENTS_F":
-            return DistributionType.STUDENTS_F
-        elif label == "INVERSE_NORMAL":
-            return DistributionType.INVERSE_NORMAL
-        elif label == "LOG_GAMMA":
-            return DistributionType.LOG_GAMMA
-        elif label == "LOG_NORMAL":
-            return DistributionType.LOG_NORMAL
-        elif label == "LORENTZ":
-            return DistributionType.LORENTZ
-        elif label == "FISHER_TIPPETT":
-            return DistributionType.FISHER_TIPPETT
-        elif label == "GUMBEL":
-            return DistributionType.GUMBEL
-        elif label == "FISHER_Z":
-            return DistributionType.FISHER_Z
-        elif label == "LAPLACE":
-            return DistributionType.LAPLACE
-        elif label == "LEVY":
-            return DistributionType.LEVY
-        elif label == "LOGISTIC":
-            return DistributionType.LOGISTIC
-        elif label == "ROSSI":
-            return DistributionType.ROSSI
-        elif label == "FRECHET":
-            return DistributionType.FRECHET
-        elif label == "MAX_TYPE":
-            return DistributionType.MAX_TYPE
-        elif label == "POLYMAP":
-            return DistributionType.POLYMAP
-        elif label == "KERNEL":
-            return DistributionType.KERNEL
-        elif label == "BERNOULLI":
-            return DistributionType.BERNOULLI
-        elif label == "LOG_UNIFORM":
-            return DistributionType.LOG_UNIFORM
-        elif label == "DISCRETE":
-            return DistributionType.DISCRETE
-        elif label == "MULTIUNIFORM":
-            return DistributionType.MULTIUNIFORM
-        elif label == "LAMBDA":
-            return DistributionType.LAMBDA
-        elif label == "POISSON":
-            return DistributionType.POISSON
-        else:
+        try:
+            distribution_type = eval("DistributionType." + label)
+            return distribution_type
+        except:
             raise ValueError(f"Status `{label}` not available in DistributionType types.")
 
 
-class DesignParameter:
-    """This class stores design parameters data."""
-
-    def __init__(self, name: str, reference_value: float):
-        """Create a new instance of DesignParameter.
-
-        Parameters
-        ----------
-        name: str
-            Name of the parameter.
-        reference_value: float
-            Parameters reference value.
-        """
-        self.name = name
-        self.reference_value = reference_value
-
-    def __eq__(self, other: DesignParameter):
-        r"""Compare properties of two instances of "DesignParameter" class.
-
-        Parameters
-        ----------
-        other: DesignParameter
-            Parameter for comparison.
-
-        Returns
-        -------
-        bool
-            ``True`` if all properties match; ``False`` otherwise.
-        """
-        if type(self) == type(other):
-            checks = []
-            checks.append(self.name == other.name)
-            checks.append(self.reference_value == other.reference_value)
-            return False not in checks
-        else:
-            return False
-
-
-class Parameter(DesignParameter):
+class Parameter:
     """This class stores parameters data."""
 
     def __init__(
-        self, name: str, reference_value: float, id: str, const: bool, type: ParameterType
-    ):
+        self,
+        name: str,
+        reference_value: Union[bool, float, str, None, Tuple[Any, ParameterValueType]],
+        id: str,
+        const: bool,
+        type: ParameterType,
+        reference_value_type: ParameterValueType = None,
+    ) -> None:
         """Create a new instance of Parameter.
 
         Parameters
         ----------
         name: str
             Name of the parameter.
-        reference_value: float
+        reference_value: Union[bool, float, str, None, Tuple[Any, ParameterValueType]]
             Parameters reference value.
         id: str
             Parameters unique id.
@@ -317,14 +170,21 @@ class Parameter(DesignParameter):
             Determines whether is parameter constant.
         type: ParameterType
             Parameters type.
+        reference_value_type: ParameterValueType, optional
+            Type of the reference value.
         """
-        super().__init__(name=name, reference_value=reference_value)
+        self.name = name
+        if isinstance(reference_value_type, ParameterValueType):
+            self.reference_value = tuple([reference_value, reference_value_type])
+        else:
+            self.__reference_value_type = None
+            self.reference_value = reference_value
         self.id = id
         self.const = const
         self.type = type
 
     def __eq__(self, other: Parameter):
-        r"""Compare properties of two instances of "Parameter" class.
+        r"""Compare properties of two instances of the "Parameter" class.
 
         Parameters
         ----------
@@ -340,6 +200,7 @@ class Parameter(DesignParameter):
             checks = {}
             checks["name"] = self.name == other.name
             checks["reference_value"] = self.reference_value == other.reference_value
+            checks["reference_value_type"] = self.reference_value_type == other.reference_value_type
             checks["id"] = self.id == other.id
             checks["const"] = self.const == other.const
             checks["type"] = self.type == other.type
@@ -347,9 +208,76 @@ class Parameter(DesignParameter):
         else:
             return False
 
+    def __deepcopy__(self, memo) -> Parameter:
+        """Return deep copy of the parameter."""
+        return Parameter(
+            self.name,
+            self.reference_value,
+            self.reference_value_type,
+            self.id,
+            self.const,
+            self.type,
+        )
+
+    @property
+    def reference_value(
+        self,
+    ) -> Union[bool, float, str, None]:
+        """Return parameters reference value."""
+        return self.__reference_value
+
+    @reference_value.setter
+    def reference_value(
+        self, reference_value: Union[bool, float, str, None, Tuple[Any, ParameterValueType]]
+    ) -> None:
+        """Set reference value."""
+        if isinstance(reference_value, bool):
+            self.__reference_value_type = ParameterValueType.BOOL
+        elif isinstance(reference_value, float):
+            self.__reference_value_type = ParameterValueType.REAL
+        elif isinstance(reference_value, int):
+            if not self.__reference_value_type == ParameterValueType.INTEGER:
+                self.__reference_value_type = ParameterValueType.REAL
+        elif isinstance(reference_value, str):
+            self.__reference_value_type = ParameterValueType.STRING
+        elif reference_value == None:
+            self.__reference_value_type = ParameterValueType.UNINITIALIZED
+        elif isinstance(reference_value, tuple):
+            if not isinstance(reference_value[1], ParameterValueType):
+                raise ValueError(f"Tuple must be in format Tuple[Any, ParameterValueType].")
+            self.__reference_value = reference_value[0]
+            self.__reference_value_type = reference_value[1]
+            return
+        else:
+            raise TypeError(f"Unsupported type of reference_value: ``{type(reference_value)}``.")
+        self.__reference_value = reference_value
+
+    @property
+    def reference_value_type(self) -> ParameterValueType:
+        """Return type of the reference value."""
+        return self.__reference_value_type
+
+    @property
+    def type(self) -> ParameterType:
+        """Return type of the parameter."""
+        return self.__type
+
+    @type.setter
+    def type(self, type_: Union[ParameterType, str]) -> None:
+        """Set type of the parameter."""
+        if isinstance(type_, str):
+            type_ = ParameterType.from_str(type)
+        if isinstance(type_, ParameterType):
+            self.__type = type_
+        else:
+            raise TypeError(
+                "Type Union[ParameterType, str] was expected, but type: "
+                f"``{type(type_)}`` was given."
+            )
+
     @staticmethod
     def from_dict(par_dict: dict) -> Parameter:
-        """Create instance of Parameter class from optiSLang output.
+        """Create an instance of Parameter class from optiSLang output.
 
         Parameters
         ----------
@@ -386,42 +314,48 @@ class OptimizationParameter(Parameter):
     def __init__(
         self,
         name: str,
-        reference_value: float = 0,
+        reference_value: Union[bool, float, str, None, Tuple[Any, ParameterValueType]] = 0,
+        reference_value_type: ParameterValueType = None,
         id: str = str(uuid.uuid4()),
         const: bool = False,
-        type: ParameterType = ParameterType.DETERMINISTIC,
-        value_type: ParameterValueType = ParameterValueType.REAL,
-        deterministic_resolution: ParameterResolution = ParameterResolution.CONTINUOUS,
+        type: Union[ParameterType, str] = ParameterType.DETERMINISTIC,
+        deterministic_resolution: Union[ParameterResolution, str] = ParameterResolution.CONTINUOUS,
         range: tuple = (-1, 1),
-    ):
+    ) -> None:
         """Create a new instance of OptimizationParameter.
 
         Parameters
         ----------
         name: str
             Name of the parameter.
-        reference_value: float, optional
+        reference_value: Union[bool, float, str, None, Tuple[Any, ParameterValueType]], optional
             Parameters reference value.
+        reference_value_type: ParameterValueType, optional
+            Type of the reference value.
         id: str, optional
             Parameters unique id.
         const: bool, optional
             Determines whether is parameter constant.
-        type: ParameterType, optional
+        type: Union[ParameterType, str], optional
             Parameters type.
-        value_type: ParameterValueType, optional
-            Parameters value type.
-        deterministic_resolution: ParameterResolution, optional
+        deterministic_resolution: Union[ParameterResolution, str], optional
             Parameters deterministic resolution.
         range: tuple, optional
             Either 2 values specifying range or list of discrete values.
         """
-        super().__init__(name=name, reference_value=reference_value, id=id, const=const, type=type)
-        self.value_type = value_type
+        super().__init__(
+            name=name,
+            reference_value=reference_value,
+            id=id,
+            const=const,
+            type=type,
+            reference_value_type=reference_value_type,
+        )
         self.deterministic_resolution = deterministic_resolution
         self.range = range
 
     def __eq__(self, other: OptimizationParameter):
-        r"""Compare properties of two instances of "OptimizationParameter" class.
+        r"""Compare properties of two instances of the "OptimizationParameter" class.
 
         Parameters
         ----------
@@ -437,10 +371,10 @@ class OptimizationParameter(Parameter):
             checks = {}
             checks["name"] = self.name == other.name
             checks["reference_value"] = self.reference_value == other.reference_value
+            checks["reference_value_type"] = self.reference_value_type == other.reference_value_type
             checks["id"] = self.id == other.id
             checks["const"] = self.const == other.const
             checks["type"] = self.type == other.type
-            checks["value_type"] = self.value_type == other.value_type
             checks["deterministic_resolution"] = (
                 self.deterministic_resolution == other.deterministic_resolution
             )
@@ -448,6 +382,39 @@ class OptimizationParameter(Parameter):
             return False not in checks.values()
         else:
             return False
+
+    def __deepcopy__(self, memo) -> OptimizationParameter:
+        """Return deep copy of the optimization parameter."""
+        return OptimizationParameter(
+            self.name,
+            self.reference_value,
+            self.id,
+            self.const,
+            self.type,
+            self.reference_value_type,
+            self.deterministic_resolution,
+            self.range,
+        )
+
+    @property
+    def deterministic_resolution(self) -> ParameterResolution:
+        """Return deterministic resolution type."""
+        return self.__deterministic_resolution
+
+    @deterministic_resolution.setter
+    def deterministic_resolution(
+        self, deterministic_resolution: Union[ParameterResolution, str]
+    ) -> None:
+        """Set deterministic resolution type."""
+        if isinstance(deterministic_resolution, str):
+            deterministic_resolution = ParameterResolution.from_str(deterministic_resolution)
+        if isinstance(deterministic_resolution, ParameterResolution):
+            self.__deterministic_resolution = deterministic_resolution
+        else:
+            raise TypeError(
+                "Type Union[ParameterResolution, str] was expected, but type: "
+                f"``{type(deterministic_resolution)}`` was given."
+            )
 
     @staticmethod
     def from_dict(par_dict: dict) -> OptimizationParameter:
@@ -464,13 +431,13 @@ class OptimizationParameter(Parameter):
             Instance of Parameter class.
         """
         name = par_dict["name"]
-        reference_value = par_dict["reference_value"]
         id = par_dict["id"]
         const = par_dict["const"]
         type = ParameterType.from_str(par_dict["type"]["value"])
-        value_type = ParameterValueType.from_str(
+        reference_value_type = ParameterValueType.from_str(
             par_dict.get("deterministic_property", {}).get("domain_type", {}).get("value", None)
         )
+        reference_value = par_dict["reference_value"]
         deterministic_resolution = ParameterResolution.from_str(
             par_dict.get("deterministic_property", {}).get("kind", {}).get("value", None)
         )
@@ -486,10 +453,10 @@ class OptimizationParameter(Parameter):
         return OptimizationParameter(
             name=name,
             reference_value=reference_value,
+            reference_value_type=reference_value_type,
             id=id,
             const=const,
             type=type,
-            value_type=value_type,
             deterministic_resolution=deterministic_resolution,
             range=range,
         )
@@ -518,7 +485,7 @@ class OptimizationParameter(Parameter):
             "active": True,
             "const": self.const if self.const is not None else False,
             "deterministic_property": {
-                "domain_type": {"value": self.value_type.name.lower()},
+                "domain_type": {"value": self.reference_value_type.name.lower()},
                 "kind": {"value": self.deterministic_resolution.name.lower()},
             },
             "id": self.id,
@@ -539,37 +506,39 @@ class StochasticParameter(Parameter):
     def __init__(
         self,
         name: str,
-        reference_value: float = 0,
+        reference_value: Union[bool, float, str, None, Tuple[Any, ParameterValueType]] = 0,
+        reference_value_type: ParameterValueType = None,
         id: str = str(uuid.uuid4()),
         const: bool = False,
-        type: ParameterType = ParameterType.STOCHASTIC,
-        value_type: ParameterValueType = ParameterValueType.REAL,
-        stochastic_resolution: ParameterResolution = ParameterResolution.MARGINALDISTRIBUTION,
-        distribution_type: DistributionType = DistributionType.NORMAL,
+        type: Union[ParameterType, str] = ParameterType.STOCHASTIC,
+        stochastic_resolution: Union[
+            ParameterResolution, str
+        ] = ParameterResolution.MARGINALDISTRIBUTION,
+        distribution_type: Union[DistributionType, str] = DistributionType.NORMAL,
         distribution_parameters: Tuple[float, ...] = (0, 1),
         mean: float = None,
         standard_deviation: float = None,
         covariance: float = None,
-    ):
+    ) -> None:
         """Create a new instance of StochasticParameter.
 
         Parameters
         ----------
         name: str
             Name of the parameter.
-        reference_value: float, optional
+        reference_value: Union[bool, float, str, None, Tuple[Any, ParameterValueType]], optional
             Parameters reference value.
+        reference_value_type: ParameterValueType, optional
+            Type of the reference value.
         id: str, optional
             Parameters unique id.
         const: bool, optional
             Determines whether is parameter constant.
-        type: ParameterType, optional
+        type: Union[ParameterType, str], optional
             Parameters type.
-        value_type: ParameterValueType, optional
-            Parameters value type.
-        stochastic_resolution: ParameterResolution, optional
+        stochastic_resolution: Union[ParameterResolution, str], optional
             Parameters stochastic resolution.
-        distribution_type: DistributionType, optional
+        distribution_type: Union[DistributionType, str], optional
             Parameters distribution type.
         distribution_parameters: Tuple[float, ...], optional
             Distributions parameters.
@@ -580,8 +549,14 @@ class StochasticParameter(Parameter):
         covariance: float, optional
             Covariance value.
         """
-        super().__init__(name=name, reference_value=reference_value, id=id, const=const, type=type)
-        self.value_type = value_type
+        super().__init__(
+            name=name,
+            reference_value=reference_value,
+            id=id,
+            const=const,
+            type=type,
+            reference_value_type=reference_value_type,
+        )
         self.stochastic_resolution = stochastic_resolution
         self.distribution_type = distribution_type
         self.distribution_parameters = distribution_parameters
@@ -590,7 +565,7 @@ class StochasticParameter(Parameter):
         self.covariance = covariance
 
     def __eq__(self, other: StochasticParameter):
-        r"""Compare properties of two instances of "StochasticParameter" class.
+        r"""Compare properties of two instances of the "StochasticParameter" class.
 
         Parameters
         ----------
@@ -606,10 +581,10 @@ class StochasticParameter(Parameter):
             checks = {}
             checks["name"] = self.name == other.name
             checks["reference_value"] = self.reference_value == other.reference_value
+            checks["reference_value_type"] = self.reference_value_type == other.reference_value_type
             checks["id"] = self.id == other.id
             checks["const"] = self.const == other.const
             checks["type"] = self.type == other.type
-            checks["value_type"] = self.value_type == other.value_type
             checks["stochastic_resolution"] = (
                 self.stochastic_resolution == other.stochastic_resolution
             )
@@ -620,6 +595,56 @@ class StochasticParameter(Parameter):
             return False not in checks.values()
         else:
             return False
+
+    def __deepcopy__(self, memo) -> StochasticParameter:
+        """Return deep copy of the stochastic parameter."""
+        return StochasticParameter(
+            self.name,
+            self.reference_value,
+            self.id,
+            self.const,
+            self.type,
+            self.reference_value_type,
+            self.stochastic_resolution,
+            self.distribution_type,
+            self.distribution_parameters,
+        )
+
+    @property
+    def stochastic_resolution(self) -> ParameterResolution:
+        """Return stochastic resolution type."""
+        return self.__stochastic_resolution
+
+    @stochastic_resolution.setter
+    def stochastic_resolution(self, stochastic_resolution: Union[ParameterResolution, str]) -> None:
+        """Set stochastic resolution type."""
+        if isinstance(stochastic_resolution, str):
+            stochastic_resolution = ParameterResolution.from_str(stochastic_resolution)
+        if isinstance(stochastic_resolution, ParameterResolution):
+            self.__stochastic_resolution = stochastic_resolution
+        else:
+            raise TypeError(
+                "Type Union[ParameterResolution, str] was expected, but type: "
+                f"``{type(stochastic_resolution)}`` was given."
+            )
+
+    @property
+    def distribution_type(self) -> DistributionType:
+        """Return distribution type."""
+        return self.__distribution_type
+
+    @distribution_type.setter
+    def distribution_type(self, distribution_type: Union[DistributionType, str]):
+        """Set distribution type."""
+        if isinstance(distribution_type, str):
+            distribution_type = DistributionType.from_str(distribution_type)
+        if isinstance(distribution_type, DistributionType):
+            self.__distribution_type = distribution_type
+        else:
+            raise TypeError(
+                "Type Union[DistributionType, str] was expected, but type: "
+                f"``{type(distribution_type)}`` was given."
+            )
 
     @staticmethod
     def from_dict(par_dict: dict) -> StochasticParameter:
@@ -640,7 +665,6 @@ class StochasticParameter(Parameter):
         id = par_dict["id"]
         const = par_dict["const"]
         type = ParameterType.from_str(par_dict["type"]["value"])
-        value_type = ParameterValueType.REAL
         stochastic_resolution = ParameterResolution.from_str(
             par_dict.get("stochastic_property", {}).get("kind", {}).get("value", None)
         )
@@ -656,10 +680,10 @@ class StochasticParameter(Parameter):
         return StochasticParameter(
             name=name,
             reference_value=reference_value,
+            reference_value_type=ParameterValueType.REAL,
             id=id,
             const=const,
             type=type,
-            value_type=value_type,
             stochastic_resolution=stochastic_resolution,
             distribution_type=distribution_type,
             distribution_parameters=distribution_parameters,
@@ -702,43 +726,45 @@ class MixedParameter(Parameter):
     def __init__(
         self,
         name: str,
-        reference_value: float = 0,
+        reference_value: Union[bool, float, str, None, Tuple[Any, ParameterValueType]] = 0,
+        reference_value_type: ParameterValueType = None,
         id: str = str(uuid.uuid4()),
         const: bool = False,
-        type: ParameterType = ParameterType.MIXED,
-        value_type: ParameterValueType = ParameterValueType.REAL,
-        deterministic_resolution: ParameterResolution = ParameterResolution.CONTINUOUS,
+        type: Union[ParameterType, str] = ParameterType.MIXED,
+        deterministic_resolution: Union[ParameterResolution, str] = ParameterResolution.CONTINUOUS,
         range: tuple = (-1, 1),
-        stochastic_resolution: ParameterResolution = ParameterResolution.MARGINALDISTRIBUTION,
-        distribution_type: DistributionType = DistributionType.NORMAL,
+        stochastic_resolution: Union[
+            ParameterResolution, str
+        ] = ParameterResolution.MARGINALDISTRIBUTION,
+        distribution_type: Union[DistributionType, str] = DistributionType.NORMAL,
         distribution_parameters: Tuple[float, ...] = (0, 1),
         mean: float = None,
         standard_deviation: float = None,
         covariance: float = None,
-    ):
+    ) -> None:
         """Create a new instance of MixedParameter.
 
         Parameters
         ----------
         name: str
             Name of the parameter.
-        reference_value: float, optional
+        reference_value: Union[bool, float, str, None, Tuple[Any, ParameterValueType]], optional
             Parameters reference value.
+        reference_value_type: ParameterValueType, optional
+            Type of the reference value.
         id: str, optional
             Parameters unique id.
         const: bool, optional
             Determines whether is parameter constant.
-        type: ParameterType, optional
+        type: Union[ParameterType, str], optional
             Parameters type.
-        value_type: ParameterValueType, optional
-            Parameters value type.
-        deterministic_resolution: ParameterResolution, optional
+        deterministic_resolution: Union[ParameterResolution, str], optional
             Parameters deterministic resolution.
         range: tuple, optional
             Either 2 values specifying range or list of discrete values.
-        stochastic_resolution: ParameterResolution, optional
+        stochastic_resolution: Union[ParameterResolution, str], optional
             Parameters stochastic resolution.
-        distribution_type: DistributionType, optional
+        distribution_type: Union[DistributionType, str], optional
             Parameters distribution type.
         distribution_parameters: Tuple[float, ...], optional
             Distributions parameters.
@@ -749,8 +775,14 @@ class MixedParameter(Parameter):
         covariance: float, optional
             Covariance value.
         """
-        super().__init__(name=name, reference_value=reference_value, id=id, const=const, type=type)
-        self.value_type = value_type
+        super().__init__(
+            name=name,
+            reference_value=reference_value,
+            id=id,
+            const=const,
+            type=type,
+            reference_value_type=reference_value_type,
+        )
         self.deterministic_resolution = deterministic_resolution
         self.range = range
         self.stochastic_resolution = stochastic_resolution
@@ -761,7 +793,7 @@ class MixedParameter(Parameter):
         self.covariance = covariance
 
     def __eq__(self, other: MixedParameter):
-        r"""Compare properties of two instances of "MixedParameter" class.
+        r"""Compare properties of two instances of the "MixedParameter" class.
 
         Parameters
         ----------
@@ -777,10 +809,10 @@ class MixedParameter(Parameter):
             checks = {}
             checks["name"] = self.name == other.name
             checks["reference_value"] = self.reference_value == other.reference_value
+            checks["reference_value_type"] = self.reference_value_type == other.reference_value_type
             checks["id"] = self.id == other.id
             checks["const"] = self.const == other.const
             checks["type"] = self.type == other.type
-            checks["value_type"] = self.value_type == other.value_type
             checks["deterministic_resolution"] = (
                 self.deterministic_resolution == other.deterministic_resolution
             )
@@ -795,6 +827,78 @@ class MixedParameter(Parameter):
             return False not in checks.values()
         else:
             return False
+
+    def __deepcopy__(self, memo) -> MixedParameter:
+        """Return deep copy of the mixed parameter."""
+        return MixedParameter(
+            self.name,
+            self.reference_value,
+            self.id,
+            self.const,
+            self.type,
+            self.reference_value_type,
+            self.deterministic_resolution,
+            self.range,
+            self.stochastic_resolution,
+            self.distribution_type,
+            self.distribution_parameters,
+        )
+
+    @property
+    def deterministic_resolution(self) -> ParameterResolution:
+        """Return deterministic resolution type."""
+        return self.__deterministic_resolution
+
+    @deterministic_resolution.setter
+    def deterministic_resolution(
+        self, deterministic_resolution: Union[ParameterResolution, str]
+    ) -> None:
+        """Set deterministic resolution type."""
+        if isinstance(deterministic_resolution, str):
+            deterministic_resolution = ParameterResolution.from_str(deterministic_resolution)
+        if isinstance(deterministic_resolution, ParameterResolution):
+            self.__deterministic_resolution = deterministic_resolution
+        else:
+            raise TypeError(
+                "Type Union[ParameterResolution, str] was expected, but type: "
+                f"``{type(deterministic_resolution)}`` was given."
+            )
+
+    @property
+    def stochastic_resolution(self) -> ParameterResolution:
+        """Return stochastic resolution type."""
+        return self.__stochastic_resolution
+
+    @stochastic_resolution.setter
+    def stochastic_resolution(self, stochastic_resolution: Union[ParameterResolution, str]) -> None:
+        """Set stochastic resolution type."""
+        if isinstance(stochastic_resolution, str):
+            stochastic_resolution = ParameterResolution.from_str(stochastic_resolution)
+        if isinstance(stochastic_resolution, ParameterResolution):
+            self.__stochastic_resolution = stochastic_resolution
+        else:
+            raise TypeError(
+                "Type Union[ParameterResolution, str] was expected, but type: "
+                f"``{type(stochastic_resolution)}`` was given."
+            )
+
+    @property
+    def distribution_type(self) -> DistributionType:
+        """Return distribution type."""
+        return self.__distribution_type
+
+    @distribution_type.setter
+    def distribution_type(self, distribution_type: Union[DistributionType, str]):
+        """Set distribution type."""
+        if isinstance(distribution_type, str):
+            distribution_type = DistributionType.from_str(distribution_type)
+        if isinstance(distribution_type, DistributionType):
+            self.__distribution_type = distribution_type
+        else:
+            raise TypeError(
+                "Type Union[DistributionType, str] was expected, but type: "
+                f"``{type(distribution_type)}`` was given."
+            )
 
     @staticmethod
     def from_dict(par_dict: dict) -> MixedParameter:
@@ -816,7 +920,7 @@ class MixedParameter(Parameter):
         id = par_dict["id"]
         const = par_dict["const"]
         type = ParameterType.from_str(par_dict["type"]["value"])
-        value_type = ParameterValueType.from_str(
+        reference_value_type = ParameterValueType.from_str(
             par_dict.get("deterministic_property", {}).get("domain_type", {}).get("value", None)
         )
         deterministic_resolution = ParameterResolution.from_str(
@@ -848,10 +952,10 @@ class MixedParameter(Parameter):
         return MixedParameter(
             name=name,
             reference_value=reference_value,
+            reference_value_type=reference_value_type,
             id=id,
             const=const,
             type=type,
-            value_type=value_type,
             deterministic_resolution=deterministic_resolution,
             stochastic_resolution=stochastic_resolution,
             range=range,
@@ -883,7 +987,7 @@ class MixedParameter(Parameter):
             "active": True,
             "const": self.const if self.const is not None else False,
             "deterministic_property": {
-                "domain_type": {"value": self.value_type.name.lower()},
+                "domain_type": {"value": self.reference_value_type.name.lower()},
                 "kind": {"value": self.deterministic_resolution.name.lower()},
             },
             "id": self.id,
@@ -910,34 +1014,44 @@ class DependentParameter(Parameter):
     def __init__(
         self,
         name: str,
-        reference_value: float = 0,
+        reference_value: Union[bool, float, str, None, Tuple[Any, ParameterValueType]] = 0,
+        reference_value_type: ParameterValueType = None,
         id: str = str(uuid.uuid4()),
         const: bool = False,
-        type: ParameterType = ParameterType.DEPENDENT,
+        type: Union[ParameterType, str] = ParameterType.DEPENDENT,
         operation: str = "0",
-    ):
+    ) -> None:
         """Create a new instance of DependentParameter.
 
         Parameters
         ----------
         name: str
             Name of the parameter.
-        reference_value: float, optional
+        reference_value: Union[bool, float, str, None, Tuple[Any, ParameterValueType]], optional
             Parameters reference value.
+        reference_value_type: ParameterValueType, optional
+            Type of the reference value.
         id: str, optional
             Parameters unique id.
         const: bool, optional
             Determines whether is parameter constant.
-        type: ParameterType, optional
+        type: Union[ParameterType, str], optional
             Parameters type.
         operation: str, optional
             Mathematic expression to be evaluated.
         """
-        super().__init__(name=name, reference_value=reference_value, id=id, const=const, type=type)
+        super().__init__(
+            name=name,
+            reference_value=reference_value,
+            id=id,
+            const=const,
+            type=type,
+            reference_value_type=reference_value_type,
+        )
         self.operation = operation
 
     def __eq__(self, other: DependentParameter):
-        r"""Compare properties of two instances of "DependentParameter" class.
+        r"""Compare properties of two instances of the "DependentParameter" class.
 
         Parameters
         ----------
@@ -953,6 +1067,7 @@ class DependentParameter(Parameter):
             checks = {}
             checks["name"] = self.name == other.name
             checks["reference_value"] = self.reference_value == other.reference_value
+            checks["reference_value_type"] = self.reference_value_type == other.reference_value_type
             checks["id"] = self.id == other.id
             checks["const"] = self.const == other.const
             checks["type"] = self.type == other.type
@@ -960,6 +1075,18 @@ class DependentParameter(Parameter):
             return False not in checks.values()
         else:
             return False
+
+    def __deepcopy__(self, memo) -> DependentParameter:
+        """Return deep copy of the dependent parameter."""
+        return DependentParameter(
+            self.name,
+            self.reference_value,
+            self.reference_value_type,
+            self.id,
+            self.const,
+            self.type,
+            self.operation,
+        )
 
     @staticmethod
     def from_dict(par_dict: dict) -> DependentParameter:
@@ -1046,7 +1173,7 @@ class ParameterManager:
         return str(self.get_parameters_names())
 
     def get_parameters(self) -> Tuple[Parameter, ...]:
-        """Get parameters of object (project, system) defined by uid.
+        """Get tuple of systems parameters.
 
         Returns
         -------
@@ -1070,7 +1197,7 @@ class ParameterManager:
         return tuple(parameters)
 
     def get_parameters_names(self) -> Tuple[str, ...]:
-        """Get parameters list of object (project, system) defined by uid.
+        """Get names of systems parameters.
 
         Returns
         -------
@@ -1094,13 +1221,86 @@ class ParameterManager:
         return tuple(parameters_list)
 
 
+class DesignVariable:
+    """Class which stores information about design variable or response."""
+
+    def __init__(
+        self,
+        name: str,
+        value: Union[bool, float, complex, list, dict, None],
+    ) -> None:
+        """Initialize a new instance of ``DesignVariable`` class.
+
+        Parameters
+        ----------
+        name: str
+            Criterium name.
+        value: Union[bool, float, complex, list, dict, None]
+            Criterion  value.
+        """
+        self.name = name
+        self.value = value
+
+    def __deepcopy__(self, memo) -> DesignVariable:
+        """Return deep copy of the design variable."""
+        return DesignVariable(
+            self.name,
+            self.value,
+        )
+
+    def __eq__(self, other: DesignVariable):
+        r"""Compare properties of two instances of the "DesignVariable" class.
+
+        Parameters
+        ----------
+        other: DesignVariable
+            Variable for comparison.
+
+        Returns
+        -------
+        bool
+            ``True`` if all properties match; ``False`` otherwise.
+        """
+        if type(self) == type(other):
+            checks = {}
+            checks["name"] = self.name == other.name
+            checks["value"] = self.value == other.value
+            return False not in checks.values()
+        else:
+            return False
+
+    @property
+    def name(self) -> str:
+        """Return variable name."""
+        return self.__name
+
+    @name.setter
+    def name(self, name: str):
+        """Set variable name."""
+        if not isinstance(name, str):
+            raise TypeError(f"String was expected but type: ``{type(name)}`` was given.")
+        else:
+            self.__name = name
+
+    @property
+    def value(self) -> Union[bool, float, complex, list, dict, None]:
+        """Return variable value."""
+        return self.__value
+
+    @value.setter
+    def value(self, value: Union[bool, float, complex, list, dict, None]) -> None:
+        """Set variable value."""
+        self.__value = value
+
+
 class DesignStatus(Enum):
-    """Available design statuses."""
+    """Available design states."""
 
     IDLE = 0
     PENDING = 1
     SUCCEEDED = 2
-    FAILED = 3
+    NOT_SUCCEEDED = 3
+    FAILED = 4
 
     @staticmethod
     def from_str(label: str):
@@ -1108,15 +1308,11 @@ class DesignStatus(Enum):
         if not isinstance(label, str):
             raise TypeError(f"String was expected, but `{type(label)}` was given.")
         label = label.upper()
-        if label == "IDLE":
-            return DesignStatus.IDLE
-        elif label == "PENDING":
-            return DesignStatus.PENDING
-        elif label == "SUCCEEDED":
-            return DesignStatus.SUCCEEDED
-        elif label == "FAILED":
-            return DesignStatus.FAILED
-        else:
+        label = label.replace(" ", "_")
+        try:
+            design_status = eval("DesignStatus." + label)
+            return design_status
+        except:
             raise ValueError(f"Status `{label}` not available in DesignStatus states.")
 
 
@@ -1125,86 +1321,169 @@ class Design:
 
     Parameters
     ----------
-    parameters: Union[Dict[str, float], Iterable[Parameter]], optional
+    parameters: Union[Dict[str, float], Iterable[Union[Parameter, DesignVariable]]], optional
         Dictionary of parameters and it's values {'parname': value, ...}
-        or iterable of DesignParameters.
+        or iterable of DesignVariables or Parameters.
 
     Examples
     --------
-    Create new design from Optislang class:
+    Get reference design:
 
     >>> from ansys.optislang.core import Optislang
     >>> osl = Optislang()
-    >>> project = osl.get_project()
-    >>> root_system = project.root_system
-    >>> design = root_system.create_design(parameters = {'a': 1})
-    >>> design.set_parameter(parameter = 'b', value = 2)
-    >>> design.set_parameters(parameters = {'c': 3, 'd': 4})
+    >>> root_system = osl.project.root_system
+    >>> design = root_system.get_reference_design()
+    >>> design.set_parameters_value(parameter = 'a', value = 2)
+    >>> design.set_parameters_values(parameters = {'b': 3, 'c': 4})
     >>> print(design)
     >>> osl.dispose()
-
-    Create new design independently of Optislang class:
-
-    >>> from ansys.optislang.core.project_parametric import Design
-    >>> design = Design(parameters = {'a': 5})
-
-    Create design with Parameter instances:
-
-    >>> from ansys.optislang.core.project_parametric import DesignParameter
-    >>> par1 = DesignParameter(name='a', reference_value = 5)
-    >>> par2 = DesignParameter(name='b', reference_value = 10)
-    >>> design = Design(parameters = [par1, par2])
     """
 
-    def __init__(self, parameters: Union[Dict[str, float], Iterable[DesignParameter]] = None):
+    def __init__(
+        self, parameters: Union[Dict[str, float], Iterable[Union[Parameter, DesignVariable]]]
+    ):
         """Initialize a new instance of ``Design`` class."""
-        self.__criteria = {}
-        self.__feasibility = "NOT_EVALUATED"
-        self.__id = "NOT_ASSIGNED"
-        self.__parameters = {}
-        self.__responses = {}
-        self.__status = DesignStatus.IDLE
+        self.__constraints: List[DesignVariable] = []
+        self.__feasibility: Union[bool, None] = None
+        self.__id: int = None
+        self.__limit_states: List[DesignVariable] = []
+        self.__objectives: List[DesignVariable] = []
+        self.__parameters: List[DesignVariable] = []
+        self.__responses: List[DesignVariable] = []
+        self.__status: DesignStatus = DesignStatus.IDLE
+        self.__variables: List[DesignVariable] = []
 
-        if parameters is not None:
-            self.set_parameters(parameters)
+        if isinstance(parameters, dict):
+            for name, value in parameters.items():
+                self.__parameters.append(DesignVariable(name=name, value=value))
+        else:
+            for parameter in parameters:
+                if isinstance(parameter, Parameter):
+                    value = parameter.reference_value
+                elif isinstance(parameter, DesignVariable):
+                    value = parameter.value
+                else:
+                    raise TypeError(f"Parameters type: ``{type(parameter)}`` is not supported.")
+                self.__parameters.append(
+                    DesignVariable(
+                        name=parameter.name,
+                        value=value,
+                    )
+                )
 
     def __str__(self) -> str:
         """Return info about design."""
         return (
             "----------------------------------------------------------------------\n"
             f"ID: {self.id}\n"
-            f"Status: {self.__status}\n"
+            f"Status: {self.__status.name}\n"
             f"Feasibility: {self.__feasibility}\n"
-            f"Criteria: {self.__criteria}\n"
-            f"Parameters: {self.__parameters}\n"
-            f"Responses: {self.__responses}\n"
+            f"Criteria:\n"
+            f"   constraints: {self.__constraints.names}\n"
+            f"   objectives: {self.__objectives.names}\n"
+            f"   limit_states: {self.__limit_states.names}\n"
+            f"Parameters: {self.parameter_names}\n"
+            f"Responses: {self.response_names}\n"
+            f"Variables: {self.variable_names}"
             "----------------------------------------------------------------------"
         )
 
+    def __deepcopy__(self, memo) -> Design:
+        """Create copy of unevaluated design."""
+        return Design(copy.deepcopy(self.parameters, memo))
+
     @property
-    def id(self) -> int:
-        """Return designs ID."""
+    def feasibility(self) -> Union[bool, None]:
+        """Return designs feasibility, ``None`` if not evaluated."""
+        return self.__feasibility
+
+    @property
+    def id(self) -> Union[int, None]:
+        """Return designs id, ``None`` if not assigned."""
         return self.__id
 
     @property
-    def status(self) -> str:
-        """Return status of design."""
-        return self.__status.name
+    def constraints(self) -> Tuple[DesignVariable, ...]:
+        """Return all defined constraints."""
+        return tuple(self.__constraints)
 
     @property
-    def criteria(self) -> Dict:
-        """Return all defined criteria."""
-        return self.__criteria
+    def constraint_names(self) -> Tuple[str, ...]:
+        """Return all constraint names."""
+        names = []
+        for constraint in self.__constraints:
+            names.append(constraint.name)
+        return tuple(names)
 
     @property
-    def parameters(self) -> Dict:
+    def limit_states(self) -> Tuple[DesignVariable, ...]:
+        """Return all defined limit_states."""
+        return tuple(self.__limit_states)
+
+    @property
+    def limit_state_names(self) -> Tuple[str, ...]:
+        """Return all constraint names."""
+        names = []
+        for limit_state in self.__limit_states:
+            names.append(limit_state.name)
+        return tuple(names)
+
+    @property
+    def objectives(self) -> Tuple[DesignVariable, ...]:
+        """Return all defined objectives."""
+        return tuple(self.__objectives)
+
+    @property
+    def objective_names(self) -> Tuple[str, ...]:
+        """Return all objective names."""
+        names = []
+        for objective in self.__objectives:
+            names.append(objective.name)
+        return tuple(names)
+
+    @property
+    def parameters(self) -> Tuple[DesignVariable, ...]:
         """Return all parameters."""
-        return self.__parameters
+        return tuple(self.__parameters)
 
     @property
-    def responses(self) -> Dict:
+    def parameter_names(self) -> Tuple[str, ...]:
+        """Return all parameters names."""
+        names = []
+        for parameter in self.__parameters:
+            names.append(parameter.name)
+        return tuple(names)
+
+    @property
+    def responses(self) -> Tuple[DesignVariable, ...]:
         """Return all responses."""
-        return self.__responses
+        return tuple(self.__responses)
+
+    @property
+    def response_names(self) -> Tuple[str, ...]:
+        """Return all response names."""
+        names = []
+        for response in self.__responses:
+            names.append(response.name)
+        return tuple(names)
+
+    @property
+    def status(self) -> DesignStatus:
+        """Return status of design."""
+        return self.__status
+
+    @property
+    def variables(self) -> Tuple[DesignVariable, ...]:
+        """Return all variables."""
+        return tuple(self.__variables)
+
+    @property
+    def variable_names(self) -> Tuple[str, ...]:
+        """Return all variable names."""
+        names = []
+        for variable in self.__variables:
+            names.append(variable.name)
+        return tuple(names)
 
     def remove_parameters(self, to_be_removed: Union[str, Iterable[str]] = None) -> None:
         """Remove parameters defined in ``to_be_removed`` from design.
@@ -1218,19 +1497,30 @@ class Design:
         if not to_be_removed:
             self.__parameters.clear()
         elif isinstance(to_be_removed, str):
-            self.__parameters.pop(to_be_removed, None)
+            index = self.__find_name_index(to_be_removed, type_="parameter")
+            if index is not None:
+                self.__parameters.pop(index)
         else:
             for parameter in to_be_removed:
-                self.__parameters.pop(parameter, None)
+                index = self.__find_name_index(parameter, type_="parameter")
+                if index is not None:
+                    self.__parameters.pop(index)
 
-    def reset(self) -> None:
+    def __reset(self) -> None:
         """Reset status and delete output values."""
         self.__status = DesignStatus.IDLE
-        self.__feasibility = "NOT_EVALUATED"
-        self.__responses = {}
+        self.__feasibility = None
+        self.__constraints.clear()
+        self.__limit_states.clear()
+        self.__objectives.clear()
+        self.__responses.clear()
+        self.__variables.clear()
 
-    def set_parameter(
-        self, parameter: Union[str, Parameter], value: float = None, reset_output: bool = True
+    def set_parameter_value(
+        self,
+        parameter: Union[str, Parameter, DesignVariable],
+        value: Union[str, float, bool] = None,
+        reset_output: bool = True,
     ) -> None:
         """Set value of parameter.
 
@@ -1239,9 +1529,9 @@ class Design:
         parameter: Union[str, Parameter]
             Name of parameter or Parameter
         value: float
-            Value of parameter, not used if instance of Parameter was passed in parameter.
+            Value of parameter, used only with ``type(parameter) == str``.
         reset_output: bool, optional
-            Remove responses, default value ``True``.
+            Remove criteria, variables and responses, defaults to ``True``.
 
         Raises
         ------
@@ -1255,25 +1545,40 @@ class Design:
             Raised when invalid type of parameter is passed.
         """
         if reset_output:
-            self.reset()
-        if isinstance(parameter, str):
-            parameter = DesignParameter(name=parameter, reference_value=value)
-        if not isinstance(parameter, DesignParameter):
-            raise TypeError(f"Invalid type of parameter: `{type(parameter)}`.")
-        self.__parameters[parameter.name] = parameter
+            self.__reset()
 
-    def set_parameters(
+        if isinstance(parameter, str):
+            index = self.__find_name_index(name=parameter, type_="parameter")
+        elif isinstance(parameter, Parameter):
+            index = self.__find_name_index(name=parameter.name, type_="parameter")
+            value = parameter.reference_value
+        elif isinstance(parameter, DesignVariable):
+            index = self.__find_name_index(name=parameter.name, type_="parameter")
+            name = parameter.name
+            value = parameter.value
+        else:
+            raise TypeError(f"Invalid type of parameter: `{type(parameter)}`.")
+
+        if index is not None:
+            self.__parameters[index].value = value
+        else:
+            name = (
+                parameter.name if isinstance(parameter, (Parameter, DesignVariable)) else parameter
+            )
+            self.__parameters.append(DesignVariable(name=name, value=value))
+
+    def set_parameter_values(
         self,
-        parameters: Union[Dict[str, float], Iterable[DesignParameter]],
+        parameters: Union[Dict[str, float], Iterable[Union[DesignVariable, Parameter]]],
         reset_output: bool = True,
     ) -> None:
         """Set multiple parameters values.
 
         Parameters
         ----------
-        parameters: Union[Dict[str, float], Iterable[DesignParameter]]
+        parameters: Union[Dict[str, float], Iterable[Union[DesignVariable, Parameter]]]
             Dictionary of parameters and it's values {'parname': value, ...}
-            or iterable of DesignParameters.
+            or iterable of DesignVariables or Parameters.
         reset_output: bool, optional
             Remove responses, default value ``True``.
 
@@ -1287,13 +1592,13 @@ class Design:
             Raised when the timeout float value expires.
         """
         if reset_output:
-            self.reset()
+            self.__reset()
         if isinstance(parameters, dict):
             for parname, value in parameters.items():
-                self.set_parameter(parameter=parname, value=value)
+                self.set_parameter_value(parameter=parname, value=value, reset_output=False)
         else:
             for parameter in parameters:
-                self.set_parameter(parameter=parameter)
+                self.set_parameter_value(parameter=parameter, reset_output=False)
 
     def _receive_results(self, results: Dict) -> None:
         """Receive results and store them in responses.
@@ -1303,12 +1608,88 @@ class Design:
         results: Dict
             Output from ``evaluate_design`` server command.
         """
-        for position, response in enumerate(results["result_design"]["response_names"]):
-            self.__responses[response] = DesignParameter(
-                name=response, reference_value=results["result_design"]["response_values"][position]
-            )
-        if results["status"] == "success":
-            self.__status = DesignStatus.SUCCEEDED
-        else:
-            self.__status = DesignStatus.FAILED
+        self.__reset()
+        self.__id = results["result_design"]["hid"]
         self.__feasibility = results["result_design"]["feasible"]
+        self.__status = DesignStatus.from_str(results["result_design"]["status"])
+
+        # constraint
+        for position, constraint in enumerate(results["result_design"]["constraint_names"]):
+            self.__constraints.append(
+                DesignVariable(
+                    name=constraint,
+                    value=results["result_design"]["constraint_values"][position],
+                )
+            )
+        # limit state
+        for position, limit_state in enumerate(results["result_design"]["limit_state_names"]):
+            self.__limit_states.append(
+                DesignVariable(
+                    name=limit_state,
+                    value=results["result_design"]["limit_state_values"][position],
+                )
+            )
+        # objective
+        for position, objective in enumerate(results["result_design"]["objective_names"]):
+            self.__objectives.append(
+                DesignVariable(
+                    name=objective,
+                    value=results["result_design"]["objective_values"][position],
+                )
+            )
+        # responses
+        for position, response in enumerate(results["result_design"]["response_names"]):
+            self.__responses.append(
+                DesignVariable(
+                    name=response,
+                    value=results["result_design"]["response_values"][position],
+                )
+            )
+        # variables
+        for position, variable in enumerate(results["result_design"]["variable_names"]):
+            self.__variables.append(
+                DesignVariable(
+                    name=variable,
+                    value=results["result_design"]["variable_values"][position],
+                )
+            )
+
+    def __find_name_index(self, name: str, type_: str) -> Union[int, None]:
+        """Find index of the criterion, parameter, response or variable with given name.
+
+        Parameters
+        ----------
+        name: str
+            Name of the criterion, parameter, response or variable.
+        type_: str
+            Union['constraint', 'limit_state', 'objective', 'parameter', 'response', 'variable']
+
+        Returns
+        -------
+        Union[int, None]
+            Position in list, ``None`` if parameter wasn't found.
+        """
+        indices = []
+        if type_ == "constraint":
+            search_in = self.__constraints
+        elif type_ == "limit_state":
+            search_in = self.__limit_states
+        elif type_ == "objective":
+            search_in = self.__objectives
+        elif type_ == "parameter":
+            search_in = self.__parameters
+        elif type_ == "response":
+            search_in = self.__responses
+        elif type_ == "variable":
+            search_in = self.__variables
+        else:
+            raise TypeError(f"Unknown type_: ``{type(type_)}``.")
+
+        for index, parameter in enumerate(search_in):
+            if parameter.name == name:
+                indices.append(index)
+        if len(indices) > 1:
+            raise NameError(f"Name `{name}` of `{type_}` is not unique.")
+        elif len(indices) == 0:
+            return None
+        return indices[0]

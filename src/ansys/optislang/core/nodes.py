@@ -4,7 +4,7 @@ from __future__ import annotations
 from enum import Enum
 from typing import TYPE_CHECKING, Dict, Iterable, List, Tuple, Union
 
-from ansys.optislang.core.project_parametric import Design, DesignParameter, ParameterManager
+from ansys.optislang.core.project_parametric import Design, DesignVariable, ParameterManager
 
 if TYPE_CHECKING:
     from ansys.optislang.core.osl_server import OslServer
@@ -43,7 +43,7 @@ class Node:
         self,
         uid: str,
         osl_server: OslServer,
-    ):
+    ) -> None:
         """Create a new instance of Node.
 
         Parameters
@@ -151,6 +151,25 @@ class Node:
         parent_uid = self._get_parent_uid()
         actor_info = self._osl_server.get_actor_info(uid=parent_uid)
         return actor_info["name"]
+
+    def get_properties(self) -> dict:
+        """Get raw server output with nodes properties.
+
+        Returns
+        -------
+        dict
+            Dictionary with nodes properties
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        return self._osl_server.get_actor_properties(self.uid)
 
     def get_status(self) -> str:
         """Get status of the current node.
@@ -306,7 +325,7 @@ class System(Node):
         self,
         uid: str,
         osl_server: OslServer,
-    ):
+    ) -> None:
         """Create a new instance of System.
 
         Parameters
@@ -649,7 +668,7 @@ class ParametricSystem(System):
         self,
         uid: str,
         osl_server: OslServer,
-    ):
+    ) -> None:
         """Create a new instance of ParametricSystem.
 
         Parameters
@@ -663,7 +682,6 @@ class ParametricSystem(System):
             uid=uid,
             osl_server=osl_server,
         )
-
         self.__parameter_manager = ParameterManager(uid, osl_server)
 
     def __str__(self):
@@ -697,7 +715,7 @@ class RootSystem(ParametricSystem):
         self,
         uid: str,
         osl_server: OslServer,
-    ):
+    ) -> None:
         """Create a new instance of RootSystem.
 
         Parameters
@@ -722,15 +740,15 @@ class RootSystem(ParametricSystem):
         )
 
     def create_design(
-        self, parameters: Union[Dict[str, float], Iterable[DesignParameter]] = None
+        self, parameters: Union[Dict[str, float], Iterable[DesignVariable]] = None
     ) -> Design:
         """Create a new instance of ``Design`` class.
 
         Parameters
         ----------
-        parameters: Union[Dict[str, float], Iterable[DesignParameter]], optional
+        parameters: Union[Dict[str, float], Iterable[DesignVariable]], optional
             Dictionary of parameters and it's values {'parname': value, ...}
-            or iterable of DesignParameters.
+            or iterable of DesignVariables.
 
         Returns
         -------
@@ -739,7 +757,7 @@ class RootSystem(ParametricSystem):
         """
         return Design(parameters)
 
-    def evaluate_design(self, design: Design) -> Tuple[dict, dict]:
+    def evaluate_design(self, design: Design) -> Design:
         """Evaluate given design.
 
         Parameters
@@ -749,9 +767,8 @@ class RootSystem(ParametricSystem):
 
         Returns
         -------
-        Tuple[Dict, Dict]
-            0: Design parameters.
-            1: Responses.
+        Design
+            Evaluated design.
 
         Raises
         ------
@@ -762,29 +779,38 @@ class RootSystem(ParametricSystem):
         TimeoutError
             Raised when the timeout float value expires.
         """
-        message, is_valid, missing_parameters = self.validate_design(design)
-        if not is_valid:
-            self._osl_server._logger.warning(message)
-
         evaluate_dict = {}
-        for name, parameter in design.parameters.items():
-            evaluate_dict[name] = parameter.reference_value
+        for parameter in design.parameters:
+            evaluate_dict[parameter.name] = parameter.value
 
         output_dict = self._osl_server.evaluate_design(evaluate_dict=evaluate_dict)
         design._receive_results(output_dict[0])
 
+        design_parameters = design.parameter_names
+        output_parameters = output_dict[0]["result_design"]["parameter_names"]
+        missing_parameters = list(set(output_parameters) - set(design_parameters))
+        redundant_parameters = list(set(design_parameters) - set(output_parameters))
+        missing_parameters.sort()
+        redundant_parameters.sort()
+        self._osl_server._logger.debug(
+            f"Parameters ``{redundant_parameters}`` are redundant and were not used for evaluation."
+        )
+        self._osl_server._logger.warning(
+            f"Parameters ``{missing_parameters}`` were missing, "
+            "reference values were used for evaluation and list of parameters will be updated."
+        )
+
         for parameter in missing_parameters:
             position = output_dict[0]["result_design"]["parameter_names"].index(parameter)
-            design.set_parameter(
+            design.set_parameter_value(
                 parameter,
                 output_dict[0]["result_design"]["parameter_values"][position],
                 False,
             )
-            self._osl_server._logger.debug(f"Design parameter {parameter} was added.")
 
-        return (design.parameters, design.responses)
+        return design
 
-    def evaluate_multiple_designs(self, designs: Iterable[Design]) -> Tuple[Tuple[dict, dict], ...]:
+    def evaluate_multiple_designs(self, designs: Iterable[Design]) -> Tuple[Design, ...]:
         """Evaluate multiple given designs.
 
         Parameters
@@ -794,10 +820,8 @@ class RootSystem(ParametricSystem):
 
         Returns
         -------
-        multiple_design_output: Tuple[Tuple[Dict, Dict], ...]
-            Tuple[Dict, Dict]:
-                0: Design parameters.
-                1: Responses.
+        Tuple[Design, ...]:
+            Tuple of evaluated designs.
 
         Raises
         ------
@@ -812,7 +836,7 @@ class RootSystem(ParametricSystem):
         for design in designs:
             design_output = self.evaluate_design(design)
             multiple_design_output.append(design_output)
-        return tuple(multiple_design_output)
+        return tuple(designs)
 
     def get_reference_design(self) -> Design:
         """Get design with reference values of parameters.
@@ -835,7 +859,7 @@ class RootSystem(ParametricSystem):
         parameters = pm.get_parameters()
         return Design(parameters=parameters)
 
-    def validate_design(self, design: Design) -> Tuple[str, bool, List]:
+    def check_design_structure(self, design: Design) -> Tuple[str, ...]:
         """Compare parameters defined in given design and optiSLang project.
 
         Parameters
@@ -845,10 +869,9 @@ class RootSystem(ParametricSystem):
 
         Returns
         -------
-        Tuple[str, bool, List]
-            0: str, Message describing differences.
-            1: bool, True if there are not any missing or redundant parameters.
-            2: List, Missing parameters.
+        Tuple[Union[Tuple[str, ...], Tuple[str, ...]]
+            0: Names of missing parameters.
+            1: Names of redundant parameters.
 
         Raises
         ------
@@ -859,20 +882,11 @@ class RootSystem(ParametricSystem):
         TimeoutError
             Raised when the timeout float value expires.
         """
-        design_parameters = design.parameters
+        design_parameters = design.parameter_names
         defined_parameters = self.parameter_manager.get_parameters_names()
         # compare design with defined parameters
-        missing_params = list(set(defined_parameters) - set(design_parameters.keys()))
-        redundant_params = list(set(design_parameters.keys()) - set(defined_parameters))
+        missing_params = list(set(defined_parameters) - set(design_parameters))
+        redundant_params = list(set(design_parameters) - set(defined_parameters))
         missing_params.sort()
         redundant_params.sort()
-        if missing_params or redundant_params:
-            message = (
-                f"Parameters {missing_params} not defined in design, values set to reference."
-                f"Parameters {redundant_params} are not defined in project and weren't used."
-            )
-            is_valid = False
-        else:
-            message = "Valid design."
-            is_valid = True
-        return (message, is_valid, missing_params)
+        return (tuple(missing_params), tuple(redundant_params))

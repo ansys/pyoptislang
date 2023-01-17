@@ -67,6 +67,9 @@ def test_node_queries(optislang: Optislang):
     assert isinstance(parent, RootSystem)
     assert parent_name == parent.get_name()
 
+    properties = node.get_properties()
+    assert isinstance(properties, dict)
+
     status = node.get_status()
     assert isinstance(status, str)
 
