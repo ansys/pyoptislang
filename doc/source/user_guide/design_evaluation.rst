@@ -92,7 +92,7 @@ class with updated results.
     
     Please note that optiSLang retains only last evaluated design at RootSystem level. Therefore,
     results of previous designs have to be stored locally if they are required for further usage,
-    e.g. as an instance of :class:`Design() <ansys.optislang.core.project_parametric.Design>` class.
+    for example as an instance of :class:`Design() <ansys.optislang.core.project_parametric.Design>` class.
     
 Finally, when everything is done and 
 :class:`Optislang() <ansys.optislang.core.optislang.Optislang>` instance is not needed any more,
