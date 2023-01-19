@@ -1,13 +1,12 @@
 """
-.. _ref_ten_bar_truss:
+.. _ref_etk_abaqus:
 
-Ten bar truss
--------------
+ETK Abaqus
+----------
 
-Create ARSM ten_bar_truss flow in batch (using ``arsm_ten_bar_truss.py``),
-modify this flow (using ``ten_bar_modify_parameters.py`` and ``ten_bar_truss_lc2.py``),
-run this project (and optionally save_copy). More details in individual python scripts and
-ten bar truss example in optiSLang tutorial section.
+Set up a parametric system containing text input, Abaqus process actor and Abaqus ETK output
+actor (using ``etk_abaqus.py``). Save optiSLang project into the same folder as this script
+then. More details in python script and oscillator example in optiSLang tutorial section.
 """
 
 ####################################################
@@ -23,27 +22,17 @@ osl = Optislang()
 print(osl)
 
 #########################################################
-# Get paths of example scripts and run them.
+# Get path of example script and run it.
 #########################################################
-paths1 = examples.get_files("arsm_ten_bar_truss")
-paths2 = examples.get_files("ten_bar_modify_parameters")
-paths3 = examples.get_files("ten_bar_truss_lc2")
-
-osl.run_python_file(paths1[0])
-osl.run_python_file(paths2[0])
-osl.run_python_file(paths3[0])
-
-#########################################################
-# Execute workflow created by scripts above.
-#########################################################
-osl.start()
+paths = examples.get_files("etk_abaqus")
+osl.run_python_file(paths[0])
 
 ######################################################################
 # In order to save project to desired location, uncomment lines below:
 # .. code:: python
 #
 #   path = r'<insert-desired-location>'
-#   osl.save_copy(os.path.join(path, "test_project.opf"))
+#   osl.save_as(os.path.join(path, "test_project.opf"))
 #
 ######################################################################
 
@@ -54,7 +43,7 @@ osl.dispose()
 
 #########################################################
 # Generated workflow:
-# .. image:: ../../_static/01_ten_bar_truss.png
+# .. image:: ../../../_static/03_etk_abaqus.png
 #  :width: 400
 #  :alt: Result of script.
 #

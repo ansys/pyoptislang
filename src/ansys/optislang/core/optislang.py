@@ -11,6 +11,7 @@ from ansys.optislang.core.project import Project
 from ansys.optislang.core.tcp_osl_server import TcpOslServer
 
 if TYPE_CHECKING:
+    from ansys.optislang.core.logging import OslLogger
     from ansys.optislang.core.osl_server import OslServer
 
 
@@ -176,7 +177,7 @@ class Optislang:
 
     @property
     def name(self) -> str:
-        """Return instance unique identifier."""
+        """Get instance unique identifier."""
         if not self.__name:
             if self.__host or self.__port:
                 self.__name = f"optiSLang_{self.__host}:{self.__port}"
@@ -185,8 +186,8 @@ class Optislang:
         return self.__name
 
     @property
-    def log(self):
-        """Return instance logger."""
+    def log(self) -> OslLogger:
+        """Get instance logger."""
         return self.__logger
 
     @property
@@ -212,7 +213,7 @@ class Optislang:
 
     @property
     def project(self) -> Project:
-        """Return instance of ``Project`` class.
+        """Get instance of the ``Project`` class.
 
         Returns
         -------

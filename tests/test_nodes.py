@@ -60,7 +60,6 @@ def test_node_queries(optislang: Optislang):
     assert name == "Calculator"
 
     parent_name = node.get_parent_name()
-    print(f"Parent name: {parent_name}")
     assert isinstance(name, str)
 
     parent = node.get_parent()
@@ -91,14 +90,17 @@ def test_find_node_by_uid(optislang: Optislang):
     project = optislang.project
     root_system = project.root_system
 
-    # level 0
+    # level 1
     level0_node = root_system.find_node_by_uid(
-        uid="8854b2c4-fd8a-4e07-839e-1f36553e2d40", level_depth=0
+        uid="8854b2c4-fd8a-4e07-839e-1f36553e2d40", search_depth=1
     )
     assert isinstance(level0_node, Node)
+    with does_not_raise() as dnr:
+        print(level0_node)
+    assert dnr is None
 
     level0_system = root_system.find_node_by_uid(
-        uid="a8375c1f-0e39-4901-aa29-56d88f693b54", level_depth=0
+        uid="a8375c1f-0e39-4901-aa29-56d88f693b54", search_depth=1
     )
     assert isinstance(level0_system, System)
     with does_not_raise() as dnr:
@@ -106,35 +108,35 @@ def test_find_node_by_uid(optislang: Optislang):
     assert dnr is None
 
     higher_level = root_system.find_node_by_uid(
-        uid="051ba887-cd72-4fe1-a676-2d75a8a843e9", level_depth=0
-    )
-    assert higher_level is None
-
-    # level 1
-    level1_node = root_system.find_node_by_uid(
-        uid="051ba887-cd72-4fe1-a676-2d75a8a843e9", level_depth=1
-    )
-    assert isinstance(level1_node, Node)
-
-    higher_level = root_system.find_node_by_uid(
-        uid="ab7d50e2-b031-4c75-b701-fd9fcadf779c", level_depth=1
+        uid="051ba887-cd72-4fe1-a676-2d75a8a843e9", search_depth=1
     )
     assert higher_level is None
 
     # level 2
-    level2_node = root_system.find_node_by_uid(
-        uid="ab7d50e2-b031-4c75-b701-fd9fcadf779c", level_depth=2
+    level1_node = root_system.find_node_by_uid(
+        uid="051ba887-cd72-4fe1-a676-2d75a8a843e9", search_depth=2
     )
-    assert isinstance(level2_node, Node)
+    assert isinstance(level1_node, Node)
 
     higher_level = root_system.find_node_by_uid(
-        uid="161992fc-d1ee-487f-8bab-0b9897e641e8", level_depth=2
+        uid="ab7d50e2-b031-4c75-b701-fd9fcadf779c", search_depth=2
     )
     assert higher_level is None
 
     # level 3
+    level2_node = root_system.find_node_by_uid(
+        uid="ab7d50e2-b031-4c75-b701-fd9fcadf779c", search_depth=3
+    )
+    assert isinstance(level2_node, Node)
+
+    higher_level = root_system.find_node_by_uid(
+        uid="161992fc-d1ee-487f-8bab-0b9897e641e8", search_depth=3
+    )
+    assert higher_level is None
+
+    # level 4
     level3_node = root_system.find_node_by_uid(
-        uid="161992fc-d1ee-487f-8bab-0b9897e641e8", level_depth=3
+        uid="161992fc-d1ee-487f-8bab-0b9897e641e8", search_depth=4
     )
     assert isinstance(level3_node, Node)
 
@@ -147,34 +149,33 @@ def test_find_node_by_name(optislang: Optislang):
     project = optislang.project
     root_system = project.root_system
 
-    # level 0
-    level0_node = root_system.find_nodes_by_name(name="Calculator", level_depth=0)[0]
+    # level 1
+    level0_node = root_system.find_nodes_by_name(name="Calculator", search_depth=1)[0]
     assert isinstance(level0_node, Node)
 
-    level0_system = root_system.find_nodes_by_name(name="System", level_depth=0)[0]
+    level0_system = root_system.find_nodes_by_name(name="System", search_depth=1)[0]
     assert isinstance(level0_system, System)
-    with does_not_raise() as dnr:
-        print(level0_system)
-    assert dnr is None
 
-    higher_level = root_system.find_nodes_by_name(name="Calculator_inSystem", level_depth=0)
-    assert higher_level is None
+    higher_level = root_system.find_nodes_by_name(name="Calculator_inSystem", search_depth=1)
+    assert isinstance(higher_level, tuple)
+    assert len(higher_level) == 0
 
-    # level 1
-    level1_node = root_system.find_nodes_by_name(name="Calculator_inSensitivity", level_depth=1)[0]
+    # level 2
+    level1_node = root_system.find_nodes_by_name(name="Calculator_inSensitivity", search_depth=2)[0]
     assert isinstance(level1_node, Node)
 
     higher_level = root_system.find_nodes_by_name(
-        name="System_inSystem_inSensitivity", level_depth=1
+        name="System_inSystem_inSensitivity", search_depth=2
     )
-    assert higher_level is None
-
-    # level 2
-    level2_nodes = root_system.find_nodes_by_name(name="Calculator_inSystem", level_depth=2)
-    assert len(level2_nodes) == 2
+    assert isinstance(higher_level, tuple)
+    assert len(higher_level) == 0
 
     # level 3
-    level3_nodes = root_system.find_nodes_by_name(name="Calculator_inSystem", level_depth=3)
+    level2_nodes = root_system.find_nodes_by_name(name="Calculator_inSystem", search_depth=3)
+    assert len(level2_nodes) == 2
+
+    # level 4
+    level3_nodes = root_system.find_nodes_by_name(name="Calculator_inSystem", search_depth=4)
     assert len(level3_nodes) == 3
 
     optislang.dispose()

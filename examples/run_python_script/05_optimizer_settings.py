@@ -1,12 +1,12 @@
 """
-.. _ref_etk_abaqus:
+.. _ref_optimizer_settings:
 
-ETK Abaqus
-----------
+Optimizer settings
+------------------
 
-Set up a parametric system containing text input, Abaqus process actor and Abaqus ETK output
-actor (using ``etk_abaqus.py``). Save optiSLang project into the same folder as this script
-then. More details in python script and oscillator example in optiSLang tutorial section.
+Create, configure and insert an Evolutionary Algorithm Optimizer into the scenery
+(using ``optimizer_settings.py``). Save optiSLang project into the same folder as this script
+then. More details in python script.
 """
 
 ####################################################
@@ -18,13 +18,14 @@ import ansys.optislang.core.examples as examples
 #################################################################################
 # Create :class:`Optislang <ansys.optislang.core.optislang.Optislang>` instance.
 #################################################################################
+# in current working directory, create dir for osl files
 osl = Optislang()
 print(osl)
 
 #########################################################
 # Get path of example script and run it.
 #########################################################
-paths = examples.get_files("etk_abaqus")
+paths = examples.get_files("optimizer_settings")
 osl.run_python_file(paths[0])
 
 ######################################################################
@@ -32,7 +33,7 @@ osl.run_python_file(paths[0])
 # .. code:: python
 #
 #   path = r'<insert-desired-location>'
-#   osl.save_copy(os.path.join(path, "test_project.opf"))
+#   osl.save_as(os.path.join(path, "test_project.opf"))
 #
 ######################################################################
 
@@ -43,8 +44,8 @@ osl.dispose()
 
 #########################################################
 # Generated workflow:
-# .. image:: ../../_static/03_etk_abaqus.png
-#  :width: 400
+# .. image:: ../../../_static/05_optimizer_settings.png
+#  :width: 300
 #  :alt: Result of script.
 #
 #########################################################

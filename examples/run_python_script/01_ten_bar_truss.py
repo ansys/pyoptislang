@@ -1,12 +1,13 @@
 """
-.. _ref_oscillator_robustness:
+.. _ref_ten_bar_truss:
 
-Oscillator robustness
----------------------
+Ten bar truss
+-------------
 
-Create robustness flow for oscillator python example (using ``oscillator_robustness_arsm.py``)
-and run this flow. Save optiSLang project into the same folder as this script then.
-More details in python script and oscillator example in optiSLang tutorial section.
+Create ARSM ten_bar_truss flow in batch (using ``arsm_ten_bar_truss.py``),
+modify this flow (using ``ten_bar_modify_parameters.py`` and ``ten_bar_truss_lc2.py``),
+run this project (and optionally save_copy). More details in individual python scripts and
+ten bar truss example in optiSLang tutorial section.
 """
 
 ####################################################
@@ -22,13 +23,18 @@ osl = Optislang()
 print(osl)
 
 #########################################################
-# Get path of example script and run it.
+# Get paths of example scripts and run them.
 #########################################################
-paths = examples.get_files("oscillator_robustness_arsm")
-osl.run_python_file(paths[0])
+paths1 = examples.get_files("arsm_ten_bar_truss")
+paths2 = examples.get_files("ten_bar_modify_parameters")
+paths3 = examples.get_files("ten_bar_truss_lc2")
+
+osl.run_python_file(paths1[0])
+osl.run_python_file(paths2[0])
+osl.run_python_file(paths3[0])
 
 #########################################################
-# Execute workflow created by script above.
+# Execute workflow created by scripts above.
 #########################################################
 osl.start()
 
@@ -37,7 +43,7 @@ osl.start()
 # .. code:: python
 #
 #   path = r'<insert-desired-location>'
-#   osl.save_copy(os.path.join(path, "test_project.opf"))
+#   osl.save_as(os.path.join(path, "test_project.opf"))
 #
 ######################################################################
 
@@ -48,8 +54,8 @@ osl.dispose()
 
 #########################################################
 # Generated workflow:
-# .. image:: ../../_static/02_1_oscillator_robustness.png
-#  :width: 600
+# .. image:: ../../../_static/01_ten_bar_truss.png
+#  :width: 400
 #  :alt: Result of script.
 #
 #########################################################

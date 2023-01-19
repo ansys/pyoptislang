@@ -1,5 +1,3 @@
-import copy
-
 import pytest
 
 from ansys.optislang.core.project_parametric import (
@@ -439,21 +437,27 @@ def test_design_variable():
 def test_parameter():
     """Test `Parameter`."""
     parameter1 = Parameter(
-        name="par1", reference_value=12.0, id="xxx-12-55", const=False, type=ParameterType.MIXED
+        name="par", reference_value=13.0, id="xxx-12-58", const=True, type_=ParameterType.MIXED
     )
     assert isinstance(parameter1, Parameter)
     assert isinstance(parameter1.name, str)
     assert isinstance(parameter1.reference_value, (int, float))
-    assert isinstance(parameter1.reference_value_type, ParameterValueType)
     assert isinstance(parameter1.id, str)
     assert isinstance(parameter1.const, bool)
     assert isinstance(parameter1.type, ParameterType)
 
+    parameter1.name = "par1"
+    parameter1.reference_value = 12
+    parameter1.id = "xxx-12-55"
+    parameter1.const = False
+    with pytest.raises(AttributeError):
+        parameter1.type = ParameterType.DEPENDENT
+
     parameter1_eq = Parameter(
-        name="par1", reference_value=12.0, id="xxx-12-55", const=False, type=ParameterType.MIXED
+        name="par1", reference_value=12.0, id="xxx-12-55", const=False, type_=ParameterType.MIXED
     )
     parameter1_neq = Parameter(
-        name="par1", reference_value=12.0, id="xxx-12-56", const=False, type=ParameterType.MIXED
+        name="par1", reference_value=12.0, id="xxx-12-56", const=False, type_=ParameterType.MIXED
     )
     assert parameter1 == parameter1_eq
     assert not parameter1 == parameter1_neq
@@ -534,65 +538,63 @@ def test_design_properties(design: Design):
     assert design.feasibility == None
     assert design.status == DesignStatus.IDLE
     assert isinstance(design.constraints, tuple)
-    assert isinstance(design.constraint_names, tuple)
+    assert isinstance(design.constraints_names, tuple)
     assert isinstance(design.limit_states, tuple)
-    assert isinstance(design.limit_state_names, tuple)
+    assert isinstance(design.limit_states_names, tuple)
     assert isinstance(design.objectives, tuple)
-    assert isinstance(design.objective_names, tuple)
+    assert isinstance(design.objectives_names, tuple)
     assert isinstance(design.parameters, tuple)
     assert isinstance(design.parameters[0], DesignVariable)
-    assert isinstance(design.parameter_names, tuple)
-    assert isinstance(design.parameter_names[0], str)
+    assert isinstance(design.parameters_names, tuple)
+    assert isinstance(design.parameters_names[0], str)
     assert isinstance(design.responses, tuple)
-    assert isinstance(design.response_names, tuple)
+    assert isinstance(design.responses_names, tuple)
     assert isinstance(design.variables, tuple)
-    assert isinstance(design.variable_names, tuple)
+    assert isinstance(design.variables_names, tuple)
     for parameter in design.parameters:
         assert isinstance(parameter, DesignVariable)
 
 
-def test_remove_parameters(design: Design):
+def test_clear_parameters(design: Design):
+    """Test `clear_parameters`."""
+    design.clear_parameters()
+    assert len(design.parameters) == 0
+
+
+def test_remove_parameter(design: Design):
     """Test `remove_parameters`."""
-    design.remove_parameters(to_be_removed=["mixed", "dependent"])
+    for name in ["mixed", "dependent"]:
+        design.remove_parameter(name=name)
     assert len(design.parameters) > 0
     for parameter in design.parameters:
         assert parameter.name in ["optimization", "stochastic"]
         assert parameter.name not in ["mixed", "dependent"]
-    design.remove_parameters()
-    assert len(design.parameters) == 0
 
 
 def test_set_parameter_value(design: Design):
-    """Test `set_parameter`."""
-    design.remove_parameters()
-    design.set_parameter_value(parameter="par1", value=5)
-    design.set_parameter_value(parameter=DesignVariable("par2", 10))
+    """Test `set_parameter` and `set_parameter_by_name`."""
+    design.clear_parameters()
+    design.set_parameter_by_name(name="par1", value=5)
+    design.set_parameter(parameter=DesignVariable("par2", 10))
     for parameter in design.parameters:
         assert isinstance(parameter, DesignVariable)
         assert parameter.name in ["par1", "par2"]
         assert parameter.value in [5, 10]
-
-
-@pytest.mark.parametrize(
-    "parameters",
-    [
-        {"par1": 5, "par2": 10},
-        [DesignVariable("par1", 5), DesignVariable("par2", 10)],
-    ],
-)
-def test_set_parameter_values(design: Design, parameters):
-    """Test `set_parameters`."""
-    design.remove_parameters()
-    design.set_parameter_values(parameters=parameters)
+    design.set_parameter_by_name(name="par1", value=15)
+    design.set_parameter(
+        parameter=Parameter(
+            name="par2", reference_value=20, id="xxx", const=False, type_=ParameterType.MIXED
+        )
+    )
     for parameter in design.parameters:
         assert isinstance(parameter, DesignVariable)
         assert parameter.name in ["par1", "par2"]
-        assert parameter.value in [5, 10]
+        assert parameter.value in [15, 20]
 
 
-def test_deep_copy(design: Design):
+def test_copy_unevaluated_design(design: Design):
     """Test deep copy of Design (and parameters inside)."""
-    design_copy = copy.deepcopy(design)
+    design_copy = design.copy_unevaluated_design()
     assert design_copy.parameters == design.parameters
-    design_copy.remove_parameters("dependent")
+    design_copy.remove_parameter("dependent")
     assert not design_copy.parameters == design.parameters

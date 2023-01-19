@@ -35,7 +35,7 @@ print(osl.run_python_file(paths2[0]))
 # .. code:: python
 #
 #   path = r'<insert-desired-location>'
-#   osl.save_copy(os.path.join(path, "test_project.opf"))
+#   osl.save_as(os.path.join(path, "test_project.opf"))
 #
 ######################################################################
 
@@ -46,7 +46,7 @@ osl.dispose()
 
 #########################################################
 # Generated workflow:
-# .. image:: ../../_static/04_python_node_and_help.png
+# .. image:: ../../../_static/04_python_node_and_help.png
 #  :width: 300
 #  :alt: Result of script.
 #

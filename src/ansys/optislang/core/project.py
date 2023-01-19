@@ -33,12 +33,10 @@ class Project:
     def __str__(self):
         """Return formatted string."""
         return (
-            "----------------------------------------------------------------------\n"
             f"Name: {self.get_name()}\n"
             f"Description: {self.get_description()}\n"
             f"Status: {self.get_status()}\n"
-            f"Location: {str(self.get_location())}\n"
-            "----------------------------------------------------------------------"
+            f"Location: {str(self.get_location())}"
         )
 
     def get_description(self) -> str:

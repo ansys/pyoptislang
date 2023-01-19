@@ -32,18 +32,12 @@ Parameters values may be modified by methods of the instance of
 .. code:: python
     
     from ansys.optislang.core.project_parametric import DesignVariable
-    reference_design1 = root_system.get_reference_design()
+    reference_design = root_system.get_reference_design()
     # modify value of parameter using either ``parameter`` and ``value``
-    reference_design1.set_parameter_value(parameter = 'a', value = 12)
+    reference_design.set_parameter_by_name(parameter = 'a', value = 12)
     # instance of DesignVariable or Parameter may be used as well
     a = DesignVariable(name='a', value=12)
-    reference_design1.set_parameter_value(parameter=a)
-    # multiple values may be set simultaneously, using either dictionary
-    reference_design2 = root_system.get_reference_design()
-    reference_design2.set_parameter_values(parameters={'a': 12, 'b':10})
-    # instances of DesignVariable or Parameter may be used as well
-    b = DesignVariable(name='b', value=10)
-    reference_design2.set_parameter_values(parameters=[a, b])
+    reference_design.set_parameter(parameter=a)
 
 
 Create new design
@@ -56,52 +50,47 @@ Parameters don't have to be provided when initializing new design.
 
 .. code:: python
     
-    # design created using RootSystem() method
-    design_by_osl = root_system.create_design(parameters = {'a': 1, 'b': 2})
     # design created using directly Design() class
     direct_design = Design(parameters = {'a': 3, 'b': 4})
     # create empty design and add parameters afterward
-    design = Design()
-    design.set_parameter(parameter = 'a', value = 5)
-    design.set_parameters(parameters = {'b': 6, 'c': 7, 'd': 8, 'f': 9})
+    empty_design = Design()
+    empty_design.set_parameter_by_name(parameter = 'a', value = 3)
+    empty_design.set_parameter_by_name(parameter = 'q', value = 4)
     # parameters may also be removed
-    design.remove_parameters(to_be_removed = 'c')
-    design.remove_parameters(to_be_removed = ['d', 'f'])
+    empty_design.remove_parameter(name = 'c')
+    # or remove all parameters
+    empty_design.clear_parameters()
 
 
 Check design structure
 ----------------------
-In order to check whether design contains all parameters defined in project, method
-:func:`check_design_structure() <ansys.optislang.core.nodes.RootSystem.check_design_structure>` 
+In order to check whether design contains all parameters defined in project, methods
+:func:`get_missing_parameters_names() <ansys.optislang.core.nodes.RootSystem.get_missing_parameters_names>` and
+:func:`get_undefined_parameters_names() <ansys.optislang.core.nodes.RootSystem.get_undefined_parameters_names>` 
 may be used. This step is not necessary though, because this is always done internally when 
 evaluating design.
 
 .. code:: python
 
-    missing_parameters, redundant_parameters = root_system.check_design_structure(direct_design)
+    missing_parameters = root_system.get_missing_parameters(empty_design)
+    undefined_parameters = root_system.get_undefined_parameters(direct_design)
 
 
 Evaluate design
 ---------------
-Designs might be evaluated individually using method
-:func:`evaluate_design() <ansys.optislang.core.nodes.RootSystem.evaluate_design>`
-or multiple designs might be evaluated using method
-:func:`evaluate_multiple_designs() <ansys.optislang.core.nodes.RootSystem.evaluate_multiple_designs>`.
-Both of these functions return parameters and responses for convenience, but these are stored in
-the used instance of :class:`Design() <ansys.optislang.core.project_parametric.Design>` as well and
-may be accessed later.
+Designs can be evaluated using method
+:func:`evaluate_design() <ansys.optislang.core.nodes.RootSystem.evaluate_design>`. This method 
+returns the same instance of :class:`Design() <ansys.optislang.core.project_parametric.Design>` 
+class with updated results.
 
 .. code:: python
 
     # single design
-    result_design = root_system.evaluate_design(design = reference_design1)
-    
-    # multiple designs
-    result_designs = osl.evaluate_multiple_designs(designs = [reference_design1, reference_design2])
+    result_design = root_system.evaluate_design(design = reference_design)
 
 .. note:: 
     
-    Please note that optiSLang retains only last evaluated design at RootSystem level. Therefore
+    Please note that optiSLang retains only last evaluated design at RootSystem level. Therefore,
     results of previous designs have to be stored locally if they are required for further usage,
     e.g. as an instance of :class:`Design() <ansys.optislang.core.project_parametric.Design>` class.
     

@@ -1,13 +1,12 @@
 """
-.. _ref_simple_calculator:
+.. _ref_oscillator_python_systems:
 
-Simple calculator
------------------
+Oscillator python systems
+-------------------------
 
-Create a simple flow of 4 nodes a run this flow then (using ``simple_calculator.py``).
-
-Save optiSLang project into the same folder as this script then.
-More details in python script.
+Create parametric system for oscillator python example (using ``oscillator_system_python.py``)
+and run it. Save optiSLang project into the same folder as this script then.
+More details in python script and oscillator example in optiSLang tutorial section.
 """
 
 ####################################################
@@ -20,15 +19,16 @@ import ansys.optislang.core.examples as examples
 # Create :class:`Optislang <ansys.optislang.core.optislang.Optislang>` instance.
 #################################################################################
 osl = Optislang()
-paths = examples.get_files("simple_calculator")
+print(osl)
 
 #########################################################
 # Get path of example script and run it.
 #########################################################
+paths = examples.get_files("oscillator_system_python")
 osl.run_python_file(paths[0])
 
 #########################################################
-# Execute workflow created by scripts above.
+# Execute workflow created by script above.
 #########################################################
 osl.start()
 
@@ -37,7 +37,7 @@ osl.start()
 # .. code:: python
 #
 #   path = r'<insert-desired-location>'
-#   osl.save_copy(os.path.join(path, "test_project.opf"))
+#   osl.save_as(os.path.join(path, "test_project.opf"))
 #
 ######################################################################
 
@@ -48,8 +48,8 @@ osl.dispose()
 
 #########################################################
 # Generated workflow:
-# .. image:: ../../_static/07_simple_calculator.png
-#  :width: 400
+# .. image:: ../../../_static/02_2_python_system.png
+#  :width: 300
 #  :alt: Result of script.
 #
 #########################################################

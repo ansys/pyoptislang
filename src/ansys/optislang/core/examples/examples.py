@@ -63,6 +63,7 @@ example_files = {
     ),
     "nodes_connection": (module_path / "00_run_script" / "files" / "connect_nodes.opf",),
     "nested_systems": (module_path / "00_run_script" / "files" / "nested_systems.opf",),
+    "ten_bar_truss": (module_path / "00_run_script" / "files" / "ten_bar_truss.opf",),
 }
 
 # dictionary of scripts to be run
@@ -139,4 +140,5 @@ example_scripts = {
     "calculator_with_params": None,
     "nodes_connection": None,
     "nested_systems": None,
+    "ten_bar_truss": None,
 }

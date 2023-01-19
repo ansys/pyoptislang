@@ -2,9 +2,9 @@
 from __future__ import annotations
 
 from enum import Enum
-from typing import TYPE_CHECKING, Dict, Iterable, List, Tuple, Union
+from typing import TYPE_CHECKING, Iterable, List, Tuple, Union
 
-from ansys.optislang.core.project_parametric import Design, DesignVariable, ParameterManager
+from ansys.optislang.core.project_parametric import Design, ParameterManager
 
 if TYPE_CHECKING:
     from ansys.optislang.core.osl_server import OslServer
@@ -19,21 +19,33 @@ class DesignFlow(Enum):
     RECEIVE_SEND = 3
 
     @staticmethod
-    def from_str(label: str):
-        """Convert string to DesignFlow."""
+    def from_str(label: str) -> DesignFlow:
+        """Convert string to ``DesignFlow``.
+
+        Parameters
+        ----------
+        label: str
+            String that shall be converted.
+
+        Returns
+        -------
+        DesignFlow
+            Instance of the ``DesignFlow`` class.
+
+        Raises
+        ------
+        TypeError
+            Raised when inappropriate type of ``label`` was given.
+        ValueError
+            Raised when inappropriate value of ``label`` was given.
+        """
         if not isinstance(label, str):
             raise TypeError(f"String was expected, but `{type(label)}` was given.")
         label = label.upper()
-        if label == "NONE":
-            return DesignFlow.NONE
-        elif label == "RECEIVE":
-            return DesignFlow.RECEIVE
-        elif label == "SEND":
-            return DesignFlow.SEND
-        elif label == "RECEIVE_SEND":
-            return DesignFlow.RECEIVE_SEND
-        else:
-            raise ValueError(f"Option `{label}` not available in DesignFlow options.")
+        try:
+            return eval("DesignFlow." + label)
+        except:
+            raise ValueError(f"Option `{label}` not available in ``DesignFlow`` options.")
 
 
 class Node:
@@ -44,36 +56,30 @@ class Node:
         uid: str,
         osl_server: OslServer,
     ) -> None:
-        """Create a new instance of Node.
+        """Create a new instance of ``Node``.
 
         Parameters
         ----------
         uid: str
             Uid.
-        osl_server: TcpOslServer
-            Connection to python class.
+        osl_server: OslServer
+            Object providing access to optiSLang server.
         """
         self._osl_server = osl_server
         self.__uid = uid
 
     def __str__(self):
         """Return formatted string."""
-        return (
-            "----------------------------------------------------------------------\n"
-            f"Node type: {self.get_type()}\n"
-            f"Name: {self.get_name()}\n"
-            f"Uid: {self.uid}\n"
-            "----------------------------------------------------------------------"
-        )
+        return f"Node type: {self.get_type()} Name: {self.get_name()} Uid: {self.uid}"
 
     @property
     def uid(self) -> str:
-        """Return nodes uid.
+        """Get node uid.
 
         Returns
         -------
         str
-            Nodes uid.
+            Node uid.
         """
         return self.__uid
 
@@ -83,7 +89,7 @@ class Node:
         Returns
         -------
         str
-            Nodes name.
+            Node name.
 
         Raises
         ------
@@ -117,9 +123,10 @@ class Node:
         project_tree = self._osl_server.get_full_project_tree_with_properties()
         root_system_uid = project_tree["projects"][0]["system"]["uid"]
         parent_tree = project_tree["projects"][0]["system"]
-        parent_uid = self.__find_parents_node_uid(
-            parent_tree=parent_tree,
+        parent_uid = Node._find_parent_node_uid(
+            tree=parent_tree,
             parent_uid=root_system_uid,
+            node_uid=self.uid,
         )
         properties_dicts_list = [
             {
@@ -137,7 +144,7 @@ class Node:
         Returns
         -------
         str
-            Parents system name.
+            Parent system name.
 
         Raises
         ------
@@ -153,12 +160,12 @@ class Node:
         return actor_info["name"]
 
     def get_properties(self) -> dict:
-        """Get raw server output with nodes properties.
+        """Get raw server output with node properties.
 
         Returns
         -------
         dict
-            Dictionary with nodes properties
+            Dictionary with node properties
 
         Raises
         ------
@@ -218,13 +225,23 @@ class Node:
         ------
         str
             Parents node uid.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
         """
         project_tree = self._osl_server.get_full_project_tree_with_properties()
         root_system_uid = project_tree["projects"][0]["system"]["uid"]
         parent_tree = project_tree["projects"][0]["system"]
-        return self.__find_parents_node_uid(
-            parent_tree=parent_tree,
+        return Node._find_parent_node_uid(
+            tree=parent_tree,
             parent_uid=root_system_uid,
+            node_uid=self.uid,
         )
 
     def _create_nodes_from_properties_dicts(
@@ -268,20 +285,18 @@ class Node:
 
         return tuple(nodes_list)
 
-    def __find_parents_node_uid(self, parent_tree: dict, parent_uid: str) -> str:
-        """Get uid of the parent node.
+    def _is_parametric_system(self, uid: str) -> bool:
+        """Check whether system is parametric.
 
         Parameters
         ----------
-        parent_tree: dict
-            Dictionary with children nodes.
-        parent_uid: str
-            Uid of the system that is being looped through.
+        uid : str
+            System uid.
 
-        Return
-        ------
-        str
-            Uid of the parent node.
+        Returns
+        -------
+        bool
+            True/False.
 
         Raises
         ------
@@ -291,31 +306,34 @@ class Node:
             Raised when the command or query fails.
         TimeoutError
             Raised when the timeout float value expires.
-        NameError
-            Raised when parent system wasn't located in project tree.
-        """
-        for node in parent_tree["nodes"]:
-            if node["uid"] == self.uid:
-                return parent_uid
-            if node["kind"] == "system":
-                self.__find_parents_node_uid(parent_tree=node, parent_uid=parent_tree["uid"])
-        raise NameError(f'Node "{self.__uid}" was not located in structure tree.')
-
-    def _is_parametric_system(self, uid: str) -> bool:
-        """Check whether system is parametric.
-
-        Parameters
-        ----------
-        uid : str
-            Systems uid.
-
-        Returns
-        -------
-        bool
-            True/False.
         """
         props = self._osl_server.get_actor_properties(uid=uid)
         return "ParameterManager" in props["properties"]
+
+    @staticmethod
+    def _find_parent_node_uid(tree: dict, parent_uid: str, node_uid: str) -> str:
+        """Get uid of the parent node.
+
+        Parameters
+        ----------
+        tree: dict
+            Dictionary with children nodes.
+        parent_uid: str
+            Uid of the system that is being looped through.
+        node_uid: str
+            Uid of the node for which the parent is being searched.
+
+        Return
+        ------
+        str
+            Uid of the parent node.
+        """
+        for node in tree["nodes"]:
+            if node["uid"] == node_uid:
+                return parent_uid
+            if node["kind"] == "system":
+                Node._find_parent_node_uid(tree=node, parent_uid=tree["uid"], node_uid=node_uid)
+        raise RuntimeError(f'Node "{node_uid}" was not located in structure tree.')
 
 
 class System(Node):
@@ -326,45 +344,37 @@ class System(Node):
         uid: str,
         osl_server: OslServer,
     ) -> None:
-        """Create a new instance of System.
+        """Create a new instance of ``System``.
 
         Parameters
         ----------
         uid: str
             Uid.
-        osl_server: TcpOslServer
-            Connection to python class.
+        osl_server: OslServer
+            Object providing access to optiSLang server.
         """
         super().__init__(
             uid=uid,
             osl_server=osl_server,
         )
 
-    def __str__(self):
-        """Return formatted string."""
-        return (
-            "----------------------------------------------------------------------\n"
-            f"Node type: {self.get_type()}\n"
-            f"Name: {self.get_name()}\n"
-            f"Uid: {self.uid}\n"
-            f"Nodes: {str(self._get_nodes_list())}\n"
-            "----------------------------------------------------------------------"
-        )
+    def find_node_by_uid(self, uid: str, search_depth: int = 1) -> Union[Node, None]:
+        """Find node with the specified uid in the current system.
 
-    def find_node_by_uid(self, uid: str, level_depth: int = 0) -> Node:
-        """Find node from the current system by uid.
+        Search only in the current system descendant nodes.
 
         Parameters
         ----------
         uid : str
-            Nodes uid.
-        level_depth: int, optional
-            Zero-based level of search.
+            Node uid.
+        search_depth: int, optional
+            Search depth of the current node subtree. Level-1 corresponds to direct children nodes
+            of the current system.
 
         Returns
         -------
-        Tuple[Node, ...]
-            Tuple of Nodes with defined uid; None if node with requested
+        Union[Node, None]
+            ``Node`` with defined uid; ``None`` if wasn't located in any descendant node.
 
         Raises
         ------
@@ -381,15 +391,16 @@ class System(Node):
         if self.uid == project_tree["projects"][0]["system"]["uid"]:
             system_tree = project_tree["projects"][0]["system"]
         else:
-            system_tree = self._find_system_parent_tree(
-                parent_tree=project_tree["projects"][0]["system"]
+            system_tree = System._find_subtree(
+                tree=project_tree["projects"][0]["system"],
+                uid=self.uid,
             )
-        properties_dicts_list = self._find_nodes_with_uid(
+        properties_dicts_list = System._find_node_with_uid(
             uid=uid,
-            parent_tree=system_tree,
+            tree=system_tree,
             properties_dicts_list=[],
-            current_level=0,
-            max_level=level_depth,
+            current_depth=1,
+            max_search_depth=search_depth,
         )
 
         if len(properties_dicts_list) == 0:
@@ -400,15 +411,18 @@ class System(Node):
             properties_dicts_list=properties_dicts_list
         )[0]
 
-    def find_nodes_by_name(self, name: str, level_depth: int = 0) -> Tuple[Node, ...]:
-        """Find children nodes by name in current system.
+    def find_nodes_by_name(self, name: str, search_depth: int = 1) -> Tuple[Node, ...]:
+        """Find nodes with the specified name in the current system.
+
+        Search only in the current system descendant nodes.
 
         Parameters
         ----------
         name : str
-            Name of node.
-        level_depth: int, optional
-            Zero-based level of search.
+            Name of the node.
+        search_depth: int, optional
+            Search depth of the current node subtree. Level-1 corresponds to direct children nodes
+            of the current system.
 
         Returns
         -------
@@ -423,8 +437,6 @@ class System(Node):
             Raised when the command or query fails.
         TimeoutError
             Raised when the timeout float value expires.
-        NameError
-            Raised when multiple nodes with the same name were found.
         TypeError
             Raised when unknown type of component was found.
         """
@@ -432,30 +444,31 @@ class System(Node):
         if self.uid == project_tree["projects"][0]["system"]["uid"]:
             system_tree = project_tree["projects"][0]["system"]
         else:
-            system_tree = self._find_system_parent_tree(
-                parent_tree=project_tree["projects"][0]["system"]
+            system_tree = System._find_subtree(
+                tree=project_tree["projects"][0]["system"],
+                uid=self.uid,
             )
-        properties_dicts_list = self._find_nodes_with_name(
+        properties_dicts_list = System._find_nodes_with_name(
             name=name,
-            parent_tree=system_tree,
+            tree=system_tree,
             properties_dicts_list=[],
-            current_level=0,
-            max_level=level_depth,
+            current_depth=1,
+            max_search_depth=search_depth,
         )
 
         if len(properties_dicts_list) == 0:
             self._osl_server._logger.error(f"Node `{name}` not found in the current system.")
-            return None
+            return tuple()
 
         return self._create_nodes_from_properties_dicts(properties_dicts_list=properties_dicts_list)
 
     def get_nodes(self) -> Tuple[Node, ...]:
-        """Get tuple of the current systems nodes.
+        """Get direct children nodes.
 
         Returns
         -------
         Tuple[Node, ...]
-            Instances of `Node` class.
+            Current system nodes.
 
         Raises
         ------
@@ -467,35 +480,16 @@ class System(Node):
             Raised when the timeout float value expires.
         """
         return self._create_nodes_from_properties_dicts(
-            properties_dicts_list=self._get_nodes_list()
+            properties_dicts_list=self._get_nodes_dicts()
         )
 
-    def _find_nodes_with_name(
-        self,
-        name: str,
-        parent_tree: dict,
-        properties_dicts_list: List[dict],
-        current_level: int,
-        max_level: int,
-    ) -> List[dict]:
-        """Loop through the project tree and find nodes by name.
+    def _get_nodes_dicts(self) -> List[dict]:
+        """Get children nodes data.
 
-        Parameters
-        ----------
-        name : str
-            Nodes name.
-        parent_tree : dict
-            Dictionary with children nodes.
-        properties_dicts_list : dict
-            Dictionary with properties.
-        current_level: int
-            Current level of recursion.
-        max_level: int
-            Maximum level of recursion.
         Returns
         -------
-        dict
-            Dictionary with necessary info for creation of Node.
+        List[dict]
+            List of dictionaries with children nodes data.
 
         Raises
         ------
@@ -505,148 +499,19 @@ class System(Node):
             Raised when the command or query fails.
         TimeoutError
             Raised when the timeout float value expires.
-        """
-        for node in parent_tree["nodes"]:
-            if node["name"] == name:
-                properties_dicts_list.append(
-                    {
-                        "type": node["type"],
-                        "name": node["name"],
-                        "uid": node["uid"],
-                        "parent_uid": parent_tree["uid"],
-                        "parent_name": parent_tree["name"],
-                        "kind": node["kind"],
-                    }
-                )
-            if node["kind"] == "system" and current_level < max_level:
-                self._find_nodes_with_name(
-                    name=name,
-                    parent_tree=node,
-                    properties_dicts_list=properties_dicts_list,
-                    current_level=current_level + 1,
-                    max_level=max_level,
-                )
-        return properties_dicts_list
-
-    def _find_nodes_with_uid(
-        self,
-        uid: str,
-        parent_tree: dict,
-        properties_dicts_list: List[dict],
-        current_level: int,
-        max_level: int,
-    ) -> List[dict]:
-        """Loop through the project tree and find nodes by uid.
-
-        Parameters
-        ----------
-        uid : str
-            Nodes uid.
-        parent_tree : dict
-            Nodes below.
-        properties_dicts_list : List[dict]
-            Dictionary with
-        current_level: int
-            Current level of recursion.
-        max_level: int
-            Maximum level of recursion.
-
-        Returns
-        -------
-        dict
-            Dictionary with necessary info for creation of Node.
-
-        Raises
-        ------
-        OslCommunicationError
-            Raised when an error occurs while communicating with server.
-        OslCommandError
-            Raised when the command or query fails.
-        TimeoutError
-            Raised when the timeout float value expires.
-        """
-        for node in parent_tree["nodes"]:
-            if node["uid"] == uid:
-                properties_dicts_list.append(
-                    {
-                        "type": node["type"],
-                        "name": node["name"],
-                        "uid": node["uid"],
-                        "parent_uid": parent_tree["uid"],
-                        "parent_name": parent_tree["name"],
-                        "kind": node["kind"],
-                    }
-                )
-            if node["kind"] == "system" and current_level < max_level:
-                self._find_nodes_with_uid(
-                    uid=uid,
-                    parent_tree=node,
-                    properties_dicts_list=properties_dicts_list,
-                    current_level=current_level + 1,
-                    max_level=max_level,
-                )
-        return properties_dicts_list
-
-    def _find_system_parent_tree(self, parent_tree: dict) -> dict:
-        """Loop through the project tree and find system parent tree.
-
-        Parameters
-        ----------
-        parent_tree: dict
-            Dictionary with parent structure.
-
-        Returns
-        -------
-        dict
-            Dictionary with system structure.
-
-        Raises
-        ------
-        OslCommunicationError
-            Raised when an error occurs while communicating with server.
-        OslCommandError
-            Raised when the command or query fails.
-        TimeoutError
-            Raised when the timeout float value expires.
-        NameError
-            Raised when system wasn't found in structure tree.
-        """
-        for node in parent_tree["nodes"]:
-            if node["uid"] == self.uid:
-                return node
-            if node["kind"] == "system":
-                self._find_system_parent_tree(
-                    parent_tree=node,
-                )
-
-    def _get_nodes_list(self) -> List[dict]:
-        """Get list of nodes.
-
-        Returns
-        -------
-        List
-            List of nodes.
-
-        Raises
-        ------
-        OslCommunicationError
-            Raised when an error occurs while communicating with server.
-        OslCommandError
-            Raised when the command or query fails.
-        TimeoutError
-            Raised when the timeout float value expires.
-        NameError
-            Raised when system wasn't located in project tree.
+        RuntimeError
+            Raised when the system wasn't located in the project tree.
         """
         project_tree = self._osl_server.get_full_project_tree_with_properties()
         if self.uid == project_tree["projects"][0]["system"]["uid"]:
             system_tree = project_tree["projects"][0]["system"]
         else:
-            system_tree = self._find_system_parent_tree(
-                parent_tree=project_tree["projects"][0]["system"]
+            system_tree = System._find_subtree(
+                tree=project_tree["projects"][0]["system"],
+                uid=self.uid,
             )
         if len(system_tree) == 0:
-            raise NameError(f"System `{self.uid}` wasn't found.")
+            raise RuntimeError(f"System `{self.uid}` wasn't found.")
 
         children_dicts_list = []
         for node in system_tree["nodes"]:
@@ -660,6 +525,128 @@ class System(Node):
             )
         return children_dicts_list
 
+    @staticmethod
+    def _find_nodes_with_name(
+        name: str,
+        tree: dict,
+        properties_dicts_list: List[dict],
+        current_depth: int,
+        max_search_depth: int,
+    ) -> List[dict]:
+        """Find nodes with specified name.
+
+        Parameters
+        ----------
+        name : str
+            Nodes name.
+        tree : dict
+            Tree, where nodes with specified name are supposed to be searched.
+        properties_dicts_list : dict
+            Dictionary with properties.
+        current_depth: int
+            Current depth of search.
+        max_search_depth: int
+            Maximum depth of search.
+
+        Returns
+        -------
+        dict
+            Dictionary with necessary info for creation of Node.
+        """
+        for node in tree["nodes"]:
+            if node["name"] == name:
+                properties_dicts_list.append(
+                    {
+                        "type": node["type"],
+                        "name": node["name"],
+                        "uid": node["uid"],
+                        "parent_uid": tree["uid"],
+                        "parent_name": tree["name"],
+                        "kind": node["kind"],
+                    }
+                )
+            if node["kind"] == "system" and current_depth < max_search_depth:
+                System._find_nodes_with_name(
+                    name=name,
+                    tree=node,
+                    properties_dicts_list=properties_dicts_list,
+                    current_depth=current_depth + 1,
+                    max_search_depth=max_search_depth,
+                )
+        return properties_dicts_list
+
+    @staticmethod
+    def _find_node_with_uid(
+        uid: str,
+        tree: dict,
+        properties_dicts_list: List[dict],
+        current_depth: int,
+        max_search_depth: int,
+    ) -> List[dict]:
+        """Find node with specified uid.
+
+        Parameters
+        ----------
+        uid : str
+            Nodes uid.
+        tree : dict
+            Tree, where node with specified uid is supposed to be searched.
+        properties_dicts_list : List[dict]
+            Dictionary with properties.
+        current_depth: int
+            Current depth of search.
+        max_search_depth: int
+            Maximum depth of search.
+
+        Returns
+        -------
+        dict
+            Dictionary with necessary info for creation of Node.
+        """
+        for node in tree["nodes"]:
+            if node["uid"] == uid:
+                properties_dicts_list.append(
+                    {
+                        "type": node["type"],
+                        "name": node["name"],
+                        "uid": node["uid"],
+                        "parent_uid": tree["uid"],
+                        "parent_name": tree["name"],
+                        "kind": node["kind"],
+                    }
+                )
+            if node["kind"] == "system" and current_depth < max_search_depth:
+                System._find_node_with_uid(
+                    uid=uid,
+                    tree=node,
+                    properties_dicts_list=properties_dicts_list,
+                    current_depth=current_depth + 1,
+                    max_search_depth=max_search_depth,
+                )
+        return properties_dicts_list
+
+    @staticmethod
+    def _find_subtree(tree: dict, uid: str) -> dict:
+        """Find subtree with root node matching given uid.
+
+        Parameters
+        ----------
+        tree: dict
+            Dictionary with parent structure.
+        uid: str
+            Uid of the subtree root node.
+
+        Returns
+        -------
+        dict
+            Dictionary representing found subtree.
+        """
+        for node in tree["nodes"]:
+            if node["uid"] == uid:
+                return node
+            if node["kind"] == "system":
+                System._find_subtree(tree=node, uid=uid)
+
 
 class ParametricSystem(System):
     """Class responsible for creation and operations on parametric system."""
@@ -669,32 +656,20 @@ class ParametricSystem(System):
         uid: str,
         osl_server: OslServer,
     ) -> None:
-        """Create a new instance of ParametricSystem.
+        """Create a new instance of ``ParametricSystem``.
 
         Parameters
         ----------
         uid: str
             Uid.
-        osl_server: TcpOslServer
-            Connection to python class.
+        osl_server: OslServer
+            Object providing access to optiSLang server.
         """
         super().__init__(
             uid=uid,
             osl_server=osl_server,
         )
         self.__parameter_manager = ParameterManager(uid, osl_server)
-
-    def __str__(self):
-        """Return formatted string."""
-        return (
-            "----------------------------------------------------------------------\n"
-            f"Node type: {self.get_type()}\n"
-            f"Name: {self.get_name()}\n"
-            f"Uid: {self.uid}\n"
-            f"Nodes: {str(self._get_nodes_list())}\n"
-            f"Parameters: {str(self.parameter_manager.get_parameters_names())}\n"
-            "----------------------------------------------------------------------"
-        )
 
     @property
     def parameter_manager(self) -> ParameterManager:
@@ -716,46 +691,19 @@ class RootSystem(ParametricSystem):
         uid: str,
         osl_server: OslServer,
     ) -> None:
-        """Create a new instance of RootSystem.
+        """Create a new instance of ``RootSystem``.
 
         Parameters
         ----------
         uid: str
             Uid.
-        osl_server: TcpOslServer
-            Connection to python class.
-
-        Raises
-        ------
-        OslCommunicationError
-            Raised when an error occurs while communicating with server.
-        OslCommandError
-            Raised when the command or query fails.
-        TimeoutError
-            Raised when the timeout float value expires.
+        osl_server: OslServer
+            Object providing access to optiSLang server.
         """
         super().__init__(
             uid=uid,
             osl_server=osl_server,
         )
-
-    def create_design(
-        self, parameters: Union[Dict[str, float], Iterable[DesignVariable]] = None
-    ) -> Design:
-        """Create a new instance of ``Design`` class.
-
-        Parameters
-        ----------
-        parameters: Union[Dict[str, float], Iterable[DesignVariable]], optional
-            Dictionary of parameters and it's values {'parname': value, ...}
-            or iterable of DesignVariables.
-
-        Returns
-        -------
-        Design
-            Instance of ``Design`` class.
-        """
-        return Design(parameters)
 
     def evaluate_design(self, design: Design) -> Design:
         """Evaluate given design.
@@ -782,27 +730,25 @@ class RootSystem(ParametricSystem):
         evaluate_dict = {}
         for parameter in design.parameters:
             evaluate_dict[parameter.name] = parameter.value
-
         output_dict = self._osl_server.evaluate_design(evaluate_dict=evaluate_dict)
         design._receive_results(output_dict[0])
 
-        design_parameters = design.parameter_names
+        design_parameters = design.parameters_names
         output_parameters = output_dict[0]["result_design"]["parameter_names"]
-        missing_parameters = list(set(output_parameters) - set(design_parameters))
-        redundant_parameters = list(set(design_parameters) - set(output_parameters))
-        missing_parameters.sort()
-        redundant_parameters.sort()
-        self._osl_server._logger.debug(
-            f"Parameters ``{redundant_parameters}`` are redundant and were not used for evaluation."
-        )
-        self._osl_server._logger.warning(
-            f"Parameters ``{missing_parameters}`` were missing, "
-            "reference values were used for evaluation and list of parameters will be updated."
-        )
+        missing_parameters = RootSystem._compare_two_sets(output_parameters, design_parameters)
+        undefined_parameters = RootSystem._compare_two_sets(design_parameters, output_parameters)
+
+        if undefined_parameters:
+            self._osl_server._logger.debug(f"Parameters ``{undefined_parameters}`` weren't used.")
+        if missing_parameters:
+            self._osl_server._logger.warning(
+                f"Parameters ``{missing_parameters}`` were missing, "
+                "reference values were used for evaluation and list of parameters will be updated."
+            )
 
         for parameter in missing_parameters:
             position = output_dict[0]["result_design"]["parameter_names"].index(parameter)
-            design.set_parameter_value(
+            design.set_parameter_by_name(
                 parameter,
                 output_dict[0]["result_design"]["parameter_values"][position],
                 False,
@@ -810,41 +756,13 @@ class RootSystem(ParametricSystem):
 
         return design
 
-    def evaluate_multiple_designs(self, designs: Iterable[Design]) -> Tuple[Design, ...]:
-        """Evaluate multiple given designs.
-
-        Parameters
-        ----------
-        designs: Iterable[Design]
-            Iterable of ``Design`` class instances with defined parameters.
-
-        Returns
-        -------
-        Tuple[Design, ...]:
-            Tuple of evaluated designs.
-
-        Raises
-        ------
-        OslCommunicationError
-            Raised when an error occurs while communicating with server.
-        OslCommandError
-            Raised when the command or query fails.
-        TimeoutError
-            Raised when the timeout float value expires.
-        """
-        multiple_design_output = []
-        for design in designs:
-            design_output = self.evaluate_design(design)
-            multiple_design_output.append(design_output)
-        return tuple(designs)
-
     def get_reference_design(self) -> Design:
         """Get design with reference values of parameters.
 
         Returns
         -------
         Design
-            Instance of `Design` class with defined parameters and reference values.
+            Instance of ``Design`` class with defined parameters and reference values.
 
         Raises
         ------
@@ -859,8 +777,10 @@ class RootSystem(ParametricSystem):
         parameters = pm.get_parameters()
         return Design(parameters=parameters)
 
-    def check_design_structure(self, design: Design) -> Tuple[str, ...]:
-        """Compare parameters defined in given design and optiSLang project.
+    def get_missing_parameters_names(self, design: Design) -> Tuple[str, ...]:
+        """Get names of parameters which are missing in given design.
+
+        Compare design parameters with root system's parameters.
 
         Parameters
         ----------
@@ -869,9 +789,8 @@ class RootSystem(ParametricSystem):
 
         Returns
         -------
-        Tuple[Union[Tuple[str, ...], Tuple[str, ...]]
-            0: Names of missing parameters.
-            1: Names of redundant parameters.
+        Tuple[str, ...]
+            Names of parameters which are missing in the instance of ``Design`` class.
 
         Raises
         ------
@@ -882,11 +801,58 @@ class RootSystem(ParametricSystem):
         TimeoutError
             Raised when the timeout float value expires.
         """
-        design_parameters = design.parameter_names
-        defined_parameters = self.parameter_manager.get_parameters_names()
-        # compare design with defined parameters
-        missing_params = list(set(defined_parameters) - set(design_parameters))
-        redundant_params = list(set(design_parameters) - set(defined_parameters))
-        missing_params.sort()
-        redundant_params.sort()
-        return (tuple(missing_params), tuple(redundant_params))
+        return RootSystem._compare_two_sets(
+            first=self.parameter_manager.get_parameters_names(),
+            second=design.parameters_names,
+        )
+
+    def get_undefined_parameters_names(self, design: Design) -> Tuple[str, ...]:
+        """Get names of parameters which are not defined in root system.
+
+        Compare design parameters with root systems parameters.
+
+        Parameters
+        ----------
+        design: Design
+            Instance of ``Design`` class with defined parameters.
+
+        Returns
+        -------
+        Tuple[str, ...]
+            Names of parameters which are not defined in the root system.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        return RootSystem._compare_two_sets(
+            first=design.parameters_names,
+            second=self.parameter_manager.get_parameters_names(),
+        )
+
+    @staticmethod
+    def _compare_two_sets(first: Iterable[str], second: Iterable[str]) -> Tuple[str, ...]:
+        """Get sorted asymmetric difference of two string sets.
+
+        Execute difference of sets: ``first - second``
+
+        Parameters
+        ----------
+        first: Iterable[str]
+            Iterable of strings.
+        second: Iterable[str]
+            Iterable of string.
+
+        Returns
+        -------
+        Tuple[str, ...]
+            Tuple with sorted difference.
+        """
+        diff = list(set(first) - set(second))
+        diff.sort()
+        return tuple(diff)
