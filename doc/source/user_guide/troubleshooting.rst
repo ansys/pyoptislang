@@ -10,6 +10,7 @@ parameter ``loglevel`` when launching optiSLang:
 .. code:: python
 
     from ansys.optislang.core import Optislang
+    
     osl = Optislang(loglevel='DEBUG')
     osl.dispose()
 
@@ -24,6 +25,7 @@ when launching optiSLang:
 .. code:: python
 
     from ansys.optislang.core import Optislang
+    
     osl = Optislang(ini_timeout=30)
     osl.dispose()
 

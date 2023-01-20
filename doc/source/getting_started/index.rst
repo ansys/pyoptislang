@@ -68,10 +68,10 @@ Verify installation
 
 .. code:: python
 
-    >>> from ansys.optislang.core import Optislang
-    >>> osl = Optislang()
-    >>> print(osl)
-    >>> osl.dispose()
+   from ansys.optislang.core import Optislang
+   osl = Optislang()
+   print(osl)
+   osl.dispose()
 
 If you see a response from the server, congratulations, you're ready
 to get started using OptiSLang as a service. For details regarding the

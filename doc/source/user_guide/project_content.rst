@@ -25,34 +25,44 @@ methods for obtaining information about loaded project and it's content.
     status = project.get_status()
 
 
-Root system and created nodes
------------------------------
-Nodes defined in the loaded project may be obtained by instance of the 
-:class:`RootSystem() <ansys.optislang.core.nodes.RootSystem>`, that represents root system of
-the project. Using method 
-:func:`get_nodes() <ansys.optislang.core.nodes.get_nodes>` returns all nodes at the root level as
-a tuple of instances of the :class:`Node() <ansys.optislang.core.nodes.Node>`,
-:class:`System() <ansys.optislang.core.nodes.System>` or 
-:class:`ParametricSystem() <ansys.optislang.core.nodes.ParametricSystem>`. 
+Project structure
+-----------------
+The optiSLang project can be represented by a rooted tree structure. This structure consists 
+of nodes and connections between them. On the top level, there is one node designated as a project 
+root system which is represented by the :class:`RootSystem() <ansys.optislang.core.nodes.RootSystem>` 
+instance. Each :class:`System() <ansys.optislang.core.nodes.System>`
+(for example :class:`RootSystem() <ansys.optislang.core.nodes.RootSystem>`, 
+:class:`ParametricSystem() <ansys.optislang.core.nodes.ParametricSystem>`) has a method 
+:func:`get_nodes() <ansys.optislang.core.nodes.get_nodes>` which returns all its direct children 
+nodes. This provides an ability to determine whole project structure. The example below shows 
+how to go through all nodes in the project and print information about them.
 
 .. code:: python
-    
+
+    # ...
+
+    def print_node_info(node):
+        name = node.get_name()
+        type_ = node.get_type()
+        status = node.get_status()
+        print(name, type_, status)
+
+
+    def process_nodes(nodes):
+        for node in nodes:
+            print_node_info(node)
+            if isinstance(node, System):
+                process_nodes(node.get_nodes())
+
+
     root_system = project.root_system
     nodes = root_system.get_nodes()
-    for node in nodes:
-        # obtain information about node
-        name = node.get_name()
-        type = node.get_type()
-        status = node.get_status()
+    process_nodes(nodes)
 
-If any of the obtained nodes is :class:`System() <ansys.optislang.core.nodes.System>` or 
-:class:`ParametricSystem() <ansys.optislang.core.nodes.ParametricSystem>`, method 
-:func:`get_nodes() <ansys.optislang.core.nodes.get_nodes>` may be used again. This is the way of 
-obtaining nodes from nested systems.
 
 Parameters
 ----------
-In order to obtain defined parameters, instance of the 
+In order to obtain defined parameters of any parametric system, instance of the 
 :class:`ParameterManager() <ansys.optislang.core.project_parametric.ParameterManager>`
 may be used. This class contains methods 
 :func:`get_parameters() <ansys.optislang.core.project_parametric.ParameterManager.get_parameters>`, 
@@ -67,6 +77,8 @@ that returns tuple of only parameters names.
 
 .. code:: python
     
+    # ...
+
     parameter_manager = root_system.parameter_manager
     parameters = parameter_manager.get_parameters()
     parameters_names = parameter.get_parameters_names()
