@@ -8,6 +8,7 @@ from ansys.optislang.core.nodes import RootSystem
 
 if TYPE_CHECKING:
     from ansys.optislang.core.osl_server import OslServer
+    from ansys.optislang.core.project_parametric import Design, ParameterManager
 
 
 class Project:
@@ -38,6 +39,30 @@ class Project:
             f"Status: {self.get_status()}\n"
             f"Location: {str(self.get_location())}"
         )
+
+    def evaluate_design(self, design: Design) -> Design:
+        """Evaluate given design.
+
+        Parameters
+        ----------
+        design: Design
+            Instance of ``Design`` class with defined parameters.
+
+        Returns
+        -------
+        Design
+            Evaluated design.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        return self.root_system.evaluate_design(design=design)
 
     def get_description(self) -> str:
         """Get description of the optiSLang project.
@@ -99,6 +124,25 @@ class Project:
         """
         return self.__osl_server.get_project_name()
 
+    def get_reference_design(self) -> Design:
+        """Get design with reference values of parameters.
+
+        Returns
+        -------
+        Design
+            Instance of ``Design`` class with defined parameters and reference values.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        return self.root_system.get_reference_design()
+
     def get_status(self) -> str:
         """Get status of the optiSLang project.
 
@@ -120,28 +164,30 @@ class Project:
         return self.__osl_server.get_project_status()
 
     @property
-    def root_system(self) -> RootSystem:
-        """Return instance of the ``RootSystem`` class.
+    def parameter_manager(self) -> ParameterManager:
+        """Get instance of the ``ParameterManager`` class at the root system.
 
         Returns
         -------
         RootSystem
             Loaded projects root system.
+        """
+        return self.__root_system.parameter_manager
 
-        Raises
-        ------
-        OslCommunicationError
-            Raised when an error occurs while communicating with server.
-        OslCommandError
-            Raised when the command or query fails.
-        TimeoutError
-            Raised when the timeout float value expires.
+    @property
+    def root_system(self) -> RootSystem:
+        """Get instance of the ``RootSystem`` class.
+
+        Returns
+        -------
+        RootSystem
+            Loaded project's root system.
         """
         return self.__root_system
 
     @property
     def uid(self) -> str:
-        """Return uid of the optiSLang project.
+        """Get uid of the optiSLang project.
 
         Returns
         -------
