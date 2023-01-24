@@ -6,12 +6,14 @@ import time
 import pytest
 
 from ansys.optislang.core import Optislang, examples
+from ansys.optislang.core.project import Project
 
 pytestmark = pytest.mark.local_osl
+parametric_project = examples.get_files("calculator_with_params")[1][0]
 
 
-@pytest.fixture
-def optislang(scope="function", autouse=True) -> Optislang:
+@pytest.fixture()
+def optislang(scope="function", autouse=False) -> Optislang:
     """Create Optislang class.
 
     Returns
@@ -24,7 +26,7 @@ def optislang(scope="function", autouse=True) -> Optislang:
     return osl
 
 
-# def test_close(optislang: Optislang):
+# # def test_close(optislang: Optislang):
 #     "Test ``close`` (close opened and create new project)."
 #     with does_not_raise() as dnr:
 #         optislang.close()
@@ -52,7 +54,7 @@ def test_has_active_project(optislang: Optislang):
 
 
 def test_get_osl_version_string(optislang: Optislang):
-    "Test ``get_osl_version_string``."
+    """Test ``get_osl_version_string``."""
     version = optislang.get_osl_version_string()
     assert isinstance(version, str)
     with does_not_raise() as dnr:
@@ -73,44 +75,13 @@ def test_get_osl_version(optislang: Optislang):
     assert dnr is None
 
 
-def test_get_project_description(optislang: Optislang):
-    "Test ``get_project_description``."
-    description = optislang.get_project_description()
-    assert isinstance(description, str)
+def test_get_project(optislang: Optislang):
+    """Test `get_project`."""
     with does_not_raise() as dnr:
-        optislang.dispose()
-        time.sleep(3)
+        project = optislang.project
+    optislang.dispose()
     assert dnr is None
-
-
-def test_get_project_location(optislang: Optislang):
-    "Test ``get_project_location``."
-    location = optislang.get_project_location()
-    assert isinstance(location, Path)
-    with does_not_raise() as dnr:
-        optislang.dispose()
-        time.sleep(3)
-    assert dnr is None
-
-
-def test_get_project_name(optislang: Optislang):
-    "Test ``get_project_name``."
-    name = optislang.get_project_name()
-    assert isinstance(name, str)
-    with does_not_raise() as dnr:
-        optislang.dispose()
-        time.sleep(3)
-    assert dnr is None
-
-
-def test_get_project_status(optislang: Optislang):
-    "Test ``get_project_status``."
-    status = optislang.get_project_status()
-    assert isinstance(status, str)
-    with does_not_raise() as dnr:
-        optislang.dispose()
-        time.sleep(3)
-    assert dnr is None
+    assert isinstance(project, Project)
 
 
 def test_get_set_timeout(optislang: Optislang):
@@ -136,11 +107,12 @@ def test_get_working_dir(optislang: Optislang):
     assert dnr is None
 
 
-def test_new(optislang: Optislang):
+def test_new(optislang: Optislang, tmp_path: Path):
     "Test ``new``."
     optislang.new()
-    assert optislang.get_project_name() == "Unnamed project"
+    assert optislang.project.get_name() == "Unnamed project"
     with does_not_raise() as dnr:
+        optislang.save_as(file_path=tmp_path / "newProject.opf")
         optislang.dispose()
         time.sleep(3)
     assert dnr is None
@@ -154,7 +126,7 @@ def test_open(optislang: Optislang, path_type):
         project = str(project)
 
     optislang.open(file_path=project)
-    project_name = optislang.get_project_name()
+    project_name = optislang.project.get_name()
     assert project_name == "calculator"
     with does_not_raise() as dnr:
         optislang.dispose()
@@ -212,7 +184,8 @@ print(result)
 
 def test_save(optislang: Optislang):
     "Test save."
-    file_path = optislang.get_project_location()
+    project = optislang.project
+    file_path = project.get_location()
     assert file_path.is_file()
     mod_time = os.path.getmtime(str(file_path))
     optislang.save()
@@ -311,3 +284,11 @@ connect(python, "ODesign", sens, "IIDesign")
 #         optislang.dispose()
 #         time.sleep(3)
 #     assert dnr is None
+
+
+def test_dispose(optislang):
+    "Test ``dispose``."
+    with does_not_raise() as dnr:
+        optislang.dispose()
+        time.sleep(3)
+    assert dnr is None

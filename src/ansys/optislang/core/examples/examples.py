@@ -58,6 +58,12 @@ example_files = {
     "optimizer_settings": None,
     "sensitivity_settings": None,
     "simple_calculator": (module_path / "00_run_script" / "files" / "calculator.opf",),
+    "calculator_with_params": (
+        module_path / "00_run_script" / "files" / "calculator_with_params.opf",
+    ),
+    "nodes_connection": (module_path / "00_run_script" / "files" / "connect_nodes.opf",),
+    "nested_systems": (module_path / "00_run_script" / "files" / "nested_systems.opf",),
+    "ten_bar_truss": (module_path / "00_run_script" / "files" / "ten_bar_truss.opf",),
 }
 
 # dictionary of scripts to be run
@@ -131,4 +137,8 @@ example_scripts = {
     "optimizer_settings": module_path / "00_run_script" / "scripts" / "optimizer_settings.py",
     "sensitivity_settings": module_path / "00_run_script" / "scripts" / "sensitivity_settings.py",
     "simple_calculator": module_path / "00_run_script" / "scripts" / "simple_calculator.py",
+    "calculator_with_params": None,
+    "nodes_connection": None,
+    "nested_systems": None,
+    "ten_bar_truss": None,
 }

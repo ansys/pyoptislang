@@ -1,12 +1,18 @@
 """Contains Optislang class which provides python API for optiSLang application."""
+from __future__ import annotations
+
 from pathlib import Path
-from typing import Sequence, Tuple, Union
+from typing import TYPE_CHECKING, Sequence, Tuple, Union
 
 from importlib_metadata import version
 
 from ansys.optislang.core import LOG
-from ansys.optislang.core.osl_server import OslServer
+from ansys.optislang.core.project import Project
 from ansys.optislang.core.tcp_osl_server import TcpOslServer
+
+if TYPE_CHECKING:
+    from ansys.optislang.core.logging import OslLogger
+    from ansys.optislang.core.osl_server import OslServer
 
 
 class Optislang:
@@ -99,6 +105,10 @@ class Optislang:
         self.__shutdown_on_finished = shutdown_on_finished
         self.__logger = LOG.add_instance_logger(self.name, self, loglevel)
         self.__osl_server: OslServer = self.__init_osl_server("tcp")
+        project_uid = self.__osl_server.get_project_uid()
+        self.__project = (
+            Project(osl_server=self.__osl_server, uid=project_uid) if project_uid else None
+        )
 
     def __init_osl_server(self, server_type: str) -> OslServer:
         """Initialize optiSLang server.
@@ -167,7 +177,7 @@ class Optislang:
 
     @property
     def name(self) -> str:
-        """Instance unique identifier."""
+        """Get instance unique identifier."""
         if not self.__name:
             if self.__host or self.__port:
                 self.__name = f"optiSLang_{self.__host}:{self.__port}"
@@ -176,8 +186,8 @@ class Optislang:
         return self.__name
 
     @property
-    def log(self):
-        """Return instance logger."""
+    def log(self) -> OslLogger:
+        """Get instance logger."""
         return self.__logger
 
     @property
@@ -199,8 +209,20 @@ class Optislang:
         TimeoutError
             Raised when the timeout float value expires.
         """
-        return self.__osl_server.get_project_name() is not None
+        return self.__osl_server.get_project_uid() is not None
 
+    @property
+    def project(self) -> Project:
+        """Get instance of the ``Project`` class.
+
+        Returns
+        -------
+        Project
+            Loaded project. If no project is loaded, returns ``None``.
+        """
+        return self.__project
+
+    # close method doesn't work properly in optiSLang 2023R1, therefore it was commented out
     # def close(self) -> None:
     #     """Close the current project.
 
@@ -214,6 +236,7 @@ class Optislang:
     #         Raised when the timeout float value expires.
     #     """
     #     self.__osl_server.close()
+    #     self.__project = None
 
     def dispose(self) -> None:
         """Terminate all local threads and unregister listeners.
@@ -267,86 +290,6 @@ class Optislang:
             Raised when the timeout float value expires.
         """
         return self.__osl_server.get_osl_version()
-
-    def get_project_description(self) -> str:
-        """Get description of optiSLang project.
-
-        Returns
-        -------
-        str
-            optiSLang project description. If no project is loaded in the optiSLang,
-            returns ``None``.
-
-        Raises
-        ------
-        OslCommunicationError
-            Raised when an error occurs while communicating with server.
-        OslCommandError
-            Raised when the command or query fails.
-        TimeoutError
-            Raised when the timeout float value expires.
-        """
-        return self.__osl_server.get_project_description()
-
-    def get_project_location(self) -> Path:
-        """Get path to the optiSLang project file.
-
-        Returns
-        -------
-        Path
-            Path to the optiSLang project file. If no project is loaded in the optiSLang,
-            returns ``None``.
-
-        Raises
-        ------
-        OslCommunicationError
-            Raised when an error occurs while communicating with server.
-        OslCommandError
-            Raised when the command or query fails.
-        TimeoutError
-            Raised when the timeout float value expires.
-        """
-        return self.__osl_server.get_project_location()
-
-    def get_project_name(self) -> str:
-        """Get name of the optiSLang project.
-
-        Returns
-        -------
-        str
-            Name of the optiSLang project. If no project is loaded in the optiSLang,
-            returns ``None``.
-
-        Raises
-        ------
-        OslCommunicationError
-            Raised when an error occurs while communicating with server.
-        OslCommandError
-            Raised when the command or query fails.
-        TimeoutError
-            Raised when the timeout float value expires.
-        """
-        return self.__osl_server.get_project_name()
-
-    def get_project_status(self) -> str:
-        """Get status of the optiSLang project.
-
-        Returns
-        -------
-        str
-            optiSLang project status. If no project is loaded in the optiSLang,
-            returns ``None``.
-
-        Raises
-        ------
-        OslCommunicationError
-            Raised when an error occurs while communicating with server.
-        OslCommandError
-            Raised when the command or query fails.
-        TimeoutError
-            Raised when the timeout float value expires.
-        """
-        return self.__osl_server.get_project_status()
 
     def get_timeout(self) -> Union[float, None]:
         """Get current timeout value for execution of commands.
@@ -404,6 +347,9 @@ class Optislang:
             Raised when the timeout float value expires.
         """
         self.__osl_server.new()
+        self.__project = Project(
+            osl_server=self.__osl_server, uid=self.__osl_server.get_project_uid()
+        )
 
     def open(
         self,
@@ -438,6 +384,9 @@ class Optislang:
             Raised when the timeout float value expires.
         """
         self.__osl_server.open(file_path=file_path, force=force, restore=restore, reset=reset)
+        self.__project = Project(
+            osl_server=self.__osl_server, uid=self.__osl_server.get_project_uid()
+        )
 
     def reset(self) -> None:
         """Reset complete project.
@@ -690,7 +639,6 @@ class Optislang:
         self.__osl_server.stop(wait_for_finished)
 
     # stop_gently method doesn't work properly in optiSLang 2023R1, therefore it was commented out
-
     # def stop_gently(self, wait_for_finished: bool = True) -> None:
     #     """Stop project execution after the current design is finished.
 

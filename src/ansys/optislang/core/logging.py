@@ -94,7 +94,7 @@ class OslLogger:
         loglevel : str, optional
             Level of logging, by default LOG_LEVEL.
         log_to_file : bool, optional
-            Record logs to file, by default ``True``.
+            Record logs to file, by default ``False``.
         logfile_name: str, optional
             Output file name, by default FILE_NAME
         log_to_stdout : bool, optional

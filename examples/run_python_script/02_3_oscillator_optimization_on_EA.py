@@ -1,13 +1,13 @@
 """
-.. _ref_oscillator_oscillator_MOP_sensitivity_and_optimization:
+.. _ref_oscillator_optimization_on_EA:
 
-Oscillator sensitivity and optimization on MOP
-----------------------------------------------
+Oscillator optimization on EA
+-----------------------------
 
-Create sensitivity flow for oscillator python example (using ``oscillator_sensitivity_mop.py``)
-and optimization on mop flow (using ``oscillator_optimization_on_mop.py``) and run these flows.
-Save optiSLang project into the same folder as this script then. More details in individual
-python scripts and oscillator example in optiSLang tutorial section.
+Create direct optimization using evolutionary algorithm flow for oscillator python example
+(using ``oscillator_optimization_ea.py``) and run this flow. Save optiSLang project into
+the same folder as this script then. More details in python script and oscillator example
+in optiSLang tutorial section.
 """
 
 ####################################################
@@ -25,12 +25,8 @@ print(osl)
 #########################################################
 # Get paths of example scripts and run them.
 #########################################################
-paths1 = examples.get_files("oscillator_sensitivity_mop")
-paths2 = examples.get_files("oscillator_optimization_on_mop")
-
-osl.run_python_file(paths1[0])
-osl.run_python_file(paths2[0])
-
+paths = examples.get_files("oscillator_optimization_ea")
+osl.run_python_file(paths[0])
 
 #########################################################
 # Execute workflow created by scripts above.
@@ -42,7 +38,7 @@ osl.start()
 # .. code:: python
 #
 #   path = r'<insert-desired-location>'
-#   osl.save_copy(os.path.join(path, "test_project.opf"))
+#   osl.save_as(os.path.join(path, "test_project.opf"))
 #
 ######################################################################
 
@@ -53,8 +49,8 @@ osl.dispose()
 
 #########################################################
 # Generated workflow:
-# .. image:: ../../_static/02_4_oscillator_MOP_sensitivity_and_optimization.png
-#  :width: 600
+# .. image:: ../../../_static/02_3_optimization_on_EA.png
+#  :width: 400
 #  :alt: Result of script.
 #
 #########################################################

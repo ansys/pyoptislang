@@ -1,13 +1,12 @@
 """
-.. _ref_oscillator_optimization_on_EA:
+.. _ref_sensitivity_settings:
 
-Oscillator optimization on EA
------------------------------
+Sensitivity settings
+--------------------
 
-Create direct optimization using evolutionary algorithm flow for oscillator python example
-(using ``oscillator_optimization_ea.py``) and run this flow. Save optiSLang project into
-the same folder as this script then. More details in python script and oscillator example
-in optiSLang tutorial section.
+At first create a system named "Sensitivity". Then find system "Sensitivity and change some
+of its settings (using ``sensitivity_settings.py``). Save optiSLang project into the same
+folder as this script then. More details in python script.
 """
 
 ####################################################
@@ -23,22 +22,17 @@ osl = Optislang()
 print(osl)
 
 #########################################################
-# Get paths of example scripts and run them.
+# Get path of example script and run it.
 #########################################################
-paths = examples.get_files("oscillator_optimization_ea")
+paths = examples.get_files("sensitivity_settings")
 osl.run_python_file(paths[0])
-
-#########################################################
-# Execute workflow created by scripts above.
-#########################################################
-osl.start()
 
 ######################################################################
 # In order to save project to desired location, uncomment lines below:
 # .. code:: python
 #
 #   path = r'<insert-desired-location>'
-#   osl.save_copy(os.path.join(path, "test_project.opf"))
+#   osl.save_as(os.path.join(path, "test_project.opf"))
 #
 ######################################################################
 
@@ -49,8 +43,8 @@ osl.dispose()
 
 #########################################################
 # Generated workflow:
-# .. image:: ../../_static/02_3_optimization_on_EA.png
-#  :width: 400
+# .. image:: ../../../_static/06_sensitivity_settings.png
+#  :width: 300
 #  :alt: Result of script.
 #
 #########################################################

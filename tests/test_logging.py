@@ -1,5 +1,5 @@
 import logging as deflogging  # Default logging
-import os
+from pathlib import Path
 
 from ansys.optislang.core import LOG  # Global logger
 from ansys.optislang.core import logging
@@ -18,12 +18,12 @@ def test_initialization():
     assert log1.logger.level == deflogging.ERROR
 
 
-def test_create_log_file(tmp_path):
+def test_create_log_file(tmp_path: Path):
     "This tests creation of logfile with ``logfile_name`` when initialized"
-    logfile_path = os.path.join(tmp_path, "testlog.log")
-    assert not os.path.isfile(logfile_path)
+    logfile_path = tmp_path / "testlog.log"
+    assert not logfile_path.is_file()
     log = logging.OslLogger(log_to_file=True, logfile_name=logfile_path)
-    assert os.path.isfile(logfile_path)
+    assert logfile_path.is_file()
 
 
 def test_set_log_level():
@@ -41,9 +41,9 @@ def test_set_log_level():
     assert log.logger.level == deflogging.DEBUG
 
 
-def test_add_file_handler():
+def test_add_file_handler(tmp_path: Path):
     log = logging.OslLogger()
-    log.add_file_handler(logfile_name="testlog.log")
+    log.add_file_handler(logfile_name=tmp_path / "testlog.log")
     assert log.file_handler != None
     assert log.file_handler.level == LOG_LEVELS[logging.LOG_LEVEL]
     log.set_log_level(loglevel="ERROR")
@@ -81,11 +81,11 @@ def test_global_logger_stdout(caplog):
         assert caplog.record_tuples[-1] == ("pyoptislang_global", each_log_number, msg)
 
 
-def test_global_logger_log_to_file():
+def test_global_logger_log_to_file(tmp_path: Path):
     LOG.logger.setLevel("DEBUG")
-    LOG.add_file_handler(logfile_name="testlog.log", loglevel="DEBUG")
+    LOG.add_file_handler(logfile_name=tmp_path / "testlog.log", loglevel="DEBUG")
     msg = "Random debug message"
     LOG.logger.debug(msg)
-    with open("testlog.log", "r") as fid:
+    with open(tmp_path / "testlog.log", "r") as fid:
         text = "".join(fid.readlines())
     assert msg in text

@@ -220,20 +220,10 @@ def create_node(
     args = {}
     args["type"] = type_
     args["name"] = name
-    # TODO: and/or The request must contain the type entry as well as the args entry,
-    # containing the name, parent_uid, and/or
-    # design_flow with optional arguments [ RECEIVE, SEND, RECEIVE_SEND ].
     if parent_uid is not None:
         args["parent_uid"] = parent_uid
-    if design_flow is not None:
-        supported_values = ["RECEIVE", "SEND", "RECEIVE_SEND"]
-        if design_flow in supported_values:
-            args["design_flow"] = design_flow
-        else:
-            raise TypeError(
-                f"Unsuppored value of ``design_flow``: {design_flow},"
-                "supported values are: {supported_values}"
-            )
+    if design_flow not in [None, "NONE"]:
+        args["design_flow"] = design_flow
 
     return _to_json(_gen_server_command(command=_CREATE_NODE, args=args, password=password))
 

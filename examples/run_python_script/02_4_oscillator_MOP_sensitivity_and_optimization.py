@@ -1,12 +1,13 @@
 """
-.. _ref_oscillator_python_systems:
+.. _ref_oscillator_oscillator_MOP_sensitivity_and_optimization:
 
-Oscillator python systems
--------------------------
+Oscillator sensitivity and optimization on MOP
+----------------------------------------------
 
-Create parametric system for oscillator python example (using ``oscillator_system_python.py``)
-and run it. Save optiSLang project into the same folder as this script then.
-More details in python script and oscillator example in optiSLang tutorial section.
+Create sensitivity flow for oscillator python example (using ``oscillator_sensitivity_mop.py``)
+and optimization on mop flow (using ``oscillator_optimization_on_mop.py``) and run these flows.
+Save optiSLang project into the same folder as this script then. More details in individual
+python scripts and oscillator example in optiSLang tutorial section.
 """
 
 ####################################################
@@ -22,13 +23,17 @@ osl = Optislang()
 print(osl)
 
 #########################################################
-# Get path of example script and run it.
+# Get paths of example scripts and run them.
 #########################################################
-paths = examples.get_files("oscillator_system_python")
-osl.run_python_file(paths[0])
+paths1 = examples.get_files("oscillator_sensitivity_mop")
+paths2 = examples.get_files("oscillator_optimization_on_mop")
+
+osl.run_python_file(paths1[0])
+osl.run_python_file(paths2[0])
+
 
 #########################################################
-# Execute workflow created by script above.
+# Execute workflow created by scripts above.
 #########################################################
 osl.start()
 
@@ -37,7 +42,7 @@ osl.start()
 # .. code:: python
 #
 #   path = r'<insert-desired-location>'
-#   osl.save_copy(os.path.join(path, "test_project.opf"))
+#   osl.save_as(os.path.join(path, "test_project.opf"))
 #
 ######################################################################
 
@@ -48,8 +53,8 @@ osl.dispose()
 
 #########################################################
 # Generated workflow:
-# .. image:: ../../_static/02_2_python_system.png
-#  :width: 300
+# .. image:: ../../../_static/02_4_oscillator_MOP_sensitivity_and_optimization.png
+#  :width: 600
 #  :alt: Result of script.
 #
 #########################################################

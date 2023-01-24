@@ -1,12 +1,13 @@
 """
-.. _ref_optimizer_settings:
+.. _ref_oscillator_oscillator_calibration_systems:
 
-Optimizer settings
-------------------
+Oscillator calibration systems
+------------------------------
 
-Create, configure and insert an Evolutionary Algorithm Optimizer into the scenery
-(using ``optimizer_settings.py``). Save optiSLang project into the same folder as this script
-then. More details in python script.
+Create parametric systems for oscillator calibration python example (using
+``oscillatorcalibration_system_python.py`` and ``oscillatorcalibration_system_ascii.py``)
+and run these system. Save optiSLang project into the same folder as this script then.
+More details in individual python scripts and oscillator example in optiSLang tutorial section.
 """
 
 ####################################################
@@ -18,22 +19,29 @@ import ansys.optislang.core.examples as examples
 #################################################################################
 # Create :class:`Optislang <ansys.optislang.core.optislang.Optislang>` instance.
 #################################################################################
-# in current working directory, create dir for osl files
 osl = Optislang()
 print(osl)
 
 #########################################################
-# Get path of example script and run it.
+# Get paths of example scripts and run them.
 #########################################################
-paths = examples.get_files("optimizer_settings")
-osl.run_python_file(paths[0])
+paths1 = examples.get_files("oscillatorcalibration_system_python")
+paths2 = examples.get_files("oscillatorcalibration_system_ascii")
+
+osl.run_python_file(paths1[0])
+osl.run_python_file(paths2[0])
+
+#########################################################
+# Execute workflow created by scripts above.
+#########################################################
+osl.start()
 
 ######################################################################
 # In order to save project to desired location, uncomment lines below:
 # .. code:: python
 #
 #   path = r'<insert-desired-location>'
-#   osl.save_copy(os.path.join(path, "test_project.opf"))
+#   osl.save_as(os.path.join(path, "test_project.opf"))
 #
 ######################################################################
 
@@ -44,8 +52,8 @@ osl.dispose()
 
 #########################################################
 # Generated workflow:
-# .. image:: ../../_static/05_optimizer_settings.png
-#  :width: 300
+# .. image:: ../../../_static/02_5_oscillator_calibration_systems.png
+#  :width: 400
 #  :alt: Result of script.
 #
 #########################################################

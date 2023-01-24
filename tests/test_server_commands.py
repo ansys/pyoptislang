@@ -196,8 +196,6 @@ def test_create_node():
     dictionary = json.loads(json_string)
     dictionary["Password"] = my_password
     with pytest.raises(TypeError):
-        sc.create_node(type_="Sensitivity", name="Sensi-System", design_flow="RANDOM")
-    with pytest.raises(TypeError):
         sc.create_node(type_="Sensitivity")
     with pytest.raises(TypeError):
         sc.create_node(name="Sensi-System")

@@ -63,13 +63,13 @@ In order to open specific project or create new one, launch
 
 .. code:: python
 
-    import os
     from ansys.optislang.core import Optislang
+    from pathlib import Path
     
-    path = os.getcwd()
+    path = Path.cwd()
     project_name = 'test.opf'
 
-    osl = Optislang(project_path = os.path.join(path, project_name))
+    osl = Optislang(project_path = path / project_name)
     print(osl)
     osl.dispose()
 
