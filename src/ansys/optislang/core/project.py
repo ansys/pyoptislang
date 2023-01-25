@@ -64,6 +64,7 @@ class Project:
         """
         return self.root_system.evaluate_design(design=design)
 
+
     def get_description(self) -> str:
         """Get description of the optiSLang project.
 
@@ -124,6 +125,7 @@ class Project:
         """
         return self.__osl_server.get_project_name()
 
+
     def get_reference_design(self) -> Design:
         """Get design with reference values of parameters.
 
@@ -142,6 +144,7 @@ class Project:
             Raised when the timeout float value expires.
         """
         return self.root_system.get_reference_design()
+
 
     def get_status(self) -> str:
         """Get status of the optiSLang project.
@@ -167,10 +170,11 @@ class Project:
     def parameter_manager(self) -> ParameterManager:
         """Get instance of the ``ParameterManager`` class at the root system.
 
+
         Returns
         -------
-        RootSystem
-            Loaded projects root system.
+        ParameterManager
+            Parameter manager at the root system.
         """
         return self.__root_system.parameter_manager
 
@@ -182,6 +186,15 @@ class Project:
         -------
         RootSystem
             Loaded project's root system.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
         """
         return self.__root_system
 
