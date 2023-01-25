@@ -170,7 +170,6 @@ class Project:
     def parameter_manager(self) -> ParameterManager:
         """Get instance of the ``ParameterManager`` class at the root system.
 
-
         Returns
         -------
         ParameterManager
