@@ -6,6 +6,7 @@ import pytest
 
 from ansys.optislang.core import Optislang
 from ansys.optislang.core.nodes import RootSystem
+from ansys.optislang.core.project_parametric import Design, ParameterManager
 
 pytestmark = pytest.mark.local_osl
 
@@ -75,8 +76,21 @@ def test_project_properties(optislang: Optislang):
     assert isinstance(uid, str)
     root_system = project.root_system
     assert isinstance(root_system, RootSystem)
+    parameter_manager = project.parameter_manager
+    assert isinstance(parameter_manager, ParameterManager)
     with does_not_raise() as dnr:
         print(project)
         optislang.dispose()
         time.sleep(3)
     assert dnr is None
+
+
+def test_get_evaluate_design(optislang: Optislang):
+    """Test `get_reference_design` and `evaluate_design`."""
+    project = optislang.project
+    ref_design = project.get_reference_design()
+    assert isinstance(ref_design, Design)
+    eval_design = project.evaluate_design(design=ref_design)
+    assert isinstance(eval_design, Design)
+    optislang.dispose()
+    time.sleep(3)
