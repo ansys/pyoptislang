@@ -8,7 +8,7 @@ name = "ansys-optislang-core"
 version = "0.2.dev0"
 description = "A python wrapper for ansys optislang application."
 readme = "README.rst"
-requires-python = ">=3.7"
+requires-python = ">=3.7,<4"
 license = {file = "LICENSE"}
 authors = [
     {name = "ANSYS, Inc.", email = "pyansys.support@ansys.com"},
@@ -72,6 +72,12 @@ source = ["ansys.optislang"]
 
 [tool.coverage.report]
 show_missing = true
+
+[tool.coverage.html]
+directory = ".cov/html"
+
+[tool.coverage.xml]
+output = ".cov/coverage.xml"
 
 [tool.pytest.ini_options]
 markers = [
