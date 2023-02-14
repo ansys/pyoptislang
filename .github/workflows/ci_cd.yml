@@ -58,7 +58,7 @@ jobs:
           python-version: ${{ matrix.python-version }}
 
   macos-wheelhouse:
-    name: Build and Smoke tests (macOS)
+    name: Wheelhouse and smoke tests (macOS)
     if: github.event_name == 'push' && contains(github.ref, 'refs/tags')
     runs-on: macos-latest
     needs: [style]
