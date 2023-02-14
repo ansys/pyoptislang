@@ -11,7 +11,8 @@ _host = socket.gethostbyname(socket.gethostname())
 _port = 5310
 pytestmark = pytest.mark.local_osl
 
-#%% CONTEXT MANAGER
+
+# %% CONTEXT MANAGER
 @pytest.mark.parametrize(
     "send_dispose, send_shutdown, osl_none",
     [
@@ -134,7 +135,7 @@ def test_remote_cm(send_dispose, send_shutdown, osl_none):
             time.sleep(5)
 
 
-#%% WITHOUT CM
+# %% WITHOUT CM
 @pytest.mark.parametrize(
     "send_dispose, send_shutdown",
     [
