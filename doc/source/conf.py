@@ -9,7 +9,7 @@ import ansys.optislang.core as pyoptislang
 from ansys.optislang.core import __version__
 
 # Project information
-project = "ansys.optislang.core"
+project = "ansys-optislang-core"
 copyright = f"(c) {datetime.now().year} ANSYS, Inc. All rights reserved"
 author = "ANSYS, Inc."
 release = version = __version__
