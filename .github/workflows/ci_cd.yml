@@ -138,6 +138,7 @@ jobs:
         uses: pyansys/actions/doc-build@v3
         with:
           python-version: ${{ env.MAIN_PYTHON_VERSION }}
+          sphinxopts: "-j auto --color -vW"
           dependencies: "pandoc"
 
   package:
