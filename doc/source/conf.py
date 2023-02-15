@@ -9,7 +9,7 @@ import ansys.optislang.core as pyoptislang
 from ansys.optislang.core import __version__
 
 # Project information
-project = "ansys.optislang.core"
+project = "ansys-optislang-core"
 copyright = f"(c) {datetime.now().year} ANSYS, Inc. All rights reserved"
 author = "ANSYS, Inc."
 release = version = __version__
@@ -98,7 +98,7 @@ sphinx_gallery_conf = {
     "examples_dirs": ["../../examples/"],
     # path where to save gallery generated examples
     "gallery_dirs": ["examples/gallery_examples"],
-    # Patter to search for example files
+    # Pattern to search for example files
     "filename_pattern": r"\.py",
     # Remove the "Download all examples" button from the top level gallery
     "download_all_examples": False,

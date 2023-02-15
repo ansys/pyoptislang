@@ -93,6 +93,7 @@ MIXED_PARAMETER_DICT = {
     "unit": "",
 }
 
+
 # TEST ENUMERATION METHODS:
 def test_design_status_from_str():
     """Test `DesignStatus.from_str()`."""
