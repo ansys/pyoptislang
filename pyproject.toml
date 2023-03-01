@@ -34,11 +34,11 @@ tests = [
     "pytest-cov==4.0.0",
 ]
 doc = [
-    "ansys-sphinx-theme==0.8.2",
+    "ansys-sphinx-theme==0.9.5",
     "matplotlib==3.5.3",
     "numpydoc==1.5.0",
     "pypandoc==1.8.1",
-    "Sphinx==5.1.1",
+    "Sphinx==5.3.0",
     "sphinx-copybutton==0.5.1",
     "sphinx-gallery==0.7.0",
     "sphinxcontrib-images==0.9.4",
