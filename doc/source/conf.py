@@ -131,7 +131,7 @@ html_theme_options = {
         "json_url": f"https://{cname}/release/versions.json",
         "version_match": get_version_match(__version__),
     },
-    "navbar_end": ["version-switcher", "theme-switcher", "navbar-icon-links"],
+    "check_switcher": False,
     "navigation_depth": 1,
 }
 
