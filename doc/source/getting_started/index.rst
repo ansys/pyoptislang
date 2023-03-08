@@ -69,6 +69,7 @@ Verify installation
 .. code:: python
 
    from ansys.optislang.core import Optislang
+
    osl = Optislang()
    print(osl)
    osl.dispose()

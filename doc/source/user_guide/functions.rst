@@ -7,11 +7,11 @@ In order to start project, use :func:`start <ansys.optislang.core.optislang.Opti
 (example :ref:`ref_simple_calculator` can be used):
 
 .. code:: python
-    
     from pathlib import Path
     from ansys.optislang.core import Optislang, examples
+
     osl = Optislang()
-    path_to_file = examples.get_files('simple_calculator')[0]
+    path_to_file = examples.get_files("simple_calculator")[0]
     osl.run_python_file(file_path=path_to_file)
     osl.start()
 
@@ -37,7 +37,6 @@ In order to create a new project or open an existing one, methods
 :func:`open() <ansys.optislang.core.optislang.Optislang.open>` may be used. 
 
 .. code:: python
-    
     new_project = Path().cwd() / "new_project.opf"
     osl.new()
     osl.save_as(new_project)
@@ -52,8 +51,8 @@ Or via running specific requests:
 
 .. code:: python
 
-    print(f'Version: {osl.get_osl_version_string()}')
-    print(f'Working directory: {osl.get_working_dir()}')
+    print(f"Version: {osl.get_osl_version_string()}")
+    print(f"Working directory: {osl.get_working_dir()}")
 
 When the :class:`Optislang() <ansys.optislang.core.optislang.Optislang>` instance is no longer 
 needed, close the connection with optiSLang server by running:

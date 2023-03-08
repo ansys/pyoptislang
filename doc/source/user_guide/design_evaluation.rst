@@ -10,18 +10,17 @@ create new designs and evaluate them. Instance of the
 :func:`project <ansys.optislang.core.project.Project>` property.
 
 .. code:: python
-    
     from ansys.optislang.core import Optislang
     from ansys.optislang.core.project_parametric import Design
     from ansys.optislang.core import examples
     from pathlib.Path import Path
 
     # open project with defined parameters
-    parametric_project = examples.get_files('calculator_with_params')[1][0]
+    parametric_project = examples.get_files("calculator_with_params")[1][0]
     osl = Optislang(project_path=parametric_project)
 
     # do not modify original file
-    osl.save_as(Path.cwd() / 'parametric_project.opf')
+    osl.save_as(Path.cwd() / "parametric_project.opf")
 
     # get root system
     root_system = osl.project.root_system
@@ -50,18 +49,17 @@ Parameters values may be modified by methods of the instance of
 :class:`Design() <ansys.optislang.core.project_parametric.Design>` class.
 
 .. code:: python
-    
     # ...
-    
+
     from ansys.optislang.core.project_parametric import DesignVariable
 
     reference_design = root_system.get_reference_design()
 
     # modify parameter value using either ``name`` and ``value``
-    reference_design.set_parameter_by_name(name = 'a', value = 12)
+    reference_design.set_parameter_by_name(name="a", value=12)
 
     # instance of ``DesignVariable`` or ``Parameter`` may be used as well
-    a = DesignVariable(name='a', value=12)
+    a = DesignVariable(name="a", value=12)
     reference_design.set_parameter(parameter=a)
 
 
@@ -72,17 +70,16 @@ Design can be also created from scratch directly creating instance of the
 Parameters don't have to be provided when initializing new design.
 
 .. code:: python
-    
     # design created using directly Design() class
-    direct_design = Design(parameters = {'a': 3, 'b': 4})
+    direct_design = Design(parameters={"a": 3, "b": 4})
 
     # create empty design and add parameters afterward
     empty_design = Design()
-    empty_design.set_parameter_by_name(name = 'a', value = 3)
-    empty_design.set_parameter_by_name(name = 'q', value = 4)
+    empty_design.set_parameter_by_name(name="a", value=3)
+    empty_design.set_parameter_by_name(name="q", value=4)
 
     # parameters may also be removed
-    empty_design.remove_parameter(name = 'c')
+    empty_design.remove_parameter(name="c")
 
     # or remove all parameters
     empty_design.clear_parameters()
@@ -116,7 +113,7 @@ class with updated results.
     # ...
 
     # single design
-    result_design = root_system.evaluate_design(design = reference_design)
+    result_design = root_system.evaluate_design(design=reference_design)
 
 .. note:: 
     

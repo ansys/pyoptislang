@@ -36,8 +36,8 @@ by the ``project_path`` parameter of the
     from pathlib import Path
 
     path = Path.cwd()
-    file_name = 'test_optislang.opf'
-    with Optislang(project_path = path / file_name) as osl:
+    file_name = "test_optislang.opf"
+    with Optislang(project_path=path / file_name) as osl:
         print(osl)
 
 
@@ -50,9 +50,9 @@ and run it using the :func:`start() <ansys.optislang.core.optislang.Optislang.st
 
     from ansys.optislang.core import Optislang
     from ansys.optislang.core import examples
-    
-    project_path = examples.get_files('simple_calculator')[1][0]
-    with Optislang(project_path = project_path) as osl:
+
+    project_path = examples.get_files("simple_calculator")[1][0]
+    with Optislang(project_path=project_path) as osl:
         osl.start()
 
 .. note:: 

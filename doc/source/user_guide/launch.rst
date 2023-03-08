@@ -27,6 +27,7 @@ instance and start optiSLang server locally, run the following script:
 .. code:: python
 
     from ansys.optislang.core import Optislang
+
     osl = Optislang()
     print(osl)
     osl.dispose()
@@ -44,6 +45,7 @@ List of all automatically detected, supported executables of optiSLang can be ob
 .. code:: python
 
     from ansys.optislang.core import utils
+
     print(utils.find_all_osl_exec())
 
 In order to launch specific version either from the preceding list or from non-standart install 
@@ -53,7 +55,10 @@ location, launch :class:`Optislang <ansys.optislang.core.optislang.Optislang>` w
 .. code:: python
 
     from ansys.optislang.core import Optislang
-    osl = Optislang(executable = r'C:\\Program Files\\Dynardo\\Ansys optiSLang\\2023 R1\\optislang.com')
+
+    osl = Optislang(
+        executable=r"C:\\Program Files\\Dynardo\\Ansys optiSLang\\2023 R1\\optislang.com"
+    )
     print(osl)
     osl.dispose()
 
@@ -65,11 +70,11 @@ In order to open specific project or create new one, launch
 
     from ansys.optislang.core import Optislang
     from pathlib import Path
-    
-    path = Path.cwd()
-    project_name = 'test.opf'
 
-    osl = Optislang(project_path = path / project_name)
+    path = Path.cwd()
+    project_name = "test.opf"
+
+    osl = Optislang(project_path=path / project_name)
     print(osl)
     osl.dispose()
 
@@ -85,11 +90,11 @@ optiSLang server, run the following script:
 .. code:: python
 
      from ansys.optislang.core import Optislang
-     
-     host = "127.0.0.1"     # please specify host
-     port = 5310            # please specify port
 
-     osl = Optislang(host = host, port = port)
+     host = "127.0.0.1"  # please specify host
+     port = 5310  # please specify port
+
+     osl = Optislang(host=host, port=port)
      print(osl)
      osl.dispose()
 
@@ -197,8 +202,8 @@ and connection to optiSLang server terminates gracefully even if an error occurs
 :func:`dispose() <ansys.optislang.core.optislang.Optislang.dispose>` method automatically.
 
 .. code:: python
-    
     from ansys.optislang.core import Optislang
+
     with Optislang() as osl:
         print(osl)
         osl.start()
