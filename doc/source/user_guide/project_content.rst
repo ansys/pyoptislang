@@ -85,7 +85,7 @@ that returns tuple of only parameters names.
 
 
 When the :class:`Optislang() <ansys.optislang.core.optislang.Optislang>` instance is no longer 
-needed, terminate connection with optiSLang server by running:
+needed, stop the connection with optiSLang server by running:
 
 .. code:: python
 

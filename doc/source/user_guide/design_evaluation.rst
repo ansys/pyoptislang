@@ -90,9 +90,9 @@ Parameters don't have to be provided when initializing new design.
 
 Check design parameters
 ~~~~~~~~~~~~~~~~~~~~~~~
-In order to check whether design contains all parameters defined in the project, 
+To verify whether the design contains all parameters defined in the project, 
 :func:`get_missing_parameters_names() <ansys.optislang.core.nodes.RootSystem.get_missing_parameters_names>` 
-method can be used. To check, whether design contains parameters which are not defined in the project, method
+method can be used. To verify if the design contains parameters which are not defined in the project, method
 :func:`get_undefined_parameters_names() <ansys.optislang.core.nodes.RootSystem.get_undefined_parameters_names>` 
 may be used. This step is not necessary though, because this is always done internally while evaluating design.
 
@@ -127,7 +127,7 @@ class with updated results.
     
 Finally, when everything is done and 
 :class:`Optislang() <ansys.optislang.core.optislang.Optislang>` instance is not needed any more,
-terminate it.
+close it using:
 
 .. code:: python
 

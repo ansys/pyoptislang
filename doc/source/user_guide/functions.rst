@@ -56,7 +56,7 @@ Or via running specific requests:
     print(f'Working directory: {osl.get_working_dir()}')
 
 When the :class:`Optislang() <ansys.optislang.core.optislang.Optislang>` instance is no longer 
-needed, terminate connection with optiSLang server by running:
+needed, close the connection with optiSLang server by running:
 
 .. code:: python
 
