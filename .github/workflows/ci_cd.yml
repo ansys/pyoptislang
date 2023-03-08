@@ -13,7 +13,6 @@ env:
   PACKAGE_NAME: 'ansys-optislang-core'
   PACKAGE_NAMESPACE: 'ansys.optislang.core'
   DOCUMENTATION_CNAME: 'optislang.docs.pyansys.com'
-  IS_RELEASE: ${{ github.event_name == 'push' && contains(github.ref, 'refs/tags') }}
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
