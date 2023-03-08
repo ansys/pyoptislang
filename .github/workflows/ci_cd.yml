@@ -29,7 +29,7 @@ jobs:
           python-version: ${{ env.MAIN_PYTHON_VERSION }}
 
   doc-style:
-    name: "Doc style Check"
+    name: "Doc style check"
     runs-on: ubuntu-latest
     steps:
       - uses: pyansys/actions/doc-style@v4
@@ -59,7 +59,7 @@ jobs:
           python-version: ${{ matrix.python-version }}
 
   tests:
-    name: Tests
+    name: "Test ${{ matrix.os }} using Python ${{ matrix.python-version }}"
     needs: [wheelhouse]
     runs-on: ${{ matrix.os }}
     env:
@@ -76,13 +76,13 @@ jobs:
       fail-fast: false
 
     steps:
-      - name: Run pytest with desired markers and extra arguments
+      - name: "Run pytest with desired markers and extra arguments"
         uses: pyansys/actions/tests-pytest@v4
         with:
           python-version: ${{ matrix.python-version }}
           pytest-extra-args: ${{ env.PYTEST_EXTRA_ARGS }}
 
-      - name: Upload coverage results as artifacts
+      - name: "Upload coverage results as artifacts"
         uses: actions/upload-artifact@v3
         if: |
           (matrix.python-version == env.MAIN_PYTHON_VERSION) &&
@@ -132,6 +132,12 @@ jobs:
         with:
           library-name: ${{ env.PACKAGE_NAME }}
           twine-token: ${{ secrets.PYANSYS_PYPI_PRIVATE_PAT }}
+
+      - name: "Release to the public PyPI repository"
+        uses: pyansys/actions/release-pypi-private@v4
+        with:
+          library-name: ${{ env.PACKAGE_NAME }}
+          twine-token: ${{ secrets.PYPI_TOKEN }}
 
       - name: "Release to GitHub"
         uses: pyansys/actions/release-github@v4
