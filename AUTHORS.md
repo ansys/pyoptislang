@@ -2,7 +2,7 @@
 
 ## Project Lead
 
-* [Ronny Fahlberg](https://github.com/samigithub2022)
+* [Ronny Fahlberg](https://github.com/rfahlberg)
 
 ## Contributors
 
