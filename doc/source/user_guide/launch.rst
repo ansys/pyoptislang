@@ -202,6 +202,7 @@ and connection to optiSLang server terminates gracefully even if an error occurs
 :func:`dispose() <ansys.optislang.core.optislang.Optislang.dispose>` method automatically.
 
 .. code:: python
+
     from ansys.optislang.core import Optislang
 
     with Optislang() as osl:

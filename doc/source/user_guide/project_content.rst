@@ -7,6 +7,7 @@ from the instance of :class:`Optislang() <ansys.optislang.core.optislang.Optisla
 methods for obtaining information about loaded project and it's content.
 
 .. code:: python
+
     from ansys.optislang.core import Optislang
     from ansys.optislang.core import examples
     from pathlib.Path import Path
@@ -76,6 +77,7 @@ classes with detailed information and simplified method
 that returns tuple of only parameters names.
 
 .. code:: python
+
     # ...
 
     parameter_manager = root_system.parameter_manager

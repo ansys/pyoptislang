@@ -10,6 +10,7 @@ create new designs and evaluate them. Instance of the
 :func:`project <ansys.optislang.core.project.Project>` property.
 
 .. code:: python
+
     from ansys.optislang.core import Optislang
     from ansys.optislang.core.project_parametric import Design
     from ansys.optislang.core import examples
@@ -49,6 +50,7 @@ Parameters values may be modified by methods of the instance of
 :class:`Design() <ansys.optislang.core.project_parametric.Design>` class.
 
 .. code:: python
+
     # ...
 
     from ansys.optislang.core.project_parametric import DesignVariable
@@ -70,6 +72,7 @@ Design can be also created from scratch directly creating instance of the
 Parameters don't have to be provided when initializing new design.
 
 .. code:: python
+
     # design created using directly Design() class
     direct_design = Design(parameters={"a": 3, "b": 4})
 
@@ -129,10 +132,3 @@ close it using:
 .. code:: python
 
     osl.dispose()
-
-
-
-
-
-
-

@@ -7,6 +7,7 @@ In order to start project, use :func:`start <ansys.optislang.core.optislang.Opti
 (example :ref:`ref_simple_calculator` can be used):
 
 .. code:: python
+
     from pathlib import Path
     from ansys.optislang.core import Optislang, examples
 
@@ -37,6 +38,7 @@ In order to create a new project or open an existing one, methods
 :func:`open() <ansys.optislang.core.optislang.Optislang.open>` may be used. 
 
 .. code:: python
+
     new_project = Path().cwd() / "new_project.opf"
     osl.new()
     osl.save_as(new_project)
