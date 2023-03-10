@@ -217,11 +217,11 @@ class Parameter:
 
     def __init__(
         self,
-        name: str,
-        reference_value: Union[bool, float, str, None],
-        id: str,
-        const: bool,
-        type_: Union[ParameterType, str],
+        name: str = "",
+        reference_value: Union[bool, float, str, None] = None,
+        id: str = "",
+        const: bool = False,
+        type_: Union[ParameterType, str] = ParameterType.DETERMINISTIC,
     ) -> None:
         """Create a new instance of ``Parameter``.
 
@@ -428,7 +428,7 @@ class OptimizationParameter(Parameter):
 
     def __init__(
         self,
-        name: str,
+        name: str = "",
         reference_value: Union[bool, float, str, None] = 0,
         reference_value_type: ParameterValueType = ParameterValueType.REAL,
         id: str = str(uuid.uuid4()),
@@ -671,7 +671,7 @@ class StochasticParameter(Parameter):
 
     def __init__(
         self,
-        name: str,
+        name: str = "",
         reference_value: Union[bool, float, str, None] = 0,
         reference_value_type: Union[ParameterValueType, str] = ParameterValueType.REAL,
         id: str = str(uuid.uuid4()),
@@ -938,7 +938,7 @@ class MixedParameter(Parameter):
 
     def __init__(
         self,
-        name: str,
+        name: str = "",
         reference_value: Union[bool, float, str, None, Tuple[Any, ParameterValueType]] = 0,
         reference_value_type: Union[ParameterValueType, str] = ParameterValueType.REAL,
         id: str = str(uuid.uuid4()),
@@ -1289,7 +1289,7 @@ class DependentParameter(Parameter):
 
     def __init__(
         self,
-        name: str,
+        name: str = "",
         reference_value: Union[bool, float, str, None, Tuple[Any, ParameterValueType]] = 0,
         id: str = str(uuid.uuid4()),
         const: bool = False,
@@ -1490,8 +1490,8 @@ class DesignVariable:
 
     def __init__(
         self,
-        name: str,
-        value: Union[bool, float, complex, list, dict, None],
+        name: str = "",
+        value: Union[bool, float, complex, list, dict, None] = None,
     ) -> None:
         """Initialize a new instance of the ``DesignVariable`` class.
 
@@ -1640,7 +1640,7 @@ class Design:
         parameters: Union[
             Mapping[str, Union[bool, str, float, None]],
             Iterable[Union[Parameter, DesignVariable]],
-        ],
+        ] = [],
     ) -> None:
         """Initialize a new instance of the ``Design`` class."""
         self.__constraints: List[DesignVariable] = []
