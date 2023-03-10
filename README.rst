@@ -33,7 +33,7 @@ PyOptiSLang
 
 Overview
 --------
-The PyOptiSLang project is a python wrapper for Ansys optiSLang applicattion. It supports Pythonic
+The PyOptiSLang project is a Python wrapper for Ansys optiSLang applicattion. It supports Pythonic
 access to optiSLang to be able to communicate with optiSLang process directly from python.
 The latest ansys-optislang-core package supports:
 
@@ -109,6 +109,7 @@ must be ``None``, other parameters can be optionally specified.:
 .. code:: python
 
     from ansys.optislang.core import Optislang
+
     osl = Optislang()
     osl.dispose()
 
@@ -122,6 +123,7 @@ related to the execution of the new optiSLang server are ignored.:
 .. code:: python
 
     from ansys.optislang.core import Optislang
+
     host = "127.0.0.1"
     port = 5310
     osl = Optislang(host=host, port=port)
@@ -133,6 +135,7 @@ Basic usage
 .. code:: python
 
     from ansys.optislang.core import Optislang
+
     osl = Optislang()
     file_path = r"C:\Users\Username\my_scripts\myscript.py"
     osl.run_python_file(path=script_path)

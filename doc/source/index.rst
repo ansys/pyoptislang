@@ -51,7 +51,7 @@ an :ref:`ref_index_api`, :ref:`ref_examples`, and :ref:`ref_contributing` guidel
 
 On the `PyOptiSLang Issues <https://github.com/pyansys/pyoptislang/issues>`_ page, you can create 
 issues to submit questions, report bugs, and request new features. To reach the PyAnsys support 
-team, email pyansys.support@ansys.com.
+team, email pyansys.core@ansys.com.
 
 
 Project index

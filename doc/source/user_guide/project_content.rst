@@ -7,16 +7,16 @@ from the instance of :class:`Optislang() <ansys.optislang.core.optislang.Optisla
 methods for obtaining information about loaded project and it's content.
 
 .. code:: python
-    
+
     from ansys.optislang.core import Optislang
     from ansys.optislang.core import examples
     from pathlib.Path import Path
 
     example = examples.get_files("calculator_with_params")[1][0]
     osl = Optislang(project_path=example)
-    osl.save_copy(Path.cwd() / 'project_content.opf')
+    osl.save_copy(Path.cwd() / "project_content.opf")
     project = osl.project
-    
+
     # print project info
     print(project)
     # obtain these information directly
@@ -40,6 +40,7 @@ how to go through all nodes in the project and print information about them.
 .. code:: python
 
     # ...
+
 
     def print_node_info(node):
         name = node.get_name()
@@ -76,7 +77,7 @@ classes with detailed information and simplified method
 that returns tuple of only parameters names.
 
 .. code:: python
-    
+
     # ...
 
     parameter_manager = root_system.parameter_manager
@@ -85,7 +86,7 @@ that returns tuple of only parameters names.
 
 
 When the :class:`Optislang() <ansys.optislang.core.optislang.Optislang>` instance is no longer 
-needed, terminate connection with optiSLang server by running:
+needed, stop the connection with optiSLang server by running:
 
 .. code:: python
 
