@@ -34,7 +34,7 @@ is recommended that you use these issue templates:
 
 If your issue does not fit into one of these categories, create your own issue.
 
-To reach the project support team, email `pyansys.support@ansys.com <pyansys.support@ansys.com>`_.
+To reach the project support team, email `pyansys.core@ansys.com <pyansys.core@ansys.com>`_.
 
 Viewing PyOptiSLang documentation
 ---------------------------------

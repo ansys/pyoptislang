@@ -10,7 +10,7 @@ you would call:
 .. code:: python
 
     from ansys.optislang.core import Optislang
-    
+
     osl = Optislang()
     print(osl.run_python_script("""help(actors.SensitivityActor)"""))
     osl.dispose()
@@ -30,8 +30,8 @@ calculator (see example :ref:`ref_simple_calculator`):
 
     from ansys.optislang.core import Optislang
     from ansys.optislang.core import examples
-    
+
     osl = Optislang()
-    path_to_file = examples.get_files('simple_calculator')[0]
+    path_to_file = examples.get_files("simple_calculator")[0]
     osl.run_python_file(file_path=path_to_file)
     osl.dispose()

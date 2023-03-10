@@ -73,7 +73,7 @@ html_static_path = ["_static"]
 templates_path = ["_templates"]
 
 # The suffix(es) of source filenames.
-source_suffix = ".rst"
+source_suffix = [".rst"]
 
 # The master toctree document.
 master_doc = "index"
@@ -128,10 +128,10 @@ html_theme_options = {
         ("PyAnsys", "https://docs.pyansys.com/"),
     ],
     "switcher": {
-        "json_url": f"https://{cname}/release/versions.json",
+        "json_url": f"https://{cname}/versions.json",
         "version_match": get_version_match(__version__),
     },
-    "navbar_end": ["version-switcher", "theme-switcher", "navbar-icon-links"],
+    "check_switcher": False,
     "navigation_depth": 1,
 }
 
