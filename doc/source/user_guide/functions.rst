@@ -3,8 +3,8 @@
 ===========
 Basic usage
 ===========
-In order to start project, use :func:`start <ansys.optislang.core.optislang.Optislang.start>`
-(example :ref:`ref_simple_calculator` can be used):
+To start a project, you use the :func:`start <ansys.optislang.core.optislang.Optislang.start>`
+method. This code starts the project for the :ref:`ref_simple_calculator` example:
 
 .. code:: python
 
@@ -16,22 +16,25 @@ In order to start project, use :func:`start <ansys.optislang.core.optislang.Opti
     osl.run_python_file(file_path=path_to_file)
     osl.start()
 
-In order to save the current project, use either
+
+To save the project, use the
 :func:`save() <ansys.optislang.core.optislang.Optislang.save>`,
-:func:`save_as() <ansys.optislang.core.optislang.Optislang.save_as>` or
-:func:`save_copy() <ansys.optislang.core.optislang.Optislang.save_copy>`:
+:func:`save_as() <ansys.optislang.core.optislang.Optislang.save_as>`, or
+:func:`save_copy() <ansys.optislang.core.optislang.Optislang.save_copy>`
+method. This code uses the :func:`save_as() <ansys.optislang.core.optislang.Optislang.save_as>`
+method:
 
 .. code:: python
 
     project_path = Path().cwd() / "test_project.opf"
     osl.save_as(project_path)
 
-Please note that the optiSLang project is located in a temporary directory if an instance 
-of :class:`Optislang() <ansys.optislang.core.optislang.Optislang>` was created with the default 
-parameters. Therefore, if the project should be preserved permanently, either 
-:func:`save_as() <ansys.optislang.core.optislang.Optislang.save_as>` or
-:func:`save_copy() <ansys.optislang.core.optislang.Optislang.save_copy>` should be used.
 
+If an optiSLang instance is created with the default parameters, the optiSLang project
+is located in a temporary directory. Therefore, if you want to preserve the project
+permanently, you should use either the
+:func:`save_as() <ansys.optislang.core.optislang.Optislang.save_as>` or
+:func:`save_copy() <ansys.optislang.core.optislang.Optislang.save_copy>` method.
 
 In order to create a new project or open an existing one, methods
 :func:`new() <ansys.optislang.core.optislang.Optislang.new>` or

@@ -1,32 +1,45 @@
 Getting started
 ===============
-In order to run PyOptiSLang, user must have access to licensed copy of optiSLang. The first 
-supported version of optiSLang is 2023R1. For more information about optiSLang, visit the 
-`optiSLang <https://www.ansys.com/products/connect/ansys-optislang>`_ page on the Ansys website.
+To run PyOptiSLang, you must have access to a licensed copy of optiSLang. The first 
+supported version of optiSLang is 2023 R1. For more information on optiSLang, see the 
+`Ansys optiSLang <https://www.ansys.com/products/connect/ansys-optislang>`_ page
+on the Ansys website.
 
 ************
 Installation
 ************
+The ``ansys-optislang-core`` package supports Python 3.7 through 3.10 on
+Windows and Linux. Three modes of installation are available:
 
-Python module
-~~~~~~~~~~~~~
-The ``ansys-optislang-core`` package currently supports python 3.7 through 3.10 on Windows and Linux.
+- User installation
+- Developer installation
+- Offline installation
+
+For either a developer or offline installation, consider using a `virtual environment
+<https://docs.python.org/3/library/venv.html>`_.
+
+User installation
+~~~~~~~~~~~~~~~~~
 Install the latest release from `PyPi
-<https://pypi.org/project/ansys-optislang-core/>`_ with:
+<https://pypi.org/project/ansys-optislang-core/>`_ with this command:
 
 .. code::
 
    pip install ansys-optislang-core
 
-Alternatively, install the latest from `PyOptiSLang GitHub
-<https://github.com/pyansys/pyoptislang/releases>`_ via:
+
+Alternatively, install the latest `PyOptiSLang GitHub
+<https://github.com/pyansys/pyoptislang/issues>`_ package with this command:
 
 .. code::
 
    pip install git+https://github.com/pyansys/pyoptislang.git
 
 
-For a local "development" version, install with:
+Developer installation
+~~~~~~~~~~~~~~~~~~~~~~
+If you plan on doing local *development* of PyOptiSLang with GitHub,
+clone and install PyOptiSLang with this code:
 
 .. code::
 
@@ -34,37 +47,41 @@ For a local "development" version, install with:
    cd pyoptislang
    pip install -e .
 
-This allows you to install the PyOptiSLang ``ansys-optislang-core`` module
-and modify it locally and have the changes reflected in your setup
+
+A developer installation allows you to edit ``ansys-optislang-core``
+files locally. Any changes that you make are reflected in your setup
 after restarting the Python kernel.
 
 Offline installation
 ~~~~~~~~~~~~~~~~~~~~
-If the machine, where the installation is to be performed doesn't have internet connection, the 
-recommended way of installing PyOptiSLang is downloading archive from `Releases Page 
-<https://github.com/pyansys/pyoptislang/releases>`_ for your corresponding setup.
+Using a wheelhouse can be helpful if you work for a company that restricts access to
+external networks. From the `Releases <https://github.com/pyansys/pyoptislang/releases>`_
+page in the PyOptiSLang repository, you can find the wheelhouses for a particular release in its
+assets and download the wheelhouse corresponding to your setup.
 
-For example, on Linux with Python 3.7, unzip it and install it with the following:
+You can then install PyOptiSLang and all of its dependencies from one single entry point
+that can be shared internally, which eases the security review of the PyOptiSLang package content.
+
+For example, on Linux with Python 3.7, unzip the wheelhouse and install PyOptiSLang with code
+like this:
 
 .. code:: bash
 
-    unzip PyOptiSLang-v0.01.dev1-wheelhouse-Linux-3.7.zip wheelhouse
+    unzip PyOptiSLang-v0.1.0-wheelhouse-Linux-3.7.zip wheelhouse
     pip install ansys-optislang-core -f wheelhouse --no-index --upgrade --ignore-installed
 
-If you're on Windows with Python 3.9, unzip to a wheelhouse directory and install using the same 
-command as preceding.
 
-Consider installing using a `virtual environment
-<https://docs.python.org/3/library/venv.html>`_.
-
+If you're on Windows with Python 3.9, unzip the wheelhouse to a wheelhouse directory and
+then install using the same ``pip`` command as in the preceding Linux code example.
 
 Ansys software requirements
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Ansys optiSLang version >= 2023R1.
-
+You must have a local licensed copy of optiSLang installed or be able to connect to a an
+already running remote instance. The first supported optiSLang version is 2023 R1.
 
 Verify installation
 ~~~~~~~~~~~~~~~~~~~
+To verify your optiSLang installation, ruth this code:
 
 .. code:: python
 
@@ -74,6 +91,6 @@ Verify installation
    print(osl)
    osl.dispose()
 
-If you see a response from the server, congratulations, you're ready
-to get started using OptiSLang as a service. For details regarding the
-PyOptiSLang interface, see :ref:`ref_user_guide`.
+
+If you see a response, you can start using OptiSLang as a service.
+For information on the PyOptiSLang interface, see :ref:`ref_user_guide`.

@@ -1,8 +1,8 @@
 .. _ref_run_python:
 
-============================================
-Executing commands from optiSLang Python API
-============================================
+================================================
+Executing commands from the optiSLang Python API
+================================================
 When optiSLang is active, you can send individual python commands to it as a genuine a
 Python class. For example, if you want to get general information about sensitivity actor, 
 you would call:

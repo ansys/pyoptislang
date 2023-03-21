@@ -2,9 +2,10 @@
 
 Project
 -------
-Instance of the :class:`Project() <ansys.optislang.core.project.Project>`, that is accessible
-from the instance of :class:`Optislang() <ansys.optislang.core.optislang.Optislang>`, contains 
-methods for obtaining information about loaded project and it's content.
+You can access the :class:`Project() <ansys.optislang.core.project.Project>` class
+from the :class:`Optislang() <ansys.optislang.core.optislang.Optislang>` instance.
+This class provides methods for obtaining information about the loaded project and
+its content.
 
 .. code:: python
 
