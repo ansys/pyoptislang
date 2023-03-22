@@ -52,6 +52,8 @@ and run it using the :func:`start() <ansys.optislang.core.optislang.Optislang.st
   project_path = examples.get_files("simple_calculator")[1][0]
   with Optislang(project_path=project_path) as osl:
       osl.start()
+
+
 While the current capabilities provided by PyOptiSLang are limited, you can
 overcome use the :func:`run_python_script() <ansys.optislang.core.optislang.Optislang.run_python_script>`
 or :func:`run_python_file() <ansys.optislang.core.optislang.Optislang.run_python_file>`

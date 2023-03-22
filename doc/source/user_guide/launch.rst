@@ -182,16 +182,16 @@ initialized with the ``shutdown_on_finished`` parameter set to ``False``.
 You can use the same approach when connected to a remote optiSLang server.
 
 +-----------------+----------------------------+----------------+----------------------------------+
-| Initialization  | ``shutdown_on_finished``   | **Methods**    | **optiSLang server is running**  |
+| Initialization  |  ``shutdown_on_finished``  |    Methods     |   optiSLang server is running    |
 +=================+============================+================+==================================+
 | Local           | ``True``                   | ``dispose()``  | No                               |
 |                 +----------------------------+----------------+----------------------------------+
 |                 | ``False``                  | ``dispose()``  | Yes                              |
 |                 |                            +----------------+----------------------------------+
-|                 |                            | ``shutdown()`` | No                              |
+|                 |                            | ``shutdown()`` | No                               |
 |                 |                            | ``dispose()``  |                                  |
 +-----------------+----------------------------+----------------+----------------------------------+
-|     Remote      | ``True``                   | ``dispose()``  | No                               |
+| Remote          | ``True``                   | ``dispose()``  | No                               |
 |                 +----------------------------+----------------+----------------------------------+
 |                 | ``False``                  | ``dispose()``  | Yes                              |
 |                 |                            +----------------+----------------------------------+
