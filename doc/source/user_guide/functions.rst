@@ -31,14 +31,14 @@ method:
 
 
 If an optiSLang instance is created with the default parameters, the optiSLang project
-is located in a temporary directory. Therefore, if you want to preserve the project
-permanently, you should use either the
-:func:`save_as() <ansys.optislang.core.optislang.Optislang.save_as>` or
-:func:`save_copy() <ansys.optislang.core.optislang.Optislang.save_copy>` method.
+is located in a temporary directory. Therefore, to preserve the project permanently,
+you should use either the :func:`save_as() <ansys.optislang.core.optislang.Optislang.save_as>`
+or :func:`save_copy() <ansys.optislang.core.optislang.Optislang.save_copy>` method.
 
-In order to create a new project or open an existing one, methods
+To create a project or open an existing one, you use the
 :func:`new() <ansys.optislang.core.optislang.Optislang.new>` or
-:func:`open() <ansys.optislang.core.optislang.Optislang.open>` may be used. 
+:func:`open() <ansys.optislang.core.optislang.Optislang.open>` methods. This code
+creates a project: 
 
 .. code:: python
 
@@ -46,21 +46,21 @@ In order to create a new project or open an existing one, methods
     osl.new()
     osl.save_as(new_project)
 
-Some general info about project can be obtained by running:
+To obtain some general information about a project, run this code:
 
 .. code:: python
 
     print(osl)
 
-Or via running specific requests:
+Or, you can run specific requests like shown in this code:
 
 .. code:: python
 
     print(f"Version: {osl.get_osl_version_string()}")
     print(f"Working directory: {osl.get_working_dir()}")
 
-When the :class:`Optislang() <ansys.optislang.core.optislang.Optislang>` instance is no longer 
-needed, close the connection with optiSLang server by running:
+When you no longer need to use the :class:`Optislang() <ansys.optislang.core.optislang.Optislang>`
+instance, close the connection with the optiSLang server by running this code:
 
 .. code:: python
 
