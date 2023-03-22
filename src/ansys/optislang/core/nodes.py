@@ -35,7 +35,7 @@ class DesignFlow(Enum):
         Raises
         ------
         TypeError
-            
+
         ValueError
             Raised when an inappropriate type of label is given.
         """
@@ -374,7 +374,7 @@ class System(Node):
         Returns
         -------
         Union[Node, None]
-            ``Node`` with the specified unqiue ID. If this ID wasn't located in any
+            ``Node`` with the specified unique ID. If this ID wasn't located in any
             descendant node, ``None`` is returned.
 
         Raises
@@ -791,7 +791,7 @@ class RootSystem(ParametricSystem):
         Returns
         -------
         Tuple[str, ...]
-            Names ofthe  parameters that are missing in the instance of ``Design`` class.
+            Names of the parameters that are missing in the instance of ``Design`` class.
 
         Raises
         ------

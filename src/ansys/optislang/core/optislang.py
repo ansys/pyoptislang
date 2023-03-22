@@ -47,11 +47,11 @@ class Optislang:
         - If the project file exists, it is opened.
         - If the project file does not exist, a project is created in the specified path.
         - If the path is ``None``, a new project is created in the temporary directory.
-    
+
     no_save : bool, optional
         Whether to save the specified project after all other actions are completed.
         The default is ``False``. This parameter is ignored when ``host`` and
-        ``port`` parameters are specified. 
+        ``port`` parameters are specified.
     ini_timeout : float, optional
         Time in seconds to connect to the optiSLang server. The default is ``20``.
     name : str, optional
@@ -61,7 +61,7 @@ class Optislang:
         communication with the server requires the request to contain a password.
     loglevel : str, optional
         Logging level. The options are:
-        
+
         - CRITICAL: Log errors that are fatal for the app.
         - ERROR: Log errors that are fatal for some operation, but not for the app.
         - WARNING: Log some oddities or potential problems.
@@ -70,7 +70,7 @@ class Optislang:
 
     shutdown_on_finished: bool, optional
         Whether to shut down when execution is finished and no listeners are registered.
-        The default is ``True``. This paramter is ignored when ``host`` and
+        The default is ``True``. This parameter is ignored when ``host`` and
         ``port`` parameters are specified.
 
     Raises
@@ -375,7 +375,7 @@ class Optislang:
         file_path : Union[str, Path]
             Path to the optiSLang project file to open.
         force : bool, optional
-            Whether to force opening of project even if errors (non-critical) occur.
+            Whether to force opening of the project even if non-critical errors occur.
             Non-critical errors include:
 
             - Timestamp of the (auto) save point is newer than the project timestamp.
@@ -505,12 +505,12 @@ class Optislang:
         file_path : Union[str, Path]
             Path for saving the new project file to.
         force : bool, optional
-            Whether to force opening of the project even if errors (non-critical) occur.
+            Whether to force opening of the project even if non-critical errors occur.
             Non-critical errors include:
-            
+
             - Timestamp of the (auto) save point is newer than the project timestamp.
             - Project (file) is incomplete.
-        
+
         restore : bool, optional
             Whether to restore the project from the last (auto) save point (if present).
         reset : bool, optional
@@ -584,7 +584,7 @@ class Optislang:
         ----------
         force : bool, optional
             Whether to forcibly shut down a local optiSLang server. The default is
-            ``False``. This paramter has no effect when the connection established
+            ``False``. This parameter has no effect when the connection established
             is to a remote optiSLang server. In all cases, an attempt is made to
             shut down the optiSLang server in the proper way. However, if the
             ``force`` parameter is ``True``, after a while, the process is forcibly

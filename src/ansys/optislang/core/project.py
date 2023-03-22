@@ -12,7 +12,7 @@ if TYPE_CHECKING:
 
 
 class Project:
-    """Provids the class containing the root system and queries related to the loaded project."""
+    """Provides the class containing the root system and queries related to the loaded project."""
 
     def __init__(self, osl_server: OslServer, uid: str) -> None:
         """Initialize an instance of the ``Project`` class.
