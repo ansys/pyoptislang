@@ -126,7 +126,7 @@ osl.dispose()
 #########################################################
 # Plot extracted results
 # ~~~~~~~~~~~~~~~~~~~~~~
-# Plot the extrated results.
+# Plot the extracted results.
 
 fig, axs = plt.subplots(2)
 fig.suptitle("Optimization of ten bar truss cross section areas")

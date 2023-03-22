@@ -4,7 +4,7 @@
 Examples
 ========
 
-End-to-end examples show how you can use PyOptiSLang. If PyOptiSLang is intalled
+End-to-end examples show how you can use PyOptiSLang. If PyOptiSLang is installed
 on your machine, you can download these examples as Python files or Jupyter
 notebooks and run them locally.
 
