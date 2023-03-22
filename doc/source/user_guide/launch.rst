@@ -47,7 +47,7 @@ To detect a list of all supported optiSLang executable files, run this code:
 
 
 To launch a specific optiSLang version shown in the list of supported executable files, or
-to lauch a supported version from a non-standard installation location, use the ``executable``
+to launch a supported version from a non-standard installation location, use the ``executable``
 parameter in the :class:`Optislang <ansys.optislang.core.optislang.Optislang>` class to
 specify the path to the desired executable file:
 
@@ -165,7 +165,7 @@ initialized with the ``shutdown_on_finished`` parameter set to ``False``.
         osl.dispose()
 
 
-* To shut down othe ptiSLang server, use both the
+* To shut down the optiSLang server, use both the
    :func:`shutdown() <ansys.optislang.core.optislang.Optislang.shutdown>` and
    :func:`dispose() <ansys.optislang.core.optislang.Optislang.dispose>` methods:
 

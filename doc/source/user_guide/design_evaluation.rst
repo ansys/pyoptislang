@@ -33,7 +33,7 @@ you use the :func:`project <ansys.optislang.core.project.Project>` method.
     Thus, the project has to have parameters already defined at the
     project root system. To prepare the workflow for this,  you must
     set ``Receive designs`` and ``Send back designs`` in the design flow.
-    For more informaton, see the :ref:`ref_ten_bar_truss_evaluate_design`
+    For more information, see the :ref:`ref_ten_bar_truss_evaluate_design`
     example.
 
 

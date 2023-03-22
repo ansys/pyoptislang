@@ -12,7 +12,7 @@ The following contribution information is specific to PyOptiSLang.
 
 Clone the repository and install the package
 --------------------------------------------
-To clone the PyOptiSLang repostory and install the lastest PyOptiSLang
+To clone the PyOptiSLang repository and install the latest PyOptiSLang
 release in development mode, run this code:
 
 .. code::
@@ -37,7 +37,7 @@ own issue.
 
 To reach the project support team, email `pyansys.core@ansys.com <pyansys.core@ansys.com>`_.
 
-View Documentation
+View documentation
 -------------------
 Documentation for the latest stable release of PyOptiSLang is hosted at
 `PyOptiSLang Documentation <https://optislang.docs.pyansys.com>`_.
