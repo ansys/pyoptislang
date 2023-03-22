@@ -1,3 +1,3 @@
 **Evaluate design**
 
-These examples demonstrate using :func:`evaluate_design() <ansys.optislang.core.nodes.RootSystem.evaluate_design>`.
+These examples demonstrate how you evaluate a design.

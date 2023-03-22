@@ -4,27 +4,36 @@
 Oscillator calibration systems
 ------------------------------
 
-Create parametric systems for oscillator calibration python example (using
-``oscillatorcalibration_system_python.py`` and ``oscillatorcalibration_system_ascii.py``)
-and run these system. Save optiSLang project into the same folder as this script then.
-More details in individual python scripts and oscillator example in optiSLang tutorial section.
+This example uses the ``oscillatorcalibration_system_python.py``
+and ``oscillatorcalibration_system_ascii.py`` files to create
+parametric systems for oscillator calibration and then runs
+these systems. Lastly, it explains how you can optionally save
+a copy of the project to a desired location. For more detailed
+information, see the individual Python files for the oscillator
+example in the optiSLang tutorials.
 """
 
-####################################################
-# Import necessary modules.
-####################################################
+#########################################################
+# Perform required imports
+# ~~~~~~~~~~~~~~~~~~~~~~~~
+# Perform the required imports.
+
 from ansys.optislang.core import Optislang
 import ansys.optislang.core.examples as examples
 
-#################################################################################
-# Create :class:`Optislang <ansys.optislang.core.optislang.Optislang>` instance.
-#################################################################################
+#########################################################
+# Create optiSLang instance
+# ~~~~~~~~~~~~~~~~~~~~~~~~~
+# Create the optiSLang instance.
+
 osl = Optislang()
 print(osl)
 
 #########################################################
-# Get paths of example scripts and run them.
-#########################################################
+# Get paths of example scripts and run them
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Get the paths of the example scripts and then run them.
+
 paths1 = examples.get_files("oscillatorcalibration_system_python")
 paths2 = examples.get_files("oscillatorcalibration_system_ascii")
 
@@ -32,26 +41,35 @@ osl.run_python_file(paths1[0])
 osl.run_python_file(paths2[0])
 
 #########################################################
-# Execute workflow created by scripts above.
-#########################################################
+# Run workflow
+# ~~~~~~~~~~~~
+# Run the workflow created by the preceding scripts.
+
 osl.start()
 
-######################################################################
-# In order to save project to desired location, uncomment lines below:
+#########################################################
+# Optionally save project
+# ~~~~~~~~~~~~~~~~~~~~~~~
+# If you want to save the project to some desired
+# location, uncomment and edit these lines:
+#
 # .. code:: python
 #
 #   path = r'<insert-desired-location>'
 #   osl.save_as(os.path.join(path, "test_project.opf"))
 #
-######################################################################
+#########################################################
+# Stop and cancel project
+# ~~~~~~~~~~~~~~~~~~~~~~~
+# Stop and cancel the project.
 
-#########################################################
-# Terminate and cancel project.
-#########################################################
 osl.dispose()
 
 #########################################################
-# Generated workflow:
+# View generated workflow
+# ~~~~~~~~~~~~~~~~~~~~~~~
+# This image shows the generated workflow.
+#
 # .. image:: ../../../_static/02_5_oscillator_calibration_systems.png
 #  :width: 400
 #  :alt: Result of script.

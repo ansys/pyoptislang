@@ -4,50 +4,65 @@
 Oscillator robustness
 ---------------------
 
-Create robustness flow for oscillator python example (using ``oscillator_robustness_arsm.py``)
-and run this flow. Save optiSLang project into the same folder as this script then.
-More details in python script and oscillator example in optiSLang tutorial section.
+This example uses the ``oscillator_robustness_arsm.py`` file to create and run a
+robustness flow for an oscillator. It then explains how you can optionally save
+a copy of the project to a desired location. For more detailed information, see
+the individual Python files for the oscillator example in the optiSLang tutorials.
 """
 
-####################################################
-# Import necessary modules.
-####################################################
+#########################################################
+# Perform required imports
+# ~~~~~~~~~~~~~~~~~~~~~~~~
+# Perform the required imports.
+
 from ansys.optislang.core import Optislang
 import ansys.optislang.core.examples as examples
 
-#################################################################################
-# Create :class:`Optislang <ansys.optislang.core.optislang.Optislang>` instance.
-#################################################################################
+#########################################################
+# Create optiSLang instance
+# ~~~~~~~~~~~~~~~~~~~~~~~~~
+# Create the optiSLang instance.
+
 osl = Optislang()
 print(osl)
 
 #########################################################
-# Get path of example script and run it.
-#########################################################
+# Get path of example script and run it
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Get the path of the example script and then run it.
+
 paths = examples.get_files("oscillator_robustness_arsm")
 osl.run_python_file(paths[0])
 
-#########################################################
-# Execute workflow created by script above.
-#########################################################
+# Run workflow
+# ~~~~~~~~~~~~
+# Run the workflow created by the preceding script.
+
 osl.start()
 
-######################################################################
-# In order to save project to desired location, uncomment lines below:
+#########################################################
+# Optionally save project
+# ~~~~~~~~~~~~~~~~~~~~~~~
+# If you want to save the project to some desired
+# location, uncomment and edit these lines:
+#
 # .. code:: python
 #
 #   path = r'<insert-desired-location>'
 #   osl.save_as(os.path.join(path, "test_project.opf"))
 #
-######################################################################
+#########################################################
+# Stop and cancel project
+# ~~~~~~~~~~~~~~~~~~~~~~~
+# Stop and cancel the project.
 
-#########################################################
-# Terminate and cancel project.
-#########################################################
 osl.dispose()
 
 #########################################################
-# Generated workflow:
+# View generated workflow
+# ~~~~~~~~~~~~~~~~~~~~~~~
+# This image shows the generated workflow.
+#
 # .. image:: ../../../_static/02_1_oscillator_robustness.png
 #  :width: 600
 #  :alt: Result of script.
