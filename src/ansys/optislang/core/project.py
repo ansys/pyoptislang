@@ -12,17 +12,17 @@ if TYPE_CHECKING:
 
 
 class Project:
-    """Class containing root_system and queries related to the loaded project."""
+    """Provids the class containing the root system and queries related to the loaded project."""
 
     def __init__(self, osl_server: OslServer, uid: str) -> None:
-        """Initialize an instance of the Project class.
+        """Initialize an instance of the ``Project`` class.
 
         Parameters
         ----------
         osl_server: OslServer
-            Instance of `OslServer`.
+            Instance of ``OslServer``.
         uid: str
-            Unique id of the loaded project.
+            Unique ID of the loaded project.
         """
         self.__osl_server = osl_server
         self.__uid = uid
@@ -41,12 +41,12 @@ class Project:
         )
 
     def evaluate_design(self, design: Design) -> Design:
-        """Evaluate given design.
+        """Evaluate a design.
 
         Parameters
         ----------
         design: Design
-            Instance of ``Design`` class with defined parameters.
+            Instance of a ``Design`` class with defined parameters.
 
         Returns
         -------
@@ -56,9 +56,9 @@ class Project:
         Raises
         ------
         OslCommunicationError
-            Raised when an error occurs while communicating with server.
+            Raised when an error occurs while communicating with the server.
         OslCommandError
-            Raised when the command or query fails.
+            Raised when a command or query fails.
         TimeoutError
             Raised when the timeout float value expires.
         """
@@ -70,15 +70,15 @@ class Project:
         Returns
         -------
         str
-            optiSLang project description. If no project is loaded in the optiSLang,
-            returns ``None``.
+            Description of the optiSLang project. If no project is loaded in optiSLang,
+            ``None`` is returned.
 
         Raises
         ------
         OslCommunicationError
-            Raised when an error occurs while communicating with server.
+            Raised when an error occurs while communicating with the server.
         OslCommandError
-            Raised when the command or query fails.
+            Raised when a command or query fails.
         TimeoutError
             Raised when the timeout float value expires.
         """
@@ -91,53 +91,53 @@ class Project:
         -------
         Path
             Path to the optiSLang project file. If no project is loaded in the optiSLang,
-            returns ``None``.
+            ``None`` is returned.
 
         Raises
         ------
         OslCommunicationError
-            Raised when an error occurs while communicating with server.
+            Raised when an error occurs while communicating with the server.
         OslCommandError
-            Raised when the command or query fails.
+            Raised when a command or query fails.
         TimeoutError
             Raised when the timeout float value expires.
         """
         return self.__osl_server.get_project_location()
 
     def get_name(self) -> str:
-        """Get name of the optiSLang project.
+        """Get the name of the optiSLang project.
 
         Returns
         -------
         str
             Name of the optiSLang project. If no project is loaded in the optiSLang,
-            returns ``None``.
+            ``None`` is returned.
 
         Raises
         ------
         OslCommunicationError
-            Raised when an error occurs while communicating with server.
+            Raised when an error occurs while communicating with the server.
         OslCommandError
-            Raised when the command or query fails.
+            Raised when a command or query fails.
         TimeoutError
             Raised when the timeout float value expires.
         """
         return self.__osl_server.get_project_name()
 
     def get_reference_design(self) -> Design:
-        """Get design with reference values of parameters.
+        """Get a design with reference values of the parameters.
 
         Returns
         -------
         Design
-            Instance of ``Design`` class with defined parameters and reference values.
+            Instance of the ``Design`` class with defined parameters and reference values.
 
         Raises
         ------
         OslCommunicationError
-            Raised when an error occurs while communicating with server.
+            Raised when an error occurs while communicating with the server.
         OslCommandError
-            Raised when the command or query fails.
+            Raised when a command or query fails.
         TimeoutError
             Raised when the timeout float value expires.
         """
@@ -149,15 +149,15 @@ class Project:
         Returns
         -------
         str
-            optiSLang project status. If no project is loaded in the optiSLang,
-            returns ``None``.
+            Status of the optiSLang project. If no project is loaded in optiSLang,
+            ``None`` is returned.
 
         Raises
         ------
         OslCommunicationError
-            Raised when an error occurs while communicating with server.
+            Raised when an error occurs while communicating with the server.
         OslCommandError
-            Raised when the command or query fails.
+            Raised when a command or query fails.
         TimeoutError
             Raised when the timeout float value expires.
         """
@@ -165,7 +165,7 @@ class Project:
 
     @property
     def parameter_manager(self) -> ParameterManager:
-        """Get instance of the ``ParameterManager`` class at the root system.
+        """Get the instance of the ``ParameterManager`` class at the root system.
 
         Returns
         -------
@@ -176,7 +176,7 @@ class Project:
 
     @property
     def root_system(self) -> RootSystem:
-        """Get instance of the ``RootSystem`` class.
+        """Get the instance of the ``RootSystem`` class.
 
         Returns
         -------
@@ -186,9 +186,9 @@ class Project:
         Raises
         ------
         OslCommunicationError
-            Raised when an error occurs while communicating with server.
+            Raised when an error occurs while communicating with the server.
         OslCommandError
-            Raised when the command or query fails.
+            Raised when a command or query fails.
         TimeoutError
             Raised when the timeout float value expires.
         """
@@ -196,11 +196,11 @@ class Project:
 
     @property
     def uid(self) -> str:
-        """Get uid of the optiSLang project.
+        """Get the unique ID of the optiSLang project.
 
         Returns
         -------
         str
-            Uid of the loaded project.
+            Unique ID of the loaded project.
         """
         return self.__uid

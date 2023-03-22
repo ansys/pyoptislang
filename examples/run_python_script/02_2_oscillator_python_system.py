@@ -4,7 +4,7 @@
 Oscillator parametric system
 ----------------------------
 
-This example uses the ``oscillator_system_python.py``file to create and
+This example uses the ``oscillator_system_python.py`` file to create and
 run parametric system for an oscillator. It then explains how you can optionally
 save a copy of the project to a desired location. For more detailed information, see
 the individual Python files for the oscillator example in the optiSLang tutorials.

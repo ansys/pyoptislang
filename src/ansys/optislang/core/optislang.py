@@ -1,4 +1,4 @@
-"""Contains Optislang class which provides python API for optiSLang application."""
+"""Contains Optislang class, which provides the Python API for the optiSLang app."""
 from __future__ import annotations
 
 from pathlib import Path
@@ -16,62 +16,73 @@ if TYPE_CHECKING:
 
 
 class Optislang:
-    """Connects to the optiSLang application and provides an API to control it.
+    """Connects to the optiSLang app and provides an API to control it.
 
-    For remote connection, it is assumed that the optiSLang server process is already running
-    on remote (or local) host. In that case, the host and port must be specified and parameters
-    related to the execution of the new optiSLang server are ignored.
+    For remote connection, it is assumed that optiSLang is already running
+    on a remote (or local) host as a server. In this case, the host and port
+    must be specified. Parameters related to the execution of the new optiSLang
+    server are ignored.
 
-    For execution of optiSLang locally, both host and port parameters must be ``None``. Other
-    parameters can be optionally specified.
+    To run optiSLang locally, both the ``host`` and ``port`` parameters must
+    be ``None``, which are their defaults. Other parameters can be optionally
+    specified.
 
     Parameters
     ----------
     host : str, optional
-        A string representation of an IPv4/v6 address or domain name of running optiSLang server.
-        Defaults to ``None``.
+        IPv4/v6 address or domain name on which optiSLang is running as a
+        server. The default is ``None``.
     port : int, optional
-        A numeric port number of running optiSLang server. Defaults to ``None``.
+        Port on which optiSLang is running as a server. The default is ``None``.
     executable : Union[str, Path], optional
-        Path to the optiSLang executable file which supposed to be executed on localhost.
-        It is ignored when the host and port parameters are specified. Defaults to ``None``.
+        Path to the optiSLang executable file to execute on a the local host.
+         The default is ``None``. This parameter is ignored when ``host``
+         and ``port`` parameters are specified.
     project_path : Union[str, Path], optional
-        Path to the optiSLang project file which is supposed to be used by new local optiSLang
-        server. It is ignored when the host and port parameters are specified.
+        Path to the optiSLang project file that is to be used by a new local
+        optiSLang server. The default is ``None``. This parameter is ignored
+        when ``host`` and ``port`` parameters are specified. Here is how
+        this parameter is used:
+
         - If the project file exists, it is opened.
-        - If the project file does not exist, a new project is created on the specified path.
-        - If the path is None, a new project is created in the temporary directory.
-        Defaults to ``None``.
+        - If the project file does not exist, a project is created in the specified path.
+        - If the path is ``None``, a new project is created in the temporary directory.
+    
     no_save : bool, optional
-        Determines whether not to save the specified project after all other actions are completed.
-        It is ignored when the host and port parameters are specified. Defaults to ``False``.
+        Whether to save the specified project after all other actions are completed.
+        The default is ``False``. This parameter is ignored when ``host`` and
+        ``port`` parameters are specified. 
     ini_timeout : float, optional
-        Time in seconds to connect to the optiSLang server. Defaults to 20 s.
+        Time in seconds to connect to the optiSLang server. The default is ``20``.
     name : str, optional
-        Identifier of the optiSLang instance.
+        ID of the optiSLang instance.
     password : str, optional
-        The server password. Use when communication with the server requires the request
-        to contain a password entry. Defaults to ``None``.
+        Server password. The default is ``None``. This parameter is used when
+        communication with the server requires the request to contain a password.
     loglevel : str, optional
-        Logging level. The following options are available:
-        - CRITICAL: Log errors which are fatal for the application.
-        - ERROR: Log errors which are fatal for some operation, but not for application.
+        Logging level. The options are:
+        
+        - CRITICAL: Log errors that are fatal for the app.
+        - ERROR: Log errors that are fatal for some operation, but not for the app.
         - WARNING: Log some oddities or potential problems.
-        - INFO: Log some useful information that program works as expected.
-        - DEBUG: The most grained logging.
+        - INFO: Log some useful information that the program works as expected.
+        - DEBUG: Log all information for use in debugging.
+
     shutdown_on_finished: bool, optional
-        Shut down when execution is finished and there are not any listeners registered.
-        It is ignored when the host and port parameters are specified. Defaults to ``True``.
+        Whether to shut down when execution is finished and no listeners are registered.
+        The default is ``True``. This paramter is ignored when ``host`` and
+        ``port`` parameters are specified.
 
     Raises
     ------
     RuntimeError
-        Raised when the connection to the optiSLang server cannot be established in specified time.
+        Raised when the connection to the optiSLang server cannot be established in
+        before the specified timeout.
 
     Examples
     --------
-    Start and connect to the local optiSLang server, get version of used optiSLang, print it
-    and shutdown the server.
+    Start and connect to the local optiSLang server, get the version of optiSLang
+    in use, print the version, and shut down the server.
 
     >>> from ansys.optislang.core import Optislang
     >>> osl = Optislang()
@@ -116,9 +127,8 @@ class Optislang:
         Parameters
         ----------
         server_type : str, optional
-            Type of the optiSLang server. The following options are available:
-            - "tcp": plain TCP/IP communication protocol is used
-            Defaults to "tcp".
+            Type of the optiSLang server. The default is ``tcp``, in which case
+            the plain TCP/IP communication protocol is used.
 
         Returns
         -------
@@ -146,7 +156,7 @@ class Optislang:
             raise NotImplementedError(f'OptiSLang server of type "{server_type}" is not supported.')
 
     def __str__(self):
-        """Return product name, version of optiSLang and PyOptiSLang version."""
+        """Return product name, version of optiSLang, and version of PyOptiSLang."""
         return (
             f"Product name: optiSLang\n"
             f"Version: {self.get_osl_version_string()}\n"
@@ -161,14 +171,14 @@ class Optislang:
     def __exit__(self, exc_type, exc_value, exc_tb):
         """Exit the context.
 
-        Disposes instance of Optislang.
+        Disposes the Optislang instance.
 
         Raises
         ------
         OslCommunicationError
-            Raised when an error occurs while communicating with server.
+            Raised when an error occurs while communicating with the server.
         OslCommandError
-            Raised when the command or query fails.
+            Raised when a command or query fails.
         TimeoutError
             Raised when the timeout float value expires.
         """
@@ -177,7 +187,7 @@ class Optislang:
 
     @property
     def name(self) -> str:
-        """Get instance unique identifier."""
+        """Unique ID of the optiSLang instance."""
         if not self.__name:
             if self.__host or self.__port:
                 self.__name = f"optiSLang_{self.__host}:{self.__port}"
@@ -187,25 +197,25 @@ class Optislang:
 
     @property
     def log(self) -> OslLogger:
-        """Get instance logger."""
+        """Instance logger."""
         return self.__logger
 
     @property
     def has_active_project(self) -> bool:
         """
-        Get info whether project is loaded.
+        Whether a project is loaded.
 
         Returns
         -------
         bool
-            ``True`` if project is loaded; ``False`` otherwise.
+            ``True`` if a project is loaded, ``False`` otherwise.
 
         Raises
         ------
         OslCommunicationError
-            Raised when an error occurs while communicating with server.
+            Raised when an error occurs while communicating with the server.
         OslCommandError
-            Raised when the command or query fails.
+            Raised when a command or query fails.
         TimeoutError
             Raised when the timeout float value expires.
         """
@@ -218,20 +228,20 @@ class Optislang:
         Returns
         -------
         Project
-            Loaded project. If no project is loaded, returns ``None``.
+            Loaded project. If no project is loaded, ``None`` is returned.
         """
         return self.__project
 
-    # close method doesn't work properly in optiSLang 2023R1, therefore it was commented out
+    # close method doesn't work properly in optiSLang 2023 R1, Thus, it was commented out
     # def close(self) -> None:
     #     """Close the current project.
 
     #     Raises
     #     ------
     #     OslCommunicationError
-    #         Raised when an error occurs while communicating with server.
+    #         Raised when an error occurs while communicating with the server.
     #     OslCommandError
-    #         Raised when the command or query fails.
+    #         Raised when a command or query fails.
     #     TimeoutError
     #         Raised when the timeout float value expires.
     #     """
@@ -239,21 +249,21 @@ class Optislang:
     #     self.__project = None
 
     def dispose(self) -> None:
-        """Terminate all local threads and unregister listeners.
+        """Close all local threads and unregister listeners.
 
         Raises
         ------
         OslCommunicationError
-            Raised when an error occurs while communicating with server.
+            Raised when an error occurs while communicating with the server.
         OslCommandError
-            Raised when the command or query fails.
+            Raised when a command or query fails.
         TimeoutError
             Raised when the timeout float value expires.
         """
         self.__osl_server.dispose()
 
     def get_osl_version_string(self) -> str:
-        """Get version of used optiSLang.
+        """Get the optiSLang version in use as a string.
 
         Returns
         -------
@@ -263,86 +273,86 @@ class Optislang:
         Raises
         ------
         OslCommunicationError
-            Raised when an error occurs while communicating with server.
+            Raised when an error occurs while communicating with the server.
         OslCommandError
-            Raised when the command or query fails.
+            Raised when a command or query fails.
         TimeoutError
             Raised when the timeout float value expires.
         """
         return self.__osl_server.get_osl_version_string()
 
     def get_osl_version(self) -> Tuple[Union[int, None], ...]:
-        """Get version of used optiSLang.
+        """Get the optiSLang version in use as a tuple.
 
         Returns
         -------
         tuple
-            optiSLang version as tuple containing
-            major version, minor version, maintenance version and revision.
+            optiSLang version as tuple contains the
+            major version, minor version, maintenance version, and revision.
 
         Raises
         ------
         OslCommunicationError
-            Raised when an error occurs while communicating with server.
+            Raised when an error occurs while communicating with the server.
         OslCommandError
-            Raised when the command or query fails.
+            Raised when a command or query fails.
         TimeoutError
             Raised when the timeout float value expires.
         """
         return self.__osl_server.get_osl_version()
 
     def get_timeout(self) -> Union[float, None]:
-        """Get current timeout value for execution of commands.
+        """Get the timeout value for executing commands.
 
         Returns
         -------
         timeout: Union[float, None]
-            Timeout in seconds to perform commands, it must be greater than zero or ``None``.
-            Another functions will raise a timeout exception if the timeout period value has
-            elapsed before the operation has completed. If ``None`` is given, functions
-            will wait until they're finished (no timeout exception is raised).
-            Defaults to ``None``.
+            Timeout in seconds to perform commands. This value must be greater
+            than zero or ``None``. The default is ``None``. Another function
+            raises a timeout exception if the timeout value has elapsed before
+            an operation has completed. If the timeout is ``None``, functions
+            wait until they're finished, and no timeout exception is raised.
 
         Raises
         ------
         OslCommunicationError
-            Raised when an error occurs while communicating with server.
+            Raised when an error occurs while communicating with the server.
         OslCommandError
-            Raised when the command or query fails.
+            Raised when a command or query fails.
         TimeoutError
             Raised when the timeout float value expires.
         """
         return self.__osl_server.get_timeout()
 
     def get_working_dir(self) -> Path:
-        """Get path to the optiSLang project working directory.
+        """Get path to the optiSLang project's working directory.
 
         Returns
         -------
         Path
-            Path to the optiSLang project working directory. If no project is loaded
-            in the optiSLang, returns ``None``.
+            Path to the optiSLang project's working directory. If no project is loaded
+            in optiSLang, ``None`` is returned.
 
         Raises
         ------
         OslCommunicationError
-            Raised when an error occurs while communicating with server.
+            Raised when an error occurs while communicating with the server.
         OslCommandError
-            Raised when the command or query fails.
+            Raised when a command or query fails.
         TimeoutError
             Raised when the timeout float value expires.
         """
         return self.__osl_server.get_working_dir()
 
     def new(self) -> None:
-        """Create a new project.
+        """Create a project.
 
         Raises
         ------
         OslCommunicationError
-            Raised when an error occurs while communicating with server.
+            Raised when an error occurs while communicating with the server.
         OslCommandError
-            Raised when the command or query fails.
+            Raised when a command or query fails.
         TimeoutError
             Raised when the timeout float value expires.
         """
@@ -358,28 +368,30 @@ class Optislang:
         restore: bool = False,
         reset: bool = False,
     ) -> None:
-        """Open a new project.
+        """Open a project.
 
         Parameters
         ----------
         file_path : Union[str, Path]
             Path to the optiSLang project file to open.
         force : bool, optional
-            Whether to force opening of project even if (non-critical) errors occur.
+            Whether to force opening of project even if errors (non-critical) occur.
             Non-critical errors include:
-            - Timestamp of (auto) save point newer than project timestamp
-            - Project (file) incomplete
+
+            - Timestamp of the (auto) save point is newer than the project timestamp.
+            - Project (file) is incomplete.
+
         restore : bool, optional
-            Whether to restore project from last (auto) save point (if present).
+            Whether to restore the project from the last (auto) save point (if present).
         reset : bool, optional
-            Whether to reset project after load.
+            Whether to reset the project after loading it.
 
         Raises
         ------
         OslCommunicationError
-            Raised when an error occurs while communicating with server.
+            Raised when an error occurs while communicating with the server.
         OslCommandError
-            Raised when the command or query fails.
+            Raised when a command or query fails.
         TimeoutError
             Raised when the timeout float value expires.
         """
@@ -389,14 +401,14 @@ class Optislang:
         )
 
     def reset(self) -> None:
-        """Reset complete project.
+        """Reset the entire project.
 
         Raises
         ------
         OslCommunicationError
-            Raised when an error occurs while communicating with server.
+            Raised when an error occurs while communicating with the server.
         OslCommandError
-            Raised when the command or query fails.
+            Raised when a command or query fails.
         TimeoutError
             Raised when the timeout float value expires.
         """
@@ -412,21 +424,22 @@ class Optislang:
         Parameters
         ----------
         script : str
-            Python commands to be executed on the server.
+            Python commands to execute on the server.
         args : Sequence[object], None, optional
-            Sequence of arguments used in Python script. Defaults to ``None``.
+            Sequence of arguments used in the Python script. The default
+            is ``None``.
 
         Returns
         -------
         Tuple[str, str]
-            STDOUT and STDERR from executed Python script.
+            STDOUT and STDERR from the executed Python script.
 
         Raises
         ------
         OslCommunicationError
-            Raised when an error occurs while communicating with server.
+            Raised when an error occurs while communicating with the server.
         OslCommandError
-            Raised when the command or query fails.
+            Raised when a command or query fails.
         TimeoutError
             Raised when the timeout float value expires.
         """
@@ -437,42 +450,42 @@ class Optislang:
         file_path: Union[str, Path],
         args: Union[Sequence[object], None] = None,
     ) -> Tuple[str, str]:
-        """Read python script from the file, load it in a project context and execute it.
+        """Read a Python script from a file, load it in a project context, and execute it.
 
         Parameters
         ----------
         file_path : Union[str, Path]
-            Path to the Python script file which content is supposed to be executed on the server.
+            Path to the Python script file with the content to execute on the server.
         args : Sequence[object], None, optional
-            Sequence of arguments used in Python script. Defaults to ``None``.
+            Sequence of arguments to use in the Python script. The default is ``None``.
 
         Returns
         -------
         Tuple[str, str]
-            STDOUT and STDERR from executed Python script.
+            STDOUT and STDERR from the executed Python script.
 
         Raises
         ------
         FileNotFoundError
             Raised when the specified Python script file does not exist.
         OslCommunicationError
-            Raised when an error occurs while communicating with server.
+            Raised when an error occurs while communicating with the server.
         OslCommandError
-            Raised when the command or query fails.
+            Raised when a command or query fails.
         TimeoutError
             Raised when the timeout float value expires.
         """
         return self.__osl_server.run_python_file(file_path, args)
 
     def save(self) -> None:
-        """Save the changed data and settings of the current project.
+        """Save the changed data and settings of the project.
 
         Raises
         ------
         OslCommunicationError
-            Raised when an error occurs while communicating with server.
+            Raised when an error occurs while communicating with the server.
         OslCommandError
-            Raised when the command or query fails.
+            Raised when a command or query fails.
         TimeoutError
             Raised when the timeout float value expires.
         """
@@ -485,28 +498,30 @@ class Optislang:
         restore: bool = False,
         reset: bool = False,
     ) -> None:
-        """Save and open the current project at a new location.
+        """Save and open the project at a new location.
 
         Parameters
         ----------
         file_path : Union[str, Path]
-            Path where to save the project file.
+            Path for saving the new project file to.
         force : bool, optional
-            Whether to force opening of project even if (non-critical) errors occur.
+            Whether to force opening of the project even if errors (non-critical) occur.
             Non-critical errors include:
-            - Timestamp of (auto) save point newer than project timestamp
-            - Project (file) incomplete
+            
+            - Timestamp of the (auto) save point is newer than the project timestamp.
+            - Project (file) is incomplete.
+        
         restore : bool, optional
-            Whether to restore project from last (auto) save point (if present).
+            Whether to restore the project from the last (auto) save point (if present).
         reset : bool, optional
-            Whether to reset project after load.
+            Whether to reset the project after loading it.
 
         Raises
         ------
         OslCommunicationError
-            Raised when an error occurs while communicating with server.
+            Raised when an error occurs while communicating with the server.
         OslCommandError
-            Raised when the command or query fails.
+            Raised when a command or query fails.
         TimeoutError
             Raised when the timeout float value expires.
         """
@@ -515,74 +530,75 @@ class Optislang:
         )
 
     def save_copy(self, file_path: Union[str, Path]) -> None:
-        """Save the current project as a copy to a location.
+        """Save a copy of the project to a specified location.
 
         Parameters
         ----------
         file_path : Union[str, Path]
-            Path where to save the project copy.
+            Path for saving the copy of the project file to.
 
         Raises
         ------
         OslCommunicationError
-            Raised when an error occurs while communicating with server.
+            Raised when an error occurs while communicating with the server.
         OslCommandError
-            Raised when the command or query fails.
+            Raised when a command or query fails.
         TimeoutError
             Raised when the timeout float value expires.
         """
         self.__osl_server.save_copy(file_path)
 
     def set_timeout(self, timeout: Union[float, None] = None) -> None:
-        """Set timeout value for execution of commands.
+        """Set timeout value for the execution of commands.
 
         Parameters
         ----------
         timeout: Union[float, None]
-            Timeout in seconds to perform commands, it must be greater than zero or ``None``.
-            Another functions will raise a timeout exception if the timeout period value has
-            elapsed before the operation has completed. If ``None`` is given, functions
-            will wait until they're finished (no timeout exception is raised).
-            Defaults to ``None``.
+            Timeout in seconds to perform commands. This value must be greater
+            than zero or ``None``. The default is ``None``. Another function
+            raises a timeout exception if the timeout value has elapsed before
+            an operation has completed. If the timeout is ``None``, functions
+            wait until they're finished, and no timeout exception is raised.
 
         Raises
         ------
         OslCommunicationError
-            Raised when an error occurs while communicating with server.
+            Raised when an error occurs while communicating with the server.
         OslCommandError
-            Raised when the command or query fails.
+            Raised when a command or query fails.
         ValueError
-            Raised when timeout <= 0.
+            Raised when the timeout value is less than or equal to 0.
         TypeError
-            Raised when timeout not Union[float, None].
+            Raised when the timeout is not a Union[float, None].
         """
         self.__osl_server.set_timeout(timeout)
 
     def shutdown(self, force: bool = False) -> None:
-        """Shutdown the optiSLang server.
+        """Shut down the optiSLang server.
 
-        Stop listening for incoming connections, discard pending requests, and shut down
-        the server. Batch mode exclusive: Continue project run until execution finished.
-        Terminate optiSLang.
+        This method stops the server from listening for incoming connections, discards
+        pending requests, and shuts down the server. In batch mode, the project runs
+        until execution finishes and then optiSLang is shut down.
 
         Parameters
         ----------
         force : bool, optional
-            Determines whether to force shutdown the local optiSLang server. Has no effect when
-            the connection is established to the remote optiSLang server. In all cases, it is tried
-            to shutdown the optiSLang server process in a proper way. However, if the force
-            parameter is ``True``, after a while, the process is forced to terminate and no
-            exception is raised. Defaults to ``False``.
+            Whether to forcibly shut down a local optiSLang server. The default is
+            ``False``. This paramter has no effect when the connection established
+            is to a remote optiSLang server. In all cases, an attempt is made to
+            shut down the optiSLang server in the proper way. However, if the
+            ``force`` parameter is ``True``, after a while, the process is forcibly
+            shut down without an exception being raised.
 
         Raises
         ------
         OslCommunicationError
-            Raised when the parameter force is ``False`` and an error occurs while communicating
-            with server.
+            Raised when the ``force`` parameter is ``False`` and an error occurs
+            while communicating with the server.
         OslCommandError
-            Raised when the parameter force is ``False`` and the command or query fails.
+            Raised when the ``force`` parameter is ``False`` and the command or query fails.
         TimeoutError
-            Raised when the parameter force is ``False`` and the timeout float value expires.
+            Raised when the ``force`` parameter is ``False`` and the timeout float value expires.
         """
         self.__osl_server.shutdown(force)
 
@@ -592,25 +608,25 @@ class Optislang:
         Parameters
         ----------
         wait_for_started : bool, optional
-            Determines whether this function call should wait for optiSLang to start
-            the command execution. I.e. don't continue on next line of python script
-            after command was successfully sent to optiSLang but wait for execution of
-            flow inside optiSLang to start.
-            Defaults to ``True``.
+            Whether this function call should wait for optiSLang to start
+            the command execution. The default is ``True``, in which case the
+            function call does not continue on to the next line of the Python
+            script after the command is successfully sent to optiSLang but
+            rater waits for execution of the flow inside optiSLang to start.
         wait_for_finished : bool, optional
-            Determines whether this function call should wait for optiSLang to finish
-            the command execution. I.e. don't continue on next line of python script
-            after command was successfully sent to optiSLang but wait for execution of
-            flow inside optiSLang to finish.
-            This implicitly interprets wait_for_started as True.
-            Defaults to ``True``.
+            Whether this function call should wait for optiSLang to finish
+            the command execution. The default is ``True``, in which case the
+            function call does not continue on to the next line of the Python
+            script after the command is successfully sent to optiSLang but
+            rather waits for execution of the flow inside optiSLang to finish.
+            This implicitly interprets ``wait_for_started`` as True.
 
         Raises
         ------
         OslCommunicationError
-            Raised when an error occurs while communicating with server.
+            Raised when an error occurs while communicating with the server.
         OslCommandError
-            Raised when the command or query fails.
+            Raised when a command or query fails.
         TimeoutError
             Raised when the timeout float value expires.
         """
@@ -622,40 +638,42 @@ class Optislang:
         Parameters
         ----------
         wait_for_finished : bool, optional
-            Determines whether this function call should wait for optiSLang to finish
-            the command execution. I.e. don't continue on next line of python script after command
-            was successfully sent to optiSLang but wait for execution of command inside optiSLang.
-            Defaults to ``True``.
+            Whether this function call should wait for optiSLang to finish
+            the command execution. The default is ``True``, in which case the
+            function call does not continue on to the next line of the Python
+            script after the command is successfully sent to optiSLang but
+            rather waits for execution of the flow inside optiSLang to finish.
 
         Raises
         ------
         OslCommunicationError
-            Raised when an error occurs while communicating with server.
+            Raised when an error occurs while communicating with the server.
         OslCommandError
-            Raised when the command or query fails.
+            Raised when a command or query fails.
         TimeoutError
             Raised when the timeout float value expires.
         """
         self.__osl_server.stop(wait_for_finished)
 
-    # stop_gently method doesn't work properly in optiSLang 2023R1, therefore it was commented out
+    # stop_gently method doesn't work properly in optiSLang 2023 R1. Thus, it was commented out
     # def stop_gently(self, wait_for_finished: bool = True) -> None:
-    #     """Stop project execution after the current design is finished.
+    #     """Stop project execution after the design is finished.
 
     #     Parameters
     #     ----------
     #     wait_for_finished : bool, optional
-    #         Determines whether this function call should wait for optiSLang to finish
-    #         the command execution. I.e. don't continue on next line of python script after command
-    #         was successfully sent to optiSLang but wait for execution of command inside optiSLang.
-    #         Defaults to ``True``.
+    #         Whether this function call should wait for optiSLang to finish
+    #         the command execution. The default is ``True``, in which case the
+    #         function call does not continue on to the next line of the Python
+    #         script after the command is successfully sent to optiSLang but
+    #         rather waits for execution of the flow inside optiSLang to finish.
 
     #     Raises
     #     ------
     #     OslCommunicationError
-    #         Raised when an error occurs while communicating with server.
+    #         Raised when an error occurs while communicating with the server.
     #     OslCommandError
-    #         Raised when the command or query fails.
+    #         Raised when a command or query fails.
     #     TimeoutError
     #         Raised when the timeout float value expires.
     #     """
