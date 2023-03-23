@@ -53,6 +53,7 @@ osl.run_python_file(paths[0])
 
 osl.dispose()
 
+#########################################################
 # View generated workflow
 # ~~~~~~~~~~~~~~~~~~~~~~~
 # This image shows the generated workflow.
