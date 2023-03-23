@@ -31,9 +31,9 @@ you use the :func:`project <ansys.optislang.core.project.Project>` method.
     The "Design evaluation" use-case aims for creating and evaluating designs
     on the project root level. It is intended to be used in cases, where optiSLang
     is used in other environments to manage a parametric workflow, expose input and output
-    parameters (i.e. parameters and responses) and to evaluate designs based on this
+    parameters (that is parameters and responses) and to evaluate designs based on this
     parametric. It does not cover the generation or monitoring of designs of optiSLang
-    internal nested analysis systems (e.g. Sensitivity or Optimization).
+    internal nested analysis systems (for example Sensitivity or Optimization).
     In order to support the "Design evaluation" use-case, the optiSLang project has to be
     prepared in a certain way:
     * Create the workflow and register parameters and responses at the root system level
