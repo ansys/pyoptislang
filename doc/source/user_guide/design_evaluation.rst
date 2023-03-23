@@ -36,8 +36,9 @@ you use the :func:`project <ansys.optislang.core.project.Project>` method.
     internal nested analysis systems (for example Sensitivity or Optimization).
     In order to support the "Design evaluation" use-case, the optiSLang project has to be
     prepared in a certain way:
-    * Create the workflow and register parameters and responses at the root system level
-    * Connect the workflow to the root system using ``Receive designs`` and
+
+    - Create the workflow and register parameters and responses at the root system level
+    - Connect the workflow to the root system using ``Receive designs`` and
       ``Send back designs`` options
 
     For more information, see the :ref:`ref_ten_bar_truss_evaluate_design`
