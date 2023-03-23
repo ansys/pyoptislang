@@ -28,13 +28,19 @@ you use the :func:`project <ansys.optislang.core.project.Project>` method.
 
 .. note::
 
-    Creation and evaluation of designs is currently supported only on the
-    :class:`RootSystem() <ansys.optislang.core.nodes.RootSystem>` class.
-    Thus, the project has to have parameters already defined at the
-    project root system. To prepare the workflow for this,  you must
-    set ``Receive designs`` and ``Send back designs`` in the design flow.
+    The "Design evaluation" use-case aims for creating and evaluating designs
+    on the project root level. It is intended to be used in cases, where optiSLang
+    is used in other environments to manage a parametric workflow, expose input and output
+    parameters (i.e. parameters and responses) and to evaluate designs based on this
+    parametric. It does not cover the generation or monitoring of designs of optiSLang
+    internal nested analysis systems (e.g. Sensitivity or Optimization).
+    In order to support the "Design evaluation" use-case, the optiSLang project has to be
+    prepared in a certain way:
+    * Create the workflow and register parameters and responses at the root system level
+    * Connect the workflow to the root system using ``Receive designs`` and
+      ``Send back designs`` options
     For more information, see the :ref:`ref_ten_bar_truss_evaluate_design`
-    example.
+    example and general optiSLang documentation on generating workflows.
 
 
 Create a design
@@ -50,7 +56,7 @@ Create a design from reference values
 If a design has all parameters specified in the project, you can use the
 :func:`get_reference_design() <ansys.optislang.core.nodes.RootSystem.create_design>`
 method to obtain the design's reference values. You can then modify
-parameters values using methods in the 
+parameters values using methods in the
 :class:`Design() <ansys.optislang.core.project_parametric.Design>` class.
 
 .. code:: python

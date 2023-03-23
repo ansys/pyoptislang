@@ -5,9 +5,17 @@ Ten bar truss
 -------------
 
 This example shows how to use the ``evaluate_design()`` method at the
-root level of a project. It use the reference design first and then
-decreases cross section areas in each iteration to minimize mass, while 
+root level of a project. It uses the reference design first and then
+decreases cross section areas in each iteration to minimize mass, while
 satisfying defined constraints of maximum stress for two loading conditions.
+
+The example project has been prepared in a certain way, in order to support the
+"Design evaluation" use-case:
+* The workflow components have been created at the root system level
+* Parameters and responses have been registered at the root system level
+* The proper workflow components have been connected to the root system using
+  ``Receive designs`` and ``Send back designs`` options
+For more information, see the general optiSLang documentation on generating workflows.
 
 This image shows the workflow:
 """
