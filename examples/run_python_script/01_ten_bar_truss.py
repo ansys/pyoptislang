@@ -53,12 +53,13 @@ osl.start()
 # ~~~~~~~~~~~~~~~~~~~~~~~
 # If you want to save the project to some desired location,
 # uncomment and edit these lines:
-
+#
 # .. code:: python
 #
 #   path = r'<insert-desired-location>'
 #   osl.save_as(os.path.join(path, "test_project.opf"))
 #
+
 #########################################################
 # Stop and cancel project
 # ~~~~~~~~~~~~~~~~~~~~~~~
@@ -75,4 +76,3 @@ osl.dispose()
 #  :width: 400
 #  :alt: Result of script.
 #
-#########################################################

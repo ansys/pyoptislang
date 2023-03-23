@@ -46,6 +46,7 @@ osl.run_python_file(paths[0])
 #   path = r'<insert-desired-location>'
 #   osl.save_as(os.path.join(path, "test_project.opf"))
 #
+
 #########################################################
 # Stop and cancel project
 # ~~~~~~~~~~~~~~~~~~~~~~~
@@ -62,4 +63,3 @@ osl.dispose()
 #  :width: 300
 #  :alt: Result of script.
 #
-#########################################################
