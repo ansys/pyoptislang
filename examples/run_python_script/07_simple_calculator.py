@@ -6,9 +6,7 @@ Simple calculator
 
 This example uses the ``simple_calculator.py`` file to create and run
 a simple flow of four nodes. It then explains how you can optionally
-save a copy of the project to a desired location. For more detailed
-information, see the individual Python files for the oscillator
-example in the optiSLang tutorials..
+save a copy of the project to a desired location.
 """
 
 ####################################################
@@ -29,7 +27,8 @@ paths = examples.get_files("simple_calculator")
 #########################################################
 # Get path of example script and run it
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Get the path of the example script and then run it.
+# Get the path of the example script and then run this
+# script.
 
 osl.run_python_file(paths[0])
 

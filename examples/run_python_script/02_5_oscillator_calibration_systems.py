@@ -8,9 +8,7 @@ This example uses the ``oscillatorcalibration_system_python.py``
 and ``oscillatorcalibration_system_ascii.py`` files to create
 parametric systems for oscillator calibration and then runs
 these systems. Lastly, it explains how you can optionally save
-a copy of the project to a desired location. For more detailed
-information, see the individual Python files for the oscillator
-example in the optiSLang tutorials.
+a copy of the project to a desired location.
 """
 
 #########################################################
@@ -32,7 +30,8 @@ print(osl)
 #########################################################
 # Get paths of example scripts and run them
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Get the paths of the example scripts and then run them.
+# Get the paths of the example scripts and then run
+# these scripts.
 
 paths1 = examples.get_files("oscillatorcalibration_system_python")
 paths2 = examples.get_files("oscillatorcalibration_system_ascii")

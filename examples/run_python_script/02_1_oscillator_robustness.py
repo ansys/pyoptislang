@@ -6,8 +6,7 @@ Oscillator robustness
 
 This example uses the ``oscillator_robustness_arsm.py`` file to create and run a
 robustness flow for an oscillator. It then explains how you can optionally save
-a copy of the project to a desired location. For more detailed information, see
-the individual Python files for the oscillator example in the optiSLang tutorials.
+a copy of the project to a desired location.
 """
 
 #########################################################
@@ -29,7 +28,8 @@ print(osl)
 #########################################################
 # Get path of example script and run it
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Get the path of the example script and then run it.
+# Get the path of the example script and then run this
+# script.
 
 paths = examples.get_files("oscillator_robustness_arsm")
 osl.run_python_file(paths[0])

@@ -8,8 +8,7 @@ This example uses the ``arsm_ten_bar_truss.py`` file to create an ARSM ten bar
 truss flow in batch. It then uses the ``ten_bar_modify_parameters.py`` and
 ``ten_bar_truss_lc2.py`` files to modify the flow. Lastly, it runs the project
 and explains how you can optionally save a copy of the project to a desired
-location. For more detailed information, see the individual Python files for
-the ten bar truss example in the optiSLang tutorials.
+location.
 """
 
 #########################################################
@@ -31,7 +30,8 @@ print(osl)
 #########################################################
 # Get paths of example scripts and run them
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Get the paths of the example scripts and then run them.
+# Get the paths of the example scripts and then run these
+# scripts.
 
 paths1 = examples.get_files("arsm_ten_bar_truss")
 paths2 = examples.get_files("ten_bar_modify_parameters")

@@ -4,9 +4,9 @@
 Design evaluation
 ==================
 You use the :class:`RootSystem() <ansys.optislang.core.nodes.RootSystem>` class to
-create designs and evaluate them. To access this class from the
+create and evaluate designs. To access this class from the
 :class:`Optislang() <ansys.optislang.core.optislang.Optislang>` instance,
-you use the :func:`project <ansys.optislang.core.project.Project>` method.
+you use the :func:`project <ansys.optislang.core.project.Project>` method:
 
 .. code:: python
 
@@ -28,21 +28,21 @@ you use the :func:`project <ansys.optislang.core.project.Project>` method.
 
 .. note::
 
-    The "Design evaluation" use-case aims for creating and evaluating designs
-    on the project root level. It is intended to be used in cases, where optiSLang
-    is used in other environments to manage a parametric workflow, expose input and output
-    parameters (that is parameters and responses) and to evaluate designs based on this
-    parametric. It does not cover the generation or monitoring of designs of optiSLang
-    internal nested analysis systems (for example Sensitivity or Optimization).
-    In order to support the "Design evaluation" use-case, the optiSLang project has to be
-    prepared in a certain way:
+    The *Design evaluation* use case aims for creating and evaluating designs
+    on the project root level. It is intended to be used when optiSLang is
+    is being used in other environments to manage a parametric workflow, expose input
+    and output parameters (that is parameters and responses), and evaluate designs based
+    on this parametric workflow. This use case does not cover the generation or monitoring
+    of designs of optiSLang internal nested analysis systems, such as **Sensitivity** and
+    **Optimization** systems. To support the *Design evaluation* use case, the optiSLang
+    project must be prepared in a certain way:
 
-    - Create the workflow and register parameters and responses at the root system level
-    - Connect the workflow to the root system using ``Receive designs`` and
-      ``Send back designs`` options
+    - Create the workflow and register parameters and responses at the root system level.
+    - Connect the workflow to the root system using the **Receive designs** and
+      **Send back designs** options.
 
     For more information, see the :ref:`ref_ten_bar_truss_evaluate_design`
-    example and general optiSLang documentation on generating workflows.
+    example and the optiSLang user documentation on generating workflows.
 
 
 Create a design
@@ -58,7 +58,7 @@ Create a design from reference values
 If a design has all parameters specified in the project, you can use the
 :func:`get_reference_design() <ansys.optislang.core.nodes.RootSystem.create_design>`
 method to obtain the design's reference values. You can then modify
-parameters values using methods in the
+parameter values using methods in the
 :class:`Design() <ansys.optislang.core.project_parametric.Design>` class.
 
 .. code:: python
@@ -108,8 +108,8 @@ project, you use the
 method. To verify if the design contains parameters that are not defined
 in the project, you use the
 :func:`get_undefined_parameters_names() <ansys.optislang.core.nodes.RootSystem.get_undefined_parameters_names>`
-method. Running this verifications are not necessary though, because they
-are always run internally while evaluating the design.
+method. Running these verifications are not necessary though, because they
+always run internally while evaluating the design.
 
 .. code:: python
 
@@ -119,10 +119,10 @@ are always run internally while evaluating the design.
     undefined_parameters = root_system.get_undefined_parameters(direct_design)
 
 
-Evaluate design
----------------
-You evaluate a design using the
-:func:`evaluate_design() <ansys.optislang.core.nodes.RootSystem.evaluate_design>`.
+Evaluate the design
+-------------------
+To evaluate a design, you use the
+:func:`evaluate_design() <ansys.optislang.core.nodes.RootSystem.evaluate_design>` method.
 This method returns the same :class:`Design() <ansys.optislang.core.project_parametric.Design>`
 instance with updated results.
 
@@ -136,9 +136,9 @@ instance with updated results.
 .. note::
 
     optiSLang retains only the last evaluated design at the project root system.
-    Thus, if results of previous designs are required for further usage, they
-    must be stored locally. For example, results can be stored as an instance of
-    :class:`Design() <ansys.optislang.core.project_parametric.Design>` class.
+    If results of previous designs are required for later usage, you must store
+    them locally. For example, you can store results as an instance of
+    the :class:`Design() <ansys.optislang.core.project_parametric.Design>` class.
 
 Finally, when you are done using this :class:`Optislang() <ansys.optislang.core.optislang.Optislang>`
 instance, use the :func:`dispose() <ansys.optislang.core.optislang.Optislang.dispose>` method

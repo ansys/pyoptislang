@@ -65,7 +65,7 @@ class Project:
         return self.root_system.evaluate_design(design=design)
 
     def get_description(self) -> str:
-        """Get description of the optiSLang project.
+        """Get the description of the optiSLang project.
 
         Returns
         -------
@@ -85,7 +85,7 @@ class Project:
         return self.__osl_server.get_project_description()
 
     def get_location(self) -> Path:
-        """Get path to the optiSLang project file.
+        """Get the path to the optiSLang project file.
 
         Returns
         -------
@@ -144,7 +144,7 @@ class Project:
         return self.root_system.get_reference_design()
 
     def get_status(self) -> str:
-        """Get status of the optiSLang project.
+        """Get the status of the optiSLang project.
 
         Returns
         -------
@@ -165,7 +165,7 @@ class Project:
 
     @property
     def parameter_manager(self) -> ParameterManager:
-        """Get the instance of the ``ParameterManager`` class at the root system.
+        """Instance of the ``ParameterManager`` class at the root system.
 
         Returns
         -------
@@ -176,7 +176,7 @@ class Project:
 
     @property
     def root_system(self) -> RootSystem:
-        """Get the instance of the ``RootSystem`` class.
+        """Instance of the ``RootSystem`` class.
 
         Returns
         -------
@@ -196,7 +196,7 @@ class Project:
 
     @property
     def uid(self) -> str:
-        """Get the unique ID of the optiSLang project.
+        """Unique ID of the optiSLang project.
 
         Returns
         -------

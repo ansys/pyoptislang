@@ -76,12 +76,13 @@ then install using the same ``pip`` command as in the preceding Linux code examp
 
 Ansys software requirements
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
-You must have a local licensed copy of optiSLang installed or be able to connect to a an
-already running remote instance. The first supported optiSLang version is 2023 R1.
+You must have a local licensed copy of optiSLang installed or be able to connect to an
+already running remote instance. As mentioned earlier, the first supported optiSLang
+version is 2023 R1.
 
 Verify installation
 ~~~~~~~~~~~~~~~~~~~
-To verify your optiSLang installation, ruth this code:
+To verify your optiSLang installation, run this code:
 
 .. code:: python
 

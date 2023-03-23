@@ -9,9 +9,7 @@ sensitivity flow for an oscillator and then uses the
 ``oscillator_optimization_on_mop.py`` file to optimize the MOP
 (Metamodel of Optimal Prognosis) flow. It then runs these flows.
 Lastly, it explains how you can optionally save a copy of the project
-to a desired location. For more detailed information, see the
-individual Python files for the oscillator example in the optiSLang
-tutorials.
+to a desired location.
 """
 
 #########################################################
@@ -33,7 +31,8 @@ print(osl)
 #########################################################
 # Get paths of example scripts and run them
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Get the paths of the example scripts and then run them.
+# Get the paths of the example scripts and then run
+# these scripts.
 
 paths1 = examples.get_files("oscillator_sensitivity_mop")
 paths2 = examples.get_files("oscillator_optimization_on_mop")

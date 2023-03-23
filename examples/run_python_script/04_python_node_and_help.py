@@ -4,13 +4,16 @@
 Python node and help
 --------------------
 
-This example uses the ``python_node.py`` file to create a Python2 node
-and then adds some source code, adds and removes parameters and responses,
-and adds internal variables. It then uses the ``python_help.py`` file to
-print which nodes are available in the Python console. Lastly, it explains
+This example uses the ``python_node.py`` file to create a Python2 node.
+and perform these tasks:
+
+- Adds some source code.
+- Adds and removes parameters and responses.
+- Adds internal variables.
+
+It then uses the ``python_help.py`` file to print which nodes are
+available in the Python console. Lastly, it explains
 how you can optionally save a copy of the project to a desired location.
-For more detailed information, see the individual Python files for the oscillator
-example in the optiSLang tutorials.
 """
 
 #########################################################
@@ -32,7 +35,8 @@ print(osl)
 #########################################################
 # Get paths of example scripts and run them
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Get the paths of the example scripts and then run them.
+# Get the paths of the example scripts and then run
+# these scripts.
 
 paths1 = examples.get_files("python_node")
 paths2 = examples.get_files("python_help")

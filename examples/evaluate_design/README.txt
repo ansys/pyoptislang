@@ -1,3 +1,3 @@
 **Evaluate design**
 
-These examples demonstrate how you evaluate a design.
+These examples demonstrate how to evaluate a design.

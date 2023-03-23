@@ -5,11 +5,9 @@ Oscillator optimization using EA flow
 -------------------------------------
 
 This example uses the ``oscillator_optimization_ea.py`` file to create and
-run a direct optimization for an oscillator using the EA (Evolutionary
+run a direct optimization for an oscillator with the EA (Evolutionary
 Algorithm) optimizer. It then explains how you can optionally save a copy
-of the project to a desired location. For more detailed information, see
-the individual Python files for the oscillator example in the optiSLang
-tutorials.
+of the project to a desired location.
 """
 
 #########################################################
@@ -31,7 +29,8 @@ print(osl)
 #########################################################
 # Get paths of example scripts and run them
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Get the paths of the example scripts and then run them.
+# Get the paths of the example scripts and then run
+# these scripts.
 
 paths = examples.get_files("oscillator_optimization_ea")
 osl.run_python_file(paths[0])

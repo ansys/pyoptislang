@@ -1,4 +1,4 @@
-"""Contains classes Parameter, ParameterManager and Design."""
+"""Contains these classes: ``Parameter``, ``ParameterManager``, and ``Design``."""
 from __future__ import annotations
 
 import copy
@@ -11,7 +11,7 @@ if TYPE_CHECKING:
 
 
 class ParameterType(Enum):
-    """Available parameter types."""
+    """Provides parameter types."""
 
     DETERMINISTIC = 0
     STOCHASTIC = 1
@@ -20,7 +20,7 @@ class ParameterType(Enum):
 
     @staticmethod
     def from_str(label: str) -> ParameterType:
-        """Convert string to ``ParameterType``.
+        """Convert a string to an instance of the ``ParameterType`` class.
 
         Parameters
         ----------
@@ -213,7 +213,7 @@ class DistributionType(Enum):
 
 
 class Parameter:
-    """This class stores parameters data."""
+    """Stores parameter data."""
 
     def __init__(
         self,
@@ -288,22 +288,22 @@ class Parameter:
 
     @property
     def name(self) -> str:
-        """Get parameter's name."""
+        """Name of the parameter."""
         return self.__name
 
     @name.setter
     def name(self, name: str) -> None:
-        """Set parameter's name.
+        """Set the name of the parameter.
 
         Parameters
         ----------
         name: str
-            Name of the ``Parameter``.
+            Name of the parameter.
 
         Raises
         ------
         TypeError
-            Raised when invalid type of ``name`` was given.
+            Raised when the type of the name is invalid.
         """
         if not isinstance(name, str):
             raise TypeError(
@@ -313,22 +313,22 @@ class Parameter:
 
     @property
     def id(self) -> str:
-        """Get parameter's id."""
+        """ID of the parameter."""
         return self.__id
 
     @id.setter
     def id(self, id: str) -> None:
-        """Set parameter's id.
+        """Set the ID of the parameter.
 
         Parameters
         ----------
         id: str
-            Id of the ``Parameter``.
+            ID of the parameter.
 
         Raises
         ------
         TypeError
-            Raised when invalid type of ``id`` was given.
+            Raised when the type of the ID is invalid.
         """
         if not isinstance(id, str):
             raise TypeError(f"Type of ``id`` must be ``str`` but type: ``{type(id)}`` was given.")
@@ -336,22 +336,23 @@ class Parameter:
 
     @property
     def const(self) -> bool:
-        """Get info whether ``Parameter`` is constant."""
+        """Whether the value for the parameter is a constant."""
         return self.__const
 
     @const.setter
     def const(self, is_const: bool) -> None:
-        """Set whether ``Parameter`` is constant.
+        """Set whether the value for the parameter is a constant.
 
         Parameters
         ----------
         is_const: bool
-            ``True`` or ``False``.
+            Whether the value for the parameter is a constant.
+            Options are ``True`` and ``False``.
 
         Raises
         ------
         TypeError
-            Raised when invalid type of ``is_const`` was given.
+            Raised when the type for this Boolean attribute is invalid.
         """
         if not isinstance(is_const, bool):
             raise TypeError(
@@ -363,7 +364,7 @@ class Parameter:
     def reference_value(
         self,
     ) -> Union[bool, float, str, None]:
-        """Get ``Parameter``'s reference value."""
+        """Reference value of the parameter."""
         return self.__reference_value
 
     @reference_value.setter
@@ -371,28 +372,28 @@ class Parameter:
         self,
         reference_value: Union[bool, float, str, None],
     ) -> None:
-        """Set ``Parameter``'s reference value.
+        """Set the reference value of the parameter.
 
         Parameters
         ----------
         reference_value: Union[bool, float, str, None]
-            Reference value of the ``Parameter``.
+            Reference value of the parameter.
 
         Raises
         ------
         TypeError
-            Raised when invalid type of ``reference_value`` was given.
+            Raised when the type for the reference value is invalid.
         """
         self.__reference_value = reference_value
 
     @property
     def type(self) -> ParameterType:
-        """Get type of the ``Parameter``."""
+        """Type of the parameter."""
         return self.__type
 
     @staticmethod
     def from_dict(par_dict: dict) -> Parameter:
-        """Create an instance of ``Parameter`` class from optiSLang output.
+        """Create an instance of the ``Parameter`` class from optiSLang output.
 
         Parameters
         ----------
@@ -407,7 +408,7 @@ class Parameter:
         Raises
         ------
         TypeError
-            Raised when undefined type of parameter is given.
+            Raised when an undefined type of parameter is given.
         """
         type = ParameterType.from_str(par_dict["type"]["value"])
 
@@ -424,7 +425,7 @@ class Parameter:
 
 
 class OptimizationParameter(Parameter):
-    """This class stores ``OptimizationParameter``'s data."""
+    """Stores optimization parameter data."""
 
     def __init__(
         self,
@@ -513,22 +514,22 @@ class OptimizationParameter(Parameter):
 
     @property
     def reference_value_type(self) -> ParameterValueType:
-        """Get ``reference_value_type``."""
+        """Type of the reference value."""
         return self.__reference_value_type
 
     @reference_value_type.setter
     def reference_value_type(self, type_: Union[ParameterValueType, str]) -> None:
-        """Set type of the ``reference_value``.
+        """Set the type of the reference value.
 
         Parameters
         ----------
         type_ : Union[ParameterValueType, str]
-           Type of the ``reference_value``.
+           Type of the reference value.
 
         Raises
         ------
         TypeError
-            Raised when inappropriate type of ``type_`` was given.
+            Raised when the type of the reference value is invalid.
         """
         if isinstance(type_, str):
             type_ = ParameterValueType.from_str(type_)
@@ -542,24 +543,24 @@ class OptimizationParameter(Parameter):
 
     @property
     def deterministic_resolution(self) -> ParameterResolution:
-        """Get kind of the ``deterministic_resolution``."""
+        """Type of the deterministic resolution."""
         return self.__deterministic_resolution
 
     @deterministic_resolution.setter
     def deterministic_resolution(
         self, deterministic_resolution: Union[ParameterResolution, str]
     ) -> None:
-        """Set type of the ``deterministic_resolution``.
+        """Set the type of the deterministic resolution.
 
         Parameters
         ----------
         deterministic_resolution : Union[ParameterResolution, str]
-            Kind of the ``deterministic_resolution``.
+            Type of the deterministic resolution.
 
         Raises
         ------
         TypeError
-            Raised when inappropriate type of ``deterministic_resolution`` was given.
+            Raised when the type of the deterministic_resolution is invalid.
         """
         if isinstance(deterministic_resolution, str):
             deterministic_resolution = ParameterResolution.from_str(deterministic_resolution)
@@ -573,17 +574,17 @@ class OptimizationParameter(Parameter):
 
     @property
     def range(self) -> Union[Tuple[float, float], Tuple[Tuple[float, ...]]]:
-        """Get ``OptimizationParameter``'s range."""
+        """Range of the optimization parameter."""
         return self.__range
 
     @range.setter
     def range(self, range: Union[Sequence[float, float], Sequence[Sequence[float]]]) -> None:
-        """Set ``OptimizationParameter``'s range.
+        """Set the range of the optimization parameter.
 
         Parameters
         ----------
         range: Union[Sequence[float, float], Sequence[Sequence[float]]]
-            ``OptimizationParameter``'s range.
+            Range of the optimization parameter.
         """
         self.__range = range
 
@@ -633,7 +634,7 @@ class OptimizationParameter(Parameter):
         )
 
     def to_dict(self) -> dict:
-        """Convert an instance of the ``OptimizationParameter`` to dictionary.
+        """Convert an instance of the ``OptimizationParameter`` to a dictionary.
 
         Returns
         -------
@@ -667,7 +668,7 @@ class OptimizationParameter(Parameter):
 
 
 class StochasticParameter(Parameter):
-    """This class stores ``StochasticParameter``'s data."""
+    """Stores stochastic parameter data."""
 
     def __init__(
         self,
@@ -766,22 +767,22 @@ class StochasticParameter(Parameter):
 
     @property
     def reference_value_type(self) -> ParameterValueType:
-        """Get type of the ``reference_value``."""
+        """Type of the reference value``."""
         return self.__reference_value_type
 
     @reference_value_type.setter
     def reference_value_type(self, type_: Union[ParameterValueType, str]) -> None:
-        """Set type of the ``reference_value``.
+        """Set the type of the reference value.
 
         Parameters
         ----------
         type_ : Union[ParameterValueType, str]
-            Type of the ``reference_value``
+            Type of the reference value.
 
         Raises
         ------
         TypeError
-            Raised when inappropriate type of ``type_`` was given.
+            Raised when the type of the reference value is invalid.
         """
         if isinstance(type_, str):
             type_ = ParameterValueType.from_str(type_)
@@ -795,22 +796,22 @@ class StochasticParameter(Parameter):
 
     @property
     def stochastic_resolution(self) -> ParameterResolution:
-        """Get kind of the ``stochastic_resolution``."""
+        """Type of the stochastic resolution."""
         return self.__stochastic_resolution
 
     @stochastic_resolution.setter
     def stochastic_resolution(self, stochastic_resolution: Union[ParameterResolution, str]) -> None:
-        """Set kind of the ``stochastic_resolution``.
+        """Set the type of the stochastic resolution.
 
         Parameters
         ----------
         stochastic_resolution : Union[ParameterResolution, str]
-            Kind of the ``stochastic_resolution``.
+            Type of the stochastic resolution.
 
         Raises
         ------
         TypeError
-            Raised when inappropriate type of ``stochastic_resolution`` was given.
+            Raised when the type of the stochastic resolution is invalid.
         """
         if isinstance(stochastic_resolution, str):
             stochastic_resolution = ParameterResolution.from_str(stochastic_resolution)
@@ -824,12 +825,12 @@ class StochasticParameter(Parameter):
 
     @property
     def distribution_type(self) -> DistributionType:
-        """Get ``distribution_type``."""
+        """Type of the distribution."""
         return self.__distribution_type
 
     @distribution_type.setter
     def distribution_type(self, distribution_type: Union[DistributionType, str]) -> None:
-        """Set ``distribution_type``.
+        """Set the type of the distribution.
 
         Parameters
         ----------
@@ -839,7 +840,7 @@ class StochasticParameter(Parameter):
         Raises
         ------
         TypeError
-            Raised when inappropriate type of ``distribution_type`` was given.
+            Raised when the type of the distribution is invalid.
         """
         if isinstance(distribution_type, str):
             distribution_type = DistributionType.from_str(distribution_type)
@@ -853,17 +854,17 @@ class StochasticParameter(Parameter):
 
     @property
     def distribution_parameters(self) -> Sequence[float]:
-        """Get ``distribution_parameters``."""
+        """Parameters of the distribution."""
         return self.__distribution_parameters
 
     @distribution_parameters.setter
     def distribution_parameters(self, parameters: Sequence[float]) -> None:
-        """Set ``distribution_parameters``.
+        """Set the parameters of the distribution.
 
         Parameters
         ----------
         parameters : Sequence[float]
-            Distribution's parameters.
+            Parameters of the distribution.
         """
         self.__distribution_parameters = parameters
 
@@ -1047,12 +1048,12 @@ class MixedParameter(Parameter):
 
     @property
     def reference_value_type(self) -> ParameterValueType:
-        """Get type of the ``reference_value``."""
+        """Type of the reference value."""
         return self.__reference_value_type
 
     @reference_value_type.setter
     def reference_value_type(self, type_: Union[ParameterValueType, str]) -> None:
-        """Set type of the ``reference_value``."""
+        """Set the type of the reference value."""
         if isinstance(type_, str):
             type_ = ParameterValueType.from_str(type_)
         if isinstance(type_, ParameterValueType):
@@ -1065,24 +1066,24 @@ class MixedParameter(Parameter):
 
     @property
     def deterministic_resolution(self) -> ParameterResolution:
-        """Get kind of the ``deterministic_resolution``."""
+        """Type of the deterministic resolution."""
         return self.__deterministic_resolution
 
     @deterministic_resolution.setter
     def deterministic_resolution(
         self, deterministic_resolution: Union[ParameterResolution, str]
     ) -> None:
-        """Set kind of the ``deterministic_resolution``.
+        """Set the type of the deterministic resolution.
 
         Parameters
         ----------
         deterministic_resolution : Union[ParameterResolution, str]
-            Kind of the ``deterministic_resolution``.
+            Type of the deterministic resolution.
 
         Raises
         ------
         TypeError
-            Raised when inappropriate type of ``deterministic_resolution`` was given.
+            Raised when the type of the deterministic resolution is invalid.
         """
         if isinstance(deterministic_resolution, str):
             deterministic_resolution = ParameterResolution.from_str(deterministic_resolution)
@@ -1096,38 +1097,38 @@ class MixedParameter(Parameter):
 
     @property
     def range(self) -> Union[Tuple[float, float], Tuple[Tuple[float, ...]]]:
-        """Get parameter's ``range``."""
+        """Range of the mixed parameter."""
         return self.__range
 
     @range.setter
     def range(self, range: Union[Sequence[float, float], Sequence[Sequence[float]]]) -> None:
-        """Set parameter's ``range``.
+        """Set the range of the mixed parameter.
 
         Parameters
         ----------
         range : Union[Sequence[float, float], Sequence[Sequence[float]]]
-            ``MixedParameter``'s range.
+            Range of the mixed parameter.
         """
         self.__range = range
 
     @property
     def stochastic_resolution(self) -> ParameterResolution:
-        """Get kind of the ``stochastic_resolution``."""
+        """Type of the stochastic resolution."""
         return self.__stochastic_resolution
 
     @stochastic_resolution.setter
     def stochastic_resolution(self, stochastic_resolution: Union[ParameterResolution, str]) -> None:
-        """Set type of the ``stochastic_resolution``.
+        """Set the type of the stochastic resolution.
 
         Parameters
         ----------
         stochastic_resolution : Union[ParameterResolution, str]
-            Kind of the ``stochastic_resolution``.
+            Type of the stochastic resolution.
 
         Raises
         ------
         TypeError
-            Raised when inappropriate type of ``stochastic_resolution`` was given.
+            Raised when the type of the stochastic resolution is invalid.
         """
         if isinstance(stochastic_resolution, str):
             stochastic_resolution = ParameterResolution.from_str(stochastic_resolution)
@@ -1141,22 +1142,22 @@ class MixedParameter(Parameter):
 
     @property
     def distribution_type(self) -> DistributionType:
-        """Get ``distribution_type``."""
+        """Type of the distribution."""
         return self.__distribution_type
 
     @distribution_type.setter
     def distribution_type(self, distribution_type: Union[DistributionType, str]) -> None:
-        """Set ``distribution_type``.
+        """Set the type of the distribution.
 
         Parameters
         ----------
         distribution_type : Union[DistributionType, str]
-            Distribution's type.
+            Type of the distribution.
 
         Raises
         ------
         TypeError
-            Raised when inappropriate type of ``distribution_type`` was given.
+            Raised when the type of the distribution is invalid.
         """
         if isinstance(distribution_type, str):
             distribution_type = DistributionType.from_str(distribution_type)
@@ -1170,23 +1171,23 @@ class MixedParameter(Parameter):
 
     @property
     def distribution_parameters(self) -> Sequence[float]:
-        """Get ``distribution_parameters``."""
+        """Paramters of the distribution."""
         return self.__distribution_parameters
 
     @distribution_parameters.setter
     def distribution_parameters(self, parameters: Sequence[float]):
-        """Set ``distribution_parameters``.
+        """Set the parameters of the distribution.
 
         Parameters
         ----------
         parameters : Sequence[float]
-            Distribution's parameters.
+            Parameters of the distribution.
         """
         self.__distribution_parameters = parameters
 
     @staticmethod
     def from_dict(par_dict: dict) -> MixedParameter:
-        """Create and instance of the ``MixedParameter`` class from optiSLang output.
+        """Create an instance of the ``MixedParameter`` class from optiSLang output.
 
         Parameters
         ----------
@@ -1245,7 +1246,7 @@ class MixedParameter(Parameter):
         )
 
     def to_dict(self) -> dict:
-        """Convert an instance of the ``MixedParameter`` to dictionary.
+        """Convert an instance of the ``MixedParameter`` class to a dictionary.
 
         Returns
         -------
@@ -1285,7 +1286,7 @@ class MixedParameter(Parameter):
 
 
 class DependentParameter(Parameter):
-    """This class stores ``DependentParameter``'s data."""
+    """Stores data for the dependent parameter."""
 
     def __init__(
         self,
@@ -1296,22 +1297,22 @@ class DependentParameter(Parameter):
         type: Union[ParameterType, str] = ParameterType.DEPENDENT,
         operation: str = "0",
     ) -> None:
-        """Create a new instance of the ``DependentParameter`` class.
+        """Create an instance of the ``DependentParameter`` class.
 
         Parameters
         ----------
         name: str
             Name of the parameter.
         reference_value: Union[bool, float, str, None, Tuple[Any, ParameterValueType]], optional
-            Parameter's reference value.
+            Reference value of the parameter.
         id: str, optional
-            Parameter's unique id.
+            Unique ID of the parameter.
         const: bool, optional
-            Determines whether is parameter constant.
+            Whether the parameter is a constant.
         type: Union[ParameterType, str], optional
-            Parameter's type.
+            Type of othe parameter.
         operation: str, optional
-            Mathematic expression to be evaluated.
+            Mathematic expression to evaluate.
         """
         super().__init__(
             name=name,
@@ -1333,7 +1334,7 @@ class DependentParameter(Parameter):
         Returns
         -------
         bool
-            ``True`` if all properties match; ``False`` otherwise.
+            ``True`` if all properties match, ``False`` otherwise.
         """
         if type(self) == type(other):
             checks = {}
@@ -1348,7 +1349,7 @@ class DependentParameter(Parameter):
             return False
 
     def __deepcopy__(self, memo) -> DependentParameter:
-        """Return deep copy of an instance of the ``DependentParameter`` class."""
+        """Return a deep copy of a instance of the ``DependentParameter`` class."""
         return DependentParameter(
             self.name,
             self.reference_value,
@@ -1390,7 +1391,7 @@ class DependentParameter(Parameter):
         )
 
     def to_dict(self) -> dict:
-        """Convert an instance of the ``DependentParameter`` class to dictionary.
+        """Convert an instance of the ``DependentParameter`` class to a dictionary.
 
         Returns
         -------
@@ -1400,7 +1401,7 @@ class DependentParameter(Parameter):
         Raises
         ------
         TypeError
-            Raised when parameter is modified to unknown type.
+            Raised when the parameter is modified to an unknown type.
         """
         return {
             "active": True,
@@ -1417,7 +1418,7 @@ class DependentParameter(Parameter):
 
 
 class ParameterManager:
-    """This class contains methods to obtain parameters."""
+    """Contains methods for obtaining parameters."""
 
     def __init__(self, uid: str, osl_server: OslServer) -> None:
         """Initialize a new instance of the ``ParameterManager`` class.
@@ -1425,31 +1426,31 @@ class ParameterManager:
         Parameters
         ----------
         uid: str
-            Specific unique ID.
+            Unique ID of the instance.
         osl_server: OslServer
-            Object providing access to optiSLang server.
+            Object providing access to the optiSLang server.
         """
         self.__uid = uid
         self.__osl_server = osl_server
 
     def __str__(self) -> str:
-        """Return ``ParameterManager``'s ``uid``."""
+        """Get the unique ID of the ``ParameterManager`` instance."""
         return f"ParameterManager uid: {self.__uid}"
 
     def get_parameters(self) -> Tuple[Parameter, ...]:
-        """Get tuple of the system's parameters.
+        """Get the parameters of the system.
 
         Returns
         -------
         Tuple[Parameter, ...]
-            Tuple of defined parameters.
+            Tuple of the parameters for the system.
 
         Raises
         ------
         OslCommunicationError
-            Raised when an error occurs while communicating with server.
+            Raised when an error occurs while communicating with the server.
         OslCommandError
-            Raised when the command or query fails.
+            Raised when a command or query fails.
         TimeoutError
             Raised when the timeout float value expires.
         """
@@ -1461,19 +1462,19 @@ class ParameterManager:
         return tuple(parameters)
 
     def get_parameters_names(self) -> Tuple[str, ...]:
-        """Get names of the system's parameters.
+        """Get all parameter names.
 
         Returns
         -------
         Tuple[str, ...]
-            Tuple of defined parameters names.
+            Tuple of all parameter names.
 
         Raises
         ------
         OslCommunicationError
-            Raised when an error occurs while communicating with server.
+            Raised when an error occurs while communicating with the server.
         OslCommandError
-            Raised when the command or query fails.
+            Raised when a command or query fails.
         TimeoutError
             Raised when the timeout float value expires.
         """
@@ -1486,7 +1487,7 @@ class ParameterManager:
 
 
 class DesignVariable:
-    """Class which stores information about design variable."""
+    """Stores information about a design variable."""
 
     def __init__(
         self,
@@ -1535,22 +1536,22 @@ class DesignVariable:
 
     @property
     def name(self) -> str:
-        """Get variable's ``name``."""
+        """Name of the design variable."""
         return self.__name
 
     @name.setter
     def name(self, name: str) -> None:
-        """Set variable's ``name``.
+        """Set the name of the design variable.
 
         Parameters
         ----------
         name : str
-            ``DesignVariable``'s name.
+            Name of the design variable.
 
         Raises
         ------
         TypeError
-            Raised when inappropriate type of ``name`` was given.
+            Raised when type of the name is invalid.
         """
         if not isinstance(name, str):
             raise TypeError(f"String was expected but type: ``{type(name)}`` was given.")
@@ -1559,23 +1560,23 @@ class DesignVariable:
 
     @property
     def value(self) -> Union[bool, float, complex, list, dict, None]:
-        """Get variable's ``value``."""
+        """Value of the design variable."""
         return self.__value
 
     @value.setter
     def value(self, value: Union[bool, float, complex, list, dict, None]) -> None:
-        """Set variable's ``value``.
+        """Set the value of the design variable.
 
         Parameters
         ----------
         value : Union[bool, float, complex, list, dict, None]
-            ``DesignVariable``'s value.
+            Value of the design variable.
         """
         self.__value = value
 
 
 class DesignStatus(Enum):
-    """Available design states."""
+    """Provides the design states."""
 
     IDLE = 0
     PENDING = 1
@@ -1585,12 +1586,12 @@ class DesignStatus(Enum):
 
     @staticmethod
     def from_str(label: str) -> DesignStatus:
-        """Convert string to an instance of the ``DesignStatus`` class.
+        """Convert a string to an instance of the ``DesignStatus`` class.
 
         Parameters
         ----------
         label: str
-            String that shall be converted.
+            String to convert.
 
         Returns
         -------
@@ -1600,9 +1601,9 @@ class DesignStatus(Enum):
         Raises
         ------
         TypeError
-            Raised when inappropriate type of ``label`` was given.
+            Raised when the type of the label is invalid.
         ValueError
-            Raised when inappropriate value of ``label`` was given.
+            Raised when the value for the label is invalid.
         """
         if not isinstance(label, str):
             raise TypeError(f"String was expected, but `{type(label)}` was given.")
@@ -1614,17 +1615,17 @@ class DesignStatus(Enum):
 
 
 class Design:
-    """Class which stores information about design point, exclusive for ``RootSystem``.
+    """Stores information about the design point, exclusively for the root system.
 
     Parameters
     ----------
-    parameters: Union[Dict[str, float], Iterable[Union[Parameter, DesignVariable]]], optional
-        Dictionary of parameters and it's values {'parname': value, ...}
-        or iterable of DesignVariables or Parameters.
+    parameters : Union[Dict[str, float], Iterable[Union[Parameter, DesignVariable]]], optional
+        Dictionary of parameters and their values {'parname': value, ...}
+        or an iterable of design variables or parameters.
 
     Examples
     --------
-    Get reference design:
+    Get the reference design:
 
     >>> from ansys.optislang.core import Optislang
     >>> osl = Optislang()
@@ -1672,7 +1673,7 @@ class Design:
                 )
 
     def __str__(self) -> str:
-        """Return info about design."""
+        """Return information about the design."""
         return (
             f"ID: {self.id}\n"
             f"Status: {self.__status.name}\n"
@@ -1688,22 +1689,23 @@ class Design:
 
     @property
     def feasibility(self) -> Union[bool, None]:
-        """Get design's ``feasibility``, ``None`` if not evaluated."""
+        """Feasibility of the design. If the design is not evaluated,
+         ``None`` is returned."""
         return self.__feasibility
 
     @property
     def id(self) -> Union[int, None]:
-        """Get design's ``id``, ``None`` if not assigned."""
+        """ID of the design. If no ID is assigned, ``None`` is returned."""
         return self.__id
 
     @property
     def constraints(self) -> Tuple[DesignVariable, ...]:
-        """Get all design's ``constraints``."""
+        """Tuple of all constraints."""
         return tuple(self.__constraints)
 
     @property
     def constraints_names(self) -> Tuple[str, ...]:
-        """Get all ``constraint``'s names."""
+        """Tuple of all constraint names."""
         names = []
         for constraint in self.__constraints:
             names.append(constraint.name)
@@ -1711,12 +1713,12 @@ class Design:
 
     @property
     def limit_states(self) -> Tuple[DesignVariable, ...]:
-        """Get all defined ``limit_states``."""
+        """Tuple of all limit states."""
         return tuple(self.__limit_states)
 
     @property
     def limit_states_names(self) -> Tuple[str, ...]:
-        """Get all ``constraint``'s names."""
+        """Tuple of all limit state names."""
         names = []
         for limit_state in self.__limit_states:
             names.append(limit_state.name)
@@ -1724,12 +1726,12 @@ class Design:
 
     @property
     def objectives(self) -> Tuple[DesignVariable, ...]:
-        """Get all defined ``objectives``."""
+        """Tuple of all objectives."""
         return tuple(self.__objectives)
 
     @property
     def objectives_names(self) -> Tuple[str, ...]:
-        """Get all ``objective``'s names."""
+        """Typle of all objective names."""
         names = []
         for objective in self.__objectives:
             names.append(objective.name)
@@ -1737,12 +1739,12 @@ class Design:
 
     @property
     def parameters(self) -> Tuple[DesignVariable, ...]:
-        """Get all ``parameters``."""
+        """Tuple of all parameters."""
         return tuple(self.__parameters)
 
     @property
     def parameters_names(self) -> Tuple[str, ...]:
-        """Get all ``parameter``'s names."""
+        """Tuple of all parameter names."""
         names = []
         for parameter in self.__parameters:
             names.append(parameter.name)
@@ -1750,12 +1752,12 @@ class Design:
 
     @property
     def responses(self) -> Tuple[DesignVariable, ...]:
-        """Get all ``responses``."""
+        """Tuple of all responses."""
         return tuple(self.__responses)
 
     @property
     def responses_names(self) -> Tuple[str, ...]:
-        """Get all ``response``'s names."""
+        """Tuple of all response names."""
         names = []
         for response in self.__responses:
             names.append(response.name)
@@ -1763,34 +1765,34 @@ class Design:
 
     @property
     def status(self) -> DesignStatus:
-        """Get ``status`` of an instance of the ``Design`` class."""
+        """Status of the ``Design`` class instance."""
         return self.__status
 
     @property
     def variables(self) -> Tuple[DesignVariable, ...]:
-        """Get all ``variables``."""
+        """Tuple of all variables."""
         return tuple(self.__variables)
 
     @property
     def variables_names(self) -> Tuple[str, ...]:
-        """Get all ``variable``'s names."""
+        """Tuple of all variable names."""
         names = []
         for variable in self.__variables:
             names.append(variable.name)
         return tuple(names)
 
     def copy_unevaluated_design(self) -> Design:
-        """Create deep copy of unevaluated ``Design``.
+        """Create a deep copy of the unevaluated design.
 
         Returns
         -------
         Design
-            Deep copy of unevaluated design.
+            Deep copy of the unevaluated design.
         """
         return Design(copy.deepcopy(self.parameters))
 
     def remove_parameter(self, name: str) -> None:
-        """Remove parameter defined by name from ``Design``.
+        """Remove a parameter from the design.
 
         Parameters
         ----------
@@ -1802,11 +1804,11 @@ class Design:
             self.__parameters.pop(index)
 
     def clear_parameters(self) -> None:
-        """Remove all defined ``parameters`` from design."""
+        """Remove all defined parameters from the design."""
         self.__parameters.clear()
 
     def __reset(self) -> None:
-        """Reset ``status``, ``feasibility`` and delete output values."""
+        """Reset the status and feasibility and then delete output values."""
         self.__status = DesignStatus.IDLE
         self.__feasibility = None
         self.__constraints.clear()
@@ -1820,25 +1822,26 @@ class Design:
         parameter: Union[Parameter, DesignVariable],
         reset_output: bool = True,
     ) -> None:
-        """Set value of parameter, add new one if not specified.
+        """Set the value of a parameter by instance or add a new parameter if an instance is not specified.
 
         Parameters
         ----------
         parameter: Union[Parameter, DesignVariable]
-            Instance of ``Parameter`` or ``DesignVariable`` class.
+            Instance of the ``Parameter`` or ``DesignVariable`` class.
         reset_output: bool, optional
-            Reset ``status``, ``feasibility`` and delete output values, defaults to ``True``.
+            Whether to reset the status and feasibility and then delete the output
+            values. The default is ``True``.
 
         Raises
         ------
         OslCommunicationError
-            Raised when an error occurs while communicating with server.
+            Raised when an error occurs while communicating with the server.
         OslCommandError
-            Raised when the command or query fails.
+            Raised when a command or query fails.
         TimeoutError
             Raised when the timeout float value expires.
         TypeError
-            Raised when invalid type of parameter is passed.
+            Raised when an invalid type of parameter is passed.
         """
         if reset_output:
             self.__reset()
@@ -1862,7 +1865,8 @@ class Design:
         value: Union[str, float, bool, None] = None,
         reset_output: bool = True,
     ) -> None:
-        """Set value of parameter, add new one if not specified.
+        """
+        Set the value of a parameter by name or add a new parameter if a name is not specified.
 
         Parameters
         ----------
@@ -1871,18 +1875,19 @@ class Design:
         value: float
             Value of the parameter.
         reset_output: bool, optional
-            Reset ``status``, ``feasibility`` and delete output values, defaults to ``True``.
+            Whether to reset the status and feasibility and then delete the output
+            values. The default is ``True``.
 
         Raises
         ------
         OslCommunicationError
-            Raised when an error occurs while communicating with server.
+            Raised when an error occurs while communicating with the server.
         OslCommandError
-            Raised when the command or query fails.
+            Raised when a command or query fails.
         TimeoutError
             Raised when the timeout float value expires.
         TypeError
-            Raised when invalid type of parameter is passed.
+            Raised when an invalid type of parameter is passed.
         """
         if reset_output:
             self.__reset()
@@ -1903,7 +1908,7 @@ class Design:
         Parameters
         ----------
         results: Dict
-            Output from ``evaluate_design`` server command.
+            Output from the ``evaluate_design`` server command.
         """
         self.__reset()
         self.__id = results["result_design"]["hid"]
@@ -1952,26 +1957,26 @@ class Design:
             )
 
     def __find_name_index(self, name: str, type_: str) -> Union[int, None]:
-        """Find index of the criterion, parameter, response or variable with given name.
+        """Find the index of a criterion, parameter, response, or variable by name.
 
         Parameters
         ----------
         name: str
-            Name of the criterion, parameter, response or variable.
+            Name of the criterion, parameter, response, or variable.
         type_: str
             Union['constraint', 'limit_state', 'objective', 'parameter', 'response', 'variable']
 
         Returns
         -------
         Union[int, None]
-            Position in list, ``None`` if parameter wasn't found.
+            Position of the name in the list. If the name is not found, ``None`` is returned.
 
         Raises
         ------
         TypeError
-            Raised when unknown type of ``type_`` was given.
+            Raised when an unknown type is given.
         RuntimeError
-            Raised when multiple instances of ``DesignVariable`` with the same name were found.
+            Raised when multiple instances of a a design variable with the same name are found.
         """
         indices = []
         if type_ == "constraint":

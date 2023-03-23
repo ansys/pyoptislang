@@ -36,11 +36,11 @@ class Optislang:
         Port on which optiSLang is running as a server. The default is ``None``.
     executable : Union[str, Path], optional
         Path to the optiSLang executable file to execute on a the local host.
-         The default is ``None``. This parameter is ignored when ``host``
-         and ``port`` parameters are specified.
+        The default is ``None``. This parameter is ignored when ``host``
+        and ``port`` parameters are specified.
     project_path : Union[str, Path], optional
-        Path to the optiSLang project file that is to be used by a new local
-        optiSLang server. The default is ``None``. This parameter is ignored
+        Path to the optiSLang project file that a new local optiSLang server
+        is to use. The default is ``None``. This parameter is ignored
         when ``host`` and ``port`` parameters are specified. Here is how
         this parameter is used:
 
@@ -58,15 +58,15 @@ class Optislang:
         ID of the optiSLang instance.
     password : str, optional
         Server password. The default is ``None``. This parameter is used when
-        communication with the server requires the request to contain a password.
+        communication with the server requires that the request contain a password.
     loglevel : str, optional
         Logging level. The options are:
 
-        - CRITICAL: Log errors that are fatal for the app.
-        - ERROR: Log errors that are fatal for some operation, but not for the app.
-        - WARNING: Log some oddities or potential problems.
-        - INFO: Log some useful information that the program works as expected.
-        - DEBUG: Log all information for use in debugging.
+        - ``CRITICAL``: Log errors that are fatal for the app.
+        - ``ERROR``: Log errors that are fatal for some operation, but not for the app.
+        - ``WARNING``: Log some oddities or potential problems.
+        - ``INFO``: Log some useful information that the program works as expected.
+        - ``DEBUG``: Log all information for use in debugging.
 
     shutdown_on_finished: bool, optional
         Whether to shut down when execution is finished and no listeners are registered.
@@ -76,7 +76,7 @@ class Optislang:
     Raises
     ------
     RuntimeError
-        Raised when the connection to the optiSLang server cannot be established in
+        Raised when the connection to the optiSLang server cannot be established
         before the specified timeout.
 
     Examples
@@ -223,7 +223,7 @@ class Optislang:
 
     @property
     def project(self) -> Project:
-        """Get instance of the ``Project`` class.
+        """Instance of the ``Project`` class.
 
         Returns
         -------
@@ -325,7 +325,7 @@ class Optislang:
         return self.__osl_server.get_timeout()
 
     def get_working_dir(self) -> Path:
-        """Get path to the optiSLang project's working directory.
+        """Get the path to the optiSLang project's working directory.
 
         Returns
         -------
@@ -401,7 +401,7 @@ class Optislang:
         )
 
     def reset(self) -> None:
-        """Reset the entire project.
+        """Reset the project.
 
         Raises
         ------
@@ -419,7 +419,7 @@ class Optislang:
         script: str,
         args: Union[Sequence[object], None] = None,
     ) -> Tuple[str, str]:
-        """Load a Python script in a project context and execute it.
+        """Load a Python script in a project context and run it.
 
         Parameters
         ----------
@@ -450,7 +450,7 @@ class Optislang:
         file_path: Union[str, Path],
         args: Union[Sequence[object], None] = None,
     ) -> Tuple[str, str]:
-        """Read a Python script from a file, load it in a project context, and execute it.
+        """Read a Python script from a file, load it in a project context, and run it.
 
         Parameters
         ----------
@@ -478,7 +478,7 @@ class Optislang:
         return self.__osl_server.run_python_file(file_path, args)
 
     def save(self) -> None:
-        """Save the changed data and settings of the project.
+        """Save changes to the project data and settings.
 
         Raises
         ------
@@ -549,7 +549,7 @@ class Optislang:
         self.__osl_server.save_copy(file_path)
 
     def set_timeout(self, timeout: Union[float, None] = None) -> None:
-        """Set timeout value for the execution of commands.
+        """Set the timeout value for the executing commands.
 
         Parameters
         ----------

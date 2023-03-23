@@ -3,7 +3,7 @@
 ==========
 User guide
 ==========
-This section provides an overview of PyOptiSLang and how you use it.
+This section provides an overview of how you use PyOptiSLang.
 
 .. toctree::
    :maxdepth: 1
@@ -17,14 +17,15 @@ This section provides an overview of PyOptiSLang and how you use it.
    troubleshooting
 
 
-You use the :class:`Optislang <ansys.optislang.core.optislang.Optislang>` class 
-within PyOptiSLang to launch optiSLang as a server and then control and query
+With the :class:`Optislang <ansys.optislang.core.optislang.Optislang>` class 
+in PyOptiSLang, you can launch optiSLang as a server and then control and query
 optiSLang projects.
 
 The following code shows how to launch OptiSLang from Python. By default,
 optiSLang is started in a temporary directory. Using the ``project_path``
 parameter, you can specify a path to a project file. If this project file exists,
-it is opened. Otherwise, a new project file is created in the specified path. 
+it is opened. Otherwise, a new project file is created in the specified path.
+For more information, see :ref:`ref_launch`. 
 
 .. code:: python
 
@@ -37,8 +38,6 @@ it is opened. Otherwise, a new project file is created in the specified path.
     with Optislang(project_path=path / file_name) as osl:
         print(osl)
 
-
-For more information, see :ref:`ref_launch`.
 
 The :class:`Optislang <ansys.optislang.core.Optislang>` class provides several methods for
 controlling or querying the project. This code shows how to open an existing project 
@@ -55,8 +54,8 @@ and run it using the :func:`start() <ansys.optislang.core.optislang.Optislang.st
 
 
 While the current capabilities provided by PyOptiSLang are limited, you can
-overcome use the :func:`run_python_script() <ansys.optislang.core.optislang.Optislang.run_python_script>`
+use the :func:`run_python_script() <ansys.optislang.core.optislang.Optislang.run_python_script>`
 or :func:`run_python_file() <ansys.optislang.core.optislang.Optislang.run_python_file>`
-method in the :class:`Optislang <ansys.optislang.core.optislang.Optislang>` class. For
-example, you can run optiSLang Python API commands to create and edit nodes, parameters,
-and more. For more information, see :ref:`ref_run_python`.
+method in the :class:`Optislang <ansys.optislang.core.optislang.Optislang>` class
+to overcome its limitations. For example, you can run optiSLang Python API commands
+to create and edit nodes, parameters, and more. For more information, see :ref:`ref_run_python`.

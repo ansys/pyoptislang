@@ -37,7 +37,7 @@ or :func:`save_copy() <ansys.optislang.core.optislang.Optislang.save_copy>` meth
 
 To create a project or open an existing one, you use the
 :func:`new() <ansys.optislang.core.optislang.Optislang.new>` or
-:func:`open() <ansys.optislang.core.optislang.Optislang.open>` methods. This code
+:func:`open() <ansys.optislang.core.optislang.Optislang.open>` method. This code
 creates a project: 
 
 .. code:: python

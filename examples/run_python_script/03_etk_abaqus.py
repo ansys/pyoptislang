@@ -5,11 +5,9 @@ ETK Abaqus
 ----------
 
 This example uses the ``etk_abaqus.py`` file to set up a parametric system
-containing text input, Abaqus process actor, and Abaqus ETK output
+containing text input, the Abaqus process actor, and the Abaqus ETK output
 actor. It then explains how you can optionally save
-a copy of the project to a desired location. For more detailed
-information, see the individual Python files for the oscillator
-example in the optiSLang tutorials.
+a copy of the project to a desired location.
 """
 
 #########################################################
@@ -31,7 +29,8 @@ print(osl)
 #########################################################
 # Get path of example script and run it
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Get the path of the example script and then run it.
+# Get the path of the example script and then run this
+# script.
 
 paths = examples.get_files("etk_abaqus")
 osl.run_python_file(paths[0])

@@ -9,15 +9,16 @@ root level of a project. It uses the reference design first and then
 decreases cross section areas in each iteration to minimize mass, while
 satisfying defined constraints of maximum stress for two loading conditions.
 
-The example project has been prepared in a certain way, in order to support the
-"Design evaluation" use-case:
+The example project has been prepared in a certain way to support the
+"Design evaluation" use case:
 
-- The workflow components have been created at the root system level
-- Parameters and responses have been registered at the root system level
-- The proper workflow components have been connected to the root system using
-  ``Receive designs`` and ``Send back designs`` options
+- Workflow components have been created at the root system level.
+- Parameters and responses have been registered at the root system level.
+- Proper workflow components have been connected to the root system using
+  **Receive designs** and **Send back designs** options.
 
-For more information, see the general optiSLang documentation on generating workflows.
+For more information, see the optiSLang user documentation on generating
+workflows.
 
 This image shows the workflow:
 """
@@ -83,7 +84,7 @@ plot_max_stress_lc2 = [abs(max(design.responses[2].value, key=abs))]
 # Decrease cross section areas
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Copy the last successful design and gradually decrease
-# cross section areas of each truss, storing results.
+# cross section areas of each truss, storing the results.
 # If decreasing a cross sectional area leads to violation
 # of constraints, stop decreasing it.
 
@@ -115,7 +116,7 @@ while True in try_decrease_param:
 #########################################################
 # Extract cross sectional areas
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# From the last successful design, txtract cross sectional areas, objective,
+# From the last successful design, extract cross sectional areas, objective,
 # and constraints.
 
 best_design = successfull_designs[-1]

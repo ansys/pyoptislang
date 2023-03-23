@@ -1,8 +1,8 @@
 .. _ref_contributing:
 
-============
-Contributing
-============
+==========
+Contribute
+==========
 Overall guidance on contributing to a PyAnsys library appears in the
 `Contributing <https://dev.docs.pyansys.com/overview/contributing.html>`_ topic
 in the *PyAnsys Developer's Guide*. Ensure that you are thoroughly familiar
@@ -57,6 +57,7 @@ To ensure your code meets minimum code styling standards, run this code::
 
   pip install pre-commit
   pre-commit run --all-files
+
 
 You can also install this as a pre-commit hook by running this code::
 

@@ -15,7 +15,7 @@ PyOptiSLang documentation |version|
 Introduction
 -------------
 Ansys optiSLang is a constantly evolving, leading-edge answer to the challenges posed 
-by CAE-based Robust Design Optimization (RDO). Its state-of-the-art algorithms efficiently 
+by CAE-based RDO (Robust Design Optimization). Its state-of-the-art algorithms efficiently 
 and automatically search for the most robust design configuration, eliminating the slow, 
 manual process that used to define RDO.
 
@@ -29,7 +29,7 @@ and the running optiSLang process (server) is based on the plain TCP/IP technolo
 However, you need to interact only with the Python interface. 
 
 You can use PyOptiSLang to programmatically create, interact with, and control 
-an optiSLang project. Additionally, you can use it to create customizable scripts
+an optiSLang project. Additionally, you can use it to create custom scripts
 that can speed up and automate simulations. 
 
 PyOptiSLang  lets you use optiSLang within a Python environment of your choice 
@@ -39,12 +39,13 @@ Features
 --------
 The ``ansys-optislang-core`` package provides these features:
 
-   - Ability to launch optiSLang locally or connect to the remote optiSLang server. For more information, 
-     see :ref:`ref_launch`.
-   - Basic commands such as those for opening, saving and running projects as well as queries to
-     obtain information about projects. For more information, see :ref:`ref_functions`.
-   - Executing Python commands from the optiSLang Python API. For more information, 
-     see :ref:`ref_run_python`.
+- Ability to launch optiSLang locally or connect to the remote optiSLang server. For more information, 
+  see :ref:`ref_launch`.
+- Basic commands such as those for opening, saving and running projects as well as queries to
+  obtain information about projects. For more information, see :ref:`ref_functions`.
+- Executing Python commands from the optiSLang Python API. For more information, 
+  see :ref:`ref_run_python`.
+
   
 Documentation and issues
 ------------------------

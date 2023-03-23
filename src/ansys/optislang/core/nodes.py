@@ -61,7 +61,7 @@ class Node:
         Parameters
         ----------
         uid: str
-            Unique idenifier of the node.
+            Unique ID of the node.
         osl_server: OslServer
             Object providing access to the optiSLang server.
         """
@@ -74,7 +74,7 @@ class Node:
 
     @property
     def uid(self) -> str:
-        """Get unique ID of the node.
+        """Unique ID of the node.
 
         Returns
         -------
@@ -84,7 +84,7 @@ class Node:
         return self.__uid
 
     def get_name(self) -> str:
-        """Get name of the node.
+        """Get the name of the node.
 
         Returns
         -------
@@ -359,7 +359,7 @@ class System(Node):
         )
 
     def find_node_by_uid(self, uid: str, search_depth: int = 1) -> Union[Node, None]:
-        """Find the node with a specified unique ID in the system.
+        """Find a node in the system with a specified unique ID.
 
         This method searches only in the descendant nodes for the current system.
 
@@ -374,7 +374,7 @@ class System(Node):
         Returns
         -------
         Union[Node, None]
-            ``Node`` with the specified unique ID. If this ID wasn't located in any
+            ``Node`` with the specified unique ID. If this ID isn't located in any
             descendant node, ``None`` is returned.
 
         Raises
@@ -413,7 +413,7 @@ class System(Node):
         )[0]
 
     def find_nodes_by_name(self, name: str, search_depth: int = 1) -> Tuple[Node, ...]:
-        """Find nodes with the specified name in the system.
+        """Find nodes in the system with a specified name.
 
         This method searches only in the descendant nodes for the current system.
 
@@ -464,7 +464,7 @@ class System(Node):
         return self._create_nodes_from_properties_dicts(properties_dicts_list=properties_dicts_list)
 
     def get_nodes(self) -> Tuple[Node, ...]:
-        """Get direct children nodes.
+        """Get the direct children nodes.
 
         Returns
         -------
@@ -674,7 +674,7 @@ class ParametricSystem(System):
 
     @property
     def parameter_manager(self) -> ParameterManager:
-        """Get the instance of the ``ParameterManager`` class.
+        """Instance of the ``ParameterManager`` class.
 
         Returns
         -------
@@ -779,7 +779,7 @@ class RootSystem(ParametricSystem):
         return Design(parameters=parameters)
 
     def get_missing_parameters_names(self, design: Design) -> Tuple[str, ...]:
-        """Get names of the parameters that are missing in a design.
+        """Get the names of the parameters that are missing in a design.
 
         This method compare design parameters with the root system's parameters.
 

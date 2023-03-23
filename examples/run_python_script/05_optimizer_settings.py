@@ -7,9 +7,7 @@ Optimizer settings
 This example uses the ``optimizer_settings.py`` file to create,
 configure, and insert an EA (Evolutionary Algorithm) optimizer
 into the scenery. It then explains how you can optionally save
-a copy of the project to a desired location. For more detailed
-information, see the individual Python files for the oscillator
-example in the optiSLang tutorials.
+a copy of the project to a desired location.
 """
 
 # Perform required imports
@@ -30,7 +28,8 @@ print(osl)
 #########################################################
 # Get path of example script and run it
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Get the path of the example script and then run it.
+# Get the path of the example script and then run this
+# script.
 
 paths = examples.get_files("optimizer_settings")
 osl.run_python_file(paths[0])
