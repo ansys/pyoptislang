@@ -15,6 +15,7 @@ The example project has been prepared in a certain way, in order to support the
 * Parameters and responses have been registered at the root system level
 * The proper workflow components have been connected to the root system using
   ``Receive designs`` and ``Send back designs`` options
+
 For more information, see the general optiSLang documentation on generating workflows.
 
 This image shows the workflow:

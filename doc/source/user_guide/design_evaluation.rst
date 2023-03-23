@@ -39,6 +39,7 @@ you use the :func:`project <ansys.optislang.core.project.Project>` method.
     * Create the workflow and register parameters and responses at the root system level
     * Connect the workflow to the root system using ``Receive designs`` and
       ``Send back designs`` options
+
     For more information, see the :ref:`ref_ten_bar_truss_evaluate_design`
     example and general optiSLang documentation on generating workflows.
 
