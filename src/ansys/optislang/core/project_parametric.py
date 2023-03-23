@@ -1171,7 +1171,7 @@ class MixedParameter(Parameter):
 
     @property
     def distribution_parameters(self) -> Sequence[float]:
-        """Paramters of the distribution."""
+        """Parameters of the distribution."""
         return self.__distribution_parameters
 
     @distribution_parameters.setter
@@ -1310,7 +1310,7 @@ class DependentParameter(Parameter):
         const: bool, optional
             Whether the parameter is a constant.
         type: Union[ParameterType, str], optional
-            Type of othe parameter.
+            Type of other parameter.
         operation: str, optional
             Mathematic expression to evaluate.
         """
@@ -1689,8 +1689,7 @@ class Design:
 
     @property
     def feasibility(self) -> Union[bool, None]:
-        """Feasibility of the design. If the design is not evaluated,
-         ``None`` is returned."""
+        """Feasibility of the design. If the design is not evaluated, ``None`` is returned."""
         return self.__feasibility
 
     @property
@@ -1731,7 +1730,7 @@ class Design:
 
     @property
     def objectives_names(self) -> Tuple[str, ...]:
-        """Typle of all objective names."""
+        """Tuple of all objective names."""
         names = []
         for objective in self.__objectives:
             names.append(objective.name)
@@ -1822,7 +1821,9 @@ class Design:
         parameter: Union[Parameter, DesignVariable],
         reset_output: bool = True,
     ) -> None:
-        """Set the value of a parameter by instance or add a new parameter if an instance is not specified.
+        """Set the value of a parameter by instance or add a new parameter.
+
+        If no instance is specified,  a new parameter is added.
 
         Parameters
         ----------
@@ -1866,7 +1867,9 @@ class Design:
         reset_output: bool = True,
     ) -> None:
         """
-        Set the value of a parameter by name or add a new parameter if a name is not specified.
+        Set the value of a parameter by name or add a new parameter.
+
+        If no name is specified,  a new parameter is added.
 
         Parameters
         ----------

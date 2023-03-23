@@ -156,7 +156,6 @@ initialized with the ``shutdown_on_finished`` parameter set to ``False``.
   :func:`dispose() <ansys.optislang.core.optislang.Optislang.dispose>` method:
 
   .. code:: python
-    
     from ansys.optislang.core import Optislang
 
     osl = Optislang(shutdown_on_finished=False)
@@ -171,7 +170,7 @@ initialized with the ``shutdown_on_finished`` parameter set to ``False``.
    .. code:: python
 
     from ansys.optislang.core import Optislang
-    
+
     osl = Optislang(shutdown_on_finished=False)
     print(osl)
     osl.shutdown()
@@ -224,8 +223,8 @@ the :func:`dispose() <ansys.optislang.core.optislang.Optislang.dispose>` method.
     :func:`shutdown() <ansys.optislang.core.optislang.Optislang.shutdown>` method.
 
     .. code:: python
-        
         from ansys.optislang.core import Optislang
+
         with Optislang(shutdown_on_finished=False) as osl:
             print(osl)
             osl.start()

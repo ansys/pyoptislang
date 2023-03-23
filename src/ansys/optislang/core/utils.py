@@ -71,7 +71,7 @@ def find_all_osl_exec() -> OrderedDict[int, Tuple[Path, ...]]:
 
 
 def _find_all_osl_exec_in_windows() -> OrderedDict[int, Tuple[Path, ...]]:
-    """Find all optiSLang executable files on the Windows operating system.
+    """Find all optiSLang executable files on Windows.
 
     Returns
     -------
@@ -92,7 +92,7 @@ def _find_all_osl_exec_in_windows() -> OrderedDict[int, Tuple[Path, ...]]:
 
 
 def _find_all_osl_exec_in_posix() -> OrderedDict[int, Tuple[Path, ...]]:
-    """Find all optiSLang executable files on POSIX-compliant operating systems.
+    """Find all optiSLang executable files on POSIX-compliant systems.
 
     Returns
     -------
@@ -109,7 +109,7 @@ def _find_all_osl_exec_in_posix() -> OrderedDict[int, Tuple[Path, ...]]:
 
 
 def _find_ansys_osl_execs_in_windows_envars() -> Dict[int, Path]:
-    """Find optiSLang executable files based on environmental variables on the Windows operating system.
+    """Find optiSLang executable files based on environmental variables on Windows.
 
     The Ansys ``AWP_ROOT`` environment variable is used to determine the root directory of the Ansys
     installation.
@@ -132,7 +132,7 @@ def _find_ansys_osl_execs_in_windows_envars() -> Dict[int, Path]:
 
 
 def _find_ansys_osl_execs_in_windows_program_files() -> Dict[int, Path]:
-    """Find optiSLang executable files in the ``Program Files`` directory on the Windows operating system.
+    """Find optiSLang executable files in the ``Program Files`` directory on Windows.
 
     This search is performed in the standard installation directory of Ansys products.
 
@@ -154,7 +154,7 @@ def _find_ansys_osl_execs_in_windows_program_files() -> Dict[int, Path]:
 
 
 def _find_standalone_osl_execs_in_windows() -> Dict[int, Path]:
-    """Find executable files of standalone optiSLang installations on the Windows operating system.
+    """Find executable files of standalone optiSLang installations on Windows.
 
     Returns
     -------
@@ -179,7 +179,7 @@ def _find_standalone_osl_execs_in_windows() -> Dict[int, Path]:
 
 
 def _find_ansys_osl_execs_in_posix() -> Dict[int, Path]:
-    """Find optiSLang executable files in default Ansys paths on POSIX-compliant operating systems.
+    """Find optiSLang executable files in default Ansys paths on POSIX-compliant systems.
 
     This search is performed in standard installation paths of Ansys products.
 
@@ -205,7 +205,7 @@ def _find_ansys_osl_execs_in_posix() -> Dict[int, Path]:
 
 
 def _find_standalone_osl_execs_in_posix() -> Dict[int, Path]:
-    """Find the executable files of standalone optiSLang installations on POSIX-compliant operating systems.
+    """Find the executable files of standalone optiSLang installations on POSIX-compliant systems.
 
     Returns
     -------
@@ -264,7 +264,7 @@ def _merge_osl_exec_dicts(
 
 
 def _sort_osl_execs(osl_execs: Dict[int, Tuple[str, ...]]) -> OrderedDict[int, Tuple[str, ...]]:
-    """Sort the dictionary of optiSLang executable files according to the version in descending order.
+    """Sort the dictionary of optiSLang executable files according to version in descending order.
 
     Parameters
     ----------
@@ -282,7 +282,7 @@ def _sort_osl_execs(osl_execs: Dict[int, Tuple[str, ...]]) -> OrderedDict[int, T
 
 
 def _get_program_files_path() -> Path:
-    """Get the path for the ``Program Files`` directory on the Windows operating system.
+    """Get the path for the ``Program Files`` directory on Windows.
 
     Returns
     -------

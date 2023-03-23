@@ -24,7 +24,7 @@ LEVEL - MODULE - CLASS - FUNCTION - MESSAGE
 DEFAULT_FILE_HEADER = DEFAULT_STDOUT_HEADER
 NEW_SESSION_HEADER = f"""
 ===============================================================================
-       NEW SESSION - *date*, *time*
+       NEW SESSION - {datetime.now().strftime("%m/%d/%Y, %H:%M:%S")}
 ===============================================================================
 """
 
@@ -211,7 +211,7 @@ class OslLogger:
         child_logger_name: str,
     ) -> None:
         """Call the ``create_logger`` method to add a child logger.
-        
+
         This looger is more general than the main logger.
 
         Parameters
