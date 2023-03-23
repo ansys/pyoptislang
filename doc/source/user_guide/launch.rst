@@ -171,7 +171,7 @@ initialized with the ``shutdown_on_finished`` parameter set to ``False``.
    .. code:: python
 
         from ansys.optislang.core import Optislang
-        
+
         osl = Optislang(shutdown_on_finished=False)
         print(osl)
         osl.shutdown()
