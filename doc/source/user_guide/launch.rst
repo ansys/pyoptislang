@@ -156,6 +156,7 @@ initialized with the ``shutdown_on_finished`` parameter set to ``False``.
   :func:`dispose() <ansys.optislang.core.optislang.Optislang.dispose>` method:
 
   .. code:: python
+
         from ansys.optislang.core import Optislang
 
         osl = Optislang(shutdown_on_finished=False)
@@ -165,16 +166,15 @@ initialized with the ``shutdown_on_finished`` parameter set to ``False``.
 
 * To shut down the optiSLang server, use both the
    :func:`shutdown() <ansys.optislang.core.optislang.Optislang.shutdown>` and
-   :func:`dispose() <ansys.optislang.core.optislang.Optislang.dispose>` methods:
+   :func:`dispose() <ansys.optislang.core.optislang.Optislang.dispose>` methods: 
    
    .. code:: python
-
     from ansys.optislang.core import Optislang
 
-        osl = Optislang(shutdown_on_finished=False)
-        print(osl)
-        osl.shutdown()
-        osl.dispose()
+    osl = Optislang(shutdown_on_finished=False)
+    print(osl)
+    osl.shutdown()
+    osl.dispose()
 
 
 You can use the same approach when connected to a remote optiSLang server.

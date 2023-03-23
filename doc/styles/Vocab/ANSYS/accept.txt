@@ -5,3 +5,4 @@ OptiSLang
 Optislang
 optislang
 PyOptiSLang
+osl
