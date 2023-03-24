@@ -1,4 +1,4 @@
-"""Contains classes Node, System, ParametricSystem and RootSystem."""
+"""Contains classes for a node, system, parametric system, and root system."""
 from __future__ import annotations
 
 from enum import Enum
@@ -11,7 +11,7 @@ if TYPE_CHECKING:
 
 
 class DesignFlow(Enum):
-    """Available design flow options."""
+    """Provides design flow options."""
 
     NONE = 0
     RECEIVE = 1
@@ -20,12 +20,12 @@ class DesignFlow(Enum):
 
     @staticmethod
     def from_str(label: str) -> DesignFlow:
-        """Convert string to ``DesignFlow``.
+        """Convert string to an instance of the ``DesignFlow`` class.
 
         Parameters
         ----------
         label: str
-            String that shall be converted.
+            String to convert.
 
         Returns
         -------
@@ -35,9 +35,9 @@ class DesignFlow(Enum):
         Raises
         ------
         TypeError
-            Raised when inappropriate type of ``label`` was given.
+
         ValueError
-            Raised when inappropriate value of ``label`` was given.
+            Raised when an inappropriate type of label is given.
         """
         if not isinstance(label, str):
             raise TypeError(f"String was expected, but `{type(label)}` was given.")
@@ -49,21 +49,21 @@ class DesignFlow(Enum):
 
 
 class Node:
-    """Class responsible for creation and operations on Node."""
+    """Provides for creating and operating on nodes."""
 
     def __init__(
         self,
         uid: str,
         osl_server: OslServer,
     ) -> None:
-        """Create a new instance of ``Node``.
+        """Create a ``Node`` instance.
 
         Parameters
         ----------
         uid: str
-            Uid.
+            Unique ID of the node.
         osl_server: OslServer
-            Object providing access to optiSLang server.
+            Object providing access to the optiSLang server.
         """
         self._osl_server = osl_server
         self.__uid = uid
@@ -74,29 +74,29 @@ class Node:
 
     @property
     def uid(self) -> str:
-        """Get node uid.
+        """Unique ID of the node.
 
         Returns
         -------
         str
-            Node uid.
+            Unique ID of the node.
         """
         return self.__uid
 
     def get_name(self) -> str:
-        """Get name of the current node.
+        """Get the name of the node.
 
         Returns
         -------
         str
-            Node name.
+            Name of the node.
 
         Raises
         ------
         OslCommunicationError
-            Raised when an error occurs while communicating with server.
+            Raised when an error occurs while communicating with the server.
         OslCommandError
-            Raised when the command or query fails.
+            Raised when a command or query fails.
         TimeoutError
             Raised when the timeout float value expires.
         """
@@ -104,7 +104,7 @@ class Node:
         return actor_info["name"]
 
     def get_parent(self) -> Node:
-        """Get instance of the parent node.
+        """Get the instance of the parent node.
 
         Returns
         -------
@@ -114,9 +114,9 @@ class Node:
         Raises
         ------
         OslCommunicationError
-            Raised when an error occurs while communicating with server.
+            Raised when an error occurs while communicating with the server.
         OslCommandError
-            Raised when the command or query fails.
+            Raised when a command or query fails.
         TimeoutError
             Raised when the timeout float value expires.
         """
@@ -139,19 +139,19 @@ class Node:
         )[0]
 
     def get_parent_name(self) -> str:
-        """Get name of the parent node.
+        """Get the name of the parent node.
 
         Returns
         -------
         str
-            Parent system name.
+            Name of the parent node.
 
         Raises
         ------
         OslCommunicationError
-            Raised when an error occurs while communicating with server.
+            Raised when an error occurs while communicating with the server.
         OslCommandError
-            Raised when the command or query fails.
+            Raised when a command or query fails.
         TimeoutError
             Raised when the timeout float value expires.
         """
@@ -160,38 +160,38 @@ class Node:
         return actor_info["name"]
 
     def get_properties(self) -> dict:
-        """Get raw server output with node properties.
+        """Get the raw server output with the node properties.
 
         Returns
         -------
         dict
-            Dictionary with node properties
+            Dictionary with the node properties.
 
         Raises
         ------
         OslCommunicationError
-            Raised when an error occurs while communicating with server.
+            Raised when an error occurs while communicating with the server.
         OslCommandError
-            Raised when the command or query fails.
+            Raised when a command or query fails.
         TimeoutError
             Raised when the timeout float value expires.
         """
         return self._osl_server.get_actor_properties(self.uid)
 
     def get_status(self) -> str:
-        """Get status of the current node.
+        """Get the status of the node.
 
         Returns
         -------
         str
-            Status of node.
+            Status of the node.
 
         Raises
         ------
         OslCommunicationError
-            Raised when an error occurs while communicating with server.
+            Raised when an error occurs while communicating with the server.
         OslCommandError
-            Raised when the command or query fails.
+            Raised when a command or query fails.
         TimeoutError
             Raised when the timeout float value expires.
         """
@@ -199,19 +199,19 @@ class Node:
         return actor_info["status"]
 
     def get_type(self) -> str:
-        """Get type of the current node.
+        """Get the type of the node.
 
         Returns
         -------
         str
-            Type of node.
+            Type of the node.
 
         Raises
         ------
         OslCommunicationError
-            Raised when an error occurs while communicating with server.
+            Raised when an error occurs while communicating with the server.
         OslCommandError
-            Raised when the command or query fails.
+            Raised when a command or query fails.
         TimeoutError
             Raised when the timeout float value expires.
         """
@@ -219,19 +219,19 @@ class Node:
         return actor_info["type"]
 
     def _get_parent_uid(self) -> str:
-        """Get uid of the parent node.
+        """Get the unique ID of the parent node.
 
         Return
         ------
         str
-            Parents node uid.
+            Unique ID of the parent node.
 
         Raises
         ------
         OslCommunicationError
-            Raised when an error occurs while communicating with server.
+            Raised when an error occurs while communicating with the server.
         OslCommandError
-            Raised when the command or query fails.
+            Raised when a command or query fails.
         TimeoutError
             Raised when the timeout float value expires.
         """
@@ -247,22 +247,22 @@ class Node:
     def _create_nodes_from_properties_dicts(
         self, properties_dicts_list: List[dict]
     ) -> Tuple[Node, ...]:
-        """Create nodes from properties dict.
+        """Create nodes from a dictionary of properties.
 
         Parameters
         ----------
         properties_dicts_list : List[dict]
-            Properties of nodes.
+            Dictionary of node properties.
 
         Returns
         -------
         Tuple[Node, ...]
-            Tuple of Nodes.
+            Tuple of nodes.
 
         Raises
         ------
         TypeError
-            Raised when unknown type of component was found.
+            Raised when an unknown type of component is found.
         """
         nodes_list = []
         for node in properties_dicts_list:
@@ -286,24 +286,24 @@ class Node:
         return tuple(nodes_list)
 
     def _is_parametric_system(self, uid: str) -> bool:
-        """Check whether system is parametric.
+        """Check if the system is parametric.
 
         Parameters
         ----------
         uid : str
-            System uid.
+            Unique ID of the system.
 
         Returns
         -------
         bool
-            True/False.
+            ``True`` when the system is parametric, ``False`` otherwise.
 
         Raises
         ------
         OslCommunicationError
-            Raised when an error occurs while communicating with server.
+            Raised when an error occurs while communicating with the server.
         OslCommandError
-            Raised when the command or query fails.
+            Raised when a command or query fails.
         TimeoutError
             Raised when the timeout float value expires.
         """
@@ -312,21 +312,21 @@ class Node:
 
     @staticmethod
     def _find_parent_node_uid(tree: dict, parent_uid: str, node_uid: str) -> str:
-        """Get uid of the parent node.
+        """Get the unique ID of the the parent node.
 
         Parameters
         ----------
         tree: dict
             Dictionary with children nodes.
         parent_uid: str
-            Uid of the system that is being looped through.
+            Uniquie ID of the system to loop through.
         node_uid: str
-            Uid of the node for which the parent is being searched.
+            Unique ID of the node for which to search for the parent.
 
         Return
         ------
         str
-            Uid of the parent node.
+            Unique ID of the parent node.
         """
         for node in tree["nodes"]:
             if node["uid"] == node_uid:
@@ -337,21 +337,21 @@ class Node:
 
 
 class System(Node):
-    """Class responsible for creation and operations on System."""
+    """Provides for creating and operatating on a system."""
 
     def __init__(
         self,
         uid: str,
         osl_server: OslServer,
     ) -> None:
-        """Create a new instance of ``System``.
+        """Create a ``System`` instance.
 
         Parameters
         ----------
         uid: str
-            Uid.
+            Unique ID.
         osl_server: OslServer
-            Object providing access to optiSLang server.
+            Object providing access to the optiSLang server.
         """
         super().__init__(
             uid=uid,
@@ -359,33 +359,34 @@ class System(Node):
         )
 
     def find_node_by_uid(self, uid: str, search_depth: int = 1) -> Union[Node, None]:
-        """Find node with the specified uid in the current system.
+        """Find a node in the system with a specified unique ID.
 
-        Search only in the current system descendant nodes.
+        This method searches only in the descendant nodes for the current system.
 
         Parameters
         ----------
         uid : str
-            Node uid.
+            Unique ID of the node.
         search_depth: int, optional
-            Search depth of the current node subtree. Level-1 corresponds to direct children nodes
-            of the current system.
+            Depth of the node subtree to search. The default is ``1``, which corresponds
+            to direct children nodes of the current system.
 
         Returns
         -------
         Union[Node, None]
-            ``Node`` with defined uid; ``None`` if wasn't located in any descendant node.
+            ``Node`` with the specified unique ID. If this ID isn't located in any
+            descendant node, ``None`` is returned.
 
         Raises
         ------
         OslCommunicationError
-            Raised when an error occurs while communicating with server.
+            Raised when an error occurs while communicating with the server.
         OslCommandError
-            Raised when the command or query fails.
+            Raised when a command or query fails.
         TimeoutError
             Raised when the timeout float value expires.
         TypeError
-            Raised when unknown type of component was found.
+            Raised when an unknown type of component is found.
         """
         project_tree = self._osl_server.get_full_project_tree_with_properties()
         if self.uid == project_tree["projects"][0]["system"]["uid"]:
@@ -412,33 +413,33 @@ class System(Node):
         )[0]
 
     def find_nodes_by_name(self, name: str, search_depth: int = 1) -> Tuple[Node, ...]:
-        """Find nodes with the specified name in the current system.
+        """Find nodes in the system with a specified name.
 
-        Search only in the current system descendant nodes.
+        This method searches only in the descendant nodes for the current system.
 
         Parameters
         ----------
         name : str
             Name of the node.
         search_depth: int, optional
-            Search depth of the current node subtree. Level-1 corresponds to direct children nodes
-            of the current system.
+            Depth of the node subtree to search. The default is ``1``, which corresponds
+            to direct children nodes of the current system.
 
         Returns
         -------
         Tuple[Node, ...]
-            Tuple of nodes with given name.
+            Tuple of nodes with the specified name.
 
         Raises
         ------
         OslCommunicationError
-            Raised when an error occurs while communicating with server.
+            Raised when an error occurs while communicating with the server.
         OslCommandError
-            Raised when the command or query fails.
+            Raised when a command or query fails.
         TimeoutError
             Raised when the timeout float value expires.
         TypeError
-            Raised when unknown type of component was found.
+            Raised when an unknown type of component is found.
         """
         project_tree = self._osl_server.get_full_project_tree_with_properties()
         if self.uid == project_tree["projects"][0]["system"]["uid"]:
@@ -463,7 +464,7 @@ class System(Node):
         return self._create_nodes_from_properties_dicts(properties_dicts_list=properties_dicts_list)
 
     def get_nodes(self) -> Tuple[Node, ...]:
-        """Get direct children nodes.
+        """Get the direct children nodes.
 
         Returns
         -------
@@ -473,9 +474,9 @@ class System(Node):
         Raises
         ------
         OslCommunicationError
-            Raised when an error occurs while communicating with server.
+            Raised when an error occurs while communicating with the server.
         OslCommandError
-            Raised when the command or query fails.
+            Raised when a command or query fails.
         TimeoutError
             Raised when the timeout float value expires.
         """
@@ -484,19 +485,19 @@ class System(Node):
         )
 
     def _get_nodes_dicts(self) -> List[dict]:
-        """Get children nodes data.
+        """Get data for children nodes.
 
         Returns
         -------
         List[dict]
-            List of dictionaries with children nodes data.
+            List of dictionaries with data for children nodes.
 
         Raises
         ------
         OslCommunicationError
-            Raised when an error occurs while communicating with server.
+            Raised when an error occurs while communicating with the server.
         OslCommandError
-            Raised when the command or query fails.
+            Raised when a command or query fails.
         TimeoutError
             Raised when the timeout float value expires.
         RuntimeError
@@ -533,25 +534,25 @@ class System(Node):
         current_depth: int,
         max_search_depth: int,
     ) -> List[dict]:
-        """Find nodes with specified name.
+        """Find nodes with the specified name.
 
         Parameters
         ----------
         name : str
-            Nodes name.
+            Node name.
         tree : dict
-            Tree, where nodes with specified name are supposed to be searched.
+            Tree to search for nodes with the specified name.
         properties_dicts_list : dict
             Dictionary with properties.
         current_depth: int
-            Current depth of search.
+            Current depth of the search.
         max_search_depth: int
-            Maximum depth of search.
+            Maximum depth of the search.
 
         Returns
         -------
         dict
-            Dictionary with necessary info for creation of Node.
+            Dictionary with necessary information for creation of a node.
         """
         for node in tree["nodes"]:
             if node["name"] == name:
@@ -583,25 +584,25 @@ class System(Node):
         current_depth: int,
         max_search_depth: int,
     ) -> List[dict]:
-        """Find node with specified uid.
+        """Find a node with a specified unique ID.
 
         Parameters
         ----------
         uid : str
-            Nodes uid.
+            Unique ID of the node.
         tree : dict
-            Tree, where node with specified uid is supposed to be searched.
+            Tree to search for nodes with the specified unique ID.
         properties_dicts_list : List[dict]
             Dictionary with properties.
         current_depth: int
-            Current depth of search.
+            Current depth of the search.
         max_search_depth: int
-            Maximum depth of search.
+            Maximum depth of the search.
 
         Returns
         -------
         dict
-            Dictionary with necessary info for creation of Node.
+            Dictionary with the necessary information for creation of a node.
         """
         for node in tree["nodes"]:
             if node["uid"] == uid:
@@ -627,19 +628,19 @@ class System(Node):
 
     @staticmethod
     def _find_subtree(tree: dict, uid: str) -> dict:
-        """Find subtree with root node matching given uid.
+        """Find the subtree with a root node matching a specified unique ID.
 
         Parameters
         ----------
         tree: dict
-            Dictionary with parent structure.
+            Dictionary with the parent structure.
         uid: str
-            Uid of the subtree root node.
+            Unique ID of the subtree root node.
 
         Returns
         -------
         dict
-            Dictionary representing found subtree.
+            Dictionary representing the subtree found.
         """
         for node in tree["nodes"]:
             if node["uid"] == uid:
@@ -649,21 +650,21 @@ class System(Node):
 
 
 class ParametricSystem(System):
-    """Class responsible for creation and operations on parametric system."""
+    """Provides for creating and operating on a parametric system."""
 
     def __init__(
         self,
         uid: str,
         osl_server: OslServer,
     ) -> None:
-        """Create a new instance of ``ParametricSystem``.
+        """Create a ``ParametricSystem`` instance.
 
         Parameters
         ----------
         uid: str
-            Uid.
+            Unique ID.
         osl_server: OslServer
-            Object providing access to optiSLang server.
+            Object providing access to the optiSLang server.
         """
         super().__init__(
             uid=uid,
@@ -673,7 +674,7 @@ class ParametricSystem(System):
 
     @property
     def parameter_manager(self) -> ParameterManager:
-        """Get instance of the ``ParameterManager`` class.
+        """Instance of the ``ParameterManager`` class.
 
         Returns
         -------
@@ -684,21 +685,21 @@ class ParametricSystem(System):
 
 
 class RootSystem(ParametricSystem):
-    """Class responsible for creation and operations on project system."""
+    """Provides for creating and operating on a project system."""
 
     def __init__(
         self,
         uid: str,
         osl_server: OslServer,
     ) -> None:
-        """Create a new instance of ``RootSystem``.
+        """Create a ``RootSystem`` system.
 
         Parameters
         ----------
         uid: str
-            Uid.
+            Unique ID.
         osl_server: OslServer
-            Object providing access to optiSLang server.
+            Object providing access to the optiSLang server.
         """
         super().__init__(
             uid=uid,
@@ -706,12 +707,12 @@ class RootSystem(ParametricSystem):
         )
 
     def evaluate_design(self, design: Design) -> Design:
-        """Evaluate given design.
+        """Evaluate a design.
 
         Parameters
         ----------
         design: Design
-            Instance of ``Design`` class with defined parameters.
+            Instance of a ``Design`` class with defined parameters.
 
         Returns
         -------
@@ -721,9 +722,9 @@ class RootSystem(ParametricSystem):
         Raises
         ------
         OslCommunicationError
-            Raised when an error occurs while communicating with server.
+            Raised when an error occurs while communicating with the server.
         OslCommandError
-            Raised when the command or query fails.
+            Raised when a command or query fails.
         TimeoutError
             Raised when the timeout float value expires.
         """
@@ -757,19 +758,19 @@ class RootSystem(ParametricSystem):
         return design
 
     def get_reference_design(self) -> Design:
-        """Get design with reference values of parameters.
+        """Get the design with reference values of the parameters.
 
         Returns
         -------
         Design
-            Instance of ``Design`` class with defined parameters and reference values.
+            Instance of the ``Design`` class with defined parameters and reference values.
 
         Raises
         ------
         OslCommunicationError
-            Raised when an error occurs while communicating with server.
+            Raised when an error occurs while communicating with the server.
         OslCommandError
-            Raised when the command or query fails.
+            Raised when a command or query fails.
         TimeoutError
             Raised when the timeout float value expires.
         """
@@ -778,26 +779,26 @@ class RootSystem(ParametricSystem):
         return Design(parameters=parameters)
 
     def get_missing_parameters_names(self, design: Design) -> Tuple[str, ...]:
-        """Get names of parameters which are missing in given design.
+        """Get the names of the parameters that are missing in a design.
 
-        Compare design parameters with root system's parameters.
+        This method compare design parameters with the root system's parameters.
 
         Parameters
         ----------
         design: Design
-            Instance of ``Design`` class with defined parameters.
+            Instance of the ``Design`` class with defined parameters.
 
         Returns
         -------
         Tuple[str, ...]
-            Names of parameters which are missing in the instance of ``Design`` class.
+            Names of the parameters that are missing in the instance of ``Design`` class.
 
         Raises
         ------
         OslCommunicationError
-            Raised when an error occurs while communicating with server.
+            Raised when an error occurs while communicating with the server.
         OslCommandError
-            Raised when the command or query fails.
+            Raised when a command or query fails.
         TimeoutError
             Raised when the timeout float value expires.
         """
@@ -807,26 +808,26 @@ class RootSystem(ParametricSystem):
         )
 
     def get_undefined_parameters_names(self, design: Design) -> Tuple[str, ...]:
-        """Get names of parameters which are not defined in root system.
+        """Get the names of the parameters that are not defined in the root system.
 
-        Compare design parameters with root systems parameters.
+        This method compare design parameters with the root system's parameters.
 
         Parameters
         ----------
         design: Design
-            Instance of ``Design`` class with defined parameters.
+            Instance of the ``Design`` class with defined parameters.
 
         Returns
         -------
         Tuple[str, ...]
-            Names of parameters which are not defined in the root system.
+            Names of the parameters that are not defined in the root system.
 
         Raises
         ------
         OslCommunicationError
-            Raised when an error occurs while communicating with server.
+            Raised when an error occurs while communicating with the server.
         OslCommandError
-            Raised when the command or query fails.
+            Raised when a command or query fails.
         TimeoutError
             Raised when the timeout float value expires.
         """
@@ -837,9 +838,9 @@ class RootSystem(ParametricSystem):
 
     @staticmethod
     def _compare_two_sets(first: Iterable[str], second: Iterable[str]) -> Tuple[str, ...]:
-        """Get sorted asymmetric difference of two string sets.
+        """Get the sorted asymmetric difference of two string sets.
 
-        Execute difference of sets: ``first - second``
+        This method executes the difference of two string sets: ``first - second``.
 
         Parameters
         ----------
@@ -851,7 +852,7 @@ class RootSystem(ParametricSystem):
         Returns
         -------
         Tuple[str, ...]
-            Tuple with sorted difference.
+            Tuple with the sorted difference.
         """
         diff = list(set(first) - set(second))
         diff.sort()

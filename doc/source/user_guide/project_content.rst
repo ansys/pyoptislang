@@ -2,9 +2,10 @@
 
 Project
 -------
-Instance of the :class:`Project() <ansys.optislang.core.project.Project>`, that is accessible
-from the instance of :class:`Optislang() <ansys.optislang.core.optislang.Optislang>`, contains 
-methods for obtaining information about loaded project and it's content.
+You can access the :class:`Project() <ansys.optislang.core.project.Project>` class
+from the :class:`Optislang() <ansys.optislang.core.optislang.Optislang>` instance.
+This class provides methods for obtaining information about the loaded project and
+its content:
 
 .. code:: python
 
@@ -28,14 +29,16 @@ methods for obtaining information about loaded project and it's content.
 Project structure
 -----------------
 The optiSLang project can be represented by a rooted tree structure. This structure consists 
-of nodes and connections between them. On the top level, there is one node designated as a project 
-root system which is represented by the :class:`RootSystem() <ansys.optislang.core.nodes.RootSystem>` 
+of nodes and the connections between these nodes. On the top level, there is one node
+designated as a project root system. It is represented by the
+:class:`RootSystem() <ansys.optislang.core.nodes.RootSystem>` 
 instance. Each :class:`System() <ansys.optislang.core.nodes.System>`
-(for example :class:`RootSystem() <ansys.optislang.core.nodes.RootSystem>`, 
-:class:`ParametricSystem() <ansys.optislang.core.nodes.ParametricSystem>`) has a method 
-:func:`get_nodes() <ansys.optislang.core.nodes.get_nodes>` which returns all its direct children 
-nodes. This provides an ability to determine whole project structure. The example below shows 
-how to go through all nodes in the project and print information about them.
+, such as the :class:`RootSystem() <ansys.optislang.core.nodes.RootSystem>` class or 
+:class:`ParametricSystem() <ansys.optislang.core.nodes.ParametricSystem>` class, has a 
+:func:`get_nodes() <ansys.optislang.core.nodes.get_nodes>` method that returns all its
+direct children nodes. This provides the ability to determine the entire project structure.
+
+The code shows how to go through all nodes in the project and print information about them:
 
 .. code:: python
 
@@ -63,18 +66,18 @@ how to go through all nodes in the project and print information about them.
 
 Parameters
 ----------
-In order to obtain defined parameters of any parametric system, instance of the 
+To obtain defined parameters of any parametric system, you can use an instance of the 
 :class:`ParameterManager() <ansys.optislang.core.project_parametric.ParameterManager>`
-may be used. This class contains methods 
+Class. This class contains the
 :func:`get_parameters() <ansys.optislang.core.project_parametric.ParameterManager.get_parameters>`, 
-that returns tuple of instances of the 
+method for returning tuples with detailed information for instances of the 
 :class:`OptimizationParameter() <ansys.optislang.core.project_parametric.OptimizationParameter>`,
 :class:`StochasticParameter() <ansys.optislang.core.project_parametric.StochasticParameter>`,
-:class:`MixedParameter() <ansys.optislang.core.project_parametric.MixedParameter>` or
-:class:`DepenedentParameter() <ansys.optislang.core.project_parametric.DepenedentParameter>` 
-classes with detailed information and simplified method 
-:func:`get_parameters_names() <ansys.optislang.core.project_parametric.ParameterManager.get_parameters_names>`, 
-that returns tuple of only parameters names.
+:class:`MixedParameter() <ansys.optislang.core.project_parametric.MixedParameter>`, and
+:class:`DepenedentParameter() <ansys.optislang.core.project_parametric.DepenedentParameter>` classes.
+
+The :func:`get_parameters_names() <ansys.optislang.core.project_parametric.ParameterManager.get_parameters_names>`
+method  returns a tuple with only the names of the parameters:
 
 .. code:: python
 
@@ -91,6 +94,4 @@ needed, stop the connection with optiSLang server by running:
 .. code:: python
 
     osl.dispose()
-
-
 

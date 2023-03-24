@@ -3,9 +3,10 @@
 Troubleshooting
 ===============
 
-This section explains how to resolve the most common issues encountered 
-with ``ansys-optislang-core``. In order to get more details about error, increase logging level by
-parameter ``loglevel`` when launching optiSLang:
+This page explains how to resolve the most common issues encountered 
+with the ``ansys-optislang-core`` package. To get more
+information about an error, use the ``loglevel`` parameter when
+launching optiSLang:
 
 .. code:: python
 
@@ -14,13 +15,12 @@ parameter ``loglevel`` when launching optiSLang:
     osl = Optislang(loglevel="DEBUG")
     osl.dispose()
 
-Common issues
--------------
 
 Timeout error when launching optiSLang
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Default timeout for launching optiSLang is 20 seconds. This can be increased by parameter ``ini_timeout``
-when launching optiSLang:
+--------------------------------------
+The default timeout for launching optiSLang is 20 seconds. You can use
+the ``ini_timeout`` parameter to increase the timeout when launching
+optiSLang:
 
 .. code:: python
 
@@ -28,5 +28,3 @@ when launching optiSLang:
 
     osl = Optislang(ini_timeout=30)
     osl.dispose()
-
-

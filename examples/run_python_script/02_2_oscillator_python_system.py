@@ -1,55 +1,71 @@
 """
 .. _ref_oscillator_python_systems:
 
-Oscillator python systems
--------------------------
+Oscillator parametric system
+----------------------------
 
-Create parametric system for oscillator python example (using ``oscillator_system_python.py``)
-and run it. Save optiSLang project into the same folder as this script then.
-More details in python script and oscillator example in optiSLang tutorial section.
+This example uses the ``oscillator_system_python.py`` file to create and
+run parametric system for an oscillator. It then explains how you can optionally
+save a copy of the project to a desired location.
 """
 
 ####################################################
-# Import necessary modules.
-####################################################
+# Perform required imports
+# ~~~~~~~~~~~~~~~~~~~~~~~~
+# Perform the required imports.
+
 from ansys.optislang.core import Optislang
 import ansys.optislang.core.examples as examples
 
-#################################################################################
-# Create :class:`Optislang <ansys.optislang.core.optislang.Optislang>` instance.
-#################################################################################
+#########################################################
+# Create optiSLang instance
+# ~~~~~~~~~~~~~~~~~~~~~~~~~
+# Create the optiSLang instance.
+
 osl = Optislang()
 print(osl)
 
 #########################################################
-# Get path of example script and run it.
-#########################################################
+# Get path of example script and run it
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Get the path of the example script and then run
+# this script.
+
 paths = examples.get_files("oscillator_system_python")
 osl.run_python_file(paths[0])
 
 #########################################################
-# Execute workflow created by script above.
-#########################################################
+# Run workflow
+# ~~~~~~~~~~~~
+# Run the workflow created by the preceding script.
+
 osl.start()
 
-######################################################################
-# In order to save project to desired location, uncomment lines below:
+#########################################################
+# Optionally save project
+# ~~~~~~~~~~~~~~~~~~~~~~~
+# If you want to save the project to some desired
+# location, uncomment and edit these lines:
+#
 # .. code:: python
 #
 #   path = r'<insert-desired-location>'
 #   osl.save_as(os.path.join(path, "test_project.opf"))
 #
-######################################################################
 
 #########################################################
-# Terminate and cancel project.
-#########################################################
+# Stop and cancel project
+# ~~~~~~~~~~~~~~~~~~~~~~~
+# Stop and cancel the project.
+
 osl.dispose()
 
 #########################################################
-# Generated workflow:
+# View generated workflow
+# ~~~~~~~~~~~~~~~~~~~~~~~
+# This image shows the generated workflow.
+#
 # .. image:: ../../../_static/02_2_python_system.png
 #  :width: 300
 #  :alt: Result of script.
 #
-#########################################################
