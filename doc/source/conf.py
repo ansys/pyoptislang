@@ -69,6 +69,9 @@ html_favicon = ansys_favicon
 # static path
 html_static_path = ["_static"]
 
+# static path
+template_path = ["_templates"]
+
 # The suffix(es) of source filenames.
 source_suffix = [".rst"]
 
