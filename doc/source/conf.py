@@ -132,7 +132,7 @@ html_theme_options = {
         "version_match": get_version_match(__version__),
     },
     "check_switcher": False,
-    "navigation_depth": 1,
+    "navigation_depth": -1,
 }
 
 html_context = {
