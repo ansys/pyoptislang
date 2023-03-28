@@ -4,7 +4,9 @@
 Simple calculator
 -----------------
 
-This example uses the ``simple_calculator.py`` file to create and run
+This example demonstrates how to create a simple calculator flow.
+
+It uses the ``simple_calculator.py`` file to create and run
 a simple flow of four nodes. It then explains how you can optionally
 save a copy of the project to a desired location.
 """
@@ -63,7 +65,7 @@ osl.dispose()
 # ~~~~~~~~~~~~~~~~~~~~~~~
 # This image shows the generated workflow.
 #
-# .. image:: ../../../_static/07_simple_calculator.png
+# .. image:: ../../_static/07_simple_calculator.png
 #  :width: 400
 #  :alt: Result of script.
 #

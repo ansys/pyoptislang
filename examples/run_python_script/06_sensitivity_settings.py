@@ -4,7 +4,9 @@
 Sensitivity settings
 --------------------
 
-This example creates a system named "Sensitivity". It then finds this system and uses
+This example demonstrates how to create and configure sensitivity systems.
+
+It creates a system named "Sensitivity". It then finds this system and uses
 the ``sensitivity_settings.py`` file to change some of the settings. Lastly, it
 explains how you can optionally save a copy of the project to a desired location.
 """
@@ -57,8 +59,8 @@ osl.dispose()
 # View generated workflow
 # ~~~~~~~~~~~~~~~~~~~~~~~
 # This image shows the generated workflow.
-
-# .. image:: ../../../_static/06_sensitivity_settings.png
+#
+# .. image:: ../../_static/06_sensitivity_settings.png
 #  :width: 300
 #  :alt: Result of script.
 #

@@ -4,9 +4,13 @@
 Ten bar truss
 -------------
 
-This example shows how to use the ``evaluate_design()`` method at the
-root level of a project. It uses the reference design first and then
-decreases cross section areas in each iteration to minimize mass, while
+This example demonstrates the evaluation of designs.
+
+It uses the ``evaluate_design()`` method at the
+root level of a project.
+
+First, a reference design is obtained and then
+cross section areas are decreased in each iteration to minimize mass, while
 satisfying defined constraints of maximum stress for two loading conditions.
 
 The example project has been prepared in a certain way to support the
@@ -25,7 +29,7 @@ This image shows the workflow:
 
 #########################################################
 # Workflow:
-# .. image:: ../../../_static/01_ten_bar_truss_evaluate_design.png
+# .. image:: ../../_static/01_ten_bar_truss_evaluate_design.png
 #  :width: 400
 #  :alt: Result of script.
 #

@@ -4,11 +4,12 @@
 Ten bar truss
 -------------
 
-This example uses the ``arsm_ten_bar_truss.py`` file to create an ARSM ten bar
-truss flow in batch. It then uses the ``ten_bar_modify_parameters.py`` and
-``ten_bar_truss_lc2.py`` files to modify the flow. Lastly, it runs the project
-and explains how you can optionally save a copy of the project to a desired
-location.
+This example demonstrates how to to create an ARSM ten bar truss flow in batch mode.
+
+First, the ``arsm_ten_bar_truss.py`` file is used to create an ARSM ten bar
+truss flow. Then the ``ten_bar_modify_parameters.py`` and
+``ten_bar_truss_lc2.py`` files are used to modify the flow. Lastly, the project is
+executed and a copy of the project is saved to a desired location.
 """
 
 #########################################################
@@ -71,8 +72,8 @@ osl.dispose()
 # View generated workflow
 # ~~~~~~~~~~~~~~~~~~~~~~~
 # This image shows the generated workflow.
-
-# .. image:: ../../../_static/01_ten_bar_truss.png
+#
+# .. image:: ../../_static/01_ten_bar_truss.png
 #  :width: 400
 #  :alt: Result of script.
 #

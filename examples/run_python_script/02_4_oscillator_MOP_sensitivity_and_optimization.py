@@ -4,7 +4,9 @@
 Oscillator sensitivity and optimization on MOP
 ----------------------------------------------
 
-This example uses the ``oscillator_sensitivity_mop.py`` file to create a
+This example demonstrates how to create an optimization on MOP flow.
+
+It uses the ``oscillator_sensitivity_mop.py`` file to create a
 sensitivity flow for an oscillator and then uses the
 ``oscillator_optimization_on_mop.py`` file to optimize the MOP
 (Metamodel of Optimal Prognosis) flow. It then runs these flows.
@@ -71,7 +73,7 @@ osl.dispose()
 # ~~~~~~~~~~~~~~~~~~~~~~~
 # This image shows the generated workflow.
 #
-# .. image:: ../../../_static/02_4_oscillator_MOP_sensitivity_and_optimization.png
+# .. image:: ../../_static/02_4_oscillator_MOP_sensitivity_and_optimization.png
 #  :width: 600
 #  :alt: Result of script.
 #

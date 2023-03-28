@@ -4,8 +4,10 @@
 Oscillator robustness
 ---------------------
 
-This example uses the ``oscillator_robustness_arsm.py`` file to create and run a
-robustness flow for an oscillator. It then explains how you can optionally save
+This example demonstrates how to create and run a robustness flow for an oscillator.
+
+It uses the ``oscillator_robustness_arsm.py`` file to create a robustness
+flow for an oscillator. It then explains how you can optionally save
 a copy of the project to a desired location.
 """
 
@@ -64,7 +66,7 @@ osl.dispose()
 # ~~~~~~~~~~~~~~~~~~~~~~~
 # This image shows the generated workflow.
 #
-# .. image:: ../../../_static/02_1_oscillator_robustness.png
+# .. image:: ../../_static/02_1_oscillator_robustness.png
 #  :width: 600
 #  :alt: Result of script.
 #
