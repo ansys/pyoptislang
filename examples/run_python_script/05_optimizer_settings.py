@@ -4,7 +4,9 @@
 Optimizer settings
 ------------------
 
-This example uses the ``optimizer_settings.py`` file to create,
+This example demonstrates how to create and configure optimizer systems.
+
+It uses the ``optimizer_settings.py`` file to create,
 configure, and insert an EA (Evolutionary Algorithm) optimizer
 into the scenery. It then explains how you can optionally save
 a copy of the project to a desired location.
@@ -58,7 +60,7 @@ osl.dispose()
 # ~~~~~~~~~~~~~~~~~~~~~~~
 # This image shows the generated workflow.
 #
-# .. image:: ../../../_static/05_optimizer_settings.png
+# .. image:: ../../_static/05_optimizer_settings.png
 #  :width: 300
 #  :alt: Result of script.
 #

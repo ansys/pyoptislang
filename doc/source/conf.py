@@ -97,7 +97,7 @@ sphinx_gallery_conf = {
     # path to your examples scripts
     "examples_dirs": ["../../examples/"],
     # path where to save gallery generated examples
-    "gallery_dirs": ["examples/gallery_examples"],
+    "gallery_dirs": ["examples"],
     # Pattern to search for example files
     "filename_pattern": r"\.py",
     # Remove the "Download all examples" button from the top level gallery
@@ -132,7 +132,7 @@ html_theme_options = {
         "version_match": get_version_match(__version__),
     },
     "check_switcher": False,
-    "navigation_depth": 1,
+    "navigation_depth": -1,
 }
 
 html_context = {

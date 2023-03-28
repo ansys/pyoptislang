@@ -4,7 +4,9 @@
 Python node and help
 --------------------
 
-This example uses the ``python_node.py`` file to create a Python2 node.
+This example demonstrates how to create workflow components and configure them.
+
+It uses the ``python_node.py`` file to create a Python2 node.
 and perform these tasks:
 
 - Adds some source code.
@@ -67,7 +69,7 @@ osl.dispose()
 # ~~~~~~~~~~~~~~~~~~~~~~~
 # This image shows the generated workflow.
 #
-# .. image:: ../../../_static/04_python_node_and_help.png
+# .. image:: ../../_static/04_python_node_and_help.png
 #  :width: 300
 #  :alt: Result of script.
 #

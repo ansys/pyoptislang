@@ -4,7 +4,9 @@
 Oscillator optimization using EA flow
 -------------------------------------
 
-This example uses the ``oscillator_optimization_ea.py`` file to create and
+This example demonstrates how to create and run a direct optimization.
+
+It uses the ``oscillator_optimization_ea.py`` file to create and
 run a direct optimization for an oscillator with the EA (Evolutionary
 Algorithm) optimizer. It then explains how you can optionally save a copy
 of the project to a desired location.
@@ -66,7 +68,7 @@ osl.dispose()
 # ~~~~~~~~~~~~~~~~~~~~~~~
 # This image shows the generated workflow.
 #
-# .. image:: ../../../_static/02_3_optimization_on_EA.png
+# .. image:: ../../_static/02_3_optimization_on_EA.png
 #  :width: 400
 #  :alt: Result of script.
 #

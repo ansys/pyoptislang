@@ -4,6 +4,8 @@
 ETK Abaqus
 ----------
 
+This example demonstrates how to create a basic text-based solver chain.
+
 This example uses the ``etk_abaqus.py`` file to set up a parametric system
 containing text input, the Abaqus process actor, and the Abaqus ETK output
 actor. It then explains how you can optionally save
@@ -59,7 +61,7 @@ osl.dispose()
 # ~~~~~~~~~~~~~~~~~~~~~~~
 # This image shows the generated workflow.
 #
-# .. image:: ../../../_static/03_etk_abaqus.png
+# .. image:: ../../_static/03_etk_abaqus.png
 #  :width: 400
 #  :alt: Result of script.
 #

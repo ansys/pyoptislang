@@ -8,7 +8,8 @@ for the PyOptiSLang API. Use the search feature or click links to view
 API documentation.
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 4
+   :hidden:
 
    optislang
    project
@@ -16,4 +17,3 @@ API documentation.
    project_parametric
    logging
    utils
-

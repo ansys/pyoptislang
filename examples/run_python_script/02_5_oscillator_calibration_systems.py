@@ -4,7 +4,10 @@
 Oscillator calibration systems
 ------------------------------
 
-This example uses the ``oscillatorcalibration_system_python.py``
+This example demonstrates how to create and solver chains
+using different solver.
+
+It uses the ``oscillatorcalibration_system_python.py``
 and ``oscillatorcalibration_system_ascii.py`` files to create
 parametric systems for oscillator calibration and then runs
 these systems. Lastly, it explains how you can optionally save
@@ -70,7 +73,7 @@ osl.dispose()
 # ~~~~~~~~~~~~~~~~~~~~~~~
 # This image shows the generated workflow.
 #
-# .. image:: ../../../_static/02_5_oscillator_calibration_systems.png
+# .. image:: ../../_static/02_5_oscillator_calibration_systems.png
 #  :width: 400
 #  :alt: Result of script.
 #

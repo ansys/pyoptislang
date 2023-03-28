@@ -4,8 +4,10 @@
 Oscillator parametric system
 ----------------------------
 
-This example uses the ``oscillator_system_python.py`` file to create and
-run parametric system for an oscillator. It then explains how you can optionally
+This example demonstrates how to create and run parametric system for an oscillator.
+
+It uses the ``oscillator_system_python.py`` file to create and run the
+parametric system for an oscillator. It then explains how you can optionally
 save a copy of the project to a desired location.
 """
 
@@ -65,7 +67,7 @@ osl.dispose()
 # ~~~~~~~~~~~~~~~~~~~~~~~
 # This image shows the generated workflow.
 #
-# .. image:: ../../../_static/02_2_python_system.png
+# .. image:: ../../_static/02_2_python_system.png
 #  :width: 300
 #  :alt: Result of script.
 #
