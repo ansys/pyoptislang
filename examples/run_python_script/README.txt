@@ -1,3 +1,10 @@
-Run python script
-=================
-These examples demonstrate using :func:`run_python_script() <ansys.optislang.core.optislang.Optislang.run_python_script>`.
+Run Python scripts
+------------------
+
+These examples demonstrate how to run Python scripts.
+
+.. note::
+   
+   For more information on the Python files for these examples,
+   see the Python files in the corresponding optiSLang tutorials.
+

@@ -4,52 +4,68 @@
 Simple calculator
 -----------------
 
-Create a simple flow of 4 nodes a run this flow then (using ``simple_calculator.py``).
+This example demonstrates how to create a simple calculator flow.
 
-Save optiSLang project into the same folder as this script then.
-More details in python script.
+It uses the ``simple_calculator.py`` file to create and run
+a simple flow of four nodes. It then explains how you can optionally
+save a copy of the project to a desired location.
 """
 
 ####################################################
-# Import necessary modules.
-####################################################
+# Perform required imports
+# ~~~~~~~~~~~~~~~~~~~~~~~~
+# Perform the required imports.
 from ansys.optislang.core import Optislang
 import ansys.optislang.core.examples as examples
 
-#################################################################################
-# Create :class:`Optislang <ansys.optislang.core.optislang.Optislang>` instance.
-#################################################################################
+#########################################################
+# Create optiSLang instance
+# ~~~~~~~~~~~~~~~~~~~~~~~~~
+# Create the optiSLang instance.
+
 osl = Optislang()
 paths = examples.get_files("simple_calculator")
 
 #########################################################
-# Get path of example script and run it.
-#########################################################
+# Get path of example script and run it
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Get the path of the example script and then run this
+# script.
+
 osl.run_python_file(paths[0])
 
 #########################################################
-# Execute workflow created by scripts above.
-#########################################################
+# Run workflow
+# ~~~~~~~~~~~~
+# Run the workflow created by the preceding script.
+
 osl.start()
 
-######################################################################
-# In order to save project to desired location, uncomment lines below:
+#########################################################
+# Optionally save project
+# ~~~~~~~~~~~~~~~~~~~~~~~
+# If you want to save the project to some desired
+# location, uncomment and edit these lines:
+#
 # .. code:: python
 #
 #   path = r'<insert-desired-location>'
 #   osl.save_as(os.path.join(path, "test_project.opf"))
 #
-######################################################################
 
 #########################################################
-# Terminate and cancel project.
-#########################################################
+# Stop and cancel project
+# ~~~~~~~~~~~~~~~~~~~~~~~
+# Stop and cancel the project.
+
 osl.dispose()
 
 #########################################################
-# Generated workflow:
-# .. image:: ../../../_static/07_simple_calculator.png
+# View generated workflow
+# ~~~~~~~~~~~~~~~~~~~~~~~
+# This image shows the generated workflow.
+#
+# .. image:: ../../_static/07_simple_calculator.png
 #  :width: 400
 #  :alt: Result of script.
 #
-#########################################################

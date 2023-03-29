@@ -4,33 +4,55 @@
 Ten bar truss
 -------------
 
-Use ``evaluate_design()`` method at the root level of project. Use reference design at first 
-and then decrease cross section areas in each iteration in order to minimize mass, while 
+This example demonstrates the evaluation of designs.
+
+It uses the ``evaluate_design()`` method at the
+root level of a project.
+
+First, a reference design is obtained and then
+cross section areas are decreased in each iteration to minimize mass, while
 satisfying defined constraints of maximum stress for two loading conditions.
+
+The example project has been prepared in a certain way to support the
+"Design evaluation" use case:
+
+- Workflow components have been created at the root system level.
+- Parameters and responses have been registered at the root system level.
+- Proper workflow components have been connected to the root system using
+  **Receive designs** and **Send back designs** options.
+
+For more information, see the optiSLang user documentation on generating
+workflows.
+
+This image shows the workflow:
 """
 
 #########################################################
-# Used workflow:
-# .. image:: ../../../_static/01_ten_bar_truss_evaluate_design.png
+# Workflow:
+# .. image:: ../../_static/01_ten_bar_truss_evaluate_design.png
 #  :width: 400
 #  :alt: Result of script.
 #
 #########################################################
+
+#########################################################
+# Perform required imports
+# ~~~~~~~~~~~~~~~~~~~~~~~~
+# Perform the required imports.
 
 from pathlib import Path
 import tempfile
 
 import matplotlib.pyplot as plt
 
-####################################################
-# Import necessary modules.
-####################################################
 from ansys.optislang.core import Optislang
 import ansys.optislang.core.examples as examples
 
-#################################################################################
-# Create :class:`Optislang <ansys.optislang.core.optislang.Optislang>` instance.
-#################################################################################
+#########################################################
+# Create optiSLang instance
+# ~~~~~~~~~~~~~~~~~~~~~~~~~
+# Create the optiSLang instance.
+
 example_path = examples.get_files("ten_bar_truss")[1][0]
 tmp_dir = Path(tempfile.mkdtemp())
 file_path = tmp_dir / "evaluate_design_example.opf"
@@ -40,8 +62,10 @@ osl.save_as(file_path)
 print(osl.get_working_dir())
 
 #########################################################
-# Get reference design and evaluate it, extract results.
-#########################################################
+# Evaluate reference design
+# ~~~~~~~~~~~~~~~~~~~~~~~~~
+# Get the reference design, evaluate it, and extract the results.
+
 rs = osl.project.root_system
 parameters_count = len(rs.parameter_manager.get_parameters_names())
 try_decrease_param = [True for i in range(parameters_count)]
@@ -60,12 +84,14 @@ plot_mass_unsuccessfull = []
 plot_max_stress_lc1 = [abs(max(design.responses[1].value, key=abs))]
 plot_max_stress_lc2 = [abs(max(design.responses[2].value, key=abs))]
 
-#########################################################################################
-# Copy last successful design and gradually decrease cross section areas of each truss,
-# store results. If decreasing of cross sectional area leads to violation of constraints,
-# stop decreasing it.
+#########################################################
+# Decrease cross section areas
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Copy the last successful design and gradually decrease
+# cross section areas of each truss, storing the results.
+# If decreasing a cross sectional area leads to violation
+# of constraints, stop decreasing it.
 
-#########################################################################################
 design_count = 1
 while True in try_decrease_param:
     for j in range(parameters_count):
@@ -91,9 +117,12 @@ while True in try_decrease_param:
         plot_max_stress_lc1.append(abs(max(design.responses[1].value, key=abs)))
         plot_max_stress_lc2.append(abs(max(design.responses[2].value, key=abs)))
 
-########################################################################################
-# Extract cross sectional areas, objective and constraints from last successful design.
-########################################################################################
+#########################################################
+# Extract cross sectional areas
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# From the last successful design, extract cross sectional areas, objective,
+# and constraints.
+
 best_design = successfull_designs[-1]
 print("*-----------BEST-DESIGN-PARAMETERS-------------*")
 for parameter in best_design.parameters:
@@ -103,13 +132,17 @@ for objective in best_design.objectives:
     print(objective.name, objective.value)
 
 #########################################################
-# Terminate and cancel project.
-#########################################################
+# Stop and cancel project
+# ~~~~~~~~~~~~~~~~~~~~~~~
+# Stop and cancel the project.
+
 osl.dispose()
 
 #########################################################
-# Plot extracted results.
-#########################################################
+# Plot extracted results
+# ~~~~~~~~~~~~~~~~~~~~~~
+# Plot the extracted results.
+
 fig, axs = plt.subplots(2)
 fig.suptitle("Optimization of ten bar truss cross section areas")
 

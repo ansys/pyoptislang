@@ -73,7 +73,7 @@ html_static_path = ["_static"]
 templates_path = ["_templates"]
 
 # The suffix(es) of source filenames.
-source_suffix = ".rst"
+source_suffix = [".rst"]
 
 # The master toctree document.
 master_doc = "index"
@@ -97,7 +97,7 @@ sphinx_gallery_conf = {
     # path to your examples scripts
     "examples_dirs": ["../../examples/"],
     # path where to save gallery generated examples
-    "gallery_dirs": ["examples/gallery_examples"],
+    "gallery_dirs": ["examples"],
     # Pattern to search for example files
     "filename_pattern": r"\.py",
     # Remove the "Download all examples" button from the top level gallery
@@ -128,11 +128,11 @@ html_theme_options = {
         ("PyAnsys", "https://docs.pyansys.com/"),
     ],
     "switcher": {
-        "json_url": f"https://{cname}/release/versions.json",
+        "json_url": f"https://{cname}/versions.json",
         "version_match": get_version_match(__version__),
     },
-    "navbar_end": ["version-switcher", "theme-switcher", "navbar-icon-links"],
-    "navigation_depth": 1,
+    "check_switcher": False,
+    "navigation_depth": -1,
 }
 
 html_context = {

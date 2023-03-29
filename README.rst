@@ -33,38 +33,56 @@ PyOptiSLang
 
 Overview
 --------
-The PyOptiSLang project is a python wrapper for Ansys optiSLang applicattion. It supports Pythonic
-access to optiSLang to be able to communicate with optiSLang process directly from python.
-The latest ansys-optislang-core package supports:
+PyOptiSLang is a Python wrapper for Ansys optiSLang. It supports Pythonic
+access to optiSLang to be able to communicate with optiSLang directly from Python.
+The latest ``ansys-optislang`` package provides these capabilities:
 
-- Remote connections to optiSLang via TCP/IP.
-- Basic server commands, queries and running of python scripts.
+- Remote connections to optiSLang via TCP/IP
+- Basic server commands, queries, and the running of Python scripts
+
 
 Documentation and issues
 ------------------------
-See the latest release of the `Documentation <https://optislang.docs.pyansys.com>`_ for more detailed
-information on PyOptiSLang. Issues, bug reports, request for new features or other questions can
-be addressed to `PyOptiSLang Issues <https://github.com/pyansys/pyoptislang/issues>`_.
+For comprehensive information on PyOptiSLang, see the latest release
+`documentation <https://optislang.docs.pyansys.com>`_. On the
+`PyOptiSLang Issues <https://github.com/pyansys/pyoptislang/issues>`_ page,
+you can create issues to submit questions, report bugs, and request new features.
+This is the best place to post questions and code.
 
 Installation
 ------------
-The ``ansys-optislang-core`` package currently supports python 3.7 through 3.10 on Windows and Linux.
+The ``ansys-optislang-core`` package supports Python 3.7 through 3.10 on
+Windows and Linux. Three modes of installation are available:
+
+- User installation
+- Developer installation
+- Offline installation
+
+For either a developer or offline installation, consider using a `virtual environment
+<https://docs.python.org/3/library/venv.html>`_.
+
+User installation
+~~~~~~~~~~~~~~~~~
 Install the latest release from `PyPi
-<https://pypi.org/project/ansys-optislang-core/>`_ with:
+<https://pypi.org/project/ansys-optislang-core/>`_ with this command:
 
 .. code::
 
    pip install ansys-optislang-core
 
-Alternatively, install the latest from `PyOptiSLang GitHub
-<https://github.com/pyansys/pyoptislang/issues>`_ via:
+
+Alternatively, install the latest `PyOptiSLang GitHub
+<https://github.com/pyansys/pyoptislang/issues>`_ package with this command:
 
 .. code::
 
    pip install git+https://github.com/pyansys/pyoptislang.git
 
 
-For a local "development" version, install with:
+Developer installation
+~~~~~~~~~~~~~~~~~~~~~~
+If you plan on doing local *development* with GitHub, clone and
+install PyOptiSLang with this code:
 
 .. code::
 
@@ -72,81 +90,100 @@ For a local "development" version, install with:
    cd pyoptislang
    pip install -e .
 
-This will allow you to install the PyOptiSLang ``ansys-optislang-core`` module
-and modify it locally and have the changes reflected in your setup
+
+A developer installation allows you to edit ``ansys-optislang-core``
+files locally. Any changes that you make are reflected in your setup
 after restarting the Python kernel.
 
 Offline installation
 ~~~~~~~~~~~~~~~~~~~~
-If the machine, where the installation is to be performed doesn't have internet connection, the
-recommended way of installing PyOptiSLang is downloading archive from `Releases Page
-<https://github.com/pyansys/pyoptislang/releases>`_ for your corresponding setup.
+Using a wheelhouse can be helpful if you work for a company that restricts access to
+external networks. From the `Releases <https://github.com/pyansys/pyoptislang/releases>`_
+page in the PyOptiSLang repository, you can find the wheelhouses for a particular release in its
+assets and download the wheelhouse corresponding to your setup.
 
-For example, on Linux with Python 3.7, unzip it and install it with the following:
+You can then install PyOptiSLang and all of its dependencies from one single entry point
+that can be shared internally, which eases the security review of the PyOptiSLang package content.
+
+For example, on Linux with Python 3.7, unzip the wheelhouse and install PyOptiSLang with code
+like this:
 
 .. code:: bash
 
     unzip PyOptiSLang-v0.1.0-wheelhouse-Linux-3.7.zip wheelhouse
     pip install ansys-optislang-core -f wheelhouse --no-index --upgrade --ignore-installed
 
-If you're on Windows with Python 3.9, unzip to a wheelhouse directory and install using the same
-command as above.
+If you're on Windows with Python 3.9, unzip the wheelhouse to a wheelhouse directory and
+then install using the same ``pip`` command as in the preceding Linux code example.
 
 Dependencies
 --------------
-Local licensed copy or remote instance of optiSLang needs to be installed. The first supported
-version is 2023R1.
+You must have a local licensed copy or a remote instance of optiSLang installed. The first
+supported version is 2023 R1.
 
 Getting started
 ---------------
+Using the ``Optislang`` class, you can either launch optiSLang locally or connect to a
+remote optiSLang instance.
 
 Launch optiSLang locally
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
-You can launch optiSLang locally using ``Optislang()``, both ``host`` and ``port`` parameters
-must be ``None``, other parameters can be optionally specified.:
+For launching optiSLang locally, both the ``host`` and ``port`` parameters in the ``Optislang``
+class must be set to ``None``, which are their defaults. Other parameters can optionally
+be specified.
 
 .. code:: python
 
     from ansys.optislang.core import Optislang
+
     osl = Optislang()
     osl.dispose()
 
-Connect to a remote optiSLang server
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-For remote connection, it is assumed that the optiSLang server process is already running
-on remote (or local) host. In that case, the host and port must be specified and parameters
-related to the execution of the new optiSLang server are ignored.:
+Connect to a remote optiSLang instance
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+For remote connection, it is assumed that an optiSLang instance is already running on
+a remote (or local) host as a server. In this case, you must specify the ``host`` and ``port``
+parameters. Parameters related to the execution of a new optiSLang instance are ignored.
 
 .. code:: python
 
     from ansys.optislang.core import Optislang
+
     host = "127.0.0.1"
     port = 5310
     osl = Optislang(host=host, port=port)
     osl.dispose()
 
+
 Basic usage
 ~~~~~~~~~~~
+This code shows how to launch optiSLang locally, open and run a Python
+script file, save the results to a new project, and then close the
+connection:
 
 .. code:: python
 
     from ansys.optislang.core import Optislang
+
     osl = Optislang()
     file_path = r"C:\Users\Username\my_scripts\myscript.py"
     osl.run_python_file(path=script_path)
     osl.save_copy("MyNewProject.opf")
     osl.dispose()
 
+
 License and acknowledgments
 ---------------------------
 
 PyOptiSLang is licensed under the MIT license.
 
-This module, ``ansys-optislang-core`` makes no commercial claim over Ansys whatsoever. This module
-extends the functionality of ``optiSLang`` by adding a Python interface to optiSLang without
+PyOptiSLang makes no commercial claim over Ansys whatsoever. This library extends the
+functionality of Ansys optiSLang by adding a Python interface to optiSLang without
 changing the core behavior or license of the original software. The use of the interactive control
-of ``PyOptiSLang`` requires a legally licensed local copy of optiSLang. For more information about
-optiSLang, visit the `optiSLang <https://www.ansys.com/products/connect/ansys-optislang>`_ page
-on the Ansys website.
+of PyOptiSLang requires a legally licensed local copy of optiSLang.
+
+For more information on optiSLang, see the `Ansys optiSLang <https://www.ansys.com/products/connect/ansys-optislang>`_
+page on the Ansys website.

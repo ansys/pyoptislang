@@ -3,11 +3,13 @@
 =============
 API reference
 =============
-This section gives an overview of the API of several public PyOptiSLang
-classes, functions, and attributes. Use the search feature or click links to view API documentation.
+This section provides descriptions of classes, functions, and attributes
+for the PyOptiSLang API. Use the search feature or click links to view
+API documentation.
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 4
+   :hidden:
 
    optislang
    project
@@ -15,6 +17,3 @@ classes, functions, and attributes. Use the search feature or click links to vie
    project_parametric
    logging
    utils
-
-
-   

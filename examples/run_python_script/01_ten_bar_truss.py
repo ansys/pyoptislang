@@ -4,27 +4,36 @@
 Ten bar truss
 -------------
 
-Create ARSM ten_bar_truss flow in batch (using ``arsm_ten_bar_truss.py``),
-modify this flow (using ``ten_bar_modify_parameters.py`` and ``ten_bar_truss_lc2.py``),
-run this project (and optionally save_copy). More details in individual python scripts and
-ten bar truss example in optiSLang tutorial section.
+This example demonstrates how to to create an ARSM ten bar truss flow in batch mode.
+
+First, the ``arsm_ten_bar_truss.py`` file is used to create an ARSM ten bar
+truss flow. Then the ``ten_bar_modify_parameters.py`` and
+``ten_bar_truss_lc2.py`` files are used to modify the flow. Lastly, the project is
+executed and a copy of the project is saved to a desired location.
 """
 
-####################################################
-# Import necessary modules.
-####################################################
+#########################################################
+# Perform required imports
+# ~~~~~~~~~~~~~~~~~~~~~~~~
+# Perform the required imports.
+
 from ansys.optislang.core import Optislang
 import ansys.optislang.core.examples as examples
 
-#################################################################################
-# Create :class:`Optislang <ansys.optislang.core.optislang.Optislang>` instance.
-#################################################################################
+#########################################################
+# Create optiSLang instance
+# ~~~~~~~~~~~~~~~~~~~~~~~~~
+# Create the optiSLang instance.
+
 osl = Optislang()
 print(osl)
 
 #########################################################
-# Get paths of example scripts and run them.
-#########################################################
+# Get paths of example scripts and run them
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Get the paths of the example scripts and then run these
+# scripts.
+
 paths1 = examples.get_files("arsm_ten_bar_truss")
 paths2 = examples.get_files("ten_bar_modify_parameters")
 paths3 = examples.get_files("ten_bar_truss_lc2")
@@ -34,28 +43,37 @@ osl.run_python_file(paths2[0])
 osl.run_python_file(paths3[0])
 
 #########################################################
-# Execute workflow created by scripts above.
-#########################################################
+# Run workflow
+# ~~~~~~~~~~~~
+# Run the workflow created by the preceding scripts.
+
 osl.start()
 
-######################################################################
-# In order to save project to desired location, uncomment lines below:
+#########################################################
+# Optionally save project
+# ~~~~~~~~~~~~~~~~~~~~~~~
+# If you want to save the project to some desired location,
+# uncomment and edit these lines:
+#
 # .. code:: python
 #
 #   path = r'<insert-desired-location>'
 #   osl.save_as(os.path.join(path, "test_project.opf"))
 #
-######################################################################
 
 #########################################################
-# Terminate and cancel project.
-#########################################################
+# Stop and cancel project
+# ~~~~~~~~~~~~~~~~~~~~~~~
+# Stop and cancel the project.
+
 osl.dispose()
 
 #########################################################
-# Generated workflow:
-# .. image:: ../../../_static/01_ten_bar_truss.png
+# View generated workflow
+# ~~~~~~~~~~~~~~~~~~~~~~~
+# This image shows the generated workflow.
+#
+# .. image:: ../../_static/01_ten_bar_truss.png
 #  :width: 400
 #  :alt: Result of script.
 #
-#########################################################
