@@ -127,7 +127,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: "Release to the public PyPI repository"
-        uses: pyansys/actions/release-pypi-private@v4
+        uses: pyansys/actions/release-pypi-public@v4
         with:
           library-name: ${{ env.PACKAGE_NAME }}
           twine-token: ${{ secrets.PYPI_TOKEN }}
