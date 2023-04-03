@@ -1,6 +1,6 @@
 PyOptiSLang
 ===========
-|pyansys| |python| |pypi| |GH-CI| |codecov| |MIT| |black|
+|pyansys| |python| |pypi| |PyPIact| |GH-CI| |codecov| |MIT| |black|
 
 .. |pyansys| image:: https://img.shields.io/badge/Py-Ansys-ffc107.svg?logo=data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAIAAACQkWg2AAABDklEQVQ4jWNgoDfg5mD8vE7q/3bpVyskbW0sMRUwofHD7Dh5OBkZGBgW7/3W2tZpa2tLQEOyOzeEsfumlK2tbVpaGj4N6jIs1lpsDAwMJ278sveMY2BgCA0NFRISwqkhyQ1q/Nyd3zg4OBgYGNjZ2ePi4rB5loGBhZnhxTLJ/9ulv26Q4uVk1NXV/f///////69du4Zdg78lx//t0v+3S88rFISInD59GqIH2esIJ8G9O2/XVwhjzpw5EAam1xkkBJn/bJX+v1365hxxuCAfH9+3b9/+////48cPuNehNsS7cDEzMTAwMMzb+Q2u4dOnT2vWrMHu9ZtzxP9vl/69RVpCkBlZ3N7enoDXBwEAAA+YYitOilMVAAAAAElFTkSuQmCC
    :target: https://docs.pyansys.com/
@@ -10,9 +10,11 @@ PyOptiSLang
    :target: https://pypi.org/project/pyoptislang/
    :alt: Python
 
-.. |pypi| image:: https://img.shields.io/pypi/v/pyoptislang.svg?logo=python&logoColor=white
-   :target: https://pypi.org/project/pyoptislang
-   :alt: PyPI
+.. |pypi| image:: https://img.shields.io/pypi/v/ansys-optislang-core.svg?logo=python&logoColor=white
+   :target: https://pypi.org/project/ansys-optislang-core/
+
+.. |PyPIact| image:: https://img.shields.io/pypi/dm/ansys-optislang-core.svg?label=PyPI%20downloads
+   :target: https://pypi.org/project/ansys-optislang-core/
 
 .. |codecov| image:: https://codecov.io/gh/pyansys/pyoptislang/branch/main/graph/badge.svg
    :target: https://codecov.io/gh/pyansys/pyoptislang
@@ -34,11 +36,17 @@ PyOptiSLang
 Overview
 --------
 PyOptiSLang is a Python wrapper for Ansys optiSLang. It supports Pythonic
-access to optiSLang to be able to communicate with optiSLang directly from Python.
+access to Ansys optiSLang to be able to communicate with Ansys optiSLang directly from Python.
 The latest ``ansys-optislang`` package provides these capabilities:
 
-- Remote connections to optiSLang via TCP/IP
-- Basic server commands, queries, and the running of Python scripts
+- Starting and managing local instances of Ansys optiSLang
+- Remote connections to Ansys optiSLang instances via TCP/IP
+- Create new Ansys optiSLang project	
+- Open existing Ansys optiSLang project
+- Control Ansys optiSLang project execution
+- Save Ansys optiSLang project
+- Execute classic Ansys optiSLang Python API script on backend side
+- Evaluate designs on root project level
 
 
 Documentation and issues
