@@ -1,0 +1,166 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+    types: [opened, reopened, synchronize, ready_for_review]
+  release:
+    types: [published]
+  workflow_dispatch:
+
+env:
+  MAIN_PYTHON_VERSION: "3.8"
+  DOCUMENTATION_CNAME: 'saf_aft_demo.docs.solutions.ansys.com'
+  POETRY_VERSION: "1.4"
+  TOX_VERSION: "4.4.11"
+  POETRY_HTTP_BASIC_SOLUTIONS_PRIVATE_PYPI_USERNAME: "PAT"
+  POETRY_HTTP_BASIC_SOLUTIONS_PRIVATE_PYPI_PASSWORD: ${{ secrets.SOLUTIONS_PRIVATE_PYPI_PAT }}
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+
+  # check-doc-style:
+  #   if: |
+  #     github.event_name == 'pull_request' &&
+  #     github.event.pull_request.draft == false ||
+  #     github.event_name == 'push'
+  #   name: Check documentation style
+  #   runs-on: [ubuntu-latest]
+  #   steps:
+  #     - name: Check documentation style
+  #       uses: Solution-Applications/actions/check-doc-style@v2.1.0
+  #       with:
+  #         gh-token: ${{ secrets.GITHUB_TOKEN }}
+
+  # build-doc:
+  #   if: |
+  #     github.event_name == 'pull_request' &&
+  #     github.event.pull_request.draft == false ||
+  #     github.event_name == 'push'
+  #   name: Build documentation
+  #   runs-on: [ubuntu-latest]
+  #   needs: [check-doc-style]
+  #   steps:
+  #     - name: Build documentation
+  #       uses: Solution-Applications/actions/build-doc@v2.1.0
+  #       with:
+  #         python-version: ${{ env.MAIN_PYTHON_VERSION }}
+  #         poetry-version: ${{ env.POETRY_VERSION }}
+  #         documentation-artifact: html-documentation
+  #         dependencies-source: build-system
+
+  # deploy-doc:
+  #   if: |
+  #     github.event_name == 'push'
+  #   name: Deploy documentation
+  #   runs-on: [ubuntu-latest]
+  #   needs: [build-doc]
+  #   steps:
+  #     - name: Deploy documentation
+  #       uses: Solution-Applications/actions/deploy-doc@v2.1.0
+  #       with:
+  #         gh-token: ${{ secrets.WORKFLOW_TOKEN }}
+  #         documentation-artifact: html-documentation
+  #         cname: ${{ env.DOCUMENTATION_CNAME }}
+  #         python-version: ${{ env.MAIN_PYTHON_VERSION }}
+  #         render-last: 10
+  #         short-version: false
+
+  # deploy-dev-doc:
+  #   if: |
+  #     github.event_name == 'push'
+  #   name: Deploy development documentation
+  #   runs-on: ubuntu-latest
+  #   needs: [build-doc]
+  #   steps:
+  #     - name: Deploy the development documentation
+  #       uses: pyansys/actions/doc-deploy-dev@v3.0.8
+  #       with:
+  #         cname: ${{ env.DOCUMENTATION_CNAME }}
+  #         token: ${{ secrets.WORKFLOW_TOKEN }}
+  #         doc-artifact-name: html-documentation
+
+  check-copyright:
+    if: |
+      github.event_name == 'pull_request' &&
+      github.event.pull_request.draft == false 
+    name: Check copyright
+    runs-on: [ubuntu-latest]
+    steps:
+      - name: Check copyright
+        uses: Solution-Applications/actions/check-copyright@v2.1.0
+        with:
+          gh-token: ${{ secrets.WORKFLOW_TOKEN }}
+
+  check-code-style:
+    if: |
+      github.event_name == 'pull_request' &&
+      github.event.pull_request.draft == false 
+    name: Check code style
+    runs-on: [ubuntu-latest]
+    steps:
+      - name: Check code style
+        uses: Solution-Applications/actions/check-code-style@v2.1.0
+        with:
+          python-version: ${{ env.MAIN_PYTHON_VERSION }}
+          tox-version: ${{ env.TOX_VERSION }}
+          
+  build:
+    if: |
+      github.event.pull_request.draft == false
+    name: Build 
+    runs-on: [windows-latest]
+    steps:
+      - name: Build
+        uses: Solution-Applications/actions/build@v2.1.0
+        with:
+          python-version: ${{ env.MAIN_PYTHON_VERSION }}
+          poetry-version: ${{ env.POETRY_VERSION }}
+          solutions-pypi-token: ${{ secrets.SOLUTIONS_PRIVATE_PYPI_PAT }}
+          artifact-name: wheel
+          run-in-venv: false
+          dependencies-source: build-system
+          retention-days: 7
+          
+  run-tests:
+    if: |
+      github.event_name == 'pull_request' &&
+      github.event.pull_request.draft == false 
+    name: Run tests
+    runs-on: [windows-latest]
+    strategy:
+      matrix:
+        python-version: ['3.8', '3.9', '3.10']
+      fail-fast: false
+    steps:
+      - name: Run tests
+        uses: Solution-Applications/actions/run-tests@v2.1.0
+        with:
+          python-version: ${{ matrix.python-version }}
+          poetry-version: ${{ env.POETRY_VERSION }}
+          check-coverage-ratio: false
+          min-coverage-ratio: 80
+          run-in-venv: true
+          retention-days: 7
+
+  release:
+    if: |
+      github.event_name == 'release'
+    name: Release
+    needs: [build]
+    runs-on: [ubuntu-latest]
+    steps:
+      - name: Release
+        uses: Solution-Applications/actions/release@v2.1.0
+        with:
+          python-version: ${{ env.MAIN_PYTHON_VERSION }}
+          gh-token: ${{ secrets.WORKFLOW_TOKEN }}
+          solutions-pypi-token: ${{ secrets.SOLUTIONS_PRIVATE_PYPI_PAT }}
+          solutions-pypi-repository-url: https://pkgs.dev.azure.com/pyansys/_packaging/ansys-solutions/pypi/upload/
