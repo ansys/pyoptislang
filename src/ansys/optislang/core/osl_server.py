@@ -90,6 +90,79 @@ class OslServer(ABC):
         pass
 
     @abstractmethod
+    def get_actor_state(self, uid: str) -> Dict:  # pragma: no cover
+        """Get actor state.
+
+        Parameters
+        ----------
+        uid : str
+            Actor uid.
+        Returns
+        -------
+        Dict
+            Actor state.
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        pass
+
+    @abstractmethod
+    def get_actor_status_info(self, uid: str, hid: str) -> Dict:  # pragma: no cover
+        """Get status info of actor defined by uid.
+
+        Parameters
+        ----------
+        uid : str
+            Actor uid.
+        Returns
+        -------
+        Dict
+            Actor status info.
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        pass
+
+    @abstractmethod
+    def get_actor_supports(self, uid: str, feature_name: str) -> bool:  # pragma: no cover
+        """Get supported features of actor defined by uid.
+
+        Parameters
+        ----------
+        uid : str
+            Actor uid.
+        feature_name : str
+            Name of the feature.
+
+        Returns
+        -------
+        bool
+            Whether the given feature is supported.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        pass
+
+    @abstractmethod
     def get_actor_properties(self, uid: str) -> Dict:  # pragma: no cover
         """Get properties of actor defined by uid.
 
@@ -115,13 +188,136 @@ class OslServer(ABC):
         pass
 
     @abstractmethod
+    def get_full_project_status_info(self) -> Dict:  # pragma: no cover
+        """Get full project status info.
+
+        Returns
+        -------
+        Dict
+            Full project status info.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        pass
+
+    @abstractmethod
+    def get_full_project_tree(self) -> Dict:  # pragma: no cover
+        """Get full project tree.
+
+        Returns
+        -------
+        Dict
+            Dictionary of full project tree without properties.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        pass
+
+    @abstractmethod
     def get_full_project_tree_with_properties(self) -> Dict:  # pragma: no cover
         """Get full project tree with properties..
 
         Returns
         -------
         Dict
-            Properties of actor defined by uid.
+            Dictionary of full project tree with properties.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        pass
+
+    @abstractmethod
+    def get_hpc_licensing_forwarded_environment(self, uid: str) -> Dict:  # pragma: no cover
+        """Get hpc licensing forwarded environment for certain actor.
+
+        Parameters
+        ----------
+        uid : str
+            Actor uid.
+
+        Returns
+        -------
+        Dict
+            Dictionary with hpc licensing forwarded environment for certain actor.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        pass
+
+    @abstractmethod
+    def get_input_slot_value(self, uid: str, hid: str, slot_name: str) -> Dict:  # pragma: no cover
+        """Get input slot value of actor defined by uid.
+
+        Parameters
+        ----------
+        uid : str
+            Actor uid.
+        hid: str
+            Hid entry.
+        slot_name: str
+            Slot name.
+
+        Returns
+        -------
+        Dict
+            Input slot value of the actor.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        pass
+
+    @abstractmethod
+    def get_output_slot_value(self, uid: str, hid: str, slot_name: str) -> Dict:  # pragma: no cover
+        """Get output slot value of actor defined by uid.
+
+        Parameters
+        ----------
+        uid : str
+            Actor uid.
+        hid: str
+            Hid entry.
+        slot_name: str
+            Slot name.
+
+        Returns
+        -------
+        Dict
+            Output slot value of the actor.
 
         Raises
         ------
@@ -267,6 +463,86 @@ class OslServer(ABC):
         str
             optiSLang project status. If no project is loaded in the optiSLang,
             returns ``None``.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        pass
+
+    @abstractmethod
+    def get_project_tree_systems(self) -> Dict:  # pragma: no cover
+        """Get project tree systems without properties.
+
+        Returns
+        -------
+        Dict
+            Dictionary of project tree systems without properties.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        pass
+
+    @abstractmethod
+    def get_project_tree_systems_with_properties(self) -> Dict:  # pragma: no cover
+        """Get project tree systems with properties.
+
+        Returns
+        -------
+        Dict
+            Dictionary of project tree systems with properties.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        pass
+
+    @abstractmethod
+    def get_server_is_alive(self) -> bool:  # pragma: no cover
+        """Get info whether the server is alive.
+
+        Returns
+        -------
+        bool
+            Whether the server is alive.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        pass
+
+    @abstractmethod
+    def get_systems_status_info(self) -> Dict:  # pragma: no cover
+        """Get project status info, including systems only.
+
+        Returns
+        -------
+        Dict
+            Project status info including systems only.
 
         Raises
         ------

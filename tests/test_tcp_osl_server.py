@@ -331,12 +331,210 @@ def test_get_actor_properties(uid, expected):
     tcp_osl_server.dispose()
 
 
+@pytest.mark.parametrize(
+    "uid, expected",
+    [
+        ("3577cb69-15b9-4ad1-a53c-ac8af8aaea82", dict),
+        ("3577cb69-15b9-4ad1-a53c-ac8af8aaea83", errors.OslCommandError),
+    ],
+)
+def test_get_actor_state(uid, expected):
+    """Test ``get_actor_state``."""
+    time.sleep(2)
+    osl_server_process = OslServerProcess(
+        shutdown_on_finished=False, project_path=parametric_project
+    )
+    osl_server_process.start()
+    time.sleep(5)
+    tcp_osl_server = tos.TcpOslServer(host=_host, port=_port)
+    if expected == errors.OslCommandError:
+        with pytest.raises(expected):
+            state = tcp_osl_server.get_actor_state(uid)
+    else:
+        state = tcp_osl_server.get_actor_state(uid)
+        print(state)
+        assert isinstance(state, expected)
+    tcp_osl_server.shutdown()
+    tcp_osl_server.dispose()
+
+
+@pytest.mark.parametrize(
+    "uid, expected",
+    [
+        ("3577cb69-15b9-4ad1-a53c-ac8af8aaea82", dict),
+        ("3577cb69-15b9-4ad1-a53c-ac8af8aaea83", errors.OslCommandError),
+    ],
+)
+def test_get_actor_status_info(uid, expected):
+    """Test ``get_actor_status_info``."""
+    time.sleep(2)
+    osl_server_process = OslServerProcess(
+        shutdown_on_finished=False, project_path=parametric_project
+    )
+    osl_server_process.start()
+    time.sleep(5)
+    tcp_osl_server = tos.TcpOslServer(host=_host, port=_port)
+    if expected == errors.OslCommandError:
+        with pytest.raises(expected):
+            status_info = tcp_osl_server.get_actor_status_info(uid, "0")
+    else:
+        status_info = tcp_osl_server.get_actor_status_info(uid, "0")
+        assert isinstance(status_info, expected)
+    tcp_osl_server.shutdown()
+    tcp_osl_server.dispose()
+
+
+@pytest.mark.parametrize(
+    "uid, feature_name, expected",
+    [
+        ("3577cb69-15b9-4ad1-a53c-ac8af8aaea82", "can_finalize", bool),
+        ("3577cb69-15b9-4ad1-a53c-ac8af8aaea82", "invalid_input", errors.OslCommandError),
+        ("3577cb69-15b9-4ad1-a53c-ac8af8aaea83", "can_finalize", errors.OslCommandError),
+    ],
+)
+def test_get_actor_supports(uid, feature_name, expected):
+    """Test ``get_actor_status_info``."""
+    time.sleep(2)
+    osl_server_process = OslServerProcess(
+        shutdown_on_finished=False, project_path=parametric_project
+    )
+    osl_server_process.start()
+    time.sleep(5)
+    tcp_osl_server = tos.TcpOslServer(host=_host, port=_port)
+    if expected == errors.OslCommandError:
+        with pytest.raises(expected):
+            status_info = tcp_osl_server.get_actor_supports(uid, feature_name)
+    else:
+        status_info = tcp_osl_server.get_actor_supports(uid, feature_name)
+        assert isinstance(status_info, expected)
+    tcp_osl_server.shutdown()
+    tcp_osl_server.dispose()
+
+
+def test_get_full_project_status_info(
+    osl_server_process: OslServerProcess, tcp_osl_server: tos.TcpOslServer
+):
+    """Test ``get_full_project_status_info``."""
+    status_info = tcp_osl_server.get_full_project_status_info()
+    tcp_osl_server.shutdown()
+    tcp_osl_server.dispose()
+    assert isinstance(status_info, dict)
+    assert bool(status_info)
+
+
+def test_get_full_project_tree(
+    osl_server_process: OslServerProcess, tcp_osl_server: tos.TcpOslServer
+):
+    """Test ``get_full_project_tree``."""
+    project_tree = tcp_osl_server.get_full_project_tree()
+    tcp_osl_server.shutdown()
+    tcp_osl_server.dispose()
+    assert isinstance(project_tree, dict)
+    assert bool(project_tree)
+
+
 def test_get_full_project_tree_with_properties(
     osl_server_process: OslServerProcess, tcp_osl_server: tos.TcpOslServer
 ):
     """Test `get_full_project_tree_with_properties`."""
     project_tree = tcp_osl_server.get_full_project_tree_with_properties()
     assert isinstance(project_tree, dict)
+    tcp_osl_server.shutdown()
+    tcp_osl_server.dispose()
+
+
+def test_get_hpc_licensing_forwarded_environment():
+    """Test ``get_hpc_licensing_forwarded_environment``."""
+    time.sleep(2)
+    osl_server_process = OslServerProcess(
+        shutdown_on_finished=False, project_path=parametric_project
+    )
+    osl_server_process.start()
+    time.sleep(5)
+    tcp_osl_server = tos.TcpOslServer(host=_host, port=_port)
+    hpc_licensing = tcp_osl_server.get_hpc_licensing_forwarded_environment(
+        "3577cb69-15b9-4ad1-a53c-ac8af8aaea82"
+    )
+    tcp_osl_server.shutdown()
+    tcp_osl_server.dispose()
+    assert isinstance(hpc_licensing, dict)
+
+
+@pytest.mark.parametrize(
+    "uid, hid, slot_name, expected",
+    [
+        ("3577cb69-15b9-4ad1-a53c-ac8af8aaea82", "0", "OVar", dict),
+        ("3577cb69-15b9-4ad1-a53c-ac8af8aaea82", "invalid", "OVar", errors.OslCommandError),
+        ("3577cb69-15b9-4ad1-a53c-ac8af8aaea82", "0", "invalid", errors.OslCommandError),
+        ("3577cb69-15b9-4ad1-a53c-ac8af8aaea83", "0", "OVar", errors.OslCommandError),
+    ],
+)
+def test_get_input_slot_value(uid, hid, slot_name, expected):
+    """Test ``get_input_slot_value``."""
+    time.sleep(2)
+    osl_server_process = OslServerProcess(
+        shutdown_on_finished=False, project_path=parametric_project
+    )
+    osl_server_process.start()
+    time.sleep(5)
+    tcp_osl_server = tos.TcpOslServer(host=_host, port=_port)
+    if expected == errors.OslCommandError:
+        with pytest.raises(expected):
+            input_slot_value = tcp_osl_server.get_input_slot_value(uid, hid, slot_name)
+    else:
+        input_slot_value = tcp_osl_server.get_input_slot_value(uid, hid, slot_name)
+        assert isinstance(input_slot_value, expected)
+        assert bool(input_slot_value)
+    tcp_osl_server.shutdown()
+    tcp_osl_server.dispose()
+
+
+@pytest.mark.parametrize(
+    "uid, hid, slot_name, expected",
+    [
+        ("3577cb69-15b9-4ad1-a53c-ac8af8aaea82", "0", "var", dict),
+        ("3577cb69-15b9-4ad1-a53c-ac8af8aaea82", "invalid", "var", errors.OslCommandError),
+        ("3577cb69-15b9-4ad1-a53c-ac8af8aaea82", "0", "invalid", errors.OslCommandError),
+        ("3577cb69-15b9-4ad1-a53c-ac8af8aaea83", "0", "var", errors.OslCommandError),
+    ],
+)
+def test_get_output_slot_value(uid, hid, slot_name, expected):
+    """Test ``get_output_slot_value``."""
+    time.sleep(2)
+    osl_server_process = OslServerProcess(
+        shutdown_on_finished=False, project_path=parametric_project
+    )
+    osl_server_process.start()
+    time.sleep(5)
+    tcp_osl_server = tos.TcpOslServer(host=_host, port=_port)
+    if expected == errors.OslCommandError:
+        with pytest.raises(expected):
+            output_slot_value = tcp_osl_server.get_output_slot_value(uid, hid, slot_name)
+    else:
+        output_slot_value = tcp_osl_server.get_output_slot_value(uid, hid, slot_name)
+        assert isinstance(output_slot_value, expected)
+        assert bool(output_slot_value)
+    tcp_osl_server.shutdown()
+    tcp_osl_server.dispose()
+
+
+def test_get_project_tree_systems(
+    osl_server_process: OslServerProcess, tcp_osl_server: tos.TcpOslServer
+):
+    """Test `get_project_tree_systems`."""
+    project_tree_systems = tcp_osl_server.get_project_tree_systems()
+    tcp_osl_server.shutdown()
+    tcp_osl_server.dispose()
+    assert isinstance(project_tree_systems, dict)
+    assert bool(dict)
+
+
+def test_get_project_tree_systems_with_properties(
+    osl_server_process: OslServerProcess, tcp_osl_server: tos.TcpOslServer
+):
+    """Test `get_project_tree_systems_with_properties`."""
+    project_tree_systems = tcp_osl_server.get_project_tree_systems_with_properties()
+    assert isinstance(project_tree_systems, dict)
     tcp_osl_server.shutdown()
     tcp_osl_server.dispose()
 
@@ -423,6 +621,16 @@ def test_get_project_status(osl_server_process: OslServerProcess, tcp_osl_server
     assert bool(project_status)
 
 
+def test_get_server_is_alive(
+    osl_server_process: OslServerProcess, tcp_osl_server: tos.TcpOslServer
+):
+    """Test ``get_server_is_alive``."""
+    is_alive = tcp_osl_server.get_server_is_alive()
+    tcp_osl_server.shutdown()
+    tcp_osl_server.dispose()
+    assert isinstance(is_alive, bool)
+
+
 def test_get_set_timeout(osl_server_process: OslServerProcess, tcp_osl_server: tos.TcpOslServer):
     """Test ``get_get_timeout``."""
     timeout = tcp_osl_server.get_timeout()
@@ -434,6 +642,17 @@ def test_get_set_timeout(osl_server_process: OslServerProcess, tcp_osl_server: t
     assert new_timeout == 15
     tcp_osl_server.shutdown()
     tcp_osl_server.dispose()
+
+
+def test_get_systems_status_info(
+    osl_server_process: OslServerProcess, tcp_osl_server: tos.TcpOslServer
+):
+    """Test `get_project_tree_systems_with_properties`."""
+    systems_status_info = tcp_osl_server.get_systems_status_info()
+    tcp_osl_server.shutdown()
+    tcp_osl_server.dispose()
+    assert isinstance(systems_status_info, dict)
+    assert bool(dict)
 
 
 def test_get_working_dir(osl_server_process: OslServerProcess, tcp_osl_server: tos.TcpOslServer):
