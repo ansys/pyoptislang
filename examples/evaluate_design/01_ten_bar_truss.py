@@ -79,10 +79,13 @@ if design.feasibility:
 else:
     raise ValueError("Constraints not satisfied for reference design, do not start example.")
 
-plot_mass_successfull = [(1, design.objectives[0].value)]
+objectives = {obj.name: obj.value for obj in design.objectives}
+responses = {resp.name: resp.value for resp in design.responses}
+plot_mass_successfull = [(1, objectives["obj"])]
 plot_mass_unsuccessfull = []
-plot_max_stress_lc1 = [abs(max(design.responses[1].value, key=abs))]
-plot_max_stress_lc2 = [abs(max(design.responses[2].value, key=abs))]
+
+plot_max_stress_lc1 = [abs(max(responses["stress"], key=abs))]
+plot_max_stress_lc2 = [abs(max(responses["stress_lc2"], key=abs))]
 
 #########################################################
 # Decrease cross section areas
@@ -109,13 +112,17 @@ while True in try_decrease_param:
         rs.evaluate_design(design)
         if design.feasibility:
             successfull_designs.append(design)
-            plot_mass_successfull.append((design_count, design.objectives[0].value))
+            objectives = {obj.name: obj.value for obj in design.objectives}
+            responses = {resp.name: resp.value for resp in design.responses}
+            plot_mass_successfull.append((design_count, objectives["obj"]))
         else:
             unsuccessfull_designs.append(design)
+            objectives = {obj.name: obj.value for obj in design.objectives}
+            responses = {resp.name: resp.value for resp in design.responses}
             try_decrease_param[j] = False
-            plot_mass_unsuccessfull.append((design_count, design.objectives[0].value))
-        plot_max_stress_lc1.append(abs(max(design.responses[1].value, key=abs)))
-        plot_max_stress_lc2.append(abs(max(design.responses[2].value, key=abs)))
+            plot_mass_unsuccessfull.append((design_count, objectives["obj"]))
+        plot_max_stress_lc1.append(abs(max(responses["stress"], key=abs)))
+        plot_max_stress_lc2.append(abs(max(responses["stress_lc2"], key=abs)))
 
 #########################################################
 # Extract cross sectional areas
