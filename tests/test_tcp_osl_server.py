@@ -338,8 +338,8 @@ def test_get_actor_properties(uid, expected):
         ("3577cb69-15b9-4ad1-a53c-ac8af8aaea83", errors.OslCommandError),
     ],
 )
-def test_get_actor_state(uid, expected):
-    """Test ``get_actor_state``."""
+def test_get_actor_states(uid, expected):
+    """Test ``get_actor_states``."""
     time.sleep(2)
     osl_server_process = OslServerProcess(
         shutdown_on_finished=False, project_path=parametric_project
@@ -349,11 +349,11 @@ def test_get_actor_state(uid, expected):
     tcp_osl_server = tos.TcpOslServer(host=_host, port=_port)
     if expected == errors.OslCommandError:
         with pytest.raises(expected):
-            state = tcp_osl_server.get_actor_state(uid)
+            states = tcp_osl_server.get_actor_states(uid)
     else:
-        state = tcp_osl_server.get_actor_state(uid)
-        print(state)
-        assert isinstance(state, expected)
+        states = tcp_osl_server.get_actor_states(uid)
+        print(states)
+        assert isinstance(states, expected)
     tcp_osl_server.shutdown()
     tcp_osl_server.dispose()
 

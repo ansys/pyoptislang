@@ -90,8 +90,11 @@ class OslServer(ABC):
         pass
 
     @abstractmethod
-    def get_actor_state(self, uid: str) -> Dict:  # pragma: no cover
-        """Get actor state.
+    def get_actor_states(self, uid: str) -> Dict:  # pragma: no cover
+        """Get available actor states for a certain actor (only the IDs of the available states).
+
+        These can be used in conjunction with "get_actor_status_info" to obtain actor status info
+        for a specific state ID.
 
         Parameters
         ----------

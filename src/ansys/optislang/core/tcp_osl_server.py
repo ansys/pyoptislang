@@ -1059,8 +1059,11 @@ class TcpOslServer(OslServer):
         """
         return self._send_command(queries.actor_info(uid=uid, password=self.__password))
 
-    def get_actor_state(self, uid: str) -> Dict:
-        """Get info about actor defined by uid.
+    def get_actor_states(self, uid: str) -> Dict:
+        """Get available actor states for a certain actor (only the IDs of the available states).
+
+        These can be used in conjunction with "get_actor_status_info" to obtain actor status info
+        for a specific state ID.
 
         Parameters
         ----------
