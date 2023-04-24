@@ -1082,7 +1082,7 @@ class TcpOslServer(OslServer):
         return self._send_command(queries.actor_states(uid=uid, password=self.__password))
 
     def get_actor_status_info(self, uid: str, hid: str) -> Dict:
-        """Get status info about actor defined by uid.
+        """Get status info about actor defined by actor uid and state Hid.
 
         Parameters
         ----------
