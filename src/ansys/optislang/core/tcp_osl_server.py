@@ -1991,7 +1991,10 @@ class TcpOslServer(OslServer):
             exec_started_listener.add_callback(
                 self.__class__.__terminate_listener_thread,
                 (
-                    [ServerNotification.PROCESSING_STARTED.name],
+                    [
+                        ServerNotification.PROCESSING_STARTED.name,
+                        ServerNotification.NOTHING_PROCESSED.name,
+                    ],
                     wait_for_started_queue,
                     self._logger,
                 ),
@@ -2260,6 +2263,7 @@ class TcpOslServer(OslServer):
             port=exec_started_listener.port,
             notifications=[
                 ServerNotification.PROCESSING_STARTED,
+                ServerNotification.NOTHING_PROCESSED,
                 ServerNotification.EXEC_FAILED,
                 ServerNotification.CHECK_FAILED,
             ],
