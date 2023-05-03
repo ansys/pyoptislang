@@ -55,6 +55,9 @@ def test_node_queries(optislang: Optislang):
     root_system = project.root_system
     node = root_system.get_nodes()[0]
 
+    info = node._get_info()
+    assert isinstance(info, dict)
+
     name = node.get_name()
     assert isinstance(name, str)
     assert name == "Calculator"

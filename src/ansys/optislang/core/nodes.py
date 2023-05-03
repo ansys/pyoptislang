@@ -1,13 +1,24 @@
 """Contains classes for a node, system, parametric system, and root system."""
 from __future__ import annotations
 
+import copy
 from enum import Enum
-from typing import TYPE_CHECKING, Iterable, List, Tuple, Union
+from typing import TYPE_CHECKING, Dict, Iterable, List, Tuple, Union
 
-from ansys.optislang.core.project_parametric import Design, ParameterManager
+from ansys.optislang.core.project_parametric import (
+    ConstraintCriterion,
+    CriteriaManager,
+    Design,
+    LimitStateCriterion,
+    ObjectiveCriterion,
+    ParameterManager,
+    ResponseManager,
+    VariableCriterion,
+)
 
 if TYPE_CHECKING:
     from ansys.optislang.core.osl_server import OslServer
+    from ansys.optislang.core.project_parametric import Criterion
 
 
 class DesignFlow(Enum):
@@ -82,6 +93,25 @@ class Node:
             Unique ID of the node.
         """
         return self.__uid
+
+    def _get_info(self) -> dict:
+        """Get the raw server output with the node info.
+
+        Returns
+        -------
+        dict
+            Dictionary with the node info.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        return self._osl_server.get_actor_info(self.uid)
 
     def get_name(self) -> str:
         """Get the name of the node.
@@ -650,14 +680,14 @@ class System(Node):
 
 
 class ParametricSystem(System):
-    """Provides for creating and operating on a parametric system."""
+    """Provides methods to obtain data from a parametric system."""
 
     def __init__(
         self,
         uid: str,
         osl_server: OslServer,
     ) -> None:
-        """Create a ``ParametricSystem`` instance.
+        """Create a parametric system.
 
         Parameters
         ----------
@@ -670,11 +700,24 @@ class ParametricSystem(System):
             uid=uid,
             osl_server=osl_server,
         )
+        self.__criteria_manager = CriteriaManager(uid, osl_server)
         self.__parameter_manager = ParameterManager(uid, osl_server)
+        self.__response_manager = ResponseManager(uid, osl_server)
+
+    @property
+    def criteria_manager(self) -> CriteriaManager:
+        """Criteria manager of the current system.
+
+        Returns
+        -------
+        CriteriaManager
+            Instance of the ``CriteriaManager`` class.
+        """
+        return self.__criteria_manager
 
     @property
     def parameter_manager(self) -> ParameterManager:
-        """Instance of the ``ParameterManager`` class.
+        """Parameter manager of the current system.
 
         Returns
         -------
@@ -682,6 +725,17 @@ class ParametricSystem(System):
             Instance of the ``ParameterManager`` class.
         """
         return self.__parameter_manager
+
+    @property
+    def response_manager(self) -> ResponseManager:
+        """Response manager of the current system.
+
+        Returns
+        -------
+        ResponseManager
+            Instance of the ``ResponseManager`` class.
+        """
+        return self.__response_manager
 
 
 class RootSystem(ParametricSystem):
@@ -706,13 +760,16 @@ class RootSystem(ParametricSystem):
             osl_server=osl_server,
         )
 
-    def evaluate_design(self, design: Design) -> Design:
+    def evaluate_design(self, design: Design, update_design: bool = True) -> Design:
         """Evaluate a design.
 
         Parameters
         ----------
         design: Design
             Instance of a ``Design`` class with defined parameters.
+        update_design: bool, optional
+            Determines whether given design should be updated and returned or new instance
+            should be created. Default to ``True``.
 
         Returns
         -------
@@ -732,12 +789,18 @@ class RootSystem(ParametricSystem):
         for parameter in design.parameters:
             evaluate_dict[parameter.name] = parameter.value
         output_dict = self._osl_server.evaluate_design(evaluate_dict=evaluate_dict)
-        design._receive_results(output_dict[0])
+        if update_design:
+            return_design = design
+            return_design._receive_results(output_dict[0])
+        else:
+            return_design = copy.deepcopy(design)
+            return_design._receive_results(output_dict[0])
 
-        design_parameters = design.parameters_names
+        design_parameters = return_design.parameters_names
         output_parameters = output_dict[0]["result_design"]["parameter_names"]
         missing_parameters = RootSystem._compare_two_sets(output_parameters, design_parameters)
         undefined_parameters = RootSystem._compare_two_sets(design_parameters, output_parameters)
+        unused = RootSystem._compare_input_w_processed_values(evaluate_dict, output_dict)
 
         if undefined_parameters:
             self._osl_server._logger.debug(f"Parameters ``{undefined_parameters}`` weren't used.")
@@ -745,6 +808,11 @@ class RootSystem(ParametricSystem):
             self._osl_server._logger.warning(
                 f"Parameters ``{missing_parameters}`` were missing, "
                 "reference values were used for evaluation and list of parameters will be updated."
+            )
+        if unused:
+            self._osl_server._logger.warning(
+                "Values of parameters were changed:"
+                f"{[par[0] + ': ' + str(par[1]) + ' -> ' + str(par[2]) for par in unused]}"
             )
 
         for parameter in missing_parameters:
@@ -755,7 +823,7 @@ class RootSystem(ParametricSystem):
                 False,
             )
 
-        return design
+        return return_design
 
     def get_reference_design(self) -> Design:
         """Get the design with reference values of the parameters.
@@ -774,9 +842,18 @@ class RootSystem(ParametricSystem):
         TimeoutError
             Raised when the timeout float value expires.
         """
-        pm = self.parameter_manager
-        parameters = pm.get_parameters()
-        return Design(parameters=parameters)
+        parameters = self.parameter_manager.get_parameters()
+        responses = self.response_manager.get_responses()
+        criteria = self.criteria_manager.get_criteria()
+        sorted_criteria = RootSystem._sort_criteria(criteria=criteria)
+        return Design(
+            parameters=parameters,
+            constraints=sorted_criteria.get("constraints", []),
+            limit_states=sorted_criteria.get("limit_states", []),
+            objectives=sorted_criteria.get("objectives", []),
+            variables=sorted_criteria.get("variables", []),
+            responses=responses,
+        )
 
     def get_missing_parameters_names(self, design: Design) -> Tuple[str, ...]:
         """Get the names of the parameters that are missing in a design.
@@ -837,6 +914,47 @@ class RootSystem(ParametricSystem):
         )
 
     @staticmethod
+    def _sort_criteria(criteria: Tuple[Criterion]) -> Dict[str, List[Criterion]]:
+        """Get criteria sorted by its kinds.
+
+        Parameters
+        ----------
+        criteria : Tuple[Criterion]
+           Tuple of unsorted criteria.
+
+        Returns
+        -------
+        Dict[str, Criterion]
+            Dictionary of criteria sorted by its kinds.
+
+        Raises
+        ------
+        TypeError
+            Raised when an invalid type of criterion is passed.
+        """
+        constraints = []
+        limit_states = []
+        objectives = []
+        variables = []
+        for criterion in criteria:
+            if isinstance(criterion, ConstraintCriterion):
+                constraints.append(criterion)
+            elif isinstance(criterion, LimitStateCriterion):
+                limit_states.append(criterion)
+            elif isinstance(criterion, ObjectiveCriterion):
+                objectives.append(criterion)
+            elif isinstance(criterion, VariableCriterion):
+                variables.append(criterion)
+            else:
+                raise TypeError(f"Invalid type of criterion: `{type(criterion)}`.")
+        return {
+            "constraints": constraints,
+            "limit_states": limit_states,
+            "objectives": objectives,
+            "variables": variables,
+        }
+
+    @staticmethod
     def _compare_two_sets(first: Iterable[str], second: Iterable[str]) -> Tuple[str, ...]:
         """Get the sorted asymmetric difference of two string sets.
 
@@ -857,3 +975,32 @@ class RootSystem(ParametricSystem):
         diff = list(set(first) - set(second))
         diff.sort()
         return tuple(diff)
+
+    @staticmethod
+    def _compare_input_w_processed_values(
+        input: dict, processed: dict
+    ) -> Tuple[Tuple[str, Union[float, str, bool], Union[float, str, bool]]]:
+        """Compare input values of parameters before and after it's processed by server.
+
+        Parameters
+        ----------
+        input: Dict[str: Union[float, str, bool]]
+            Dictionary with parameter's names and values.
+        processed: dict
+            Server output.
+
+        Return
+        ------
+        Tuple[Tuple[str, Union[float, str, bool], Union[float, str, bool]]]
+            Tuple of parameters with different values before and after processing by server.
+                Tuple[0]: name
+                Tuple[1]: input value
+                Tuple[2]: processed value
+        """
+        differences = []
+        for index, parameter_name in enumerate(processed[0]["result_design"]["parameter_names"]):
+            input_value = input.get(parameter_name)
+            output_value = processed[0]["result_design"]["parameter_values"][index]
+            if input_value and input_value != output_value:
+                differences.append((parameter_name, input_value, output_value))
+        return tuple(differences)
