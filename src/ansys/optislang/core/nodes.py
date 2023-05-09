@@ -31,13 +31,13 @@ class DesignFlow(Enum):
     RECEIVE_SEND = 3
 
     @staticmethod
-    def from_str(label: str) -> DesignFlow:
+    def from_str(string: str) -> DesignFlow:
         """Convert string to an instance of the ``DesignFlow`` class.
 
         Parameters
         ----------
-        label: str
-            String to convert.
+        string: str
+            String to be converted.
 
         Returns
         -------
@@ -47,11 +47,11 @@ class DesignFlow(Enum):
         Raises
         ------
         TypeError
-
+            Raised when an invalid type of ``string`` is given.
         ValueError
-            Raised when an inappropriate type of label is given.
+            Raised when an invalid value of ``string`` is given.
         """
-        return enum_from_str(label=label, enum_class=__class__, replace=(" ", "_"))
+        return enum_from_str(string=string, enum_class=__class__, replace=(" ", "_"))
 
 
 class Node:

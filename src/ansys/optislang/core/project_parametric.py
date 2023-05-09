@@ -42,7 +42,7 @@ class CriterionType(Enum):
         ValueError
             Raised when the value for the label is invalid.
         """
-        return enum_from_str(label=label, enum_class=__class__, replace=(" ", "_"))
+        return enum_from_str(string=label, enum_class=__class__, replace=(" ", "_"))
 
 
 class ComparisonType(Enum):
@@ -78,7 +78,7 @@ class ComparisonType(Enum):
         ValueError
             Raised when the value for the label is invalid.
         """
-        return enum_from_str(label=label, enum_class=__class__)
+        return enum_from_str(string=label, enum_class=__class__)
 
 
 class CriterionValueType(Enum):
@@ -113,7 +113,7 @@ class CriterionValueType(Enum):
         ValueError
             Raised when the value for the label is invalid.
         """
-        return enum_from_str(label=label, enum_class=__class__)
+        return enum_from_str(string=label, enum_class=__class__)
 
 
 class DesignStatus(Enum):
@@ -146,7 +146,7 @@ class DesignStatus(Enum):
         ValueError
             Raised when the value for the label is invalid.
         """
-        return enum_from_str(label=label, enum_class=__class__, replace=(" ", "_"))
+        return enum_from_str(string=label, enum_class=__class__, replace=(" ", "_"))
 
 
 class DistributionType(Enum):
@@ -220,7 +220,7 @@ class DistributionType(Enum):
         ValueError
             Raised when invalid value of ``label`` was given.
         """
-        return enum_from_str(label=label, enum_class=__class__, replace=(" ", "_"))
+        return enum_from_str(string=label, enum_class=__class__, replace=(" ", "_"))
 
 
 class ParameterResolution(Enum):
@@ -258,7 +258,7 @@ class ParameterResolution(Enum):
         ValueError
             Raised when invalid value of ``label`` was given.
         """
-        return enum_from_str(label=label, enum_class=__class__, replace=(" ", "_"))
+        return enum_from_str(string=label, enum_class=__class__, replace=(" ", "_"))
 
 
 class ParameterType(Enum):
@@ -290,7 +290,7 @@ class ParameterType(Enum):
         ValueError
             Raised when invalid value of ``label`` was given.
         """
-        return enum_from_str(label=label, enum_class=__class__)
+        return enum_from_str(string=label, enum_class=__class__)
 
 
 class ParameterValueType(Enum):
@@ -324,7 +324,7 @@ class ParameterValueType(Enum):
         ValueError
             Raised when invalid value of ``label`` was given.
         """
-        return enum_from_str(label=label, enum_class=__class__)
+        return enum_from_str(string=label, enum_class=__class__)
 
 
 class ResponseValueType(Enum):
@@ -358,7 +358,7 @@ class ResponseValueType(Enum):
         ValueError
             Raised when invalid value of ``label`` was given.
         """
-        return enum_from_str(label=label, enum_class=__class__)
+        return enum_from_str(string=label, enum_class=__class__)
 
 
 # CLASSES:
@@ -478,6 +478,7 @@ class Criterion:
             type_ = ComparisonType.from_str(type_)
         if isinstance(type_, ComparisonType):
             self.__criterion = type_
+            self.value = None
         else:
             raise TypeError(
                 "Type Union[CriterionType, str] was expected, but type: "
@@ -506,6 +507,8 @@ class Criterion:
         if not isinstance(expression, str):
             raise TypeError(f"Type `str` was expected, but type: `{type(expression)}` was given.")
         self.__expression = expression
+        self.expression_value = None
+        self.value = None
 
     @property
     def expression_value(self) -> Union[bool, float, complex, list, dict, None]:
@@ -859,7 +862,11 @@ class ConstraintCriterion(Criterion):
             value=value,
             value_type=value_type,
         )
-        self.limit_expression = limit_expression
+        if not isinstance(limit_expression, str):
+            raise TypeError(
+                f"Type `str` was expected, but type: `{type(limit_expression)}` was given."
+            )
+        self.__limit_expression = limit_expression
 
         if limit_expression_value and isinstance(limit_expression_value_type, CriterionValueType):
             self.limit_expression_value = (
@@ -944,7 +951,8 @@ class ConstraintCriterion(Criterion):
                 f"Type `str` was expected, but type: `{type(limit_expression)}` was given."
             )
         self.__limit_expression = limit_expression
-        pass
+        self.limit_expression_value = None
+        self.value = None
 
     @property
     def limit_expression_value(self) -> Union[bool, float, complex, list, dict, None]:
@@ -1104,7 +1112,11 @@ class LimitStateCriterion(Criterion):
             value=value,
             value_type=value_type,
         )
-        self.limit_expression = limit_expression
+        if not isinstance(limit_expression, str):
+            raise TypeError(
+                f"Type `str` was expected, but type: `{type(limit_expression)}` was given."
+            )
+        self.__limit_expression = limit_expression
 
         if limit_expression_value and isinstance(limit_expression_value_type, CriterionValueType):
             self.limit_expression_value = (
@@ -1189,7 +1201,8 @@ class LimitStateCriterion(Criterion):
                 f"Type `str` was expected, but type: `{type(limit_expression)}` was given."
             )
         self.__limit_expression = limit_expression
-        pass
+        self.limit_expression_value = None
+        self.value = None
 
     @property
     def limit_expression_value(self) -> Union[bool, float, complex, list, dict, None]:
@@ -1902,7 +1915,6 @@ class DependentParameter(Parameter):
         reference_value: Union[bool, float, str, None, Tuple[Any, ParameterValueType]] = None,
         id: str = str(uuid.uuid4()),
         const: bool = False,
-        type: Union[ParameterType, str] = ParameterType.DEPENDENT,
     ) -> None:
         """Create an instance of the ``DependentParameter`` class.
 
@@ -1918,17 +1930,19 @@ class DependentParameter(Parameter):
             Unique ID of the parameter.
         const: bool, optional
             Whether the parameter is a constant.
-        type: Union[ParameterType, str], optional
-            Type of other parameter.
         """
         super().__init__(
             name=name,
             reference_value=reference_value,
             id=id,
             const=const,
-            type_=type,
+            type_=ParameterType.DEPENDENT,
         )
-        self.operation = operation
+
+        if not isinstance(operation, str):
+            raise TypeError(f"String was expected but type: `{type(operation)}` was given.")
+        else:
+            self.__operation = operation
 
     def __eq__(self, other: DependentParameter) -> bool:
         r"""Compare properties of two instances of the ``DependentParameter`` class.
@@ -1962,7 +1976,6 @@ class DependentParameter(Parameter):
             reference_value=self.reference_value,
             id=self.id,
             const=self.const,
-            type=self.type,
             operation=self.operation,
         )
 
@@ -1978,6 +1991,7 @@ class DependentParameter(Parameter):
             raise TypeError(f"String was expected but type: `{type(expression)}` was given.")
         else:
             self.__operation = expression
+            self.reference_value = None
 
     @staticmethod
     def from_dict(par_dict: dict) -> DependentParameter:
@@ -1997,7 +2011,6 @@ class DependentParameter(Parameter):
         reference_value = par_dict["reference_value"]
         id = par_dict["id"]
         const = par_dict["const"]
-        type = ParameterType.from_str(par_dict["type"]["value"])
         operation = par_dict.get("dependency_expression")
 
         return DependentParameter(
@@ -2005,7 +2018,6 @@ class DependentParameter(Parameter):
             reference_value=reference_value,
             id=id,
             const=const,
-            type=type,
             operation=operation,
         )
 
@@ -2027,7 +2039,7 @@ class DependentParameter(Parameter):
             "name": self.name,
             "reference_value": None,
             "removable": True,
-            "type": {"value": "dependent"},
+            "type": {"value": self.type.name.lower()},
             "unit": "",
         }
 
@@ -2041,7 +2053,6 @@ class MixedParameter(Parameter):
         reference_value: Union[bool, float, str, None, Tuple[Any, ParameterValueType]] = 0,
         id: str = str(uuid.uuid4()),
         const: bool = False,
-        type: Union[ParameterType, str] = ParameterType.MIXED,
         deterministic_resolution: Union[ParameterResolution, str] = ParameterResolution.CONTINUOUS,
         range: Union[Sequence[float, float], Sequence[Sequence[float]]] = (-1, 1),
         stochastic_resolution: Union[
@@ -2062,8 +2073,6 @@ class MixedParameter(Parameter):
             Parameter's unique id.
         const: bool, optional
             Determines whether is parameter constant.
-        type: Union[ParameterType, str], optional
-            Parameter's type.
         deterministic_resolution: Union[ParameterResolution, str], optional
             Parameter's deterministic resolution.
         range: Union[Sequence[float, float], Sequence[Sequence[float]]], optional
@@ -2080,7 +2089,7 @@ class MixedParameter(Parameter):
             reference_value=reference_value,
             id=id,
             const=const,
-            type_=type,
+            type_=ParameterType.MIXED,
         )
         self.__reference_value_type = ParameterValueType.REAL
         self.deterministic_resolution = deterministic_resolution
@@ -2135,7 +2144,6 @@ class MixedParameter(Parameter):
             reference_value=self.reference_value,
             id=self.id,
             const=self.const,
-            type=self.type,
             deterministic_resolution=self.deterministic_resolution,
             range=self.range,
             stochastic_resolution=self.stochastic_resolution,
@@ -2291,10 +2299,6 @@ class MixedParameter(Parameter):
         reference_value = par_dict["reference_value"]
         id = par_dict["id"]
         const = par_dict["const"]
-        type = ParameterType.from_str(par_dict["type"]["value"])
-        reference_value_type = ParameterValueType.from_str(
-            par_dict.get("deterministic_property", {}).get("domain_type", {}).get("value", None)
-        )
         deterministic_resolution = ParameterResolution.from_str(
             par_dict.get("deterministic_property", {}).get("kind", {}).get("value", None)
         )
@@ -2323,7 +2327,6 @@ class MixedParameter(Parameter):
             reference_value=reference_value,
             id=id,
             const=const,
-            type=type,
             deterministic_resolution=deterministic_resolution,
             stochastic_resolution=stochastic_resolution,
             range=range,
@@ -2363,7 +2366,7 @@ class MixedParameter(Parameter):
                 "statistical_moments": self.distribution_parameters,
                 "type": {"value": self.distribution_type.name.lower()},
             },
-            "type": {"value": "mixed"},
+            "type": {"value": self.type.name.lower()},
             "unit": "",
         }
 
@@ -2381,7 +2384,6 @@ class OptimizationParameter(Parameter):
         reference_value_type: ParameterValueType = ParameterValueType.REAL,
         id: str = str(uuid.uuid4()),
         const: bool = False,
-        type: Union[ParameterType, str] = ParameterType.DETERMINISTIC,
         deterministic_resolution: Union[ParameterResolution, str] = ParameterResolution.CONTINUOUS,
         range: Union[Sequence[float, float], Sequence[Sequence[float]]] = (-1, 1),
     ) -> None:
@@ -2399,8 +2401,6 @@ class OptimizationParameter(Parameter):
             Parameter's unique id.
         const: bool, optional
             Determines whether is parameter constant.
-        type: Union[ParameterType, str], optional
-            Parameter's type.
         deterministic_resolution: Union[ParameterResolution, str], optional
             Parameter's deterministic resolution.
         range: Union[Sequence[float, float], Sequence[Sequence[float]]], optional
@@ -2411,7 +2411,7 @@ class OptimizationParameter(Parameter):
             reference_value=reference_value,
             id=id,
             const=const,
-            type_=type,
+            type_=ParameterType.DETERMINISTIC,
         )
         self.reference_value_type = reference_value_type
         self.deterministic_resolution = deterministic_resolution
@@ -2457,7 +2457,6 @@ class OptimizationParameter(Parameter):
             reference_value_type=self.reference_value_type,
             id=self.id,
             const=self.const,
-            type=self.type,
             deterministic_resolution=self.deterministic_resolution,
             range=self.range,
         )
@@ -2558,7 +2557,6 @@ class OptimizationParameter(Parameter):
         name = par_dict["name"]
         id = par_dict["id"]
         const = par_dict["const"]
-        type = ParameterType.from_str(par_dict["type"]["value"])
         reference_value_type = ParameterValueType.from_str(
             par_dict.get("deterministic_property", {}).get("domain_type", {}).get("value", None)
         )
@@ -2581,7 +2579,6 @@ class OptimizationParameter(Parameter):
             reference_value_type=reference_value_type,
             id=id,
             const=const,
-            type=type,
             deterministic_resolution=deterministic_resolution,
             range=range,
         )
@@ -2613,7 +2610,7 @@ class OptimizationParameter(Parameter):
             "name": self.name,
             "reference_value": self.reference_value,
             "removable": True,
-            "type": {"value": "deterministic"},
+            "type": {"value": self.type.name.lower()},
             "unit": "",
         }
         output_dict["deterministic_property"].update(range_dict)
@@ -2629,7 +2626,6 @@ class StochasticParameter(Parameter):
         reference_value: Union[bool, float, str, None] = 0,
         id: str = str(uuid.uuid4()),
         const: bool = False,
-        type: Union[ParameterType, str] = ParameterType.STOCHASTIC,
         stochastic_resolution: Union[
             ParameterResolution, str
         ] = ParameterResolution.MARGINALDISTRIBUTION,
@@ -2648,8 +2644,6 @@ class StochasticParameter(Parameter):
             Parameter's unique id.
         const: bool, optional
             Determines whether is parameter constant.
-        type: Union[ParameterType, str], optional
-            Parameter's type.
         stochastic_resolution: Union[ParameterResolution, str], optional
             Parameter's stochastic resolution.
         distribution_type: Union[DistributionType, str], optional
@@ -2662,7 +2656,7 @@ class StochasticParameter(Parameter):
             reference_value=reference_value,
             id=id,
             const=const,
-            type_=type,
+            type_=ParameterType.STOCHASTIC,
         )
         self.__reference_value_type = ParameterValueType.REAL
         self.stochastic_resolution = stochastic_resolution
@@ -2708,7 +2702,6 @@ class StochasticParameter(Parameter):
             reference_value=self.reference_value,
             id=self.id,
             const=self.const,
-            type=self.type,
             stochastic_resolution=self.stochastic_resolution,
             distribution_type=self.distribution_type,
             distribution_parameters=self.distribution_parameters,
@@ -2811,7 +2804,6 @@ class StochasticParameter(Parameter):
         reference_value = par_dict["reference_value"]
         id = par_dict["id"]
         const = par_dict["const"]
-        type = ParameterType.from_str(par_dict["type"]["value"])
         stochastic_resolution = ParameterResolution.from_str(
             par_dict.get("stochastic_property", {}).get("kind", {}).get("value", None)
         )
@@ -2826,7 +2818,6 @@ class StochasticParameter(Parameter):
             reference_value=reference_value,
             id=id,
             const=const,
-            type=type,
             stochastic_resolution=stochastic_resolution,
             distribution_type=distribution_type,
             distribution_parameters=distribution_parameters,
@@ -2853,7 +2844,7 @@ class StochasticParameter(Parameter):
                 "statistical_moments": self.distribution_parameters,
                 "type": {"value": self.distribution_type.name.lower()},
             },
-            "type": {"value": "stochastic"},
+            "type": {"value": self.type.name.lower()},
             "unit": "",
         }
 

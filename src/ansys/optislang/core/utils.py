@@ -12,7 +12,7 @@ from ansys.optislang.core import FIRST_SUPPORTED_VERSION
 
 
 def enum_from_str(
-    label: str, enum_class: Enum, replace: Union[Tuple[str, str], None] = None
+    string: str, enum_class: Enum, replace: Union[Tuple[str, str], None] = None
 ) -> Enum:
     """Convert string to enumeration.
 
@@ -21,7 +21,7 @@ def enum_from_str(
     label: str
         String to be converted.
     enum_class: Enum
-        Enumeration class.
+        Enumeration type.
     replace: Union[Tuple[str, str], None], optional
         Characters to be replaced in given label.
             Tuple[0]: Replace from.
@@ -30,7 +30,7 @@ def enum_from_str(
     Returns
     -------
     Enum
-        Instance of given enumeration class.
+        Instance of given enumeration type.
 
     Raises
     ------
@@ -39,18 +39,18 @@ def enum_from_str(
     ValueError
         Raised when the value for the label is invalid.
     """
-    if not isinstance(label, str):
-        raise TypeError(f"String was expected, but `{type(label)}` was given.")
+    if not isinstance(string, str):
+        raise TypeError(f"String was expected, but `{type(string)}` was given.")
     if not issubclass(enum_class, Enum):
         raise TypeError(f"Enumeration class was expected, but `{type(enum_class)}` was given.")
-    label = label.upper()
+    string = string.upper()
     if replace is not None:
-        label = label.replace(replace[0], replace[1])
+        string = string.replace(replace[0], replace[1])
     try:
-        enum_type = enum_class[label]
+        enum_type = enum_class[string]
         return enum_type
     except:
-        raise ValueError(f"``{label}`` not available in ``{enum_class.__name__}``.")
+        raise ValueError(f"``{string}`` not available in ``{enum_class.__name__}``.")
 
 
 def get_osl_exec(osl_version: Union[int, str, None] = None) -> Union[Tuple[int, Path], None]:
