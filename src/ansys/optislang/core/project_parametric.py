@@ -415,14 +415,14 @@ class Criterion:
             )
 
         if expression_value and isinstance(expression_value_type, CriterionValueType):
-            self.expression_value = (copy.deepcopy(expression_value), expression_value_type)
+            self.expression_value = (expression_value, expression_value_type)
         else:
-            self.expression_value = copy.deepcopy(expression_value)
+            self.expression_value = expression_value
 
         if value and isinstance(value_type, CriterionValueType):
-            self.value = (copy.deepcopy(value), value_type)
+            self.value = (value, value_type)
         else:
-            self.value = copy.deepcopy(value)
+            self.value = value
 
     def __eq__(self, other: Criterion) -> bool:
         """Compare properties of two instances of the ``Criterion`` class.
@@ -459,10 +459,10 @@ class Criterion:
             name=self.name,
             type_=self.type,
             expression=self.expression,
-            expression_value=self.expression_value,
+            expression_value=copy.deepcopy(self.expression_value),
             expression_value_type=self.expression_value_type,
             criterion=self.criterion,
-            value=self.value,
+            value=copy.deepcopy(self.value),
             value_type=self.value_type,
         )
 
@@ -863,11 +863,11 @@ class ConstraintCriterion(Criterion):
 
         if limit_expression_value and isinstance(limit_expression_value_type, CriterionValueType):
             self.limit_expression_value = (
-                copy.deepcopy(limit_expression_value),
+                limit_expression_value,
                 limit_expression_value_type,
             )
         else:
-            self.limit_expression_value = copy.deepcopy(limit_expression_value)
+            self.limit_expression_value = limit_expression_value
 
     def __eq__(self, other: ConstraintCriterion) -> bool:
         """Compare properties of two instances of the ``ConstraintCriterion`` class.
@@ -910,13 +910,13 @@ class ConstraintCriterion(Criterion):
         return ConstraintCriterion(
             name=self.name,
             expression=self.expression,
-            expression_value=self.expression_value,
+            expression_value=copy.deepcopy(self.expression_value),
             expression_value_type=self.expression_value_type,
             criterion=self.criterion,
             limit_expression=self.limit_expression,
-            limit_expression_value=self.limit_expression_value,
+            limit_expression_value=copy.deepcopy(self.limit_expression_value),
             limit_expression_value_type=self.limit_expression_value_type,
-            value=self.value,
+            value=copy.deepcopy(self.value),
             value_type=self.value_type,
         )
 
@@ -1108,11 +1108,11 @@ class LimitStateCriterion(Criterion):
 
         if limit_expression_value and isinstance(limit_expression_value_type, CriterionValueType):
             self.limit_expression_value = (
-                copy.deepcopy(limit_expression_value),
+                limit_expression_value,
                 limit_expression_value_type,
             )
         else:
-            self.limit_expression_value = copy.deepcopy(limit_expression_value)
+            self.limit_expression_value = limit_expression_value
 
     def __eq__(self, other: LimitStateCriterion) -> bool:
         """Compare properties of two instances of the ``LimitStateCriterion`` class.
@@ -1155,13 +1155,13 @@ class LimitStateCriterion(Criterion):
         return LimitStateCriterion(
             name=self.name,
             expression=self.expression,
-            expression_value=self.expression_value,
+            expression_value=copy.deepcopy(self.expression_value),
             expression_value_type=self.expression_value_type,
             criterion=self.criterion,
             limit_expression=self.limit_expression,
-            limit_expression_value=self.limit_expression_value,
+            limit_expression_value=copy.deepcopy(self.limit_expression_value),
             limit_expression_value_type=self.limit_expression_value_type,
-            value=self.value,
+            value=copy.deepcopy(self.value),
             value_type=self.value_type,
         )
 
@@ -1375,10 +1375,10 @@ class ObjectiveCriterion(Criterion):
         return ObjectiveCriterion(
             name=self.name,
             expression=self.expression,
-            expression_value=self.expression_value,
+            expression_value=copy.deepcopy(self.expression_value),
             expression_value_type=self.expression_value_type,
             criterion=self.criterion,
-            value=self.value,
+            value=copy.deepcopy(self.value),
             value_type=self.value_type,
         )
 
@@ -1519,9 +1519,9 @@ class VariableCriterion(Criterion):
         return VariableCriterion(
             name=self.name,
             expression=self.expression,
-            expression_value=self.expression_value,
+            expression_value=copy.deepcopy(self.expression_value),
             expression_value_type=self.expression_value_type,
-            value=self.value,
+            value=copy.deepcopy(self.value),
             value_type=self.value_type,
         )
 
@@ -1605,11 +1605,11 @@ class DesignVariable:
             Variable's value.
         """
         self.name = name
-        self.value = copy.deepcopy(value)
+        self.value = value
 
     def __deepcopy__(self, memo) -> DesignVariable:
         """Return deep copy of an instance of the ``DesignVariable`` class."""
-        return DesignVariable(self.name, self.value)
+        return DesignVariable(self.name, copy.deepcopy(self.value))
 
     def __eq__(self, other: DesignVariable) -> bool:
         """Compare properties of two instances of the ``DesignVariable`` class.
@@ -2881,9 +2881,9 @@ class Response:
         """
         self.name = name
         if value and isinstance(value_type, ResponseValueType):
-            self.value = (value_type, copy.deepcopy(value))
+            self.value = (value_type, value)
         else:
-            self.value = copy.deepcopy(value)
+            self.value = value
 
     def __eq__(self, other: Response) -> bool:
         """Compare properties of two instances of the ``Response`` class.
@@ -2909,7 +2909,7 @@ class Response:
 
     def __deepcopy__(self, memo) -> Response:
         """Return deep copy of given response."""
-        return Response(name=self.name, value=self.value, value_type=self.value_type)
+        return Response(name=self.name, value=copy.deepcopy(self.value), value_type=self.value_type)
 
     @property
     def name(self) -> str:
