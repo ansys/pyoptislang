@@ -2,28 +2,28 @@
 from __future__ import annotations
 
 import collections
+from enum import Enum
 import os
 from pathlib import Path
 import re
-from typing import TYPE_CHECKING, Dict, Iterable, OrderedDict, Tuple, Union
+from typing import Dict, Iterable, OrderedDict, Tuple, Union
 
 from ansys.optislang.core import FIRST_SUPPORTED_VERSION
 
-if TYPE_CHECKING:
-    from enum import Enum
 
-
-def enum_from_str(label: str, enum_name: str, replace: Union[Tuple[str, str], None] = None) -> Enum:
-    """Convert string to CriterionType.
+def enum_from_str(
+    label: str, enum_class: Enum, replace: Union[Tuple[str, str], None] = None
+) -> Enum:
+    """Convert string to enumeration.
 
     Parameters
     ----------
     label: str
         String to be converted.
-    enum_name: str
-        Name of the enumeration class.
+    enum_class: Enum
+        Enumeration class.
     replace: Union[Tuple[str, str], None], optional
-        Characters to be replaced in given str.
+        Characters to be replaced in given label.
             Tuple[0]: Replace from.
             Tuple[1]: Replace to.
 
@@ -35,22 +35,22 @@ def enum_from_str(label: str, enum_name: str, replace: Union[Tuple[str, str], No
     Raises
     ------
     TypeError
-        Raised when the type of the label is invalid.
+        Raised when the type of the label or the enum_class is invalid.
     ValueError
         Raised when the value for the label is invalid.
     """
     if not isinstance(label, str):
         raise TypeError(f"String was expected, but `{type(label)}` was given.")
-
+    if not issubclass(enum_class, Enum):
+        raise TypeError(f"Enumeration class was expected, but `{type(enum_class)}` was given.")
     label = label.upper()
     if replace is not None:
         label = label.replace(replace[0], replace[1])
-
     try:
-        design_criteron_type = eval(enum_name + "." + label)
-        return design_criteron_type
+        enum_type = enum_class[label]
+        return enum_type
     except:
-        raise ValueError(f"``{label}`` not available in ``{enum_name}``.")
+        raise ValueError(f"``{label}`` not available in ``{enum_class.__name__}``.")
 
 
 def get_osl_exec(osl_version: Union[int, str, None] = None) -> Union[Tuple[int, Path], None]:

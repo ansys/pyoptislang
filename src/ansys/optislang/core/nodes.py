@@ -51,7 +51,7 @@ class DesignFlow(Enum):
         ValueError
             Raised when an inappropriate type of label is given.
         """
-        return enum_from_str(label=label, enum_name="DesignFlow", replace=(" ", "_"))
+        return enum_from_str(label=label, enum_class=__class__, replace=(" ", "_"))
 
 
 class Node:

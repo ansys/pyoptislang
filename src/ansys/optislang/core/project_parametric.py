@@ -42,7 +42,7 @@ class CriterionType(Enum):
         ValueError
             Raised when the value for the label is invalid.
         """
-        return enum_from_str(label=label, enum_name="CriterionType", replace=(" ", "_"))
+        return enum_from_str(label=label, enum_class=__class__, replace=(" ", "_"))
 
 
 class ComparisonType(Enum):
@@ -78,7 +78,7 @@ class ComparisonType(Enum):
         ValueError
             Raised when the value for the label is invalid.
         """
-        return enum_from_str(label=label, enum_name="ComparisonType")
+        return enum_from_str(label=label, enum_class=__class__)
 
 
 class CriterionValueType(Enum):
@@ -113,7 +113,7 @@ class CriterionValueType(Enum):
         ValueError
             Raised when the value for the label is invalid.
         """
-        return enum_from_str(label=label, enum_name="CriterionValueType")
+        return enum_from_str(label=label, enum_class=__class__)
 
 
 class DesignStatus(Enum):
@@ -146,7 +146,7 @@ class DesignStatus(Enum):
         ValueError
             Raised when the value for the label is invalid.
         """
-        return enum_from_str(label=label, enum_name="DesignStatus", replace=(" ", "_"))
+        return enum_from_str(label=label, enum_class=__class__, replace=(" ", "_"))
 
 
 class DistributionType(Enum):
@@ -220,7 +220,7 @@ class DistributionType(Enum):
         ValueError
             Raised when invalid value of ``label`` was given.
         """
-        return enum_from_str(label=label, enum_name="DistributionType", replace=(" ", "_"))
+        return enum_from_str(label=label, enum_class=__class__, replace=(" ", "_"))
 
 
 class ParameterResolution(Enum):
@@ -258,7 +258,7 @@ class ParameterResolution(Enum):
         ValueError
             Raised when invalid value of ``label`` was given.
         """
-        return enum_from_str(label=label, enum_name="ParameterResolution", replace=(" ", "_"))
+        return enum_from_str(label=label, enum_class=__class__, replace=(" ", "_"))
 
 
 class ParameterType(Enum):
@@ -290,7 +290,7 @@ class ParameterType(Enum):
         ValueError
             Raised when invalid value of ``label`` was given.
         """
-        return enum_from_str(label=label, enum_name="ParameterType")
+        return enum_from_str(label=label, enum_class=__class__)
 
 
 class ParameterValueType(Enum):
@@ -324,7 +324,7 @@ class ParameterValueType(Enum):
         ValueError
             Raised when invalid value of ``label`` was given.
         """
-        return enum_from_str(label=label, enum_name="ParameterValueType")
+        return enum_from_str(label=label, enum_class=__class__)
 
 
 class ResponseValueType(Enum):
@@ -358,7 +358,7 @@ class ResponseValueType(Enum):
         ValueError
             Raised when invalid value of ``label`` was given.
         """
-        return enum_from_str(label=label, enum_name="ResponseValueType")
+        return enum_from_str(label=label, enum_class=__class__)
 
 
 # CLASSES:
