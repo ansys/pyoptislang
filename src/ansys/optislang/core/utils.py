@@ -1,11 +1,56 @@
 """Utitilies module."""
+from __future__ import annotations
+
 import collections
 import os
 from pathlib import Path
 import re
-from typing import Dict, Iterable, OrderedDict, Tuple, Union
+from typing import TYPE_CHECKING, Dict, Iterable, OrderedDict, Tuple, Union
 
 from ansys.optislang.core import FIRST_SUPPORTED_VERSION
+
+if TYPE_CHECKING:
+    from enum import Enum
+
+
+def enum_from_str(label: str, enum_name: str, replace: Union[Tuple[str, str], None] = None) -> Enum:
+    """Convert string to CriterionType.
+
+    Parameters
+    ----------
+    label: str
+        String to be converted.
+    enum_name: str
+        Name of the enumeration class.
+    replace: Union[Tuple[str, str], None], optional
+        Characters to be replaced in given str.
+            Tuple[0]: Replace from.
+            Tuple[1]: Replace to.
+
+    Returns
+    -------
+    Enum
+        Instance of given enumeration class.
+
+    Raises
+    ------
+    TypeError
+        Raised when the type of the label is invalid.
+    ValueError
+        Raised when the value for the label is invalid.
+    """
+    if not isinstance(label, str):
+        raise TypeError(f"String was expected, but `{type(label)}` was given.")
+
+    label = label.upper()
+    if replace is not None:
+        label = label.replace(replace[0], replace[1])
+
+    try:
+        design_criteron_type = eval(enum_name + "." + label)
+        return design_criteron_type
+    except:
+        raise ValueError(f"``{label}`` not available in ``{enum_name}``.")
 
 
 def get_osl_exec(osl_version: Union[int, str, None] = None) -> Union[Tuple[int, Path], None]:

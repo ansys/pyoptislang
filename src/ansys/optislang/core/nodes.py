@@ -15,6 +15,7 @@ from ansys.optislang.core.project_parametric import (
     ResponseManager,
     VariableCriterion,
 )
+from ansys.optislang.core.utils import enum_from_str
 
 if TYPE_CHECKING:
     from ansys.optislang.core.osl_server import OslServer
@@ -50,13 +51,7 @@ class DesignFlow(Enum):
         ValueError
             Raised when an inappropriate type of label is given.
         """
-        if not isinstance(label, str):
-            raise TypeError(f"String was expected, but `{type(label)}` was given.")
-        label = label.upper()
-        try:
-            return eval("DesignFlow." + label)
-        except:
-            raise ValueError(f"Option `{label}` not available in ``DesignFlow`` options.")
+        return enum_from_str(label=label, enum_name="DesignFlow", replace=(" ", "_"))
 
 
 class Node:
@@ -769,7 +764,8 @@ class RootSystem(ParametricSystem):
             Instance of a ``Design`` class with defined parameters.
         update_design: bool, optional
             Determines whether given design should be updated and returned or new instance
-            should be created. Default to ``True``.
+            should be created. When ``True`` given design is updated and returned, otherwise
+            new ``Design`` is created. Defaults to ``True``.
 
         Returns
         -------
@@ -798,9 +794,13 @@ class RootSystem(ParametricSystem):
 
         design_parameters = return_design.parameters_names
         output_parameters = output_dict[0]["result_design"]["parameter_names"]
-        missing_parameters = RootSystem._compare_two_sets(output_parameters, design_parameters)
-        undefined_parameters = RootSystem._compare_two_sets(design_parameters, output_parameters)
-        unused = RootSystem._compare_input_w_processed_values(evaluate_dict, output_dict)
+        missing_parameters = __class__.__get_sorted_difference_of_sets(
+            output_parameters, design_parameters
+        )
+        undefined_parameters = __class__.__get_sorted_difference_of_sets(
+            design_parameters, output_parameters
+        )
+        unused = __class__.__compare_input_w_processed_values(evaluate_dict, output_dict)
 
         if undefined_parameters:
             self._osl_server._logger.debug(f"Parameters ``{undefined_parameters}`` weren't used.")
@@ -845,7 +845,7 @@ class RootSystem(ParametricSystem):
         parameters = self.parameter_manager.get_parameters()
         responses = self.response_manager.get_responses()
         criteria = self.criteria_manager.get_criteria()
-        sorted_criteria = RootSystem._sort_criteria(criteria=criteria)
+        sorted_criteria = __class__.__categorize_criteria(criteria=criteria)
         return Design(
             parameters=parameters,
             constraints=sorted_criteria.get("constraints", []),
@@ -879,7 +879,7 @@ class RootSystem(ParametricSystem):
         TimeoutError
             Raised when the timeout float value expires.
         """
-        return RootSystem._compare_two_sets(
+        return __class__.__get_sorted_difference_of_sets(
             first=self.parameter_manager.get_parameters_names(),
             second=design.parameters_names,
         )
@@ -908,13 +908,13 @@ class RootSystem(ParametricSystem):
         TimeoutError
             Raised when the timeout float value expires.
         """
-        return RootSystem._compare_two_sets(
+        return __class__.__get_sorted_difference_of_sets(
             first=design.parameters_names,
             second=self.parameter_manager.get_parameters_names(),
         )
 
     @staticmethod
-    def _sort_criteria(criteria: Tuple[Criterion]) -> Dict[str, List[Criterion]]:
+    def __categorize_criteria(criteria: Tuple[Criterion]) -> Dict[str, List[Criterion]]:
         """Get criteria sorted by its kinds.
 
         Parameters
@@ -955,7 +955,9 @@ class RootSystem(ParametricSystem):
         }
 
     @staticmethod
-    def _compare_two_sets(first: Iterable[str], second: Iterable[str]) -> Tuple[str, ...]:
+    def __get_sorted_difference_of_sets(
+        first: Iterable[str], second: Iterable[str]
+    ) -> Tuple[str, ...]:
         """Get the sorted asymmetric difference of two string sets.
 
         This method executes the difference of two string sets: ``first - second``.
@@ -977,7 +979,7 @@ class RootSystem(ParametricSystem):
         return tuple(diff)
 
     @staticmethod
-    def _compare_input_w_processed_values(
+    def __compare_input_w_processed_values(
         input: dict, processed: dict
     ) -> Tuple[Tuple[str, Union[float, str, bool], Union[float, str, bool]]]:
         """Compare input values of parameters before and after it's processed by server.

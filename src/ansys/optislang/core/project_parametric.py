@@ -6,15 +6,15 @@ from enum import Enum
 from typing import TYPE_CHECKING, Any, Dict, Iterable, List, Mapping, Sequence, Tuple, Union
 import uuid
 
+from ansys.optislang.core.utils import enum_from_str
+
 if TYPE_CHECKING:
     from ansys.optislang.core.osl_server import OslServer
 
 
 # ENUMERATIONS:
-
-
 class CriterionType(Enum):
-    """Available criteria kinds."""
+    """Available criteria types."""
 
     CONSTRAINT = 0
     LIMIT_STATE = 1
@@ -23,49 +23,6 @@ class CriterionType(Enum):
 
     @staticmethod
     def from_str(label: str) -> CriterionType:
-        """Convert string to CriterionKind.
-
-        Parameters
-        ----------
-        label: str
-            String to be converted.
-
-        Returns
-        -------
-        CriterionKind
-            Instance of the ``CriterionKind`` class.
-
-        Raises
-        ------
-        TypeError
-            Raised when the type of the label is invalid.
-        ValueError
-            Raised when the value for the label is invalid.
-        """
-        if not isinstance(label, str):
-            raise TypeError(f"String was expected, but `{type(label)}` was given.")
-        label = label.upper()
-        try:
-            design_criteron_type = eval("CriterionType." + label)
-            return design_criteron_type
-        except:
-            raise ValueError(f"Criterion `{label}` not available in CriterionKind kinds.")
-
-
-class ComparisonType(Enum):
-    """Provides criterion types."""
-
-    IGNORE = 0
-    MIN = 1
-    MAX = 2
-    LESSEQUAL = 3
-    EQUAL = 4
-    GREATEREQUAL = 5
-    LESSLIMITSTATE = 6
-    GREATERLIMITSTATE = 7
-
-    @staticmethod
-    def from_str(label: str) -> ComparisonType:
         """Convert string to CriterionType.
 
         Parameters
@@ -85,14 +42,43 @@ class ComparisonType(Enum):
         ValueError
             Raised when the value for the label is invalid.
         """
-        if not isinstance(label, str):
-            raise TypeError(f"String was expected, but `{type(label)}` was given.")
-        label = label.upper()
-        try:
-            criterion_type = eval("ComparisonType." + label)
-            return criterion_type
-        except:
-            raise ValueError(f"Criterion `{label}` not available in Criterion types.")
+        return enum_from_str(label=label, enum_name="CriterionType", replace=(" ", "_"))
+
+
+class ComparisonType(Enum):
+    """Provides criterion comparison types."""
+
+    IGNORE = 0
+    MIN = 1
+    MAX = 2
+    LESSEQUAL = 3
+    EQUAL = 4
+    GREATEREQUAL = 5
+    LESSLIMITSTATE = 6
+    GREATERLIMITSTATE = 7
+
+    @staticmethod
+    def from_str(label: str) -> ComparisonType:
+        """Convert string to ComparisonType.
+
+        Parameters
+        ----------
+        label: str
+            String to be converted.
+
+        Returns
+        -------
+        ComparisonType
+            Instance of the ``ComparisonType`` class.
+
+        Raises
+        ------
+        TypeError
+            Raised when the type of the label is invalid.
+        ValueError
+            Raised when the value for the label is invalid.
+        """
+        return enum_from_str(label=label, enum_name="ComparisonType")
 
 
 class CriterionValueType(Enum):
@@ -100,11 +86,11 @@ class CriterionValueType(Enum):
 
     UNINITIALIZED = 0
     BOOL = 1
-    SCALAR = 3
-    VECTOR = 4
-    MATRIX = 5
-    SIGNAL = 6
-    XYDATA = 7
+    SCALAR = 2
+    VECTOR = 3
+    MATRIX = 4
+    SIGNAL = 5
+    XYDATA = 6
 
     @staticmethod
     def from_str(label: str) -> CriterionValueType:
@@ -127,17 +113,7 @@ class CriterionValueType(Enum):
         ValueError
             Raised when the value for the label is invalid.
         """
-        if label == None:
-            return CriterionValueType.UNINITIALIZED
-        if not isinstance(label, str):
-            raise TypeError(f"String was expected, but `{type(label)}` was given.")
-        label = label.upper()
-        label = label.replace("_", "")
-        try:
-            value_type = eval("CriterionValueType." + label)
-            return value_type
-        except:
-            raise ValueError(f"Value type `{label}` not available in CriterionValueType types.")
+        return enum_from_str(label=label, enum_name="CriterionValueType")
 
 
 class DesignStatus(Enum):
@@ -170,13 +146,7 @@ class DesignStatus(Enum):
         ValueError
             Raised when the value for the label is invalid.
         """
-        if not isinstance(label, str):
-            raise TypeError(f"String was expected, but `{type(label)}` was given.")
-        label = label.upper().replace(" ", "_")
-        try:
-            return eval("DesignStatus." + label)
-        except:
-            raise ValueError(f"Status `{label}` not available in DesignStatus states.")
+        return enum_from_str(label=label, enum_name="DesignStatus", replace=(" ", "_"))
 
 
 class DistributionType(Enum):
@@ -250,13 +220,7 @@ class DistributionType(Enum):
         ValueError
             Raised when invalid value of ``label`` was given.
         """
-        if not isinstance(label, str):
-            raise TypeError(f"String was expected, but `{type(label)}` was given.")
-        label = label.upper()
-        try:
-            return eval("DistributionType." + label)
-        except:
-            raise ValueError(f"Status `{label}` not available in DistributionType types.")
+        return enum_from_str(label=label, enum_name="DistributionType", replace=(" ", "_"))
 
 
 class ParameterResolution(Enum):
@@ -294,13 +258,7 @@ class ParameterResolution(Enum):
         ValueError
             Raised when invalid value of ``label`` was given.
         """
-        if not isinstance(label, str):
-            raise TypeError(f"String was expected, but `{type(label)}` was given.")
-        label = label.upper()
-        try:
-            return eval("ParameterResolution." + label)
-        except:
-            raise ValueError(f"Status `{label}` not available in ParameterResolution kinds.")
+        return enum_from_str(label=label, enum_name="ParameterResolution", replace=(" ", "_"))
 
 
 class ParameterType(Enum):
@@ -332,13 +290,7 @@ class ParameterType(Enum):
         ValueError
             Raised when invalid value of ``label`` was given.
         """
-        if not isinstance(label, str):
-            raise TypeError(f"String was expected, but `{type(label)}` was given.")
-        label = label.upper()
-        try:
-            return eval("ParameterType." + label)
-        except:
-            raise ValueError(f"Status `{label}` not available in ParameterType types.")
+        return enum_from_str(label=label, enum_name="ParameterType")
 
 
 class ParameterValueType(Enum):
@@ -372,13 +324,7 @@ class ParameterValueType(Enum):
         ValueError
             Raised when invalid value of ``label`` was given.
         """
-        if not isinstance(label, str):
-            raise TypeError(f"String was expected, but `{type(label)}` was given.")
-        label = label.upper()
-        try:
-            return eval("ParameterValueType." + label)
-        except:
-            raise ValueError(f"Status `{label}` not available in ParameterValueType types.")
+        return enum_from_str(label=label, enum_name="ParameterValueType")
 
 
 class ResponseValueType(Enum):
@@ -412,15 +358,7 @@ class ResponseValueType(Enum):
         ValueError
             Raised when invalid value of ``label`` was given.
         """
-        if not isinstance(label, str):
-            raise TypeError(f"String was expected, but `{type(label)}` was given.")
-        label = label.upper()
-        label = label.replace("_", "")
-        try:
-            value_type = eval("ResponseValueType." + label)
-            return value_type
-        except:
-            raise ValueError(f"Value type `{label}` not available in ResponseValueType types.")
+        return enum_from_str(label=label, enum_name="ResponseValueType")
 
 
 # CLASSES:
@@ -436,10 +374,10 @@ class Criterion:
         type_: Union[CriterionType, str] = CriterionType.VARIABLE,
         expression: str = "0",
         expression_value: Union[tuple, bool, float, complex, list, dict, None] = None,
-        expression_value_type: CriterionValueType = None,
+        expression_value_type: Union[CriterionValueType, None] = None,
         criterion: Union[ComparisonType, str] = ComparisonType.IGNORE,
         value: Union[Tuple[CriterionValueType, str], bool, float, complex, list, dict, None] = None,
-        value_type: CriterionValueType = None,
+        value_type: Union[CriterionValueType, None] = None,
     ) -> None:
         """Create a new instance of ``Criterion``.
 
@@ -453,13 +391,13 @@ class Criterion:
             Criterion expression.
         expression_value: Union[tuple, bool, float, complex, list, dict, None], opt
             Expression value.
-        expression_value_type: CriterionValueType, opt
+        expression_value_type: Union[CriterionValueType, None], opt
             Expression value type.
         criterion: Union[CriterionType, str]
             Type of comparison symbol, e. g. 'min'.
         value: Union[tuple, bool, float, complex, list, dict, None], optional
             Value of the criterion.
-        value_type: CriterionValueType, opt
+        value_type: Union[CriterionValueType, None], opt
             Type of the criterion value.
         """
         self.name = name
@@ -472,7 +410,7 @@ class Criterion:
             self.__type = type_
         else:
             raise TypeError(
-                "Type Union[CriterionKind, str] was expected, but type: "
+                "Type Union[CriterionType, str] was expected, but type: "
                 f"``{type(type_)}`` was given."
             )
 
@@ -517,7 +455,6 @@ class Criterion:
 
     def __deepcopy__(self, memo) -> Criterion:
         """Return deep copy of given criterion."""
-        # TODO: test
         return Criterion(
             name=self.name,
             type_=self.type,
@@ -624,7 +561,7 @@ class Criterion:
 
     @property
     def type(self) -> CriterionType:
-        """Kind of the criterion."""
+        """Type of the criterion."""
         return self.__type
 
     @property
@@ -697,16 +634,9 @@ class Criterion:
         else:
             splitted_str[1] = splitted_str[1][:-3] + "," + splitted_str[1][-3:]
 
-        # evaluatiaon of second part creates tuple
+        # evaluation of second part creates tuple
         eval_str = eval(splitted_str[1])
         matrix_list = []
-        # for row_index, row_member in enumerate(eval_str):
-        #     matrix_list.append([])
-        #     for column_member in row_member:
-        #         if column_member[1] == 0:
-        #             matrix_list[row_index].append(column_member[0])
-        #         else:
-        #             matrix_list[row_index].append(complex(column_member[0], column_member[1]))
         for row_index in range(size[0]):
             matrix_list.append([])
             for column_index in range(size[1]):
@@ -777,11 +707,6 @@ class Criterion:
         # evaluatiaon of second part creates tuple
         eval_str = eval(splitted_str[1])
         vector_list = []
-        # for row_member in enumerate(eval_str):
-        #     if row_member[1] == 0:
-        #         vector_list.append(row_member[0])
-        #     else:
-        #         vector_list.append(complex(row_member[0], row_member[1]))
         for row_index in range(size[0]):
             if eval_str[row_index][1] == 0:
                 vector_list.append(eval_str[row_index][0])
@@ -891,13 +816,13 @@ class ConstraintCriterion(Criterion):
         name: str = "",
         expression: str = "0",
         expression_value: Union[tuple, bool, float, complex, list, dict, None] = None,
-        expression_value_type: CriterionValueType = None,
+        expression_value_type: Union[CriterionValueType, None] = None,
         criterion: Union[ComparisonType, str] = ComparisonType.LESSEQUAL,
         limit_expression: str = "0",
         limit_expression_value: Union[tuple, bool, float, complex, list, dict, None] = None,
-        limit_expression_value_type: CriterionValueType = None,
+        limit_expression_value_type: Union[CriterionValueType, None] = None,
         value: Union[tuple, bool, float, complex, list, dict, None] = None,
-        value_type: CriterionValueType = None,
+        value_type: Union[CriterionValueType, None] = None,
     ) -> None:
         """Initialize a new instance of ``ConstraintCriterion`` class.
 
@@ -909,7 +834,7 @@ class ConstraintCriterion(Criterion):
             Criterion expression.
         expression_value: Union[tuple, bool, float, complex, list, dict, None], opt
             Expression value.
-        expression_value_type: CriterionValueType, opt
+        expression_value_type: Union[CriterionValueType, None], opt
             Expression value type.
         criterion: Union[CriterionType, str]
             Comparison symbol type, e. g. 'lessequal'.
@@ -917,11 +842,11 @@ class ConstraintCriterion(Criterion):
             Limit expression.
         limit_expression_value: Union[tuple, bool, float, complex, list, dict]
             Limit expression value.
-        limit_expression_value_type: CriterionValueType, opt
+        limit_expression_value_type: Union[CriterionValueType, None], opt
             Limit expression value type.
         value: Union[tuple, bool, float, complex, list, dict, None], optional
             Criterion value.
-        value_type: CriterionValueType, opt
+        value_type: Union[CriterionValueType, None], opt
             Type of the criterion value.
         """
         super().__init__(
@@ -982,7 +907,6 @@ class ConstraintCriterion(Criterion):
 
     def __deepcopy__(self, memo) -> ConstraintCriterion:
         """Return deep copy of given constraint criterion."""
-        # TODO: test
         return ConstraintCriterion(
             name=self.name,
             expression=self.expression,
@@ -1137,13 +1061,13 @@ class LimitStateCriterion(Criterion):
         name: str = "",
         expression: str = "0",
         expression_value: Union[tuple, bool, float, complex, list, dict, None] = None,
-        expression_value_type: CriterionValueType = None,
+        expression_value_type: Union[CriterionValueType, None] = None,
         criterion: Union[ComparisonType, str] = ComparisonType.LESSLIMITSTATE,
         limit_expression: str = "0",
         limit_expression_value: Union[tuple, bool, float, complex, list, dict] = None,
-        limit_expression_value_type: CriterionValueType = None,
+        limit_expression_value_type: Union[CriterionValueType, None] = None,
         value: Union[tuple, bool, float, complex, list, dict, None] = None,
-        value_type: CriterionValueType = None,
+        value_type: Union[CriterionValueType, None] = None,
     ) -> None:
         """Initialize a new instance of ``LimitStateCriterion`` class.
 
@@ -1155,7 +1079,7 @@ class LimitStateCriterion(Criterion):
             Criterion expression.
         expression_value: Union[tuple, bool, float, complex, list, dict, None], opt
             Expression value.
-        expression_value_type: CriterionValueType, opt
+        expression_value_type: Union[CriterionValueType, None], opt
             Expression value type.
         criterion: Union[CriterionType, str]
             Comparison symbol type, e. g. 'min'.
@@ -1163,11 +1087,11 @@ class LimitStateCriterion(Criterion):
             Limit expression.
         limit_expression_value: Union[tuple, bool, float, complex, list, dict]
             Limit expression value.
-        limit_expression_value_type: CriterionValueType, opt
+        limit_expression_value_type: Union[CriterionValueType, None], opt
             Limit expression value type.
         value: Union[tuple, bool, float, complex, list, dict, None], optional
             Criterion value.
-        value_type: CriterionValueType, opt
+        value_type: Union[CriterionValueType, None], opt
             Type of the criterion value.
         """
         super().__init__(
@@ -1228,7 +1152,6 @@ class LimitStateCriterion(Criterion):
 
     def __deepcopy__(self, memo) -> LimitStateCriterion:
         """Return deep copy of given limit state criterion."""
-        # TODO: test
         return LimitStateCriterion(
             name=self.name,
             expression=self.expression,
@@ -1386,7 +1309,7 @@ class ObjectiveCriterion(Criterion):
         expression_value_type: CriterionValueType = None,
         criterion: Union[ComparisonType, str] = ComparisonType.MIN,
         value: Union[tuple, bool, float, complex, list, dict, None] = None,
-        value_type: CriterionValueType = None,
+        value_type: Union[CriterionValueType, None] = None,
     ) -> None:
         """Create a new instance of the ``ObjectiveCriterion`` class.
 
@@ -1404,7 +1327,7 @@ class ObjectiveCriterion(Criterion):
             Comparison symbol type, e. g. 'min'.
         value: Union[tuple, bool, float, complex, list, dict, None], optional
             Criterion value.
-        value_type: CriterionValueType, opt
+        value_type: Union[CriterionValueType, None], opt
             Type of the criterion value.
         """
         super().__init__(
@@ -1449,7 +1372,6 @@ class ObjectiveCriterion(Criterion):
 
     def __deepcopy__(self, memo) -> ObjectiveCriterion:
         """Return deep copy of given objective criterion."""
-        # TODO: test
         return ObjectiveCriterion(
             name=self.name,
             expression=self.expression,
@@ -1594,7 +1516,6 @@ class VariableCriterion(Criterion):
 
     def __deepcopy__(self, memo) -> VariableCriterion:
         """Return deep copy of given variable criterion."""
-        # TODO: test
         return VariableCriterion(
             name=self.name,
             expression=self.expression,
@@ -2857,7 +2778,7 @@ class StochasticParameter(Parameter):
             )
 
     @property
-    def distribution_parameters(self) -> Sequence[float]:
+    def distribution_parameters(self) -> Tuple[float]:
         """Parameters of the distribution."""
         return self.__distribution_parameters
 
@@ -2988,7 +2909,6 @@ class Response:
 
     def __deepcopy__(self, memo) -> Response:
         """Return deep copy of given response."""
-        # TODO: test
         return Response(name=self.name, value=self.value, value_type=self.value_type)
 
     @property
@@ -3147,36 +3067,7 @@ class CriteriaManager:
 
     def __str__(self) -> str:
         """Get the unique ID of the ``CriteriaManager`` instance."""
-        # TODO: test
         return f"CriteriaManager uid: {self.__uid}"
-
-    def add_criterion(self, criterion: Criterion) -> None:
-        """Add new parameter.
-
-        Parameters
-        ----------
-        criterion: Criterion
-            Instance of `Criterion` class.
-
-        Raises
-        ------
-        TypeError
-            Raised when unknown type of parameter is added.
-        """
-        # TODO: create test (for all 4 param types) + documentation
-        props = self.__osl_server.get_actor_properties(uid=self.__uid)
-        criteria = props["properties"]["Criteria"]
-        container = criteria["sequence"]
-        for index, c_dict in enumerate(container):
-            if c_dict["First"] == criterion.name:
-                raise NameError(
-                    f"Parameter `{criterion.name}` already exists, use"
-                    "`CriterionManager.modify_criterion instead."
-                )
-
-        criterion_dict = criterion.to_dict()
-        container.append(criterion_dict)
-        self.__osl_server._set_actor_property(self.__uid, name="Criteria", value=criteria)
 
     def get_criteria(self) -> Tuple[Criterion, ...]:
         """Get the criteria of the system.
@@ -3195,7 +3086,6 @@ class CriteriaManager:
         TimeoutError
             Raised when the timeout float value expires.
         """
-        # TODO: test
         props = self.__osl_server.get_actor_properties(uid=self.__uid)
         container = props.get("properties", {}).get("Criteria", {}).get("sequence", [{}])
         criteria = []
@@ -3315,7 +3205,6 @@ class ResponseManager:
 
     def __str__(self) -> str:
         """Get the unique ID of the ``ResponseManager`` instance."""
-        # TODO: test
         return f"ResponseManager uid: {self.__uid}"
 
     def get_responses(self) -> Tuple[Response, ...]:
@@ -3335,7 +3224,6 @@ class ResponseManager:
         TimeoutError
             Raised when the timeout float value expires.
         """
-        # TODO: test
         info = self.__osl_server.get_actor_info(uid=self.__uid)
         container = info.get("responses", {})
         responses = []
@@ -3360,7 +3248,6 @@ class ResponseManager:
         TimeoutError
             Raised when the timeout float value expires.
         """
-        # TODO: test
         info = self.__osl_server.get_actor_info(uid=self.__uid)
         container = info.get("responses", {})
         return tuple(container.keys())
@@ -3501,7 +3388,6 @@ class Design:
 
     def __deepcopy__(self, memo) -> Design:
         """Return deep copy of given Design."""
-        # TODO: test
         return Design(
             parameters=copy.deepcopy(self.parameters),
             constraints=copy.deepcopy(self.constraints),
@@ -3515,16 +3401,6 @@ class Design:
         )
 
     @property
-    def feasibility(self) -> Union[bool, None]:
-        """Feasibility of the design. If the design is not evaluated, ``None`` is returned."""
-        return self.__feasibility
-
-    @property
-    def id(self) -> Union[int, None]:
-        """ID of the design. If no ID is assigned, ``None`` is returned."""
-        return self.__id
-
-    @property
     def constraints(self) -> Tuple[DesignVariable, ...]:
         """Tuple of all constraints."""
         return tuple(self.__constraints)
@@ -3536,6 +3412,16 @@ class Design:
         for constraint in self.__constraints:
             names.append(constraint.name)
         return tuple(names)
+
+    @property
+    def feasibility(self) -> Union[bool, None]:
+        """Feasibility of the design. If the design is not evaluated, ``None`` is returned."""
+        return self.__feasibility
+
+    @property
+    def id(self) -> Union[int, None]:
+        """ID of the design. If no ID is assigned, ``None`` is returned."""
+        return self.__id
 
     @property
     def limit_states(self) -> Tuple[DesignVariable, ...]:
@@ -3619,7 +3505,6 @@ class Design:
         Design
             Deep copy of the unevaluated design.
         """
-        # TODO: test
         return Design(
             parameters=copy.deepcopy(self.parameters),
             constraints=self.__reset_output_value(copy.deepcopy(self.constraints)),
