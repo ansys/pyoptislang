@@ -18,12 +18,12 @@ def enum_from_str(
 
     Parameters
     ----------
-    label: str
+    string: str
         String to be converted.
     enum_class: Enum
-        Enumeration type.
+        Enumeration type, upper case enumeration items are expected.
     replace: Union[Tuple[str, str], None], optional
-        Characters to be replaced in given label.
+        Characters to be replaced in given ``string``.
             Tuple[0]: Replace from.
             Tuple[1]: Replace to.
 
@@ -35,9 +35,9 @@ def enum_from_str(
     Raises
     ------
     TypeError
-        Raised when the type of the label or the enum_class is invalid.
+        Raised when the type of the ``string`` or the enum_class is invalid.
     ValueError
-        Raised when the value for the label is invalid.
+        Raised when the value for the ``string`` is invalid.
     """
     if not isinstance(string, str):
         raise TypeError(f"String was expected, but `{type(string)}` was given.")

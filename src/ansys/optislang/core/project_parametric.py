@@ -22,12 +22,12 @@ class CriterionType(Enum):
     VARIABLE = 3
 
     @staticmethod
-    def from_str(label: str) -> CriterionType:
+    def from_str(string: str) -> CriterionType:
         """Convert string to CriterionType.
 
         Parameters
         ----------
-        label: str
+        string: str
             String to be converted.
 
         Returns
@@ -38,11 +38,11 @@ class CriterionType(Enum):
         Raises
         ------
         TypeError
-            Raised when the type of the label is invalid.
+            Raised when the type of the ``string`` is invalid.
         ValueError
-            Raised when the value for the label is invalid.
+            Raised when the value for the ``string`` is invalid.
         """
-        return enum_from_str(string=label, enum_class=__class__, replace=(" ", "_"))
+        return enum_from_str(string=string, enum_class=__class__, replace=(" ", "_"))
 
 
 class ComparisonType(Enum):
@@ -58,12 +58,12 @@ class ComparisonType(Enum):
     GREATERLIMITSTATE = 7
 
     @staticmethod
-    def from_str(label: str) -> ComparisonType:
+    def from_str(string: str) -> ComparisonType:
         """Convert string to ComparisonType.
 
         Parameters
         ----------
-        label: str
+        string: str
             String to be converted.
 
         Returns
@@ -74,11 +74,11 @@ class ComparisonType(Enum):
         Raises
         ------
         TypeError
-            Raised when the type of the label is invalid.
+            Raised when the type of the ``string`` is invalid.
         ValueError
-            Raised when the value for the label is invalid.
+            Raised when the value for the ``string`` is invalid.
         """
-        return enum_from_str(string=label, enum_class=__class__)
+        return enum_from_str(string=string, enum_class=__class__)
 
 
 class CriterionValueType(Enum):
@@ -93,12 +93,12 @@ class CriterionValueType(Enum):
     XYDATA = 6
 
     @staticmethod
-    def from_str(label: str) -> CriterionValueType:
+    def from_str(string: str) -> CriterionValueType:
         """Convert string to CriterionValueType.
 
         Parameters
         ----------
-        label: str
+        string: str
             String to be converted.
 
         Returns
@@ -109,11 +109,11 @@ class CriterionValueType(Enum):
         Raises
         ------
         TypeError
-            Raised when the type of the label is invalid.
+            Raised when the type of the ``string`` is invalid.
         ValueError
-            Raised when the value for the label is invalid.
+            Raised when the value for the ``string`` is invalid.
         """
-        return enum_from_str(string=label, enum_class=__class__)
+        return enum_from_str(string=string, enum_class=__class__)
 
 
 class DesignStatus(Enum):
@@ -126,12 +126,12 @@ class DesignStatus(Enum):
     FAILED = 4
 
     @staticmethod
-    def from_str(label: str) -> DesignStatus:
+    def from_str(string: str) -> DesignStatus:
         """Convert a string to an instance of the ``DesignStatus`` class.
 
         Parameters
         ----------
-        label: str
+        string: str
             String to be converted.
 
         Returns
@@ -142,11 +142,11 @@ class DesignStatus(Enum):
         Raises
         ------
         TypeError
-            Raised when the type of the label is invalid.
+            Raised when the type of the ``string`` is invalid.
         ValueError
-            Raised when the value for the label is invalid.
+            Raised when the value for the ``string`` is invalid.
         """
-        return enum_from_str(string=label, enum_class=__class__, replace=(" ", "_"))
+        return enum_from_str(string=string, enum_class=__class__, replace=(" ", "_"))
 
 
 class DistributionType(Enum):
@@ -200,12 +200,12 @@ class DistributionType(Enum):
     POISSON = 45
 
     @staticmethod
-    def from_str(label: str) -> DistributionType:
+    def from_str(string: str) -> DistributionType:
         """Convert string to DistributionType.
 
         Parameters
         ----------
-        label: str
+        string: str
             String that shall be converted.
 
         Returns
@@ -216,11 +216,11 @@ class DistributionType(Enum):
         Raises
         ------
         TypeError
-            Raised when invalid type of ``label`` was given.
+            Raised when invalid type of ``string`` was given.
         ValueError
-            Raised when invalid value of ``label`` was given.
+            Raised when invalid value of ``string`` was given.
         """
-        return enum_from_str(string=label, enum_class=__class__, replace=(" ", "_"))
+        return enum_from_str(string=string, enum_class=__class__, replace=(" ", "_"))
 
 
 class ParameterResolution(Enum):
@@ -238,12 +238,12 @@ class ParameterResolution(Enum):
     EMPIRICAL_CONTINUOUS = 7
 
     @staticmethod
-    def from_str(label: str) -> ParameterResolution:
+    def from_str(string: str) -> ParameterResolution:
         """Convert string to ``ParameterResolution``.
 
         Parameters
         ----------
-        label: str
+        string: str
             String that shall be converted.
 
         Returns
@@ -254,11 +254,11 @@ class ParameterResolution(Enum):
         Raises
         ------
         TypeError
-            Raised when invalid type of ``label`` was given.
+            Raised when invalid type of ``string`` was given.
         ValueError
-            Raised when invalid value of ``label`` was given.
+            Raised when invalid value of ``string`` was given.
         """
-        return enum_from_str(string=label, enum_class=__class__, replace=(" ", "_"))
+        return enum_from_str(string=string, enum_class=__class__, replace=(" ", "_"))
 
 
 class ParameterType(Enum):
@@ -270,12 +270,12 @@ class ParameterType(Enum):
     DEPENDENT = 3
 
     @staticmethod
-    def from_str(label: str) -> ParameterType:
+    def from_str(string: str) -> ParameterType:
         """Convert a string to an instance of the ``ParameterType`` class.
 
         Parameters
         ----------
-        label: str
+        string: str
             String that shall be converted.
 
         Returns
@@ -286,11 +286,11 @@ class ParameterType(Enum):
         Raises
         ------
         TypeError
-            Raised when invalid type of ``label`` was given.
+            Raised when invalid type of ``string`` was given.
         ValueError
-            Raised when invalid value of ``label`` was given.
+            Raised when invalid value of ``string`` was given.
         """
-        return enum_from_str(string=label, enum_class=__class__)
+        return enum_from_str(string=string, enum_class=__class__)
 
 
 class ParameterValueType(Enum):
@@ -304,12 +304,12 @@ class ParameterValueType(Enum):
     VARIANT = 5
 
     @staticmethod
-    def from_str(label: str) -> ParameterValueType:
+    def from_str(string: str) -> ParameterValueType:
         """Convert string to ParameterValueType.
 
         Parameters
         ----------
-        label: str
+        string: str
             String that shall be converted.
 
         Returns
@@ -320,11 +320,11 @@ class ParameterValueType(Enum):
         Raises
         ------
         TypeError
-            Raised when invalid type of ``label`` was given.
+            Raised when invalid type of ``string`` was given.
         ValueError
-            Raised when invalid value of ``label`` was given.
+            Raised when invalid value of ``string`` was given.
         """
-        return enum_from_str(string=label, enum_class=__class__)
+        return enum_from_str(string=string, enum_class=__class__)
 
 
 class ResponseValueType(Enum):
@@ -338,12 +338,12 @@ class ResponseValueType(Enum):
     XYDATA = 5
 
     @staticmethod
-    def from_str(label: str) -> CriterionValueType:
+    def from_str(string: str) -> CriterionValueType:
         """Convert string to ResponseValueType.
 
         Parameters
         ----------
-        label: str
+        string: str
             String that shall be converted.
 
         Returns
@@ -354,11 +354,11 @@ class ResponseValueType(Enum):
         Raises
         ------
         TypeError
-            Raised when invalid type of ``label`` was given.
+            Raised when invalid type of ``string`` was given.
         ValueError
-            Raised when invalid value of ``label`` was given.
+            Raised when invalid value of ``string`` was given.
         """
-        return enum_from_str(string=label, enum_class=__class__)
+        return enum_from_str(string=string, enum_class=__class__)
 
 
 # CLASSES:
@@ -2855,7 +2855,7 @@ class Response:
 
     def __init__(
         self,
-        name: str,
+        name: str = "",
         value: Union[Tuple[ResponseValueType, str], bool, float, complex, list, dict, None] = None,
         value_type: ResponseValueType = None,
     ) -> None:
