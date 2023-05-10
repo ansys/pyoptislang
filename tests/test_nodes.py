@@ -53,7 +53,7 @@ def test_node_queries(optislang: Optislang):
     optislang.open(file_path=single_node)
     project = optislang.project
     root_system = project.root_system
-    node = root_system.get_nodes()[0]
+    node = root_system.find_nodes_by_name("Calculator")[0]
 
     info = node._get_info()
     assert isinstance(info, dict)

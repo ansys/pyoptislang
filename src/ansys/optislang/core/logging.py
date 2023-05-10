@@ -192,6 +192,7 @@ class OslLogger:
 
         if level is None:
             level = self.log_level
+        level = level.upper()
         new_logger.setLevel(level)
 
         if self.file_handler:
