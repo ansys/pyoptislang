@@ -306,7 +306,7 @@ def enumeration_test_method(enumeration_class: Enum, enumeration_name: str):
         else:
             mixed_name += char
     try:
-        enumeration_from_str = enumeration_class.from_str(label=mixed_name)
+        enumeration_from_str = enumeration_class.from_str(string=mixed_name)
     except:
         assert False
     assert isinstance(enumeration_from_str, enumeration_class)

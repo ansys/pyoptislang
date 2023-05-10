@@ -92,4 +92,4 @@ def test_get_responses_names(optislang: Optislang):
     optislang.dispose()
     assert isinstance(responses_names, tuple)
     assert len(responses_names) > 0
-    assert set(["a", "b"]) == set(responses_names)
+    assert set(["c", "d"]) == set(responses_names)

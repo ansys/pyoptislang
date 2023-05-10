@@ -3399,10 +3399,7 @@ class Design:
     @property
     def constraints_names(self) -> Tuple[str, ...]:
         """Tuple of all constraint names."""
-        names = []
-        for constraint in self.__constraints:
-            names.append(constraint.name)
-        return tuple(names)
+        return tuple([constraint.name for constraint in self.__constraints])
 
     @property
     def feasibility(self) -> Union[bool, None]:
@@ -3422,10 +3419,7 @@ class Design:
     @property
     def limit_states_names(self) -> Tuple[str, ...]:
         """Tuple of all limit state names."""
-        names = []
-        for limit_state in self.__limit_states:
-            names.append(limit_state.name)
-        return tuple(names)
+        return tuple([limit_state.name for limit_state in self.__limit_states])
 
     @property
     def objectives(self) -> Tuple[DesignVariable, ...]:
@@ -3435,10 +3429,7 @@ class Design:
     @property
     def objectives_names(self) -> Tuple[str, ...]:
         """Tuple of all objective names."""
-        names = []
-        for objective in self.__objectives:
-            names.append(objective.name)
-        return tuple(names)
+        return tuple([objective.name for objective in self.__objectives])
 
     @property
     def parameters(self) -> Tuple[DesignVariable, ...]:
@@ -3448,10 +3439,7 @@ class Design:
     @property
     def parameters_names(self) -> Tuple[str, ...]:
         """Tuple of all parameter names."""
-        names = []
-        for parameter in self.__parameters:
-            names.append(parameter.name)
-        return tuple(names)
+        return tuple([parameter.name for parameter in self.__parameters])
 
     @property
     def responses(self) -> Tuple[DesignVariable, ...]:
@@ -3461,10 +3449,7 @@ class Design:
     @property
     def responses_names(self) -> Tuple[str, ...]:
         """Tuple of all response names."""
-        names = []
-        for response in self.__responses:
-            names.append(response.name)
-        return tuple(names)
+        return tuple([response.name for response in self.__responses])
 
     @property
     def status(self) -> DesignStatus:
@@ -3479,10 +3464,7 @@ class Design:
     @property
     def variables_names(self) -> Tuple[str, ...]:
         """Tuple of all variable names."""
-        names = []
-        for variable in self.__variables:
-            names.append(variable.name)
-        return tuple(names)
+        return tuple([variable.name for variable in self.__variables])
 
     def clear_parameters(self) -> None:
         """Remove all defined parameters from the design."""
@@ -3761,7 +3743,7 @@ class Design:
                         value=value,
                     )
                 )
-            return parameters_list
+        return parameters_list
 
     def __parse_criteria_to_designvariables(
         self,

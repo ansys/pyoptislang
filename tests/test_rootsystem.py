@@ -25,7 +25,7 @@ def optislang(scope="function", autouse=False) -> Optislang:
     return osl
 
 
-def test_get_refence_design(optislang: Optislang):
+def test_get_reference_design(optislang: Optislang):
     """Test ``get_refence_design``."""
     project = optislang.project
     root_system = project.root_system
@@ -34,6 +34,8 @@ def test_get_refence_design(optislang: Optislang):
     assert isinstance(design, Design)
     assert isinstance(design.parameters, tuple)
     assert isinstance(design.parameters[0], DesignVariable)
+    assert isinstance(design.responses, tuple)
+    assert isinstance(design.responses[0], DesignVariable)
 
 
 def test_evaluate_design(optislang: Optislang, tmp_path: Path):
