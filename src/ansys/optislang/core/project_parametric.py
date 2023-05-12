@@ -3250,39 +3250,39 @@ class Design:
     Parameters
     ----------
     parameters : Union[
-            Mapping[str, Union[bool, str, float, None]],
-            Iterable[Union[Parameter, DesignVariable]],
-            ], optional
+        Mapping[str, Union[bool, str, float, None]],
+        Iterable[Union[Parameter, DesignVariable]],
+    ], optional
         Dictionary of parameters and their values {'name': value, ...}
         or an iterable of design variables or parameters.
     constraints : Union[
-            Mapping[str, Union[bool, str, float, None]],
-            Iterable[Union[ConstraintCriterion, DesignVariable]],
-            ], optional
+        Mapping[str, Union[bool, str, float, None]],
+        Iterable[Union[ConstraintCriterion, DesignVariable]],
+    ], optional
         Dictionary of constraint criteria and their values {'name': value, ...}
         or an iterable of design variables or constraint criteria.
     limit_states : Union[
         Mapping[str, Union[bool, str, float, None]],
         Iterable[Union[Criterion, DesignVariable]],
-        ], optional
+    ], optional
         Dictionary of limit state criteria and their values {'name': value, ...}
         or an iterable of design variables or limist state criteria.
     objectives : Union[
-            Mapping[str, Union[bool, str, float, None]],
-            Iterable[Union[Criterion, DesignVariable]],
-            ], optional
+        Mapping[str, Union[bool, str, float, None]],
+        Iterable[Union[Criterion, DesignVariable]],
+    ], optional
         Dictionary of objective criteria and their values {'name': value, ...}
         or an iterable of design variables or objective criteria.
     variables : Union[
-            Mapping[str, Union[bool, str, float, None]],
-            Iterable[Union[Criterion, DesignVariable]],
-            ], optional
+        Mapping[str, Union[bool, str, float, None]],
+        Iterable[Union[Criterion, DesignVariable]],
+    ], optional
         Dictionary of variable criteria and their values {'name': value, ...}
         or an iterable of design variables or variable criteria.
     responses : Union[
-            Mapping[str, Union[bool, str, float, None]],
-            Iterable[Union[Response, DesignVariable]],
-            ], optional
+        Mapping[str, Union[bool, str, float, None]],
+        Iterable[Union[Response, DesignVariable]],
+    ], optional
         Dictionary of responses and their values {'name': value, ...}
         or an iterable of design variables or responses.
     feasibility: Union[bool, None], optional
@@ -3290,7 +3290,7 @@ class Design:
     design_id: Union[int, None], optional
         Design's id, defaults to `None`.
     status: DesignStatus, optional
-        Design's status, defaults to `DesignStatus.IDLE`
+        Design's status, defaults to `DesignStatus.IDLE`.
 
     Examples
     --------

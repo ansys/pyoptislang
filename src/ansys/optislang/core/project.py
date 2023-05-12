@@ -89,7 +89,7 @@ class Project:
 
         Returns
         -------
-        Path
+        pathlib.Path
             Path to the optiSLang project file. If no project is loaded in the optiSLang,
             ``None`` is returned.
 

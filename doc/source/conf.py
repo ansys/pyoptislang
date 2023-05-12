@@ -40,8 +40,10 @@ intersphinx_mapping = {
     # "pyvista": ("https://docs.pyvista.org/", None),
     # "grpc": ("https://grpc.github.io/grpc/python/", None),
 }
+suppress_warnings = ["label.*"]
 
 # numpydoc configuration
+numpydoc_use_plots = True
 numpydoc_show_class_members = False
 numpydoc_xref_param_type = True
 

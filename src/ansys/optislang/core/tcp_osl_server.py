@@ -236,7 +236,7 @@ class TcpClient:
 
         Parameters
         ----------
-        file_path : Union[str, Path]
+        file_path : Union[str, pathlib.Path]
             Path to the file whose content is to be sent to the server.
         timeout : Union[float, None], optional
             Timeout in seconds to send the buffer of the read part of the file. If a non-zero value
@@ -330,7 +330,7 @@ class TcpClient:
 
         Parameters
         ----------
-        file_path : Union[str, Path]
+        file_path : Union[str, pathlib.Path]
             Path where the received file is to be saved.
         timeout : Union[float, None], optional
             Timeout in seconds to receive a buffer of the file part. The function will raise
@@ -485,7 +485,7 @@ class TcpClient:
         ----------
         file_len : int
             Number of bytes to be written.
-        file_path : Union[str, Path]
+        file_path : Union[str, pathlib.Path]
             Path to the file to which the received data is to be written.
         timeout : Union[float, None], optional
             Timeout in seconds to receive bytes from the server and write them to the file.
@@ -818,10 +818,10 @@ class TcpOslServer(OslServer):
         Defaults to ``None``.
     port : int, optional
         A numeric port number of running optiSLang server. Defaults to ``None``.
-    executable : Union[str, Path], optional
+    executable : Union[str, pathlib.Path], optional
         Path to the optiSLang executable file which supposed to be executed on localhost.
         It is ignored when the host and port parameters are specified. Defaults to ``None``.
-    project_path : Union[str, Path], optional
+    project_path : Union[str, pathlib.Path], optional
         Path to the optiSLang project file which is supposed to be used by new local optiSLang
         server. It is ignored when the host and port parameters are specified.
         - If the project file exists, it is opened.
@@ -1411,7 +1411,7 @@ class TcpOslServer(OslServer):
 
         Returns
         -------
-        Path
+        pathlib.Path
             Path to the optiSLang project file. If no project is loaded in the optiSLang,
             returns ``None``.
 
@@ -1599,7 +1599,7 @@ class TcpOslServer(OslServer):
 
         Returns
         -------
-        Path
+        pathlib.Path
             Path to the optiSLang project working directory. If no project is loaded
             in the optiSLang, returns ``None``.
 
@@ -1642,7 +1642,7 @@ class TcpOslServer(OslServer):
 
         Parameters
         ----------
-        file_path : Union[str, Path]
+        file_path : Union[str, pathlib.Path]
             Path to the optiSLang project file to open.
         force : bool, optional
             Whether to force opening of project even if (non-critical) errors occur.
@@ -1739,7 +1739,7 @@ class TcpOslServer(OslServer):
 
         Parameters
         ----------
-        file_path : Union[str, Path]
+        file_path : Union[str, pathlib.Path]
             Path to the Python script file which content is supposed to be executed on the server.
         args : Sequence[object], None, optional
             Sequence of arguments used in Python script. Defaults to ``None``.
@@ -1793,7 +1793,7 @@ class TcpOslServer(OslServer):
 
         Parameters
         ----------
-        file_path : Union[str, Path]
+        file_path : Union[str, pathlib.Path]
             Path where to save the project file.
         force : bool, optional
             Whether to force opening of project even if (non-critical) errors occur.
@@ -1832,7 +1832,7 @@ class TcpOslServer(OslServer):
 
         Parameters
         ----------
-        file_path : Union[str, Path]
+        file_path : Union[str, pathlib.Path]
             Path where to save the project copy.
 
         Raises
@@ -2451,7 +2451,7 @@ class TcpOslServer(OslServer):
         """Check type and suffix of project_file path."""
         if not isinstance(file_path, Path):
             raise TypeError(
-                f'Invalid type of project_path: "{type(file_path)}", "Path" is supported.'
+                f'Invalid type of project_path: "{type(file_path)}", "pathlib.Path" is supported.'
             )
         if not file_path.suffix == ".opf":
             raise ValueError('Invalid optiSLang project file, project must end with ".opf".')
