@@ -1435,7 +1435,7 @@ class ObjectiveCriterion(Criterion):
         )
 
     def to_dict(self) -> dict:
-        """Convert an instance of the ``LimitStateCriterion`` class to a dictionary.
+        """Convert an instance of the ``ObjectiveCriterion`` class to a dictionary.
 
         Returns
         -------
@@ -1576,7 +1576,7 @@ class VariableCriterion(Criterion):
         )
 
     def to_dict(self) -> dict:
-        """Convert an instance of the ``LimitStateCriterion`` class to a dictionary.
+        """Convert an instance of the ``VariableCriterion`` class to a dictionary.
 
         Returns
         -------
