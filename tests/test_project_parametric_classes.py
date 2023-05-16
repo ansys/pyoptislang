@@ -292,7 +292,7 @@ VARIABLE_CRITERION_DICT = {
         },
     },
 }
-RESPONSE = Response(name="variable_1", value=0)
+RESPONSE = Response(name="variable_1", reference_value=0)
 RESPONSE_DICT = {"variable_1": 0}
 
 
@@ -954,14 +954,14 @@ def test_variable_criterion():
 # TEST RESPONSES:
 def test_response():
     """Test `Response`."""
-    response = Response(name="variable_1", value=0)
+    response = Response(name="variable_1", reference_value=0)
     assert isinstance(response, Response)
     assert isinstance(response.name, str)
-    assert response.value == 0
-    assert isinstance(response.value_type, ResponseValueType)
+    assert response.reference_value == 0
+    assert isinstance(response.reference_value_type, ResponseValueType)
 
-    response_eq = Response(name="variable_1", value=0)
-    response_neq = Response(name="variable_1", value=[0])
+    response_eq = Response(name="variable_1", reference_value=0)
+    response_neq = Response(name="variable_1", reference_value=[0])
     response_copy = copy.deepcopy(response)
     assert response == response_eq
     assert not response == response_neq
@@ -972,36 +972,36 @@ def test_response():
     response.name = "response1"
     assert response.name == "response1"
 
-    response.value = 10.0
-    assert response.value == 10
-    assert response.value_type == ResponseValueType.SCALAR
+    response.reference_value = 10.0
+    assert response.reference_value == 10
+    assert response.reference_value_type == ResponseValueType.SCALAR
 
-    response.value = complex(10, 10)
-    assert response.value == complex(10, 10)
-    assert response.value_type == ResponseValueType.SCALAR
+    response.reference_value = complex(10, 10)
+    assert response.reference_value == complex(10, 10)
+    assert response.reference_value_type == ResponseValueType.SCALAR
 
-    response.value = True
-    assert response.value == True
-    assert response.value_type == ResponseValueType.BOOL
+    response.reference_value = True
+    assert response.reference_value == True
+    assert response.reference_value_type == ResponseValueType.BOOL
 
-    response.value = None
-    assert response.value == None
-    assert response.value_type == ResponseValueType.UNINITIALIZED
+    response.reference_value = None
+    assert response.reference_value == None
+    assert response.reference_value_type == ResponseValueType.UNINITIALIZED
 
-    response.value = [1, 2, 3]
-    assert response.value == [1, 2, 3]
-    assert response.value_type == ResponseValueType.VECTOR
+    response.reference_value = [1, 2, 3]
+    assert response.reference_value == [1, 2, 3]
+    assert response.reference_value_type == ResponseValueType.VECTOR
 
-    response.value = {"channels": [1, 2, 3], "type": "signal"}
-    assert response.value == {"channels": [1, 2, 3], "type": "signal"}
-    assert response.value_type == ResponseValueType.SIGNAL
+    response.reference_value = {"channels": [1, 2, 3], "type": "signal"}
+    assert response.reference_value == {"channels": [1, 2, 3], "type": "signal"}
+    assert response.reference_value_type == ResponseValueType.SIGNAL
 
-    response.value = {"matrix": [1, 2, 3], "type": "xydata"}
-    assert response.value == {"matrix": [1, 2, 3], "type": "xydata"}
-    assert response.value_type == ResponseValueType.XYDATA
+    response.reference_value = {"matrix": [1, 2, 3], "type": "xydata"}
+    assert response.reference_value == {"matrix": [1, 2, 3], "type": "xydata"}
+    assert response.reference_value_type == ResponseValueType.XYDATA
 
     with pytest.raises(TypeError):
-        response.value = (1, 2, 3)
+        response.reference_value = (1, 2, 3)
 
 
 # TEST DESIGN:

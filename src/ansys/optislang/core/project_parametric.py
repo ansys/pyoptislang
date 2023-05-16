@@ -2856,8 +2856,10 @@ class Response:
     def __init__(
         self,
         name: str = "",
-        value: Union[Tuple[ResponseValueType, str], bool, float, complex, list, dict, None] = None,
-        value_type: ResponseValueType = None,
+        reference_value: Union[
+            Tuple[ResponseValueType, str], bool, float, complex, list, dict, None
+        ] = None,
+        reference_value_type: ResponseValueType = None,
     ) -> None:
         """Create a new instance of ``Response``.
 
@@ -2865,16 +2867,16 @@ class Response:
         ----------
         name: str
             Response name.
-        value: Union[tuple, bool, float, complex, list, dict, None], optional
-            Value of the response.
-        value_type: ResponseValueType, opt
-            Type of the response value.
+        reference_value: Union[tuple, bool, float, complex, list, dict, None], optional
+            Reference value of the response.
+        reference_value_type: ResponseValueType, opt
+            Type of the response reference value.
         """
         self.name = name
-        if value and isinstance(value_type, ResponseValueType):
-            self.value = (value_type, value)
+        if reference_value and isinstance(reference_value_type, ResponseValueType):
+            self.reference_value = (reference_value_type, reference_value)
         else:
-            self.value = value
+            self.reference_value = reference_value
 
     def __eq__(self, other: Response) -> bool:
         """Compare properties of two instances of the ``Response`` class.
@@ -2892,19 +2894,23 @@ class Response:
         if type(self) == type(other):
             checks = {}
             checks["name"] = self.name == other.name
-            checks["value"] = self.value == other.value
-            checks["value_type"] = self.value_type == other.value_type
+            checks["reference_value"] = self.reference_value == other.reference_value
+            checks["reference_value_type"] = self.reference_value_type == other.reference_value_type
             return False not in checks.values()
         else:
             return False
 
     def __deepcopy__(self, memo) -> Response:
         """Return deep copy of given response."""
-        return Response(name=self.name, value=copy.deepcopy(self.value), value_type=self.value_type)
+        return Response(
+            name=self.name,
+            reference_value=copy.deepcopy(self.reference_value),
+            reference_value_type=self.reference_value_type,
+        )
 
     @property
     def name(self) -> str:
-        """Name of the criterion."""
+        """Name of the response."""
         return self.__name
 
     @name.setter
@@ -2928,96 +2934,102 @@ class Response:
         self.__name = name
 
     @property
-    def value(self) -> Union[bool, float, complex, list, dict, None]:
-        """Value of the response."""
-        return self.__value
+    def reference_value(self) -> Union[bool, float, complex, list, dict, None]:
+        """Reference value of the response."""
+        return self.__reference_value
 
-    @value.setter
-    def value(
-        self, value: Union[Tuple[ResponseValueType, str], bool, float, complex, list, dict, None]
+    @reference_value.setter
+    def reference_value(
+        self,
+        reference_value: Union[
+            Tuple[ResponseValueType, str], bool, float, complex, list, dict, None
+        ],
     ) -> None:
-        """Set response value."""
-        if isinstance(value, tuple) and isinstance(value[0], ResponseValueType):
-            self.__value = self._parse_str_to_value(value[0], value[1])
-            self.__value_type = value[0]
+        """Set response reference value."""
+        if isinstance(reference_value, tuple) and isinstance(reference_value[0], ResponseValueType):
+            self.__reference_value = self._parse_str_to_value(
+                reference_value[0], reference_value[1]
+            )
+            self.__reference_value_type = reference_value[0]
         else:
-            self.__value = value
-            self.__value_type = self._get_value_type(value)
+            self.__reference_value = reference_value
+            self.__reference_value_type = self._get_reference_value_type(reference_value)
 
     @property
-    def value_type(self) -> CriterionValueType:
-        """Return type of the response value."""
-        return self.__value_type
+    def reference_value_type(self) -> ResponseValueType:
+        """Return type of the response reference value."""
+        return self.__reference_value_type
 
     @staticmethod
-    def _get_value_type(value: Any) -> ResponseValueType:
-        """Return type of the value.
+    def _get_reference_value_type(reference_value: Any) -> ResponseValueType:
+        """Return type of the reference value.
 
         Parameters
         ----------
-        value: Any
-            Criterion value.
+        reference_value: Any
+            Response reference value.
         """
-        if isinstance(value, bool):
+        if isinstance(reference_value, bool):
             return ResponseValueType.BOOL
-        elif isinstance(value, (float, int, complex)):
+        elif isinstance(reference_value, (float, int, complex)):
             return ResponseValueType.SCALAR
-        elif value == None:
+        elif reference_value == None:
             return ResponseValueType.UNINITIALIZED
-        elif isinstance(value, list):
+        elif isinstance(reference_value, list):
             return ResponseValueType.VECTOR
-        elif isinstance(value, dict):
-            if value.get("type") == "signal":
+        elif isinstance(reference_value, dict):
+            if reference_value.get("type") == "signal":
                 return ResponseValueType.SIGNAL
-            elif value.get("type") == "xydata":
+            elif reference_value.get("type") == "xydata":
                 return ResponseValueType.XYDATA
             else:
                 return ResponseValueType.UNINITIALIZED
         else:
-            raise TypeError(f"Unsupported type of value: ``{value}``.")
+            raise TypeError(f"Unsupported type of value: ``{reference_value}``.")
 
     @staticmethod
     def _parse_str_to_value(
-        value_type: ResponseValueType, value: Union[dict, None, bool, float, list]
+        reference_value_type: ResponseValueType,
+        reference_value: Union[dict, None, bool, float, list],
     ):
         """Parse string representation of value to value.
 
         Parameters
         ----------
-        value_type: ResponseValueType
-            Type of value.
-        value: dict
+        reference_value_type: ResponseValueType
+            Type of reference_value.
+        reference_value: dict
             Dictionary with stored data.
         """
-        if value_type == ResponseValueType.UNINITIALIZED:
+        if reference_value_type == ResponseValueType.UNINITIALIZED:
             return None
-        elif value_type == ResponseValueType.BOOL:
-            return value
-        elif value_type == ResponseValueType.SCALAR:
-            if isinstance(value, dict):
-                return complex(real=value.get("real"), imag=value.get("imag"))
-            elif isinstance(value, (int, float)):
-                return value
-        elif value_type == ResponseValueType.VECTOR:
-            return value
-        elif value_type in [
+        elif reference_value_type == ResponseValueType.BOOL:
+            return reference_value
+        elif reference_value_type == ResponseValueType.SCALAR:
+            if isinstance(reference_value, dict):
+                return complex(real=reference_value.get("real"), imag=reference_value.get("imag"))
+            elif isinstance(reference_value, (int, float)):
+                return reference_value
+        elif reference_value_type == ResponseValueType.VECTOR:
+            return reference_value
+        elif reference_value_type in [
             ResponseValueType.SIGNAL,
             ResponseValueType.XYDATA,
         ]:
-            return value
+            return reference_value
         else:
-            raise TypeError(f"Invalid kind of criterion: ``{type}``.")
+            raise TypeError(f"Invalid kind of response: ``{type}``.")
 
     @staticmethod
-    def from_dict(name: str, value: Union[bool, float, complex, list, dict]) -> Response:
+    def from_dict(name: str, reference_value: Union[bool, float, complex, list, dict]) -> Response:
         """Create an instance of the ``Response`` class from optiSLang output.
 
         Parameters
         ----------
         name: str
             Response's name.
-        value: Union[bool, float, complex, list, dict]
-            Response's value.
+        reference_value: Union[bool, float, complex, list, dict]
+            Response's reference value.
 
         Returns
         -------
@@ -3029,12 +3041,28 @@ class Response:
         TypeError
             Raised when undefined type of response is given.
         """
-        if isinstance(value, dict):
-            response_type = ResponseValueType.from_str(value["type"])
+        if isinstance(reference_value, dict):
+            reference_value_type = ResponseValueType.from_str(reference_value["type"])
         else:
-            response_type = None
+            reference_value_type = None
 
-        return Response(name=name, value=value, value_type=response_type)
+        return Response(
+            name=name, reference_value=reference_value, reference_value_type=reference_value_type
+        )
+
+    def to_dict(self) -> dict:
+        """Convert an instance of the ``Response`` class to a dictionary.
+
+        Returns
+        -------
+        dict
+            Input dictionary for the optiSLang server.
+
+        """
+        return {
+            "name": self.name,
+            "reference_value": self.reference_value,
+        }
 
 
 # MANAGERS:
@@ -3835,8 +3863,10 @@ class Design:
         else:
             for response in responses:
                 if isinstance(response, (Response, DesignVariable)):
-                    value = response.value
-                    responses_list.append(DesignVariable(name=response.name, value=response.value))
+                    value = response.reference_value
+                    responses_list.append(
+                        DesignVariable(name=response.name, value=response.reference_value)
+                    )
                 else:
                     raise TypeError(f"Response type: ``{type(response)}`` is not supported.")
         return responses_list
