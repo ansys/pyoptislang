@@ -8,7 +8,12 @@ from ansys.optislang.core.nodes import RootSystem
 
 if TYPE_CHECKING:
     from ansys.optislang.core.osl_server import OslServer
-    from ansys.optislang.core.project_parametric import Design, ParameterManager
+    from ansys.optislang.core.project_parametric import (
+        CriteriaManager,
+        Design,
+        ParameterManager,
+        ResponseManager,
+    )
 
 
 class Project:
@@ -177,6 +182,28 @@ class Project:
             Parameter manager at the root system.
         """
         return self.__root_system.parameter_manager
+
+    @property
+    def response_manager(self) -> ResponseManager:
+        """Instance of the ``ResponseManager`` class at the root system.
+
+        Returns
+        -------
+        ResponseManager
+            Response manager at the root system.
+        """
+        return self.__root_system.response_manager
+
+    @property
+    def criteria_manager(self) -> CriteriaManager:
+        """Instance of the ``CriteriaManager`` class at the root system.
+
+        Returns
+        -------
+        CriteriaManager
+            Criteria manager at the root system.
+        """
+        return self.__root_system.criteria_manager
 
     @property
     def root_system(self) -> RootSystem:
