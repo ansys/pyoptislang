@@ -44,9 +44,9 @@ class OslServerProcess:
 
     Parameters
     ----------
-    executable : Union[str, Path]
+    executable : Union[str, pathlib.Path]
         Path to the optiSLang executable file.
-    project_path : Union[str, Path], optional
+    project_path : Union[str, pathlib.Path], optional
         Path to the optiSLang project file.
         - If the project file exists, it is opened.
         - If the project file does not exist, a new project is created on the specified path.
@@ -62,7 +62,7 @@ class OslServerProcess:
     no_save : bool, optional
         Determines whether not to save the specified project after all other actions are completed.
         Defaults to ``False``.
-    server_info : Union[str, Path], optional
+    server_info : Union[str, pathlib.Path], optional
         Path to the server information file. If an absolute path is not supplied, it is considered
         to be relative to the project working directory. If ``None``, no server information file
         will be written. Defaults to ``None``.
@@ -171,7 +171,7 @@ class OslServerProcess:
         if not isinstance(project_path, Path):
             raise TypeError(
                 f"Invalid type of project_path: {type(project_path)},"
-                "Union[str, Path] is supported."
+                "Union[str, pathlib.Path] is supported."
             )
 
         if not project_path.suffix == ".opf":
@@ -184,7 +184,7 @@ class OslServerProcess:
         elif not (isinstance(server_info, Path) or server_info is None):
             raise TypeError(
                 f"Invalid type of server_info: {type(server_info)},"
-                "Union[str, Path] is supported."
+                "Union[str, pathlib.Path] is supported."
             )
         self.__server_info = server_info
 
@@ -219,7 +219,7 @@ class OslServerProcess:
 
         Returns
         -------
-        Path
+        pathlib.Path
             Path to the optiSLang project file.
         """
         return self.__project_path
@@ -276,7 +276,7 @@ class OslServerProcess:
 
         Returns
         -------
-        Union[Path, None]
+        Union[pathlib.Path, None]
             Path to the server information file, if defined; ``None`` otherwise.
         """
         return self.__server_info

@@ -66,11 +66,11 @@ The code shows how to go through all nodes in the project and print information 
 
 Parameters
 ----------
-To obtain defined parameters of any parametric system, you can use an instance of the 
+To obtain defined parameters of any parametric system, an instance of the 
 :class:`ParameterManager() <ansys.optislang.core.project_parametric.ParameterManager>`
-Class. This class contains the
+class can be used. This class contains the
 :func:`get_parameters() <ansys.optislang.core.project_parametric.ParameterManager.get_parameters>`, 
-method for returning tuples with detailed information for instances of the 
+method for returning tuple with detailed information for instances of the 
 :class:`OptimizationParameter() <ansys.optislang.core.project_parametric.OptimizationParameter>`,
 :class:`StochasticParameter() <ansys.optislang.core.project_parametric.StochasticParameter>`,
 :class:`MixedParameter() <ansys.optislang.core.project_parametric.MixedParameter>`, and
@@ -85,7 +85,44 @@ method  returns a tuple with only the names of the parameters:
 
     parameter_manager = root_system.parameter_manager
     parameters = parameter_manager.get_parameters()
-    parameters_names = parameter.get_parameters_names()
+    parameters_names = parameter_manager.get_parameters_names()
+
+Criteria
+--------
+To obtain defined criteria of any parametric system, an instance of the
+:class:`CriteriaManager() <ansys.optislang.core.project_parametric.CriteriaManager>`
+class can be used. This class contains the
+:func:`get_criteria() <ansys.optislang.core.project_parametric.CriteriaManager.get_criteria>`, 
+method for returning tuple with detailed information for instances of the 
+:class:`ConstraintCriterion() <ansys.optislang.core.project_parametric.ConstraintCriterion>`,
+:class:`ObjectiveCriterion() <ansys.optislang.core.project_parametric.ObjectiveCriterion>`,
+:class:`LimitStateCriterion() <ansys.optislang.core.project_parametric.LimitStateCriterion>`, and
+:class:`VariableCriterion() <ansys.optislang.core.project_parametric.VariableCriterion>` classes.
+
+.. code:: python
+
+    # ...
+
+    criteria_manager = root_system.criteria_manager
+    criteria = criteria_manager.get_criteria()
+    criteria_names = criteria_manager.get_criteria_names()
+
+Responses
+---------
+To obtain defined responses of any parametric system, an instance of the
+:class:`ResponseManager() <ansys.optislang.core.project_parametric.ResponseManager>`
+class can be used. This class contains the
+:func:`get_responses() <ansys.optislang.core.project_parametric.ResponseManager.get_responses>`, 
+method for returning tuple with detailed information for instance of the 
+:class:`Response() <ansys.optislang.core.project_parametric.Response>` class.
+
+.. code:: python
+
+    # ...
+
+    response_manager = root_system.response_manager
+    responses = criteria_manager.get_responses()
+    responses_names = response_manager.get_responses_names()
 
 
 When the :class:`Optislang() <ansys.optislang.core.optislang.Optislang>` instance is no longer 

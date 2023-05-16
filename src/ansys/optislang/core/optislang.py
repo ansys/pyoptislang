@@ -34,11 +34,11 @@ class Optislang:
         server. The default is ``None``.
     port : int, optional
         Port on which optiSLang is running as a server. The default is ``None``.
-    executable : Union[str, Path], optional
+    executable : Union[str, pathlib.Path], optional
         Path to the optiSLang executable file to execute on a the local host.
         The default is ``None``. This parameter is ignored when ``host``
         and ``port`` parameters are specified.
-    project_path : Union[str, Path], optional
+    project_path : Union[str, pathlib.Path], optional
         Path to the optiSLang project file that a new local optiSLang server
         is to use. The default is ``None``. This parameter is ignored
         when ``host`` and ``port`` parameters are specified. Here is how
@@ -329,7 +329,7 @@ class Optislang:
 
         Returns
         -------
-        Path
+        pathlib.Path
             Path to the optiSLang project's working directory. If no project is loaded
             in optiSLang, ``None`` is returned.
 
@@ -372,7 +372,7 @@ class Optislang:
 
         Parameters
         ----------
-        file_path : Union[str, Path]
+        file_path : Union[str, pathlib.Path]
             Path to the optiSLang project file to open.
         force : bool, optional
             Whether to force opening of the project even if non-critical errors occur.
@@ -454,7 +454,7 @@ class Optislang:
 
         Parameters
         ----------
-        file_path : Union[str, Path]
+        file_path : Union[str, pathlib.Path]
             Path to the Python script file with the content to execute on the server.
         args : Sequence[object], None, optional
             Sequence of arguments to use in the Python script. The default is ``None``.
@@ -502,7 +502,7 @@ class Optislang:
 
         Parameters
         ----------
-        file_path : Union[str, Path]
+        file_path : Union[str, pathlib.Path]
             Path for saving the new project file to.
         force : bool, optional
             Whether to force opening of the project even if non-critical errors occur.
@@ -534,7 +534,7 @@ class Optislang:
 
         Parameters
         ----------
-        file_path : Union[str, Path]
+        file_path : Union[str, pathlib.Path]
             Path for saving the copy of the project file to.
 
         Raises
