@@ -236,7 +236,7 @@ class TcpClient:
 
         Parameters
         ----------
-        file_path : Union[str, Path]
+        file_path : Union[str, pathlib.Path]
             Path to the file whose content is to be sent to the server.
         timeout : Union[float, None], optional
             Timeout in seconds to send the buffer of the read part of the file. If a non-zero value
@@ -330,7 +330,7 @@ class TcpClient:
 
         Parameters
         ----------
-        file_path : Union[str, Path]
+        file_path : Union[str, pathlib.Path]
             Path where the received file is to be saved.
         timeout : Union[float, None], optional
             Timeout in seconds to receive a buffer of the file part. The function will raise
@@ -485,7 +485,7 @@ class TcpClient:
         ----------
         file_len : int
             Number of bytes to be written.
-        file_path : Union[str, Path]
+        file_path : Union[str, pathlib.Path]
             Path to the file to which the received data is to be written.
         timeout : Union[float, None], optional
             Timeout in seconds to receive bytes from the server and write them to the file.
@@ -818,10 +818,10 @@ class TcpOslServer(OslServer):
         Defaults to ``None``.
     port : int, optional
         A numeric port number of running optiSLang server. Defaults to ``None``.
-    executable : Union[str, Path], optional
+    executable : Union[str, pathlib.Path], optional
         Path to the optiSLang executable file which supposed to be executed on localhost.
         It is ignored when the host and port parameters are specified. Defaults to ``None``.
-    project_path : Union[str, Path], optional
+    project_path : Union[str, pathlib.Path], optional
         Path to the optiSLang project file which is supposed to be used by new local optiSLang
         server. It is ignored when the host and port parameters are specified.
         - If the project file exists, it is opened.
@@ -1059,6 +1059,85 @@ class TcpOslServer(OslServer):
         """
         return self._send_command(queries.actor_info(uid=uid, password=self.__password))
 
+    def get_actor_states(self, uid: str) -> Dict:
+        """Get available actor states for a certain actor (only the IDs of the available states).
+
+        These can be used in conjunction with "get_actor_status_info" to obtain actor status info
+        for a specific state ID.
+
+        Parameters
+        ----------
+        uid : str
+            Actor uid.
+        Returns
+        -------
+        Dict
+            Info about actor defined by uid.
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        return self._send_command(queries.actor_states(uid=uid, password=self.__password))
+
+    def get_actor_status_info(self, uid: str, hid: str) -> Dict:
+        """Get status info about actor defined by actor uid and state Hid.
+
+        Parameters
+        ----------
+        uid : str
+            Actor uid.
+        hid: str
+            Hid entry.
+        Returns
+        -------
+        Dict
+            Info about actor defined by uid.
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        return self._send_command(
+            queries.actor_status_info(uid=uid, hid=hid, password=self.__password)
+        )
+
+    def get_actor_supports(self, uid: str, feature_name: str) -> bool:
+        """Get supported features of actor defined by uid.
+
+        Parameters
+        ----------
+        uid : str
+            Actor uid.
+        feature_name : str
+            Name of the feature.
+
+        Returns
+        -------
+        bool
+            Whether the given feature is supported.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        return self._send_command(
+            queries.actor_supports(uid=uid, feature_name=feature_name, password=self.__password)
+        )[feature_name.lower()]
+
     def get_actor_properties(self, uid: str) -> Dict:
         """Get properties of actor defined by uid.
 
@@ -1083,13 +1162,51 @@ class TcpOslServer(OslServer):
         """
         return self._send_command(queries.actor_properties(uid=uid, password=self.__password))
 
+    def get_full_project_status_info(self) -> Dict:
+        """Get full project status info.
+
+        Returns
+        -------
+        Dict
+            Full project status info.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        return self._send_command(queries.full_project_status_info(password=self.__password))
+
+    def get_full_project_tree(self) -> Dict:
+        """Get full project tree.
+
+        Returns
+        -------
+        Dict
+            Dictionary of full project tree without properties.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        return self._send_command(queries.full_project_tree(password=self.__password))
+
     def get_full_project_tree_with_properties(self) -> Dict:
         """Get full project tree with properties.
 
         Returns
         -------
         Dict
-            Properties of actor defined by uid.
+            Dictionary of project tree with properties.
 
         Raises
         ------
@@ -1102,6 +1219,96 @@ class TcpOslServer(OslServer):
         """
         return self._send_command(
             queries.full_project_tree_with_properties(password=self.__password)
+        )
+
+    def get_hpc_licensing_forwarded_environment(self, uid: str) -> Dict:
+        """Get hpc licensing forwarded environment for certain actor.
+
+        Parameters
+        ----------
+        uid : str
+            Actor uid.
+
+        Returns
+        -------
+        Dict
+            Dictionary with hpc licensing forwarded environment for certain actor.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        return self._send_command(
+            queries.hpc_licensing_forwarded_environment(uid=uid, password=self.__password)
+        )
+
+    def get_input_slot_value(self, uid: str, hid: str, slot_name: str) -> Dict:
+        """Get input slot value of actor defined by uid.
+
+        Parameters
+        ----------
+        uid : str
+            Actor uid.
+        hid: str
+            Hid entry.
+        slot_name: str
+            Slot name.
+
+        Returns
+        -------
+        Dict
+            Input slot value of the actor.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        return self._send_command(
+            queries.input_slot_value(
+                uid=uid, hid=hid, slot_name=slot_name, password=self.__password
+            )
+        )
+
+    def get_output_slot_value(self, uid: str, hid: str, slot_name: str) -> Dict:
+        """Get output slot value of actor defined by uid.
+
+        Parameters
+        ----------
+        uid : str
+            Actor uid.
+        hid: str
+            Hid entry.
+        slot_name: str
+            Slot name.
+
+        Returns
+        -------
+        Dict
+            Output slot value of the actor.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        return self._send_command(
+            queries.output_slot_value(
+                uid=uid, hid=hid, slot_name=slot_name, password=self.__password
+            )
         )
 
     def get_osl_version_string(self) -> str:
@@ -1204,7 +1411,7 @@ class TcpOslServer(OslServer):
 
         Returns
         -------
-        Path
+        pathlib.Path
             Path to the optiSLang project file. If no project is loaded in the optiSLang,
             returns ``None``.
 
@@ -1288,6 +1495,86 @@ class TcpOslServer(OslServer):
         project_uid = project_tree.get("projects", [{}])[0].get("system", {}).get("uid", None)
         return project_uid
 
+    def get_project_tree_systems(self) -> Dict:
+        """Get project tree systems without properties.
+
+        Returns
+        -------
+        Dict
+            Dictionary of project tree systems without properties.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        return self._send_command(queries.project_tree_systems(password=self.__password))
+
+    def get_project_tree_systems_with_properties(self) -> Dict:
+        """Get project tree systems with properties.
+
+        Returns
+        -------
+        Dict
+            Dictionary of project tree systems with properties.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        return self._send_command(
+            queries.project_tree_systems_with_properties(password=self.__password)
+        )
+
+    def get_server_is_alive(self) -> bool:
+        """Get info whether the server is alive.
+
+        Returns
+        -------
+        bool
+            Whether the server is alive.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        response_dict = self._send_command(queries.server_is_alive(password=self.__password))
+        is_alive = response_dict.get("status") == "success"
+        return is_alive
+
+    def get_systems_status_info(self) -> Dict:
+        """Get project status info, including systems only.
+
+        Returns
+        -------
+        Dict
+            Project status info including systems only.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        return self._send_command(queries.systems_status_info(password=self.__password))
+
     def get_timeout(self) -> Union[float, None]:
         """Get current timeout value for execution of commands.
 
@@ -1312,7 +1599,7 @@ class TcpOslServer(OslServer):
 
         Returns
         -------
-        Path
+        pathlib.Path
             Path to the optiSLang project working directory. If no project is loaded
             in the optiSLang, returns ``None``.
 
@@ -1355,7 +1642,7 @@ class TcpOslServer(OslServer):
 
         Parameters
         ----------
-        file_path : Union[str, Path]
+        file_path : Union[str, pathlib.Path]
             Path to the optiSLang project file to open.
         force : bool, optional
             Whether to force opening of project even if (non-critical) errors occur.
@@ -1452,7 +1739,7 @@ class TcpOslServer(OslServer):
 
         Parameters
         ----------
-        file_path : Union[str, Path]
+        file_path : Union[str, pathlib.Path]
             Path to the Python script file which content is supposed to be executed on the server.
         args : Sequence[object], None, optional
             Sequence of arguments used in Python script. Defaults to ``None``.
@@ -1506,7 +1793,7 @@ class TcpOslServer(OslServer):
 
         Parameters
         ----------
-        file_path : Union[str, Path]
+        file_path : Union[str, pathlib.Path]
             Path where to save the project file.
         force : bool, optional
             Whether to force opening of project even if (non-critical) errors occur.
@@ -1545,7 +1832,7 @@ class TcpOslServer(OslServer):
 
         Parameters
         ----------
-        file_path : Union[str, Path]
+        file_path : Union[str, pathlib.Path]
             Path where to save the project copy.
 
         Raises
@@ -1704,7 +1991,10 @@ class TcpOslServer(OslServer):
             exec_started_listener.add_callback(
                 self.__class__.__terminate_listener_thread,
                 (
-                    [ServerNotification.PROCESSING_STARTED.name],
+                    [
+                        ServerNotification.PROCESSING_STARTED.name,
+                        ServerNotification.NOTHING_PROCESSED.name,
+                    ],
                     wait_for_started_queue,
                     self._logger,
                 ),
@@ -1973,6 +2263,7 @@ class TcpOslServer(OslServer):
             port=exec_started_listener.port,
             notifications=[
                 ServerNotification.PROCESSING_STARTED,
+                ServerNotification.NOTHING_PROCESSED,
                 ServerNotification.EXEC_FAILED,
                 ServerNotification.CHECK_FAILED,
             ],
@@ -2160,7 +2451,7 @@ class TcpOslServer(OslServer):
         """Check type and suffix of project_file path."""
         if not isinstance(file_path, Path):
             raise TypeError(
-                f'Invalid type of project_path: "{type(file_path)}", "Path" is supported.'
+                f'Invalid type of project_path: "{type(file_path)}", "pathlib.Path" is supported.'
             )
         if not file_path.suffix == ".opf":
             raise ValueError('Invalid optiSLang project file, project must end with ".opf".')
