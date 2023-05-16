@@ -2,16 +2,12 @@ Project parametric
 ==================
 These classes are specific to the :mod:`ansys.optislang.core.project_parametric <ansys.optislang.core.project_parametric>` module:
 
-.. currentmodule:: ansys.optislang.core.project_parametric
+.. toctree::
+   :maxdepth: 2
 
-.. autosummary::
-   :toctree: _autosummary
-   :template: class.rst
-
-   ParameterManager
-   Design
-   DesignVariable
-   DependentParameter
-   MixedParameter
-   OptimizationParameter
-   StochasticParameter
+   managers
+   design
+   criteria
+   parameters
+   responses
+   enumerations

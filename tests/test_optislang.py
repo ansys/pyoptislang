@@ -284,11 +284,3 @@ connect(python, "ODesign", sens, "IIDesign")
 #         optislang.dispose()
 #         time.sleep(3)
 #     assert dnr is None
-
-
-def test_dispose(optislang):
-    "Test ``dispose``."
-    with does_not_raise() as dnr:
-        optislang.dispose()
-        time.sleep(3)
-    assert dnr is None

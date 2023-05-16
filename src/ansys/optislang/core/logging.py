@@ -1,13 +1,14 @@
 """Osl logging module."""
+from __future__ import annotations
 
 from copy import copy
 from datetime import datetime
 import logging
+from typing import TYPE_CHECKING
 import weakref
 
-# TODO: from ansys.optislang.core.optislang import Optislang
-# specify type of ``osl`` in ``add_instance_logger(osl: Optislang)``
-# problem with cyclic import
+if TYPE_CHECKING:
+    from ansys.optislang.core import Optislang
 
 ## Default configuration
 LOG_LEVEL = "DEBUG"
@@ -191,6 +192,7 @@ class OslLogger:
 
         if level is None:
             level = self.log_level
+        level = level.upper()
         new_logger.setLevel(level)
 
         if self.file_handler:
@@ -225,7 +227,7 @@ class OslLogger:
         self.instances[child_logger] = self.create_logger(child_logger)
 
     def add_instance_logger(
-        self, instance_name: str, osl_instance, level: str = None
+        self, instance_name: str, osl_instance: Optislang, level: str = None
     ) -> OslCustomAdapter:
         """Add a logger for an Optislang instance.
 
@@ -233,7 +235,7 @@ class OslLogger:
         ----------
         instance_name : str
             Name of the instance logger.
-        osl_instance: ansys.optislang.core
+        osl_instance: Optislang
             Optislang instance object. This object should contain the ``name``
             attribute.
         level: str, opt

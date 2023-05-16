@@ -45,6 +45,8 @@ The ``ansys-optislang-core`` package provides these features:
   obtain information about projects. For more information, see :ref:`ref_functions`.
 - Executing Python commands from the optiSLang Python API. For more information, 
   see :ref:`ref_run_python`.
+- Evaluate designs on root project level. For more information, 
+  see :ref:`ref_design_evaluation`.
 
   
 Documentation and issues

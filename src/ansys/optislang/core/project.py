@@ -8,7 +8,12 @@ from ansys.optislang.core.nodes import RootSystem
 
 if TYPE_CHECKING:
     from ansys.optislang.core.osl_server import OslServer
-    from ansys.optislang.core.project_parametric import Design, ParameterManager
+    from ansys.optislang.core.project_parametric import (
+        CriteriaManager,
+        Design,
+        ParameterManager,
+        ResponseManager,
+    )
 
 
 class Project:
@@ -40,13 +45,17 @@ class Project:
             f"Location: {str(self.get_location())}"
         )
 
-    def evaluate_design(self, design: Design) -> Design:
+    def evaluate_design(self, design: Design, update_design: bool = True) -> Design:
         """Evaluate a design.
 
         Parameters
         ----------
         design: Design
             Instance of a ``Design`` class with defined parameters.
+        update_design: bool, optional
+            Determines whether given design should be updated and returned or new instance
+            should be created. When ``True`` given design is updated and returned, otherwise
+            new ``Design`` is created. Defaults to ``True``.
 
         Returns
         -------
@@ -62,7 +71,7 @@ class Project:
         TimeoutError
             Raised when the timeout float value expires.
         """
-        return self.root_system.evaluate_design(design=design)
+        return self.root_system.evaluate_design(design=design, update_design=update_design)
 
     def get_description(self) -> str:
         """Get the description of the optiSLang project.
@@ -89,7 +98,7 @@ class Project:
 
         Returns
         -------
-        Path
+        pathlib.Path
             Path to the optiSLang project file. If no project is loaded in the optiSLang,
             ``None`` is returned.
 
@@ -173,6 +182,28 @@ class Project:
             Parameter manager at the root system.
         """
         return self.__root_system.parameter_manager
+
+    @property
+    def response_manager(self) -> ResponseManager:
+        """Instance of the ``ResponseManager`` class at the root system.
+
+        Returns
+        -------
+        ResponseManager
+            Response manager at the root system.
+        """
+        return self.__root_system.response_manager
+
+    @property
+    def criteria_manager(self) -> CriteriaManager:
+        """Instance of the ``CriteriaManager`` class at the root system.
+
+        Returns
+        -------
+        CriteriaManager
+            Criteria manager at the root system.
+        """
+        return self.__root_system.criteria_manager
 
     @property
     def root_system(self) -> RootSystem:
