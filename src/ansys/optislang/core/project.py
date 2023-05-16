@@ -40,13 +40,17 @@ class Project:
             f"Location: {str(self.get_location())}"
         )
 
-    def evaluate_design(self, design: Design) -> Design:
+    def evaluate_design(self, design: Design, update_design: bool = True) -> Design:
         """Evaluate a design.
 
         Parameters
         ----------
         design: Design
             Instance of a ``Design`` class with defined parameters.
+        update_design: bool, optional
+            Determines whether given design should be updated and returned or new instance
+            should be created. When ``True`` given design is updated and returned, otherwise
+            new ``Design`` is created. Defaults to ``True``.
 
         Returns
         -------
@@ -62,7 +66,7 @@ class Project:
         TimeoutError
             Raised when the timeout float value expires.
         """
-        return self.root_system.evaluate_design(design=design)
+        return self.root_system.evaluate_design(design=design, update_design=update_design)
 
     def get_description(self) -> str:
         """Get the description of the optiSLang project.
