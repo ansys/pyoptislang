@@ -1,11 +1,56 @@
 """Utitilies module."""
+from __future__ import annotations
+
 import collections
+from enum import Enum
 import os
 from pathlib import Path
 import re
 from typing import Dict, Iterable, OrderedDict, Tuple, Union
 
 from ansys.optislang.core import FIRST_SUPPORTED_VERSION
+
+
+def enum_from_str(
+    string: str, enum_class: Enum, replace: Union[Tuple[str, str], None] = None
+) -> Enum:
+    """Convert string to enumeration.
+
+    Parameters
+    ----------
+    string: str
+        String to be converted.
+    enum_class: Enum
+        Enumeration type, upper case enumeration items are expected.
+    replace: Union[Tuple[str, str], None], optional
+        Characters to be replaced in given ``string``.
+            Tuple[0]: Replace from.
+            Tuple[1]: Replace to.
+
+    Returns
+    -------
+    Enum
+        Instance of given enumeration type.
+
+    Raises
+    ------
+    TypeError
+        Raised when the type of the ``string`` or the enum_class is invalid.
+    ValueError
+        Raised when the value for the ``string`` is invalid.
+    """
+    if not isinstance(string, str):
+        raise TypeError(f"String was expected, but `{type(string)}` was given.")
+    if not issubclass(enum_class, Enum):
+        raise TypeError(f"Enumeration class was expected, but `{type(enum_class)}` was given.")
+    string = string.upper()
+    if replace is not None:
+        string = string.replace(replace[0], replace[1])
+    try:
+        enum_type = enum_class[string]
+        return enum_type
+    except:
+        raise ValueError(f"``{string}`` not available in ``{enum_class.__name__}``.")
 
 
 def get_osl_exec(osl_version: Union[int, str, None] = None) -> Union[Tuple[int, Path], None]:
@@ -19,7 +64,7 @@ def get_osl_exec(osl_version: Union[int, str, None] = None) -> Union[Tuple[int, 
 
     Returns
     -------
-    Tuple[int, Path], None
+    Tuple[int, pathlib.Path], None
         optiSLang version and path to the corresponding executable file, if it exists.
         If both Ansys and standalone installations are present, the latest Ansys
         installation is returned. If no executable file is found for a specified
@@ -96,7 +141,7 @@ def _find_all_osl_exec_in_posix() -> OrderedDict[int, Tuple[Path, ...]]:
 
     Returns
     -------
-    OrderedDict[int, Tuple[Path, ...]]
+    OrderedDict[int, Tuple[pathlib.Path, ...]]
         Ordered dictionary of found optiSLang executables. The dictionary key corresponds
         to the optiSLang version and value to the tuple of the optiSLang executable paths.
         The dictionary is sorted by the version number in descending order.
@@ -116,7 +161,7 @@ def _find_ansys_osl_execs_in_windows_envars() -> Dict[int, Path]:
 
     Returns
     -------
-    Dict[int, Path]
+    Dict[int, pathlib.Path]
         Dictionary of found optiSLang executables. The dictionary key is an optiSLang version.
         The dictionary value is a path to the corresponding optiSLang executable file.
     """
@@ -138,7 +183,7 @@ def _find_ansys_osl_execs_in_windows_program_files() -> Dict[int, Path]:
 
     Returns
     -------
-    Dict[int, Path]
+    Dict[int, pathlib.Path]
         Dictionary of found optiSLang executables. The dictionary key is an optiSLang version.
         The dictionary value is a path to the corresponding optiSLang executable file.
     """
@@ -158,7 +203,7 @@ def _find_standalone_osl_execs_in_windows() -> Dict[int, Path]:
 
     Returns
     -------
-    Dict[int, Path]
+    Dict[int, pathlib.Path]
         Dictionary of found optiSLang executables. The dctionary key is an optiSLang version.
         The dictionary value is a path to the corresponding optiSLang executable file.
     """
@@ -185,7 +230,7 @@ def _find_ansys_osl_execs_in_posix() -> Dict[int, Path]:
 
     Returns
     -------
-    Dict[int, Path]
+    Dict[int, pathlib.Path]
         Dictionary of found optiSLang executables. The dictionary key is an optiSLang version.
         The dictionary value is a path to the corresponding optiSLang executable file.
     """
@@ -209,7 +254,7 @@ def _find_standalone_osl_execs_in_posix() -> Dict[int, Path]:
 
     Returns
     -------
-    Dict[int, Path]
+    Dict[int, pathlib.Path]
         Dictionary of found optiSLang executables. The dictionary key is an optiSLang version.
         The dictionary value is a path to the corresponding optiSLang executable file.
     """
@@ -236,14 +281,14 @@ def _merge_osl_exec_dicts(
 
     Parameters
     ----------
-    osl_execs_dicts : Iterable[Dict[int, Path]]
+    osl_execs_dicts : Iterable[Dict[int, pathlib.Path]]
         Iterable of dictionaries of optiSLang executable files. In each dictionary,
         the key is an optiSLang version. The value is a corresponding path to the
         optiSLang executable file.
 
     Returns
     -------
-    Dict[int, Tuple[Path, ...]]
+    Dict[int, Tuple[pathlib.Path, ...]]
         Merged dictionary in which the key is an optiSLang version and the value is
         a tuple of paths to the corresponding optiSLang executable files.
     """

@@ -421,7 +421,7 @@ class OslServer(ABC):
 
         Returns
         -------
-        Path
+        pathlib.Path
             Path to the optiSLang project file. If no project is loaded in the optiSLang,
             returns ``None``.
 
@@ -588,7 +588,7 @@ class OslServer(ABC):
 
         Returns
         -------
-        Path
+        pathlib.Path
             Path to the optiSLang project working directory. If no project is loaded
             in the optiSLang, returns ``None``.
 
@@ -630,7 +630,7 @@ class OslServer(ABC):
 
         Parameters
         ----------
-        file_path : Union[str, Path]
+        file_path : Union[str, pathlib.Path]
             Path to the optiSLang project file to open.
         force : bool, optional
             Whether to force opening of project even if (non-critical) errors occur.
@@ -709,7 +709,7 @@ class OslServer(ABC):
 
         Parameters
         ----------
-        file_path : Union[str, Path]
+        file_path : Union[str, pathlib.Path]
             Path to the Python script file which content is supposed to be executed on the server.
         args : Sequence[object], None, optional
             Sequence of arguments used in Python script. Defaults to ``None``.
@@ -759,7 +759,7 @@ class OslServer(ABC):
 
         Parameters
         ----------
-        file_path : Union[str, Path]
+        file_path : Union[str, pathlib.Path]
             Path where to save the project file.
         force : bool, optional
             Whether to force opening of project even if (non-critical) errors occur.
@@ -788,7 +788,7 @@ class OslServer(ABC):
 
         Parameters
         ----------
-        file_path : Union[str, Path]
+        file_path : Union[str, pathlib.Path]
             Path where to save the project copy.
 
         Raises
