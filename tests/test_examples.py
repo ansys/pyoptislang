@@ -140,7 +140,7 @@ for file in os.listdir(evaluate_design_examples_dir):
 
 
 def test_01_ten_bar_truss_evaluate_design():
-    """Test 01_ten_bar_truss.py."""
+    """Test 01_ten_bar_truss_evaluate_design.py."""
     with does_not_raise() as dnr:
         name = "01_ten_bar_truss"
         file = list(filter(lambda path: name in path, evaluate_design_example_files_paths))[0]
