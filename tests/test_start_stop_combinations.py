@@ -1,6 +1,5 @@
 """Test different start/stop/stop_gently combinations with Optislang class."""
 from contextlib import nullcontext as does_not_raise
-import time
 
 import pytest
 
@@ -44,5 +43,4 @@ def test_combinations(optislang: Optislang, input, expected):
             if method[0] == "stop":
                 optislang.stop(method[1])
         optislang.dispose()
-        time.sleep(5)
     assert dnr is expected
