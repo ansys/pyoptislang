@@ -7,7 +7,6 @@ import os
 from pathlib import Path
 from queue import Queue
 import re
-import select
 import signal
 import socket
 import struct
@@ -400,29 +399,17 @@ class TcpClient:
 
         response_len = -1
         bytes_to_receive = self.__class__._RESPONSE_SIZE_BYTES
-        # read from socket until response size (twice) has been received
-        while True:
-            try:
-                # Test if we will be able to read something from the connection.
-                readable_sockets, _, _ = select.select([self.__socket], [], [], 1)
-                if self.__socket in readable_sockets:
-                    # Read and convert response size. Assume server sent response size twice.
-                    # Sizes need to match.
-                    response_len_1 = struct.unpack("!Q", self.__socket.recv(bytes_to_receive))[0]
-                    response_len_2 = struct.unpack("!Q", self.__socket.recv(bytes_to_receive))[0]
-                    if response_len_1 != response_len_2:
-                        raise ResponseFormatError("The message size values do not match.")
 
-                    response_len = response_len_1
-                if response_len >= 0:
-                    break
-            except Exception as e:
-                self._logger.debug(e)
-                pass
-            now = time.time()
-            elapsed = now - start_time
-            if timeout is not None and elapsed > timeout:
-                raise TimeoutError("Time to receive message length has expired.")
+        # read from socket until response size (twice) has been received
+        response_len_1 = struct.unpack("!Q", self._receive_bytes(bytes_to_receive, timeout))[0]
+        response_len_2 = struct.unpack("!Q", self._receive_bytes(bytes_to_receive, timeout))[0]
+
+        if response_len_1 != response_len_2:
+            raise ResponseFormatError(
+                "Server response format unrecognized. Response sizes do not match."
+            )
+
+        response_len = response_len_1
 
         return response_len
 
