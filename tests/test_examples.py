@@ -3,6 +3,7 @@ import os
 import pathlib
 import time
 
+import matplotlib.pyplot as plt
 import pytest
 
 pytestmark = pytest.mark.local_osl
@@ -139,11 +140,12 @@ for file in os.listdir(evaluate_design_examples_dir):
         evaluate_design_example_files_paths.append(os.path.join(evaluate_design_examples_dir, file))
 
 
-def test_01_ten_bar_truss_evaluate_design():
+def test_01_ten_bar_truss_evaluate_design(monkeypatch):
     """Test 01_ten_bar_truss_evaluate_design.py."""
     with does_not_raise() as dnr:
         name = "01_ten_bar_truss"
         file = list(filter(lambda path: name in path, evaluate_design_example_files_paths))[0]
+        monkeypatch.setattr(plt, "show", lambda: None)
         exec(open(file).read())
         time.sleep(5)
     assert dnr is None
