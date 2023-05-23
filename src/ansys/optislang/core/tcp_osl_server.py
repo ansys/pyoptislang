@@ -938,7 +938,7 @@ class TcpOslServer(OslServer):
                     " is not fully supported. Please use at least version 23.1."
                 )
 
-    def _get_server_info(self) -> Dict:
+    def get_server_info(self) -> Dict:
         """Get information about the application, the server configuration and the open projects.
 
         Returns
@@ -955,9 +955,9 @@ class TcpOslServer(OslServer):
         TimeoutError
             Raised when the timeout float value expires.
         """
-        return self._send_command(queries.server_info(self.__password))
+        return self.send_command(queries.server_info(self.__password))
 
-    def _get_basic_project_info(self) -> Dict:
+    def get_basic_project_info(self) -> Dict:
         """Get basic project info, like name, location, global settings and status.
 
         Returns
@@ -974,7 +974,7 @@ class TcpOslServer(OslServer):
         TimeoutError
             Raised when the timeout float value expires.
         """
-        return self._send_command(queries.basic_project_info(self.__password))
+        return self.send_command(queries.basic_project_info(self.__password))
 
     def dispose(self) -> None:
         """Terminate all local threads and unregister listeners.
@@ -1018,7 +1018,7 @@ class TcpOslServer(OslServer):
         TimeoutError
             Raised when the timeout float value expires.
         """
-        return self._send_command(
+        return self.send_command(
             commands.evaluate_design(evaluate_dict, self.__password),
         )
 
@@ -1044,7 +1044,7 @@ class TcpOslServer(OslServer):
         TimeoutError
             Raised when the timeout float value expires.
         """
-        return self._send_command(queries.actor_info(uid=uid, password=self.__password))
+        return self.send_command(queries.actor_info(uid=uid, password=self.__password))
 
     def get_actor_states(self, uid: str) -> Dict:
         """Get available actor states for a certain actor (only the IDs of the available states).
@@ -1069,7 +1069,7 @@ class TcpOslServer(OslServer):
         TimeoutError
             Raised when the timeout float value expires.
         """
-        return self._send_command(queries.actor_states(uid=uid, password=self.__password))
+        return self.send_command(queries.actor_states(uid=uid, password=self.__password))
 
     def get_actor_status_info(self, uid: str, hid: str) -> Dict:
         """Get status info about actor defined by actor uid and state Hid.
@@ -1079,7 +1079,7 @@ class TcpOslServer(OslServer):
         uid : str
             Actor uid.
         hid: str
-            Hid entry.
+            State/Design hierarchical id.
         Returns
         -------
         Dict
@@ -1093,7 +1093,7 @@ class TcpOslServer(OslServer):
         TimeoutError
             Raised when the timeout float value expires.
         """
-        return self._send_command(
+        return self.send_command(
             queries.actor_status_info(uid=uid, hid=hid, password=self.__password)
         )
 
@@ -1121,7 +1121,7 @@ class TcpOslServer(OslServer):
         TimeoutError
             Raised when the timeout float value expires.
         """
-        return self._send_command(
+        return self.send_command(
             queries.actor_supports(uid=uid, feature_name=feature_name, password=self.__password)
         )[feature_name.lower()]
 
@@ -1147,7 +1147,7 @@ class TcpOslServer(OslServer):
         TimeoutError
             Raised when the timeout float value expires.
         """
-        return self._send_command(queries.actor_properties(uid=uid, password=self.__password))
+        return self.send_command(queries.actor_properties(uid=uid, password=self.__password))
 
     def get_full_project_status_info(self) -> Dict:
         """Get full project status info.
@@ -1166,7 +1166,7 @@ class TcpOslServer(OslServer):
         TimeoutError
             Raised when the timeout float value expires.
         """
-        return self._send_command(queries.full_project_status_info(password=self.__password))
+        return self.send_command(queries.full_project_status_info(password=self.__password))
 
     def get_full_project_tree(self) -> Dict:
         """Get full project tree.
@@ -1185,7 +1185,7 @@ class TcpOslServer(OslServer):
         TimeoutError
             Raised when the timeout float value expires.
         """
-        return self._send_command(queries.full_project_tree(password=self.__password))
+        return self.send_command(queries.full_project_tree(password=self.__password))
 
     def get_full_project_tree_with_properties(self) -> Dict:
         """Get full project tree with properties.
@@ -1204,7 +1204,7 @@ class TcpOslServer(OslServer):
         TimeoutError
             Raised when the timeout float value expires.
         """
-        return self._send_command(
+        return self.send_command(
             queries.full_project_tree_with_properties(password=self.__password)
         )
 
@@ -1230,7 +1230,7 @@ class TcpOslServer(OslServer):
         TimeoutError
             Raised when the timeout float value expires.
         """
-        return self._send_command(
+        return self.send_command(
             queries.hpc_licensing_forwarded_environment(uid=uid, password=self.__password)
         )
 
@@ -1242,7 +1242,7 @@ class TcpOslServer(OslServer):
         uid : str
             Actor uid.
         hid: str
-            Hid entry.
+            State/Design hierarchical id.
         slot_name: str
             Slot name.
 
@@ -1260,7 +1260,7 @@ class TcpOslServer(OslServer):
         TimeoutError
             Raised when the timeout float value expires.
         """
-        return self._send_command(
+        return self.send_command(
             queries.input_slot_value(
                 uid=uid, hid=hid, slot_name=slot_name, password=self.__password
             )
@@ -1274,7 +1274,7 @@ class TcpOslServer(OslServer):
         uid : str
             Actor uid.
         hid: str
-            Hid entry.
+            State/Design hierarchical id.
         slot_name: str
             Slot name.
 
@@ -1292,7 +1292,7 @@ class TcpOslServer(OslServer):
         TimeoutError
             Raised when the timeout float value expires.
         """
-        return self._send_command(
+        return self.send_command(
             queries.output_slot_value(
                 uid=uid, hid=hid, slot_name=slot_name, password=self.__password
             )
@@ -1315,7 +1315,7 @@ class TcpOslServer(OslServer):
         TimeoutError
             Raised when the timeout float value expires.
         """
-        server_info = self._get_server_info()
+        server_info = self.get_server_info()
         return server_info["application"]["version"]
 
     def get_osl_version(self) -> Tuple[Union[int, None], ...]:
@@ -1386,7 +1386,7 @@ class TcpOslServer(OslServer):
         TimeoutError
             Raised when the timeout float value expires.
         """
-        project_info = self._get_basic_project_info()
+        project_info = self.get_basic_project_info()
         if len(project_info.get("projects", [])) == 0:
             return None
         return (
@@ -1411,7 +1411,7 @@ class TcpOslServer(OslServer):
         TimeoutError
             Raised when the timeout float value expires.
         """
-        project_info = self._get_basic_project_info()
+        project_info = self.get_basic_project_info()
         project_path = project_info.get("projects", [{}])[0].get("location", None)
         return None if not project_path else Path(project_path)
 
@@ -1433,7 +1433,7 @@ class TcpOslServer(OslServer):
         TimeoutError
             Raised when the timeout float value expires.
         """
-        project_info = self._get_basic_project_info()
+        project_info = self.get_basic_project_info()
         if len(project_info.get("projects", [])) == 0:
             return None
         return project_info.get("projects", [{}])[0].get("name", None)
@@ -1456,7 +1456,7 @@ class TcpOslServer(OslServer):
         TimeoutError
             Raised when the timeout float value expires.
         """
-        project_info = self._get_basic_project_info()
+        project_info = self.get_basic_project_info()
         if len(project_info.get("projects", [])) == 0:
             return None
         return project_info.get("projects", [{}])[0].get("state", None)
@@ -1499,7 +1499,7 @@ class TcpOslServer(OslServer):
         TimeoutError
             Raised when the timeout float value expires.
         """
-        return self._send_command(queries.project_tree_systems(password=self.__password))
+        return self.send_command(queries.project_tree_systems(password=self.__password))
 
     def get_project_tree_systems_with_properties(self) -> Dict:
         """Get project tree systems with properties.
@@ -1518,7 +1518,7 @@ class TcpOslServer(OslServer):
         TimeoutError
             Raised when the timeout float value expires.
         """
-        return self._send_command(
+        return self.send_command(
             queries.project_tree_systems_with_properties(password=self.__password)
         )
 
@@ -1539,7 +1539,7 @@ class TcpOslServer(OslServer):
         TimeoutError
             Raised when the timeout float value expires.
         """
-        response_dict = self._send_command(queries.server_is_alive(password=self.__password))
+        response_dict = self.send_command(queries.server_is_alive(password=self.__password))
         is_alive = response_dict.get("status") == "success"
         return is_alive
 
@@ -1560,7 +1560,7 @@ class TcpOslServer(OslServer):
         TimeoutError
             Raised when the timeout float value expires.
         """
-        return self._send_command(queries.systems_status_info(password=self.__password))
+        return self.send_command(queries.systems_status_info(password=self.__password))
 
     def get_timeout(self) -> Union[float, None]:
         """Get current timeout value for execution of commands.
@@ -1599,7 +1599,7 @@ class TcpOslServer(OslServer):
         TimeoutError
             Raised when the timeout float value expires.
         """
-        project_info = self._get_basic_project_info()
+        project_info = self.get_basic_project_info()
         if len(project_info.get("projects", [])) == 0:
             return None
         return Path(project_info.get("projects", [{}])[0].get("working_dir", None))
@@ -1616,7 +1616,7 @@ class TcpOslServer(OslServer):
         TimeoutError
             Raised when the timeout float value expires.
         """
-        self._send_command(commands.new(password=self.__password))
+        self.send_command(commands.new(password=self.__password))
 
     def open(
         self,
@@ -1656,7 +1656,7 @@ class TcpOslServer(OslServer):
         if not file_path.is_file():
             raise FileNotFoundError(f'File "{file_path}" doesn\'t exist.')
 
-        self._send_command(
+        self.send_command(
             commands.open(
                 path=str(file_path.as_posix()),
                 do_force=force,
@@ -1678,7 +1678,7 @@ class TcpOslServer(OslServer):
         TimeoutError
             Raised when the timeout float value expires.
         """
-        self._send_command(commands.reset(password=self.__password))
+        self.send_command(commands.reset(password=self.__password))
 
     def run_python_script(
         self,
@@ -1708,7 +1708,7 @@ class TcpOslServer(OslServer):
         TimeoutError
             Raised when the timeout float value expires.
         """
-        responses = self._send_command(commands.run_python_script(script, args, self.__password))
+        responses = self.send_command(commands.run_python_script(script, args, self.__password))
         std_out = ""
         std_err = ""
         for response in responses:
@@ -1767,7 +1767,7 @@ class TcpOslServer(OslServer):
         TimeoutError
             Raised when the timeout float value expires.
         """
-        self._send_command(commands.save(password=self.__password))
+        self.send_command(commands.save(password=self.__password))
 
     def save_as(
         self,
@@ -1804,7 +1804,7 @@ class TcpOslServer(OslServer):
         file_path = self.__cast_to_path(file_path=file_path)
         self.__validate_path(file_path=file_path)
 
-        self._send_command(
+        self.send_command(
             commands.save_as(
                 path=str(file_path.as_posix()),
                 do_force=force,
@@ -1833,7 +1833,7 @@ class TcpOslServer(OslServer):
         """
         file_path = self.__cast_to_path(file_path=file_path)
         self.__validate_path(file_path=file_path)
-        self._send_command(commands.save_copy(str(file_path.as_posix()), self.__password))
+        self.send_command(commands.save_copy(str(file_path.as_posix()), self.__password))
 
     def set_timeout(self, timeout: Union[float, None] = None) -> None:
         """Set timeout value for execution of commands.
@@ -1909,7 +1909,7 @@ class TcpOslServer(OslServer):
 
         if self.__shutdown_on_finished in (False, None):
             try:
-                self._send_command(commands.shutdown(self.__password))
+                self.send_command(commands.shutdown(self.__password))
             except Exception:
                 if not force or self.__osl_process is None:
                     raise
@@ -2008,7 +2008,7 @@ class TcpOslServer(OslServer):
             self._logger.debug("Wait for finished thread was created.")
 
         if not already_running:
-            self._send_command(commands.start(self.__password))
+            self.send_command(commands.start(self.__password))
 
         if not already_running and (wait_for_started or wait_for_finished):
             self._logger.info(f"Waiting for started")
@@ -2079,11 +2079,11 @@ class TcpOslServer(OslServer):
             stop_request_priority = self._STOP_REQUESTS_PRIORITIES["STOP"]
             current_status_priority = self._STOP_REQUESTED_STATES_PRIORITIES[status]
             if stop_request_priority > current_status_priority:
-                self._send_command(commands.stop(self.__password))
+                self.send_command(commands.stop(self.__password))
             else:
                 self._logger.debug(f"Do not send STOP request, project status is: {status}")
         else:
-            self._send_command(commands.stop(self.__password))
+            self.send_command(commands.stop(self.__password))
 
         if wait_for_finished:
             self._logger.info(f"Waiting for finished")
@@ -2092,6 +2092,31 @@ class TcpOslServer(OslServer):
             if successfully_finished == "Terminate":
                 raise TimeoutError("Waiting for finished timed out.")
             self._logger.info(f"Successfully_finished: {successfully_finished}.")
+
+    def get_host(self) -> Union[str, None]:
+        """Get optiSLang server address or domain name.
+
+        Get a string representation of an IPv4/v6 address or domain name
+        of the running optiSLang server.
+
+        Returns
+        -------
+        timeout: Union[int, None]
+            The IPv4/v6 address or domain name of the running optiSLang server, if applicable.
+            Defaults to ``None``.
+        """
+        return self.__host
+
+    def get_port(self) -> Union[int, None]:
+        """Get the port the osl server is listening on.
+
+        Returns
+        -------
+        timeout: Union[int, None]
+            The port the osl server is listening on, if applicable.
+            Defaults to ``None``.
+        """
+        return self.__port
 
     def _unregister_listener(self, listener: TcpOslListener) -> None:
         """Unregister a listener.
@@ -2110,7 +2135,7 @@ class TcpOslServer(OslServer):
         TimeoutError
             Raised when the timeout float value expires.
         """
-        self._send_command(commands.unregister_listener(str(listener.uid), self.__password))
+        self.send_command(commands.unregister_listener(str(listener.uid), self.__password))
         listener.uid = None
 
     def _start_local(self, ini_timeout: float, shutdown_on_finished: bool) -> None:
@@ -2370,7 +2395,7 @@ class TcpOslServer(OslServer):
         TimeoutError
             Raised when the timeout float value expires.
         """
-        msg = self._send_command(
+        msg = self.send_command(
             commands.register_listener(
                 host=host,
                 port=port,
@@ -2401,7 +2426,7 @@ class TcpOslServer(OslServer):
             if counter >= self.__listeners_refresh_interval:
                 for listener in self.__listeners.values():
                     if listener.refresh_listener_registration:
-                        response = self._send_command(
+                        response = self.send_command(
                             commands.refresh_listener_registration(
                                 uid=listener.uid, password=self.__password
                             )
@@ -2443,7 +2468,7 @@ class TcpOslServer(OslServer):
         if not file_path.suffix == ".opf":
             raise ValueError('Invalid optiSLang project file, project must end with ".opf".')
 
-    def _send_command(self, command: str) -> Dict:
+    def send_command(self, command: str) -> Dict:
         """Send command or query to the optiSLang server.
 
         Parameters
@@ -2518,7 +2543,7 @@ class TcpOslServer(OslServer):
     #     TimeoutError
     #         Raised when the timeout float value expires.
     #     """
-    #     self._send_command(commands.close(password=self.__password))
+    #     self.send_command(commands.close(password=self.__password))
 
     # stop_gently method doesn't work properly in optiSLang 2023R1, therefore it was commented out
     # def stop_gently(self, wait_for_finished: bool = True) -> None:
@@ -2574,11 +2599,11 @@ class TcpOslServer(OslServer):
     #         stop_request_priority = self._STOP_REQUESTS_PRIORITIES["STOP_GENTLY"]
     #         current_status_priority = self._STOP_REQUESTED_STATES_PRIORITIES[status]
     #         if stop_request_priority > current_status_priority:
-    #             self._send_command(commands.stop(self.__password))
+    #             self.send_command(commands.stop(self.__password))
     #         else:
     #             self._logger.debug(f"Do not send STOP request, project status is: {status}")
     #     else:
-    #         self._send_command(commands.stop(self.__password))
+    #         self.send_command(commands.stop(self.__password))
 
     #     if wait_for_finished:
     #         self._logger.info(f"Waiting for finished")

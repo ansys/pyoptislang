@@ -538,9 +538,9 @@ def test_get_project_tree_systems_with_properties(osl_server_process: OslServerP
 
 
 def test_get_server_info(osl_server_process: OslServerProcess):
-    """Test ``_get_server_info``."""
+    """Test ``get_server_info``."""
     tcp_osl_server = create_tcp_osl_server(osl_server_process)
-    server_info = tcp_osl_server._get_server_info()
+    server_info = tcp_osl_server.get_server_info()
     tcp_osl_server.shutdown()
     tcp_osl_server.dispose()
     assert isinstance(server_info, dict)
@@ -548,9 +548,9 @@ def test_get_server_info(osl_server_process: OslServerProcess):
 
 
 def test_get_basic_project_info(osl_server_process: OslServerProcess):
-    """Test ``_get_basic_project_info``."""
+    """Test ``get_basic_project_info``."""
     tcp_osl_server = create_tcp_osl_server(osl_server_process)
-    basic_project_info = tcp_osl_server._get_basic_project_info()
+    basic_project_info = tcp_osl_server.get_basic_project_info()
     tcp_osl_server.shutdown()
     tcp_osl_server.dispose()
     assert isinstance(basic_project_info, dict)

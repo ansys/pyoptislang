@@ -9,6 +9,46 @@ from typing import Dict, List, Sequence, Tuple, Union
 class OslServer(ABC):
     """Base class for classes which provide access to optiSLang server."""
 
+    @abstractmethod
+    def get_server_info(self) -> Dict:  # pragma: no cover
+        """Get information about the application, the server configuration and the open projects.
+
+        Returns
+        -------
+        Dict
+            Information data as dictionary.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        pass
+
+    @abstractmethod
+    def get_basic_project_info(self) -> Dict:  # pragma: no cover
+        """Get basic project info, like name, location, global settings and status.
+
+        Returns
+        -------
+        Dict
+            Information data as dictionary.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        pass
+
     # @abstractmethod
     # def close(self) -> None:
     #     """Close the current project.
@@ -123,6 +163,8 @@ class OslServer(ABC):
         ----------
         uid : str
             Actor uid.
+        hid : str
+            State/Design hierarchical id.
         Returns
         -------
         Dict
@@ -284,7 +326,7 @@ class OslServer(ABC):
         uid : str
             Actor uid.
         hid: str
-            Hid entry.
+            State/Design hierarchical id.
         slot_name: str
             Slot name.
 
@@ -313,7 +355,7 @@ class OslServer(ABC):
         uid : str
             Actor uid.
         hid: str
-            Hid entry.
+            State/Design hierarchical id.
         slot_name: str
             Slot name.
 
@@ -901,6 +943,60 @@ class OslServer(ABC):
             Raised when the command or query fails.
         TimeoutError
             Raised when the timeout float value expires.
+        """
+        pass
+
+    @abstractmethod
+    def get_host(self) -> Union[str, None]:  # pragma: no cover
+        """Get optiSLang server address or domain name.
+
+        Get a string representation of an IPv4/v6 address or domain name
+        of the running optiSLang server.
+
+        Returns
+        -------
+        timeout: Union[int, None]
+            The IPv4/v6 address or domain name of the running optiSLang server, if applicable.
+            Defaults to ``None``.
+        """
+        pass
+
+    @abstractmethod
+    def get_port(self) -> Union[int, None]:  # pragma: no cover
+        """Get the port the osl server is listening on.
+
+        Returns
+        -------
+        timeout: Union[int, None]
+            The port the osl server is listening on, if applicable.
+            Defaults to ``None``.
+        """
+        pass
+
+    @abstractmethod
+    def send_command(self, command: str) -> Dict:  # pragma: no cover
+        """Send command or query to the optiSLang server.
+
+        Parameters
+        ----------
+        command : str
+            Command or query to be executed on optiSLang server.
+
+        Returns
+        -------
+        Dict
+            Response from the server.
+
+        Raises
+        ------
+        RuntimeError
+            Raised when the optiSLang server is not started.
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout expires.
         """
         pass
 

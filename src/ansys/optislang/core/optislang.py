@@ -655,6 +655,14 @@ class Optislang:
         """
         self.__osl_server.stop(wait_for_finished)
 
+    def get_osl_server(self) -> Union[OslServer, None]:
+        """Get the currently used instance of the OslServer.
+
+        This instance can be used to directly communicate with optiSLang using
+        the optiSLang server API.
+        """
+        return self.__osl_server
+
     # stop_gently method doesn't work properly in optiSLang 2023 R1. Thus, it was commented out
     # def stop_gently(self, wait_for_finished: bool = True) -> None:
     #     """Stop project execution after the design is finished.
