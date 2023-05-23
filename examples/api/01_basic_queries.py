@@ -2,9 +2,10 @@
 .. _ref_api_basic_queries:
 
 Basic API queries
--------------
+-----------------
 
-TODO
+This example demonstrates the usage of the explicit API
+to perform basic queries on root project level.
 
 """
 
@@ -19,6 +20,11 @@ import tempfile
 from ansys.optislang.core import Optislang
 import ansys.optislang.core.examples as examples
 from ansys.optislang.core.nodes import ParametricSystem, System
+
+#########################################################
+# Helper functions
+# ~~~~~~~~~~~~~~~~
+# Define a few helper functions.
 
 
 def print_node(node):
