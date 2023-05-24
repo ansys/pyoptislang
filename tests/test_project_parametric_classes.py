@@ -72,7 +72,7 @@ OPTIMIZATION_PARAMETER_DICT = {
     "unit": "",
 }
 STOCHASTIC_PARAMETER = StochasticParameter(
-    name="stochastic", id="9dbcac71-5538-485c-9e65-39255903ea78"
+    name="stochastic", id="9dbcac71-5538-485c-9e65-39255903ea78", statistical_moments=[0.0, 1.0]
 )
 STOCHASTIC_PARAMETER_DICT = {
     "active": True,
@@ -90,7 +90,48 @@ STOCHASTIC_PARAMETER_DICT = {
     "type": {"value": "stochastic"},
     "unit": "",
 }
-MIXED_PARAMETER = MixedParameter(name="mixed", id="ddc173ae-9784-4387-ae66-21fff6e199e5")
+STOCHASTIC_PARAMETER_2 = StochasticParameter(
+    name="stochastic", id="8dbcac71-5538-485c-9e65-39255903ea78", statistical_moments=[0.0], cov=0.1
+)
+STOCHASTIC_PARAMETER_DICT_2 = {
+    "active": True,
+    "const": False,
+    "id": "8dbcac71-5538-485c-9e65-39255903ea78",
+    "modifiable": False,
+    "name": "stochastic",
+    "reference_value": 0.0,
+    "removable": True,
+    "stochastic_property": {
+        "kind": {"value": "marginaldistribution"},
+        "statistical_moments": [0.0],
+        "cov": 0.1,
+        "type": {"value": "normal"},
+    },
+    "type": {"value": "stochastic"},
+    "unit": "",
+}
+STOCHASTIC_PARAMETER_3 = StochasticParameter(
+    name="stochastic", id="7dbcac71-5538-485c-9e65-39255903ea78", distribution_parameters=[0.0, 1.0]
+)
+STOCHASTIC_PARAMETER_DICT_3 = {
+    "active": True,
+    "const": False,
+    "id": "7dbcac71-5538-485c-9e65-39255903ea78",
+    "modifiable": False,
+    "name": "stochastic",
+    "reference_value": 0.0,
+    "removable": True,
+    "stochastic_property": {
+        "kind": {"value": "marginaldistribution"},
+        "distribution_parameters": [0.0, 1.0],
+        "type": {"value": "normal"},
+    },
+    "type": {"value": "stochastic"},
+    "unit": "",
+}
+MIXED_PARAMETER = MixedParameter(
+    name="mixed", id="ddc173ae-9784-4387-ae66-21fff6e199e5", statistical_moments=[0.0, 1.0]
+)
 MIXED_PARAMETER_DICT = {
     "active": True,
     "const": False,
@@ -660,7 +701,108 @@ def test_stochastic_parameter():
     assert isinstance(stochastic_parameter_copy.reference_value_type, ParameterValueType)
     assert isinstance(stochastic_parameter_copy.stochastic_resolution, ParameterResolution)
     assert isinstance(stochastic_parameter_copy.distribution_type, DistributionType)
+    assert isinstance(stochastic_parameter_copy.statistical_moments, tuple)
+
+    assert stochastic_parameter_copy.distribution_parameters == None
+    assert stochastic_parameter_copy.cov == None
+
+    with pytest.raises(AttributeError):
+        stochastic_parameter_copy.reference_value_type = "REAL"
+    assert stochastic_parameter_copy.reference_value_type == ParameterValueType.REAL
+
+    with pytest.raises(TypeError):
+        stochastic_parameter_copy.stochastic_resolution = ["deterministic"]
+    stochastic_parameter_copy.stochastic_resolution == "marginaldistribution"
+    assert (
+        stochastic_parameter_copy.stochastic_resolution == ParameterResolution.MARGINALDISTRIBUTION
+    )
+    stochastic_parameter_copy.stochastic_resolution = ParameterResolution.EMPIRICAL_CONTINUOUS
+    assert (
+        stochastic_parameter_copy.stochastic_resolution == ParameterResolution.EMPIRICAL_CONTINUOUS
+    )
+
+    with pytest.raises(TypeError):
+        stochastic_parameter_copy.distribution_type = ["BERNOULLI"]
+    stochastic_parameter_copy.distribution_type = "beta"
+    assert stochastic_parameter_copy.distribution_type == DistributionType.BETA
+    stochastic_parameter_copy.distribution_type = DistributionType.BERNOULLI
+    assert stochastic_parameter_copy.distribution_type == DistributionType.BERNOULLI
+
+    stochastic_parameter_copy.statistical_moments = [1, 2]
+    assert stochastic_parameter_copy.statistical_moments == (1, 2)
+    stochastic_parameter_copy.statistical_moments = [1]
+    assert stochastic_parameter_copy.statistical_moments == (1,)
+
+
+def test_stochastic_parameter_2():
+    """Test `StochasticParameter`."""
+    stochastic_parameter_dict = STOCHASTIC_PARAMETER_2.to_dict()
+    assert isinstance(stochastic_parameter_dict, dict)
+    for key in stochastic_parameter_dict.keys():
+        assert key in STOCHASTIC_PARAMETER_DICT_2
+
+    stochastic_parameter_from_dict = StochasticParameter.from_dict(STOCHASTIC_PARAMETER_DICT_2)
+    assert STOCHASTIC_PARAMETER_2 == stochastic_parameter_from_dict
+
+    stochastic_parameter_copy = copy.deepcopy(STOCHASTIC_PARAMETER_2)
+    assert STOCHASTIC_PARAMETER_2 == stochastic_parameter_copy
+
+    assert isinstance(stochastic_parameter_copy.reference_value_type, ParameterValueType)
+    assert isinstance(stochastic_parameter_copy.stochastic_resolution, ParameterResolution)
+    assert isinstance(stochastic_parameter_copy.distribution_type, DistributionType)
+    assert isinstance(stochastic_parameter_copy.statistical_moments, tuple)
+    assert isinstance(stochastic_parameter_copy.cov, float)
+
+    assert stochastic_parameter_copy.distribution_parameters == None
+
+    with pytest.raises(AttributeError):
+        stochastic_parameter_copy.reference_value_type = "REAL"
+    assert stochastic_parameter_copy.reference_value_type == ParameterValueType.REAL
+
+    with pytest.raises(TypeError):
+        stochastic_parameter_copy.stochastic_resolution = ["deterministic"]
+    stochastic_parameter_copy.stochastic_resolution == "marginaldistribution"
+    assert (
+        stochastic_parameter_copy.stochastic_resolution == ParameterResolution.MARGINALDISTRIBUTION
+    )
+    stochastic_parameter_copy.stochastic_resolution = ParameterResolution.EMPIRICAL_CONTINUOUS
+    assert (
+        stochastic_parameter_copy.stochastic_resolution == ParameterResolution.EMPIRICAL_CONTINUOUS
+    )
+
+    with pytest.raises(TypeError):
+        stochastic_parameter_copy.distribution_type = ["BERNOULLI"]
+    stochastic_parameter_copy.distribution_type = "beta"
+    assert stochastic_parameter_copy.distribution_type == DistributionType.BETA
+    stochastic_parameter_copy.distribution_type = DistributionType.BERNOULLI
+    assert stochastic_parameter_copy.distribution_type == DistributionType.BERNOULLI
+
+    stochastic_parameter_copy.statistical_moments = [1, 2]
+    assert stochastic_parameter_copy.statistical_moments == (1, 2)
+    stochastic_parameter_copy.statistical_moments = [1]
+    assert stochastic_parameter_copy.statistical_moments == (1,)
+
+
+def test_stochastic_parameter_3():
+    """Test `StochasticParameter`."""
+    stochastic_parameter_dict = STOCHASTIC_PARAMETER_3.to_dict()
+    assert isinstance(stochastic_parameter_dict, dict)
+    for key in stochastic_parameter_dict.keys():
+        assert key in STOCHASTIC_PARAMETER_DICT_3
+
+    stochastic_parameter_from_dict = StochasticParameter.from_dict(STOCHASTIC_PARAMETER_DICT_3)
+    assert STOCHASTIC_PARAMETER_3 == stochastic_parameter_from_dict
+
+    stochastic_parameter_copy = copy.deepcopy(STOCHASTIC_PARAMETER_3)
+    assert STOCHASTIC_PARAMETER_3 == stochastic_parameter_copy
+
+    assert isinstance(stochastic_parameter_copy.reference_value_type, ParameterValueType)
+    assert isinstance(stochastic_parameter_copy.stochastic_resolution, ParameterResolution)
+    assert isinstance(stochastic_parameter_copy.distribution_type, DistributionType)
     assert isinstance(stochastic_parameter_copy.distribution_parameters, tuple)
+
+    assert stochastic_parameter_copy.statistical_moments == None
+    assert stochastic_parameter_copy.cov == None
 
     with pytest.raises(AttributeError):
         stochastic_parameter_copy.reference_value_type = "REAL"
@@ -708,7 +850,9 @@ def test_mixed_parameter():
     assert isinstance(mixed_parameter_copy.range, tuple)
     assert isinstance(mixed_parameter_copy.stochastic_resolution, ParameterResolution)
     assert isinstance(mixed_parameter_copy.distribution_type, DistributionType)
-    assert isinstance(mixed_parameter_copy.distribution_parameters, tuple)
+    assert isinstance(mixed_parameter_copy.statistical_moments, tuple)
+
+    assert mixed_parameter_copy.distribution_parameters == None
 
     with pytest.raises(AttributeError):
         mixed_parameter_copy.reference_value_type = "REAL"
