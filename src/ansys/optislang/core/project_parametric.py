@@ -1060,6 +1060,21 @@ class ConstraintCriterion(Criterion):
             },
         }
 
+    def __str__(self) -> str:
+        """Return information about the criterion."""
+        return (
+            f"Name: {self.name}\n"
+            f"Expression: {self.expression}\n"
+            f"Expression value: {self.expression_value}\n"
+            f"Expression value type: {self.expression_value_type}\n"
+            f"Criterion: {self.criterion}\n"
+            f"Limit expression: {self.limit_expression}\n"
+            f"Limit expression value: {self.limit_expression_value}\n"
+            f"Limit expression value type: {self.limit_expression_value_type}\n"
+            f"Value: {self.value}\n"
+            f"Value type: {self.value_type}\n"
+        )
+
 
 class LimitStateCriterion(Criterion):
     """Stores limit state criterion data."""
@@ -1310,6 +1325,21 @@ class LimitStateCriterion(Criterion):
             },
         }
 
+    def __str__(self) -> str:
+        """Return information about the criterion."""
+        return (
+            f"Name: {self.name}\n"
+            f"Expression: {self.expression}\n"
+            f"Expression value: {self.expression_value}\n"
+            f"Expression value type: {self.expression_value_type}\n"
+            f"Criterion: {self.criterion}\n"
+            f"Limit expression: {self.limit_expression}\n"
+            f"Limit expression value: {self.limit_expression_value}\n"
+            f"Limit expression value type: {self.limit_expression_value_type}\n"
+            f"Value: {self.value}\n"
+            f"Value type: {self.value_type}\n"
+        )
+
 
 class ObjectiveCriterion(Criterion):
     """Stores objective criterion data."""
@@ -1457,6 +1487,18 @@ class ObjectiveCriterion(Criterion):
             },
         }
 
+    def __str__(self) -> str:
+        """Return information about the criterion."""
+        return (
+            f"Name: {self.name}\n"
+            f"Expression: {self.expression}\n"
+            f"Expression value: {self.expression_value}\n"
+            f"Expression value type: {self.expression_value_type}\n"
+            f"Criterion: {self.criterion}\n"
+            f"Value: {self.value}\n"
+            f"Value type: {self.value_type}\n"
+        )
+
 
 class VariableCriterion(Criterion):
     """Stores variable criterion data."""
@@ -1597,6 +1639,18 @@ class VariableCriterion(Criterion):
                 "value": Criterion._value_to_dict(self.value, self.value_type),
             },
         }
+
+    def __str__(self) -> str:
+        """Return information about the criterion."""
+        return (
+            f"Name: {self.name}\n"
+            f"Expression: {self.expression}\n"
+            f"Expression value: {self.expression_value}\n"
+            f"Expression value type: {self.expression_value_type}\n"
+            f"Criterion: {self.criterion}\n"
+            f"Value: {self.value}\n"
+            f"Value type: {self.value_type}\n"
+        )
 
 
 # DesignVariable
@@ -2043,6 +2097,18 @@ class DependentParameter(Parameter):
             "unit": "",
         }
 
+    def __str__(self) -> str:
+        """Return information about the parameter."""
+        return (
+            f"Name: {self.name}\n"
+            f"ID: {self.id}\n"
+            f"Reference value: {self.reference_value}\n"
+            f"Reference value type: {self.reference_value_type}\n"
+            f"Const: {self.const}\n"
+            f"Type: {self.type}\n"
+            f"Dependency expression: {self.operation}\n"
+        )
+
 
 class MixedParameter(Parameter):
     """Stores mixed parameter data."""
@@ -2059,7 +2125,9 @@ class MixedParameter(Parameter):
             ParameterResolution, str
         ] = ParameterResolution.MARGINALDISTRIBUTION,
         distribution_type: Union[DistributionType, str] = DistributionType.NORMAL,
-        distribution_parameters: Sequence[float] = (0, 1),
+        distribution_parameters: Union[Sequence[float], None] = None,
+        statistical_moments: Union[Sequence[float], None] = None,
+        cov: Union[float, None] = None,
     ) -> None:
         """Create a new instance of the ``MixedParameter`` class.
 
@@ -2081,8 +2149,12 @@ class MixedParameter(Parameter):
             Parameter's stochastic resolution.
         distribution_type: Union[DistributionType, str], optional
             Parameter's distribution type.
-        distribution_parameters: Sequence[float, ...], optional
+        distribution_parameters: Union[Sequence[float, ...], None], optional
             Distribution's parameters.
+        statistical_moments: Union[Sequence[float, ...], None], optional
+            Distribution's statistical moments.
+        cov: Union[float, None], optional
+            Distribution's COV.
         """
         super().__init__(
             name=name,
@@ -2099,7 +2171,13 @@ class MixedParameter(Parameter):
             self.range = tuple(range)
         self.stochastic_resolution = stochastic_resolution
         self.distribution_type = distribution_type
-        self.distribution_parameters = tuple(distribution_parameters)
+        self.distribution_parameters = (
+            tuple(distribution_parameters) if distribution_parameters is not None else None
+        )
+        self.statistical_moments = (
+            tuple(statistical_moments) if statistical_moments is not None else None
+        )
+        self.cov = cov
 
     def __eq__(self, other: MixedParameter) -> bool:
         """Compare properties of two instances of the ``MixedParameter`` class.
@@ -2133,6 +2211,8 @@ class MixedParameter(Parameter):
             checks["distribution_parameters"] = (
                 self.distribution_parameters == other.distribution_parameters
             )
+            checks["statistical_moments"] = self.statistical_moments == other.statistical_moments
+            checks["cov"] = self.cov == other.cov
             return False not in checks.values()
         else:
             return False
@@ -2149,6 +2229,8 @@ class MixedParameter(Parameter):
             stochastic_resolution=self.stochastic_resolution,
             distribution_type=self.distribution_type,
             distribution_parameters=self.distribution_parameters,
+            statistical_moments=self.statistical_moments,
+            cov=self.cov,
         )
 
     @property
@@ -2265,12 +2347,12 @@ class MixedParameter(Parameter):
             )
 
     @property
-    def distribution_parameters(self) -> Tuple[float]:
+    def distribution_parameters(self) -> Union[Tuple[float], None]:
         """Parameters of the distribution."""
         return self.__distribution_parameters
 
     @distribution_parameters.setter
-    def distribution_parameters(self, parameters: Sequence[float]):
+    def distribution_parameters(self, parameters: Union[Sequence[float], None]):
         """Set the parameters of the distribution.
 
         Parameters
@@ -2278,7 +2360,45 @@ class MixedParameter(Parameter):
         parameters : Sequence[float]
             Parameters of the distribution.
         """
-        self.__distribution_parameters = tuple(parameters)
+        if parameters is not None:
+            self.__distribution_parameters = tuple(parameters)
+        else:
+            self.__distribution_parameters = None
+
+    @property
+    def statistical_moments(self) -> Union[Tuple[float], None]:
+        """Statistical moments of the distribution."""
+        return self.__statistical_moments
+
+    @statistical_moments.setter
+    def statistical_moments(self, moments: Union[Sequence[float], None]):
+        """Set the statistical moments of the distribution.
+
+        Parameters
+        ----------
+        moments : Sequence[float]
+            Statistical moments of the distribution.
+        """
+        if moments is not None:
+            self.__statistical_moments = tuple(moments)
+        else:
+            self.__statistical_moments = None
+
+    @property
+    def cov(self) -> Union[float, None]:
+        """COV of the distribution."""
+        return self.__cov
+
+    @cov.setter
+    def cov(self, cov: Union[float, None]):
+        """Set the statistical moments of the distribution.
+
+        Parameters
+        ----------
+        moments : Sequence[float]
+            Statistical moments of the distribution.
+        """
+        self.__cov = cov
 
     @staticmethod
     def from_dict(par_dict: dict) -> MixedParameter:
@@ -2319,9 +2439,25 @@ class MixedParameter(Parameter):
         distribution_type = DistributionType.from_str(
             par_dict.get("stochastic_property", {}).get("type", {}).get("value", None)
         )
-        distribution_parameters = tuple(
-            par_dict.get("stochastic_property", {}).get("statistical_moments", None)
+
+        distribution_parameters_from_dict = par_dict.get("stochastic_property", {}).get(
+            "distribution_parameters", None
         )
+        if distribution_parameters_from_dict is not None:
+            distribution_parameters = tuple(distribution_parameters_from_dict)
+        else:
+            distribution_parameters = None
+
+        statistical_moments_from_dict = par_dict.get("stochastic_property", {}).get(
+            "statistical_moments", None
+        )
+        if statistical_moments_from_dict is not None:
+            statistical_moments = tuple(statistical_moments_from_dict)
+        else:
+            statistical_moments = None
+
+        cov = par_dict.get("stochastic_property", {}).get("cov", None)
+
         return MixedParameter(
             name=name,
             reference_value=reference_value,
@@ -2332,6 +2468,8 @@ class MixedParameter(Parameter):
             range=range,
             distribution_type=distribution_type,
             distribution_parameters=distribution_parameters,
+            statistical_moments=statistical_moments,
+            cov=cov,
         )
 
     def to_dict(self) -> dict:
@@ -2349,6 +2487,16 @@ class MixedParameter(Parameter):
                 "lower_bound": self.range[0],
                 "upper_bound": self.range[1],
             }
+        stochastic_property = {
+            "kind": {"value": self.stochastic_resolution.name.lower()},
+            "type": {"value": self.distribution_type.name.lower()},
+        }
+        if self.distribution_parameters is not None:
+            stochastic_property["distribution_parameters"] = self.distribution_parameters
+        if self.statistical_moments is not None:
+            stochastic_property["statistical_moments"] = self.statistical_moments
+        if self.cov is not None:
+            stochastic_property["cov"] = self.cov
         output_dict = {
             "active": True,
             "const": self.const if self.const is not None else False,
@@ -2361,17 +2509,31 @@ class MixedParameter(Parameter):
             "name": self.name,
             "reference_value": self.reference_value if self.reference_value else 0,
             "removable": True,
-            "stochastic_property": {
-                "kind": {"value": self.stochastic_resolution.name.lower()},
-                "statistical_moments": self.distribution_parameters,
-                "type": {"value": self.distribution_type.name.lower()},
-            },
+            "stochastic_property": stochastic_property,
             "type": {"value": self.type.name.lower()},
             "unit": "",
         }
 
         output_dict["deterministic_property"].update(range_dict)
         return output_dict
+
+    def __str__(self) -> str:
+        """Return information about the parameter."""
+        return (
+            f"Name: {self.name}\n"
+            f"ID: {self.id}\n"
+            f"Reference value: {self.reference_value}\n"
+            f"Reference value type: {self.reference_value_type}\n"
+            f"Const: {self.const}\n"
+            f"Type: {self.type}\n"
+            f"Deterministic resolution: {self.deterministic_resolution}\n"
+            f"Range: {self.range}\n"
+            f"Stochastic_resolution: {self.stochastic_resolution}\n"
+            f"Distribution type: {self.distribution_type}\n"
+            f"Distribution parameters: {self.distribution_parameters}\n"
+            f"Statistical moments: {self.statistical_moments}\n"
+            f"COV: {self.cov}\n"
+        )
 
 
 class OptimizationParameter(Parameter):
@@ -2616,6 +2778,19 @@ class OptimizationParameter(Parameter):
         output_dict["deterministic_property"].update(range_dict)
         return output_dict
 
+    def __str__(self) -> str:
+        """Return information about the parameter."""
+        return (
+            f"Name: {self.name}\n"
+            f"ID: {self.id}\n"
+            f"Reference value: {self.reference_value}\n"
+            f"Reference value type: {self.reference_value_type}\n"
+            f"Const: {self.const}\n"
+            f"Type: {self.type}\n"
+            f"Deterministic resolution: {self.deterministic_resolution}\n"
+            f"Range: {self.range}\n"
+        )
+
 
 class StochasticParameter(Parameter):
     """Stores stochastic parameter data."""
@@ -2630,7 +2805,9 @@ class StochasticParameter(Parameter):
             ParameterResolution, str
         ] = ParameterResolution.MARGINALDISTRIBUTION,
         distribution_type: Union[DistributionType, str] = DistributionType.NORMAL,
-        distribution_parameters: Sequence[float] = (0, 1),
+        distribution_parameters: Union[Sequence[float], None] = None,
+        statistical_moments: Union[Sequence[float], None] = None,
+        cov: Union[float, None] = None,
     ) -> None:
         """Create a new instance of the ``StochasticParameter`` class.
 
@@ -2648,8 +2825,12 @@ class StochasticParameter(Parameter):
             Parameter's stochastic resolution.
         distribution_type: Union[DistributionType, str], optional
             Parameter's distribution type.
-        distribution_parameters: Sequence[float], optional
+        distribution_parameters: Union[Sequence[float, ...], None], optional
             Distribution's parameters.
+        statistical_moments: Union[Sequence[float, ...], None], optional
+            Distribution's statistical moments.
+        cov: Union[float, None], optional
+            Distribution's COV.
         """
         super().__init__(
             name=name,
@@ -2661,7 +2842,13 @@ class StochasticParameter(Parameter):
         self.__reference_value_type = ParameterValueType.REAL
         self.stochastic_resolution = stochastic_resolution
         self.distribution_type = distribution_type
-        self.distribution_parameters = tuple(distribution_parameters)
+        self.distribution_parameters = (
+            tuple(distribution_parameters) if distribution_parameters is not None else None
+        )
+        self.statistical_moments = (
+            tuple(statistical_moments) if statistical_moments is not None else None
+        )
+        self.cov = cov
 
     def __eq__(self, other: StochasticParameter) -> bool:
         r"""Compare properties of two instances of the ``StochasticParameter`` class.
@@ -2691,6 +2878,8 @@ class StochasticParameter(Parameter):
             checks["distribution_parameters"] = (
                 self.distribution_parameters == other.distribution_parameters
             )
+            checks["statistical_moments"] = self.statistical_moments == other.statistical_moments
+            checks["cov"] = self.cov == other.cov
             return False not in checks.values()
         else:
             return False
@@ -2705,6 +2894,8 @@ class StochasticParameter(Parameter):
             stochastic_resolution=self.stochastic_resolution,
             distribution_type=self.distribution_type,
             distribution_parameters=self.distribution_parameters,
+            statistical_moments=self.statistical_moments,
+            cov=self.cov,
         )
 
     @property
@@ -2771,12 +2962,12 @@ class StochasticParameter(Parameter):
             )
 
     @property
-    def distribution_parameters(self) -> Tuple[float]:
+    def distribution_parameters(self) -> Union[Tuple[float], None]:
         """Parameters of the distribution."""
         return self.__distribution_parameters
 
     @distribution_parameters.setter
-    def distribution_parameters(self, parameters: Sequence[float]) -> None:
+    def distribution_parameters(self, parameters: Union[Sequence[float], None]):
         """Set the parameters of the distribution.
 
         Parameters
@@ -2784,7 +2975,45 @@ class StochasticParameter(Parameter):
         parameters : Sequence[float]
             Parameters of the distribution.
         """
-        self.__distribution_parameters = tuple(parameters)
+        if parameters is not None:
+            self.__distribution_parameters = tuple(parameters)
+        else:
+            self.__distribution_parameters = None
+
+    @property
+    def statistical_moments(self) -> Union[Tuple[float], None]:
+        """Statistical moments of the distribution."""
+        return self.__statistical_moments
+
+    @statistical_moments.setter
+    def statistical_moments(self, moments: Union[Sequence[float], None]):
+        """Set the statistical moments of the distribution.
+
+        Parameters
+        ----------
+        moments : Sequence[float]
+            Statistical moments of the distribution.
+        """
+        if moments is not None:
+            self.__statistical_moments = tuple(moments)
+        else:
+            self.__statistical_moments = None
+
+    @property
+    def cov(self) -> Union[float, None]:
+        """COV of the distribution."""
+        return self.__cov
+
+    @cov.setter
+    def cov(self, cov: Union[float, None]):
+        """Set the statistical moments of the distribution.
+
+        Parameters
+        ----------
+        moments : Sequence[float]
+            Statistical moments of the distribution.
+        """
+        self.__cov = cov
 
     @staticmethod
     def from_dict(par_dict: dict) -> StochasticParameter:
@@ -2810,9 +3039,21 @@ class StochasticParameter(Parameter):
         distribution_type = DistributionType.from_str(
             par_dict.get("stochastic_property", {}).get("type", {}).get("value", None)
         )
-        distribution_parameters = tuple(
-            par_dict.get("stochastic_property", {}).get("statistical_moments", None)
+        distribution_parameters_from_dict = par_dict.get("stochastic_property", {}).get(
+            "distribution_parameters", None
         )
+        if distribution_parameters_from_dict is not None:
+            distribution_parameters = tuple(distribution_parameters_from_dict)
+        else:
+            distribution_parameters = None
+        statistical_moments_from_dict = par_dict.get("stochastic_property", {}).get(
+            "statistical_moments", None
+        )
+        if statistical_moments_from_dict is not None:
+            statistical_moments = tuple(statistical_moments_from_dict)
+        else:
+            statistical_moments = None
+        cov = par_dict.get("stochastic_property", {}).get("cov", None)
         return StochasticParameter(
             name=name,
             reference_value=reference_value,
@@ -2821,6 +3062,8 @@ class StochasticParameter(Parameter):
             stochastic_resolution=stochastic_resolution,
             distribution_type=distribution_type,
             distribution_parameters=distribution_parameters,
+            statistical_moments=statistical_moments,
+            cov=cov,
         )
 
     def to_dict(self) -> dict:
@@ -2831,6 +3074,16 @@ class StochasticParameter(Parameter):
         dict
             Input dictionary for the optiSLang server.
         """
+        stochastic_property = {
+            "kind": {"value": self.stochastic_resolution.name.lower()},
+            "type": {"value": self.distribution_type.name.lower()},
+        }
+        if self.distribution_parameters is not None:
+            stochastic_property["distribution_parameters"] = self.distribution_parameters
+        if self.statistical_moments is not None:
+            stochastic_property["statistical_moments"] = self.statistical_moments
+        if self.cov is not None:
+            stochastic_property["cov"] = self.cov
         return {
             "active": True,
             "const": self.const if self.const is not None else False,
@@ -2839,14 +3092,26 @@ class StochasticParameter(Parameter):
             "name": self.name,
             "reference_value": self.reference_value,
             "removable": True,
-            "stochastic_property": {
-                "kind": {"value": self.stochastic_resolution.name.lower()},
-                "statistical_moments": self.distribution_parameters,
-                "type": {"value": self.distribution_type.name.lower()},
-            },
+            "stochastic_property": stochastic_property,
             "type": {"value": self.type.name.lower()},
             "unit": "",
         }
+
+    def __str__(self) -> str:
+        """Return information about the parameter."""
+        return (
+            f"Name: {self.name}\n"
+            f"ID: {self.id}\n"
+            f"Reference value: {self.reference_value}\n"
+            f"Reference value type: {self.reference_value_type}\n"
+            f"Const: {self.const}\n"
+            f"Type: {self.type}\n"
+            f"Stochastic_resolution: {self.stochastic_resolution}\n"
+            f"Distribution type: {self.distribution_type}\n"
+            f"Distribution parameters: {self.distribution_parameters}\n"
+            f"Statistical moments: {self.statistical_moments}\n"
+            f"COV: {self.cov}\n"
+        )
 
 
 # Response
@@ -3063,6 +3328,14 @@ class Response:
             "name": self.name,
             "reference_value": self.reference_value,
         }
+
+    def __str__(self) -> str:
+        """Return information about the response."""
+        return (
+            f"Name: {self.name}\n"
+            f"Reference value: {self.reference_value}\n"
+            f"Reference value type: {self.reference_value_type}\n"
+        )
 
 
 # MANAGERS:
