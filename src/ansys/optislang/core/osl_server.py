@@ -10,6 +10,10 @@ class OslServer(ABC):
     """Base class for classes which provide access to optiSLang server."""
 
     @abstractmethod
+    def __init__(self):
+        """``OslServer`` class is an abstract base class and cannot be instantiated."""
+
+    @abstractmethod
     def get_server_info(self) -> Dict:  # pragma: no cover
         """Get information about the application, the server configuration and the open projects.
 
