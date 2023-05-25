@@ -4,12 +4,12 @@
 Direct communication using the optiSLang server API
 ===================================================
 
-PyOptiSLang is intended to provide a Pythonic API on top of Ansys optiSLang.
-However, not each and every functionality available through the Ansys optiSLang
-server API is already exposed via explicit PyOptiSLang API functionality.
+PyOptiSLang is intended to provide a pythonic API on top of Ansys optiSLang.
+However, not each and every capability available through the Ansys optiSLang
+server API is already exposed via explicit PyOptiSLang API capability.
 
 The :class:`TcpOslServer <ansys.optislang.core.tcp_osl_server.TcpOslServer>` wrapper class
-can be used for raw communication with optiSLang, in order to overcome this limitation.
+can be used for raw communication with optiSLang, to overcome this limitation.
 It provides explicit methods for accessing specific optiSLang API endpoints. Additionally, the generic
 :func:`TcpOslServer.send_command <ansys.optislang.core.tcp_osl_server.TcpOslServer.send_command>` method
 can be used in conjunction with the convenience functions from the :ref:`server_queries <ref_osl_server_api_queries>` and
@@ -19,7 +19,7 @@ can be used in conjunction with the convenience functions from the :ref:`server_
 
     Please note, that direct communication with Ansys optiSLang server API is discouraged
     for productive usage, as this API and underlying technology is subject to change.
-    Please prefer using explicit PyOptiSLang API functionality wherever possible.
+    Please prefer using explicit PyOptiSLang API capability wherever possible.
 
 You can either directly create an instance of
 :class:`TcpOslServer <ansys.optislang.core.tcp_osl_server.TcpOslServer>` class
@@ -49,7 +49,7 @@ methods can be used to access the optiSLang server:
     print(f"Project (run) status: {osl.get_osl_server().get_project_status()}")
     print(f"Full project tree: {osl.get_osl_server().get_full_project_tree()}")
 
-For any optiSLang server API functionality not yet directly exposed in :class:`TcpOslServer <ansys.optislang.core.tcp_osl_server.TcpOslServer>` class,
+For any optiSLang server API capability not yet directly exposed in :class:`TcpOslServer <ansys.optislang.core.tcp_osl_server.TcpOslServer>` class,
 the generic :mod:`TcpOslServer.send_command <ansys.optislang.core.tcp_osl_server.TcpOslServer.send_command>` method can be used.
 It takes a generic request string, sends the request to optiSLang server and returns the corresponding response.
 As a convenience, the functions from the :ref:`server_queries <ref_osl_server_api_queries>` and
