@@ -4,7 +4,7 @@
 Executing commands from the optiSLang Python API
 ================================================
 When optiSLang is active, you can send individual Python commands to it as a genuine
-Python class. For example, this code gets general information about the sensitivity
+Python snippet. For example, this code gets general information about the sensitivity
 actor:
 
 .. code:: python
@@ -16,10 +16,10 @@ actor:
     osl.dispose()
 
 
-.. note:: 
+.. note::
     Be aware that each time the
-    :func:`run_python_script() <ansys.optislang.core.optislang.Optislang.run_python_script>` 
-    method is called, a new Python console is created inside optiSLang. This
+    :func:`run_python_script() <ansys.optislang.core.optislang.Optislang.run_python_script>`
+    method is called, a new Python context is created inside optiSLang. This
     means that variables from previous calls won't be available.
 
 For longer scripts, instead of sending a string to optiSLang as in the preceding
