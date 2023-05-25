@@ -794,6 +794,13 @@ class TcpOslListener:
 class TcpOslServer(OslServer):
     """Class which provides access to optiSLang server using plain TCP/IP communication protocol.
 
+    TcpOslServer class provides explicit methods for accessing specific optiSLang API endpoints.
+    Additionally, the generic
+    :mod:`send_command <ansys.optislang.core.tcp_osl_server.TcpOslServer.send_command>` method
+    can be used in conjunction with the convenience functions from the
+    :ref:`ansys.optislang.core.server_queries <ref_osl_server_api_queries>` and
+    :ref:`ansys.optislang.core.server_commands <ref_osl_server_api_commands>` modules.
+
     For remote connection, it is assumed that the optiSLang server process is already running
     on remote (or local) host. In that case, the host and port must be specified and other
     parameters are ignored.

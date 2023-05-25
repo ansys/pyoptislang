@@ -1,3 +1,5 @@
+.. _ref_osl_server_api_commands:
+
 Server commands
 ===============
 These methods are specific to the :mod:`ansys.optislang.core.server_commands <ansys.optislang.core.server_commands>` module

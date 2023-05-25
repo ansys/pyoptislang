@@ -1,3 +1,5 @@
+.. _ref_osl_server_api_queries:
+
 Server queries
 ==============
 These methods are specific to the :mod:`ansys.optislang.core.server_queries <ansys.optislang.core.server_queries>` module

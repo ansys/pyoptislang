@@ -27,7 +27,6 @@ extensions = [
     "sphinx_copybutton",
     "sphinx_gallery.gen_gallery",
     "sphinxcontrib.images",
-    "sphinx.ext.inheritance_diagram",
 ]
 
 # Intersphinx mapping
