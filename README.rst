@@ -35,7 +35,7 @@ PyOptiSLang
 
 Overview
 --------
-PyOptiSLang is a Python wrapper for Ansys optiSLang. It supports pythonic
+PyOptiSLang is a Python wrapper for Ansys optiSLang. It supports Pythonic
 access to Ansys optiSLang to be able to communicate with Ansys optiSLang directly from Python.
 The latest ``ansys-optislang`` package provides these capabilities:
 

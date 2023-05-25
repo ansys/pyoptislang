@@ -6,3 +6,4 @@ Optislang
 optislang
 PyOptiSLang
 osl
+Pythonic

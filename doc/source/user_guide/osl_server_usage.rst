@@ -4,7 +4,7 @@
 Direct communication using the optiSLang server API
 ===================================================
 
-PyOptiSLang is intended to provide a pythonic API on top of Ansys optiSLang.
+PyOptiSLang is intended to provide a Pythonic API on top of Ansys optiSLang.
 However, not each and every capability available through the Ansys optiSLang
 server API is already exposed via explicit PyOptiSLang API capability.
 
