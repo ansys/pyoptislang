@@ -41,7 +41,7 @@ The latest ``ansys-optislang`` package provides these capabilities:
 
 - Starting and managing local instances of Ansys optiSLang
 - Remote connections to Ansys optiSLang instances via TCP/IP
-- Create new Ansys optiSLang project	
+- Create new Ansys optiSLang project
 - Open existing Ansys optiSLang project
 - Control Ansys optiSLang project execution
 - Save Ansys optiSLang project

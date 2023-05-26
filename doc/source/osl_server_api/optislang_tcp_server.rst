@@ -8,6 +8,4 @@ These classes are specific to the :mod:`ansys.optislang.core.tcp_osl_server <ans
    :toctree: _autosummary
    :template: class.rst
 
-   TcpClient
-   TcpOslListener
    TcpOslServer
