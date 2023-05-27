@@ -12,6 +12,7 @@ API documentation.
    :hidden:
 
    optislang
+   osl_process
    project
    nodes
    project_parametric
