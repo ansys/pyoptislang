@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import TYPE_CHECKING, Sequence, Tuple, Union
+from typing import TYPE_CHECKING, Iterable, Sequence, Tuple, Union
 
 from importlib_metadata import version
 
@@ -72,6 +72,9 @@ class Optislang:
         Whether to shut down when execution is finished and no listeners are registered.
         The default is ``True``. This parameter is ignored when ``host`` and
         ``port`` parameters are specified.
+    additional_args : Iterable[str], optional
+        Additional command line arguments used for execution of the optiSLang server process.
+        Defaults to ``None``.
 
     Raises
     ------
@@ -103,6 +106,7 @@ class Optislang:
         password: str = None,
         loglevel: str = None,
         shutdown_on_finished: bool = True,
+        additional_args: Iterable[str] = None,
     ) -> None:
         """Initialize a new instance of the ``Optislang`` class."""
         self.__host = host
@@ -114,6 +118,7 @@ class Optislang:
         self.__name = name
         self.__password = password
         self.__shutdown_on_finished = shutdown_on_finished
+        self.__additional_args = additional_args
         self.__logger = LOG.add_instance_logger(self.name, self, loglevel)
         self.__osl_server: OslServer = self.__init_osl_server("tcp")
         project_uid = self.__osl_server.get_project_uid()
@@ -151,6 +156,7 @@ class Optislang:
                 password=self.__password,
                 logger=self.log,
                 shutdown_on_finished=self.__shutdown_on_finished,
+                additional_args=self.__additional_args,
             )
         else:
             raise NotImplementedError(f'OptiSLang server of type "{server_type}" is not supported.')

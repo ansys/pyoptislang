@@ -6,7 +6,7 @@ from pathlib import Path
 import subprocess
 import tempfile
 from threading import Thread
-from typing import Any, Callable, Dict, Iterable, List, Mapping, Sequence, Tuple, Union
+from typing import Callable, Dict, Iterable, List, Mapping, Sequence, Tuple, Union
 
 import psutil
 
@@ -59,9 +59,28 @@ class OslServerProcess:
     password : str, optional
         The server password. Use when communication with the server requires the request
         to contain a password entry. Defaults to ``None``.
+    no_run : bool, optional
+        Determines whether not to run the specified project when started in batch mode.
+        Defaults to ``None``.
+
+        .. note:: Only supported in batch mode.
+
     no_save : bool, optional
         Determines whether not to save the specified project after all other actions are completed.
         Defaults to ``False``.
+
+        .. note:: Only supported in batch mode.
+
+    force : bool, optional
+        Determines whether to force opening/processing specified project when started in batch mode
+        even if issues occur.
+        Defaults to ``True``.
+
+        .. note:: Only supported in batch mode.
+
+    enable_tcp_server : bool, optional
+        Determines whether to enable optiSLang TCP server.
+        Defaults to ``True``.
     server_info : Union[str, pathlib.Path], optional
         Path to the server information file. If an absolute path is not supplied, it is considered
         to be relative to the project working directory. If ``None``, no server information file
@@ -78,6 +97,8 @@ class OslServerProcess:
     shutdown_on_finished: bool, optional
         Shut down when execution is finished. Defaults to ``True``.
 
+        .. note:: Only supported in batch mode.
+
     env_vars : Mapping[str, str], optional
         Additional environmental variables (key and value) for the optiSLang server process.
         Defaults to ``None``.
@@ -87,7 +108,7 @@ class OslServerProcess:
         Determines whether the process STDOUT is supposed to be logged. Defaults to ``True``.
     log_process_stderr : bool, optional
         Determines whether the process STDERR is supposed to be logged. Defaults to ``True``.
-    **kwargs : Dict[str, Any], optional
+    additional_args : Iterable[str], optional
         Additional command line arguments used for execution of the optiSLang server process.
         Defaults to ``None``.
 
@@ -121,7 +142,10 @@ class OslServerProcess:
         batch: bool = True,
         port_range: Tuple[int, int] = None,
         password: str = None,
+        no_run: bool = None,
         no_save: bool = False,
+        force: bool = True,
+        enable_tcp_server: bool = True,
         server_info: Union[str, Path] = None,
         log_server_events: bool = False,
         listener: Tuple[str, int] = None,
@@ -132,7 +156,7 @@ class OslServerProcess:
         logger=None,
         log_process_stdout: bool = True,
         log_process_stderr: bool = True,
-        **kwargs,
+        additional_args: Iterable[str] = None,
     ) -> None:
         """Initialize a new instance of the ``OslServerProcess`` class."""
         if logger is None:
@@ -161,21 +185,22 @@ class OslServerProcess:
             else:
                 raise RuntimeError("No optiSLang executable could be found.")
 
-        if project_path == None:
-            self.__tempdir = tempfile.TemporaryDirectory()
-            project_path = Path(self.__tempdir.name) / self.__class__.DEFAULT_PROJECT_FILE
+        if batch:
+            if project_path == None:
+                self.__tempdir = tempfile.TemporaryDirectory()
+                project_path = Path(self.__tempdir.name) / self.__class__.DEFAULT_PROJECT_FILE
 
-        if isinstance(project_path, str):
-            project_path = Path(project_path)
+            if isinstance(project_path, str):
+                project_path = Path(project_path)
 
-        if not isinstance(project_path, Path):
-            raise TypeError(
-                f"Invalid type of project_path: {type(project_path)},"
-                "Union[str, pathlib.Path] is supported."
-            )
+            if not isinstance(project_path, Path):
+                raise TypeError(
+                    f"Invalid type of project_path: {type(project_path)},"
+                    "Union[str, pathlib.Path] is supported."
+                )
 
-        if not project_path.suffix == ".opf":
-            raise ValueError("Invalid optiSLang project file.")
+            if not project_path.suffix == ".opf":
+                raise ValueError("Invalid optiSLang project file.")
 
         self.__project_path = project_path
 
@@ -191,7 +216,10 @@ class OslServerProcess:
         self.__batch = batch
         self.__port_range = port_range
         self.__password = password
+        self.__no_run = no_run
         self.__no_save = no_save
+        self.__force = force
+        self.__enable_tcp_server = enable_tcp_server
         self.__log_server_events = log_server_events
         self.__listener = listener
         self.__listener_id = listener_id
@@ -200,7 +228,7 @@ class OslServerProcess:
         self.__env_vars = dict(env_vars) if env_vars is not None else None
         self.__log_process_stdout = log_process_stdout
         self.__log_process_stderr = log_process_stderr
-        self.__additional_args = kwargs
+        self.__additional_args = additional_args
 
     @property
     def executable(self) -> Path:
@@ -259,6 +287,19 @@ class OslServerProcess:
         return self.__password
 
     @property
+    def no_run(self) -> bool:
+        """Get whether not to run the specified project when started in batch mode .
+
+        Returns
+        -------
+        bool
+            ``True`` if the project is explicitly not supposed to be run;
+            ``False`` if the project is explicitly supposed to be run;
+            ``None`` otherwise.
+        """
+        return self.__no_run
+
+    @property
     def no_save(self) -> bool:
         """Get whether not to save the specified project after all other actions are completed.
 
@@ -269,6 +310,31 @@ class OslServerProcess:
             completed; ``False`` otherwise.
         """
         return self.__no_save
+
+    @property
+    def force(self) -> bool:
+        """Get whether to force opening/processing specified project.
+
+        When started in batch mode, this specifies, whether to force opening/processing specified
+        project, even if issues occur.
+
+        Returns
+        -------
+        bool
+            ``True`` if project opening is forced; ``False`` otherwise.
+        """
+        return self.__force
+
+    @property
+    def enable_tcp_server(self) -> bool:
+        """Get whether to enable optiSLang TCP server.
+
+        Returns
+        -------
+        bool
+            ``True`` if optiSLang TCP server is enabled; ``False`` otherwise.
+        """
+        return self.__enable_tcp_server
 
     @property
     def server_info(self) -> Union[Path, None]:
@@ -375,13 +441,13 @@ class OslServerProcess:
         return self.__log_process_stderr
 
     @property
-    def additional_args(self) -> Dict[str, Any]:
+    def additional_args(self) -> Tuple[str, ...]:
         """Additional command line arguments used for optiSLang server process execution.
 
         Returns
         -------
-        Dict[str, Any]
-            Dictionary of command line arguments, if defined; ``None`` otherwise.
+        Tuple[str, ...]
+            Additional command line arguments, if defined; ``None`` otherwise.
         """
         return self.__additional_args
 
@@ -432,30 +498,40 @@ class OslServerProcess:
         if self.__batch:
             args.append("-b")  # Start batch mode
 
-        if not self.__project_path.is_file():
-            # Creates a new project in the provided path.
-            if IRON_PYTHON:
-                args.append(f'--new="{str(self.__project_path)}"')
+        if self.__project_path:
+            if not self.__project_path.is_file():
+                # Creates a new project in the provided path.
+                if IRON_PYTHON:
+                    args.append(f'--new="{str(self.__project_path)}"')
+                else:
+                    args.append(f"--new={str(self.__project_path)}")
             else:
-                args.append(f"--new={str(self.__project_path)}")
-        else:
-            # Opens existing project
-            if IRON_PYTHON:
-                args.append(f'"{str(self.__project_path)}"')
-            else:
-                args.append(str(self.__project_path))
+                # Opens existing project
+                if IRON_PYTHON:
+                    args.append(f'"{str(self.__project_path)}"')
+                else:
+                    args.append(str(self.__project_path))
 
         if self.__batch:
-            args.append("--no-run")  # Does not run the specified projects.
-            # Forces projects to be processed, even if they are incomplete
-            # (can be used for damaged projects).
-            args.append("--force")
+            if self.__no_run is None or self.__no_run:
+                # Do not run the specified projects.
+                args.append("--no-run")
+            if self.__no_save:
+                # Do not save the specified projects after all other actions have been completed.
+                args.append("--no-save")
+            if self.__force:
+                # Forces projects to be processed, even if they are incomplete
+                # (can be used for damaged projects).
+                args.append("--force")
+            if self.__shutdown_on_finished:
+                args.append("--shutdown-on-finished")
 
         # Enables remote surveillance (plain TCP/IP based), the port indication is optional.
-        if self.__port_range is not None:
-            args.append(f"--enable-tcp-server={self.__port_range[0]}-{self.__port_range[1]}")
-        else:
-            args.append(f"--enable-tcp-server")
+        if self.__enable_tcp_server:
+            if self.__port_range is not None:
+                args.append(f"--enable-tcp-server={self.__port_range[0]}-{self.__port_range[1]}")
+            else:
+                args.append(f"--enable-tcp-server")
 
         if self.__password is not None:
             # Submits the server password. Use when communication with the server requires
@@ -470,11 +546,7 @@ class OslServerProcess:
             else:
                 args.append(f"--write-server-info={str(self.__server_info)}")
 
-        if self.__no_save:
-            # Do not save the specified projects after all other actions have been completed.
-            args.append("--no-save")
-
-        if self.__log_server_events is not None:
+        if self.__log_server_events:
             # Displays server events in the Message log pane.
             args.append("--log-server-events")
 
@@ -493,11 +565,9 @@ class OslServerProcess:
                 args.append(notification.name)
 
         if self.__additional_args is not None:
-            for arg_name, arg_value in self.__additional_args.items():
-                args.append(f"{arg_name}={arg_value}")
+            for arg in self.__additional_args:
+                args.append(arg)
 
-        if self.__shutdown_on_finished:
-            args.append("--shutdown-on-finished")
         return args
 
     def __remove_server_info_files(self):

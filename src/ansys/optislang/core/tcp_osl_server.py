@@ -12,7 +12,7 @@ import socket
 import struct
 import threading
 import time
-from typing import Callable, Dict, List, Sequence, Tuple, Union
+from typing import Callable, Dict, Iterable, List, Sequence, Tuple, Union
 import uuid
 
 from ansys.optislang.core import server_commands as commands
@@ -544,6 +544,7 @@ class TcpOslListener:
     Examples
     --------
     Create listener
+
     >>> from ansys.optislang.core.tcp_osl_server import TcpOslListener
     >>> general_listener = TcpOslListener(
     >>>     port_range = (49152, 65535),
@@ -837,6 +838,9 @@ class TcpOslServer(OslServer):
     shutdown_on_finished: bool, optional
         Shut down when execution is finished and there are not any listeners registered.
         It is ignored when the host and port parameters are specified. Defaults to ``True``.
+    additional_args : Iterable[str], optional
+        Additional command line arguments used for execution of the optiSLang server process.
+        Defaults to ``None``.
 
     Raises
     ------
@@ -848,6 +852,7 @@ class TcpOslServer(OslServer):
     Examples
     --------
     Start local optiSLang server, get optiSLang version and shutdown the server.
+
     >>> from ansys.optislang.core.tcp_osl_server import TcpOslServer
     >>> osl_server = TcpOslServer()
     >>> osl_version = osl_server.get_osl_version_string()
@@ -855,6 +860,7 @@ class TcpOslServer(OslServer):
     >>> osl_server.shutdown()
 
     Connect to the remote optiSLang server, get optiSLang version and shutdown the server.
+
     >>> from ansys.optislang.core.tcp_osl_server import TcpOslServer
     >>> host = "192.168.101.1"  # IP address of the remote host
     >>> port = 49200            # Port of the remote optiSLang server
@@ -890,6 +896,7 @@ class TcpOslServer(OslServer):
         password: str = None,
         logger=None,
         shutdown_on_finished=True,
+        additional_args: Iterable[str] = None,
     ) -> None:
         """Initialize a new instance of the ``TcpOslServer`` class."""
         self.__host = host
@@ -911,6 +918,8 @@ class TcpOslServer(OslServer):
         self.__refresh_listeners = threading.Event()
         self.__listeners_refresh_interval = 20
         self.__disposed = False
+        self.__additional_args = additional_args
+
         signal.signal(signal.SIGINT, self.__signal_handler)
         atexit.register(self.dispose)
 
@@ -2190,6 +2199,7 @@ class TcpOslServer(OslServer):
                 ],
                 shutdown_on_finished=shutdown_on_finished,
                 logger=self._logger,
+                additional_args=self.__additional_args,
             )
             self.__osl_process.start()
 
