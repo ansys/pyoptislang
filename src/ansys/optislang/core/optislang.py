@@ -141,6 +141,11 @@ class Optislang:
 
         .. note:: Only supported in batch mode.
 
+    opx_project_definition_file : Union[str, pathlib.Path], optional
+        Optional path to an OPX project definition file. Defaults to ``None``.
+
+        .. note:: Only supported in batch mode.
+
     additional_args : Iterable[str], optional
         Additional command line arguments used for execution of the optiSLang server process.
         Defaults to ``None``.
@@ -190,6 +195,7 @@ class Optislang:
         export_placeholders_file: Union[str, Path] = None,
         output_file: Union[str, Path] = None,
         dump_project_state: Union[str, Path] = None,
+        opx_project_definition_file: Union[str, Path] = None,
         additional_args: Iterable[str] = None,
     ) -> None:
         """Initialize a new instance of the ``Optislang`` class."""
@@ -217,6 +223,7 @@ class Optislang:
         self.__export_placeholders_file = export_placeholders_file
         self.__output_file = output_file
         self.__dump_project_state = dump_project_state
+        self.__opx_project_definition_file = opx_project_definition_file
         self.__additional_args = additional_args
         self.__logger = LOG.add_instance_logger(self.name, self, loglevel)
         self.__osl_server: OslServer = self.__init_osl_server("tcp")
@@ -268,6 +275,7 @@ class Optislang:
                 export_placeholders_file=self.__export_placeholders_file,
                 output_file=self.__output_file,
                 dump_project_state=self.__dump_project_state,
+                opx_project_definition_file=self.__opx_project_definition_file,
                 listener_id=self.__listener_id,
                 multi_listener=self.__multi_listener,
                 additional_args=self.__additional_args,

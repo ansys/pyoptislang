@@ -149,6 +149,11 @@ class OslServerProcess:
 
         .. note:: Only supported in batch mode.
 
+    opx_project_definition_file : Union[str, pathlib.Path], optional
+        Optional path to an OPX project definition file. Defaults to ``None``.
+
+        .. note:: Only supported in batch mode.
+
     additional_args : Iterable[str], optional
         Additional command line arguments used for execution of the optiSLang server process.
         Defaults to ``None``.
@@ -206,6 +211,7 @@ class OslServerProcess:
         export_placeholders_file: Union[str, Path] = None,
         output_file: Union[str, Path] = None,
         dump_project_state: Union[str, Path] = None,
+        opx_project_definition_file: Union[str, Path] = None,
         additional_args: Iterable[str] = None,
     ) -> None:
         """Initialize a new instance of the ``OslServerProcess`` class."""
@@ -256,6 +262,9 @@ class OslServerProcess:
         self.__output_file = self.__class__.__validated_path(output_file, "output_file")
         self.__dump_project_state = self.__class__.__validated_path(
             dump_project_state, "dump_project_state"
+        )
+        self.__opx_project_definition_file = self.__class__.__validated_path(
+            opx_project_definition_file, "opx_project_definition_file"
         )
 
         self.__batch = batch
@@ -609,6 +618,18 @@ class OslServerProcess:
         """
         return self.__dump_project_state
 
+    @property
+    def opx_project_definition_file(self) -> Union[Path, None]:
+        """Path to the OPX project definition file.
+
+        Returns
+        -------
+        Union[pathlib.Path, None]
+            Path to the OPX project definition file, if defined;
+            ``None`` otherwise.
+        """
+        return self.__opx_project_definition_file
+
     def __enter__(self):
         """Enter the context."""
         return self
@@ -645,6 +666,17 @@ class OslServerProcess:
                     args.append(str(self.__project_path))
 
         if self.__batch:
+            if self.__opx_project_definition_file:
+                if IRON_PYTHON:
+                    args.append("--python")
+                    args.append(f'"{str(utils.get_osl_opx_import_script(self.__executable))}"')
+                    args.append("--script-arg")
+                    args.append(f'"{str(self.__opx_project_definition_file)}"')
+                else:
+                    args.append("--python")
+                    args.append(str(utils.get_osl_opx_import_script(self.__executable)))
+                    args.append("--script-arg")
+                    args.append(str(self.__opx_project_definition_file))
             if self.__no_run is None or self.__no_run:
                 # Do not run the specified projects.
                 args.append("--no-run")
@@ -662,25 +694,22 @@ class OslServerProcess:
             if self.__auto_relocate:
                 args.append("--autorelocate")
             if self.__export_project_properties_file is not None:
+                args.append("--export-project-properties")
                 if IRON_PYTHON:
-                    args.append("--export-project-properties")
                     args.append(f'"{str(self.__export_project_properties_file)}"')
                 else:
-                    args.append("--export-project-properties")
                     args.append(str(self.__export_project_properties_file))
             if self.__export_placeholders_file is not None:
+                args.append("--export-values")
                 if IRON_PYTHON:
-                    args.append("--export-values")
                     args.append(f'"{str(self.__export_placeholders_file)}"')
                 else:
-                    args.append("--export-values")
                     args.append(str(self.__export_placeholders_file))
             if self.__output_file is not None:
+                args.append("--output-file")
                 if IRON_PYTHON:
-                    args.append("--output-file")
                     args.append(f'"{str(self.__output_file)}"')
                 else:
-                    args.append("--output-file")
                     args.append(str(self.__output_file))
             if self.__dump_project_state is not None:
                 if IRON_PYTHON:
@@ -736,19 +765,17 @@ class OslServerProcess:
                 args.append(notification.name)
 
         if self.__import_project_properties_file is not None:
+            args.append("--import-project-properties")
             if IRON_PYTHON:
-                args.append("--import-project-properties")
                 args.append(f'"{str(self.__import_project_properties_file)}"')
             else:
-                args.append("--import-project-properties")
                 args.append(str(self.__import_project_properties_file))
 
         if self.__import_placeholders_file is not None:
+            args.append("--import-values")
             if IRON_PYTHON:
-                args.append("--import-values")
                 args.append(f'"{str(self.__import_placeholders_file)}"')
             else:
-                args.append("--import-values")
                 args.append(str(self.__import_placeholders_file))
 
         if self.__additional_args is not None:
