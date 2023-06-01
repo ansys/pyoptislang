@@ -748,6 +748,11 @@ class OslServerProcess:
 
         return self.__process.poll() is None
 
+    def wait_for_finished(self):
+        """Wait for the process to finish."""
+        if self.__process is not None and self.is_running():
+            self.__process.wait()
+
     def __start_process_output_thread(self):
         """Start new thread responsible for logging of STDOUT/STDERR of the optiSLang process."""
 
