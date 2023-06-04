@@ -12,7 +12,7 @@ import socket
 import struct
 import threading
 import time
-from typing import Callable, Dict, List, Sequence, Tuple, Union
+from typing import Callable, Dict, Iterable, List, Mapping, Optional, Sequence, Tuple, Union
 import uuid
 
 from ansys.optislang.core import server_commands as commands
@@ -544,6 +544,7 @@ class TcpOslListener:
     Examples
     --------
     Create listener
+
     >>> from ansys.optislang.core.tcp_osl_server import TcpOslListener
     >>> general_listener = TcpOslListener(
     >>>     port_range = (49152, 65535),
@@ -822,9 +823,47 @@ class TcpOslServer(OslServer):
         - If the project file does not exist, a new project is created on the specified path.
         - If the path is None, a new project is created in the temporary directory.
         Defaults to ``None``.
+    batch : bool, optional
+        Determines whether to start optiSLang server in batch mode. Defaults to ``True``.
+    port_range : Tuple[int, int], optional
+        Defines the port range for optiSLang server. Defaults to ``None``.
+    no_run : bool, optional
+        Determines whether not to run the specified project when started in batch mode.
+        Defaults to ``None``.
+
+        .. note:: Only supported in batch mode.
+
     no_save : bool, optional
         Determines whether not to save the specified project after all other actions are completed.
         It is ignored when the host and port parameters are specified. Defaults to ``False``.
+
+        .. note:: Only supported in batch mode.
+
+    force : bool, optional
+        Determines whether to force opening/processing specified project when started in batch mode
+        even if issues occur.
+        Defaults to ``True``.
+
+        .. note:: Only supported in batch mode.
+
+    reset : bool, optional
+        Determines whether to reset specified project after load.
+        Defaults to ``False``.
+
+        .. note:: Only supported in batch mode.
+
+    auto_relocate : bool, optional
+        Determines whether to automatically relocate missing file paths.
+        Defaults to ``False``.
+
+        .. note:: Only supported in batch mode.
+
+    listener_id : str, optional
+        Specific unique ID for the TCP listener. Defaults to ``None``.
+    multi_listener : Iterable[Tuple[str, int, Optional[str]]], optional
+        Multiple remote listeners (plain TCP/IP based) to be registered at optiSLang server.
+        Each listener is a combination of host, port and (optionally) listener ID.
+        Defaults to ``None``.
     ini_timeout : float, optional
         Time in seconds to listen to the optiSLang server port. If the port is not listened
         for specified time, the optiSLang server is not started and RuntimeError is raised.
@@ -838,6 +877,45 @@ class TcpOslServer(OslServer):
         Shut down when execution is finished and there are not any listeners registered.
         It is ignored when the host and port parameters are specified. Defaults to ``True``.
 
+        .. note:: Only supported in batch mode.
+
+    env_vars : Mapping[str, str], optional
+        Additional environmental variables (key and value) for the optiSLang server process.
+        Defaults to ``None``.
+    import_project_properties_file : Union[str, pathlib.Path], optional
+        Optional path to a project properties file to import. Defaults to ``None``.
+    export_project_properties_file : Union[str, pathlib.Path], optional
+        Optional path to a project properties file to export. Defaults to ``None``.
+
+        .. note:: Only supported in batch mode.
+
+    import_placeholders_file : Union[str, pathlib.Path], optional
+        Optional path to a placeholders file to import. Defaults to ``None``.
+    export_placeholders_file : Union[str, pathlib.Path], optional
+        Optional path to a placeholders file to export. Defaults to ``None``.
+
+        .. note:: Only supported in batch mode.
+
+    output_file : Union[str, pathlib.Path], optional
+        Optional path to an output file for writing project run results to. Defaults to ``None``.
+
+        .. note:: Only supported in batch mode.
+
+    dump_project_state : Union[str, pathlib.Path], optional
+        Optional path to a project state dump file to export. If a relative path is provided,
+        it is considered to be relative to the project working directory. Defaults to ``None``.
+
+        .. note:: Only supported in batch mode.
+
+    opx_project_definition_file : Union[str, pathlib.Path], optional
+        Optional path to an OPX project definition file. Defaults to ``None``.
+
+        .. note:: Only supported in batch mode.
+
+    additional_args : Iterable[str], optional
+        Additional command line arguments used for execution of the optiSLang server process.
+        Defaults to ``None``.
+
     Raises
     ------
     RuntimeError
@@ -848,6 +926,7 @@ class TcpOslServer(OslServer):
     Examples
     --------
     Start local optiSLang server, get optiSLang version and shutdown the server.
+
     >>> from ansys.optislang.core.tcp_osl_server import TcpOslServer
     >>> osl_server = TcpOslServer()
     >>> osl_version = osl_server.get_osl_version_string()
@@ -855,6 +934,7 @@ class TcpOslServer(OslServer):
     >>> osl_server.shutdown()
 
     Connect to the remote optiSLang server, get optiSLang version and shutdown the server.
+
     >>> from ansys.optislang.core.tcp_osl_server import TcpOslServer
     >>> host = "192.168.101.1"  # IP address of the remote host
     >>> port = 49200            # Port of the remote optiSLang server
@@ -885,11 +965,28 @@ class TcpOslServer(OslServer):
         port: int = None,
         executable: Union[str, Path] = None,
         project_path: Union[str, Path] = None,
+        batch: bool = True,
+        port_range: Tuple[int, int] = None,
+        no_run: bool = None,
         no_save: bool = False,
+        force: bool = True,
+        reset: bool = False,
+        auto_relocate: bool = False,
+        listener_id: str = None,
+        multi_listener: Iterable[Tuple[str, int, Optional[str]]] = None,
         ini_timeout: float = 20,
         password: str = None,
         logger=None,
         shutdown_on_finished=True,
+        env_vars: Mapping[str, str] = None,
+        import_project_properties_file: Union[str, Path] = None,
+        export_project_properties_file: Union[str, Path] = None,
+        import_placeholders_file: Union[str, Path] = None,
+        export_placeholders_file: Union[str, Path] = None,
+        output_file: Union[str, Path] = None,
+        dump_project_state: Union[str, Path] = None,
+        opx_project_definition_file: Union[str, Path] = None,
+        additional_args: Iterable[str] = None,
     ) -> None:
         """Initialize a new instance of the ``TcpOslServer`` class."""
         self.__host = host
@@ -903,7 +1000,13 @@ class TcpOslServer(OslServer):
 
         self.__executable = Path(executable) if executable is not None else None
         self.__project_path = Path(project_path) if project_path is not None else None
+        self.__batch = batch
+        self.__port_range = port_range
+        self.__no_run = no_run
         self.__no_save = no_save
+        self.__force = force
+        self.__reset = reset
+        self.__auto_relocate = auto_relocate
         self.__password = password
         self.__osl_process = None
         self.__listeners = {}
@@ -911,6 +1014,18 @@ class TcpOslServer(OslServer):
         self.__refresh_listeners = threading.Event()
         self.__listeners_refresh_interval = 20
         self.__disposed = False
+        self.__env_vars = env_vars
+        self.__listener_id = listener_id
+        self.__multi_listener = multi_listener
+        self.__import_project_properties_file = import_project_properties_file
+        self.__export_project_properties_file = export_project_properties_file
+        self.__import_placeholders_file = import_placeholders_file
+        self.__export_placeholders_file = export_placeholders_file
+        self.__output_file = output_file
+        self.__dump_project_state = dump_project_state
+        self.__opx_project_definition_file = opx_project_definition_file
+        self.__additional_args = additional_args
+
         signal.signal(signal.SIGINT, self.__signal_handler)
         atexit.register(self.dispose)
 
@@ -923,6 +1038,7 @@ class TcpOslServer(OslServer):
             listener = self.__create_listener(
                 timeout=self.__timeout,
                 name="Main",
+                uid=self.__listener_id,
             )
             listener.uid = self.__register_listener(
                 host=listener.host,
@@ -2169,7 +2285,9 @@ class TcpOslServer(OslServer):
             raise RuntimeError("optiSLang server is already started.")
 
         listener = self.__create_listener(
-            uid=str(uuid.uuid4()), timeout=self.__timeout, name="Main"
+            uid=self.__listener_id if self.__listener_id else str(uuid.uuid4()),
+            timeout=self.__timeout,
+            name="Main",
         )
         port_queue = Queue()
         listener.add_callback(self.__class__.__port_on_listended, (port_queue, self._logger))
@@ -2184,12 +2302,28 @@ class TcpOslServer(OslServer):
                 password=self.__password,
                 listener=(listener.host, listener.port),
                 listener_id=listener.uid,
+                multi_listener=self.__multi_listener,
                 notifications=[
                     ServerNotification.SERVER_UP,
                     ServerNotification.SERVER_DOWN,
                 ],
                 shutdown_on_finished=shutdown_on_finished,
                 logger=self._logger,
+                batch=self.__batch,
+                port_range=self.__port_range,
+                no_run=self.__no_run,
+                force=self.__force,
+                reset=self.__reset,
+                auto_relocate=self.__auto_relocate,
+                env_vars=self.__env_vars,
+                import_project_properties_file=self.__import_project_properties_file,
+                export_project_properties_file=self.__export_project_properties_file,
+                import_placeholders_file=self.__import_placeholders_file,
+                export_placeholders_file=self.__export_placeholders_file,
+                output_file=self.__output_file,
+                dump_project_state=self.__dump_project_state,
+                opx_project_definition_file=self.__opx_project_definition_file,
+                additional_args=self.__additional_args,
             )
             self.__osl_process.start()
 
@@ -2409,6 +2543,7 @@ class TcpOslServer(OslServer):
                 timeout=timeout,
                 notifications=[ntf.name for ntf in notifications],
                 password=self.__password,
+                listener_uid=self.__listener_id,
             )
         )
         return msg[0]["uid"]
