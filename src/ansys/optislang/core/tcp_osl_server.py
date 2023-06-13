@@ -1,4 +1,6 @@
 """Contains classes for plain TCP/IP communication with server."""
+from __future__ import annotations
+
 import atexit
 from datetime import datetime
 import json
@@ -12,7 +14,7 @@ import socket
 import struct
 import threading
 import time
-from typing import Callable, Dict, List, Sequence, Tuple, Union
+from typing import Any, Callable, Dict, List, Sequence, Tuple, Union
 import uuid
 
 from ansys.optislang.core import server_commands as commands
@@ -945,32 +947,21 @@ class TcpOslServer(OslServer):
                     " is not fully supported. Please use at least version 23.1."
                 )
 
-    def get_server_info(self) -> Dict:
-        """Get information about the application, the server configuration and the open projects.
+    def connect_nodes(
+        self, from_actor_uid: str, from_slot: str, to_actor_uid: str, to_slot: str
+    ) -> None:
+        """Connect 2 nodes.
 
-        Returns
-        -------
-        Dict
-            Information data as dictionary.
-
-        Raises
-        ------
-        OslCommunicationError
-            Raised when an error occurs while communicating with server.
-        OslCommandError
-            Raised when the command or query fails.
-        TimeoutError
-            Raised when the timeout float value expires.
-        """
-        return self.send_command(queries.server_info(self.__password))
-
-    def get_basic_project_info(self) -> Dict:
-        """Get basic project info, like name, location, global settings and status.
-
-        Returns
-        -------
-        Dict
-            Information data as dictionary.
+        Parameters
+        ----------
+        from_actor_uid : str
+            Uid of the sending actor.
+        from_slot : str
+            Slot of the sending actor.
+        to_actor_uid : str
+            Uid of the receiving actor.
+        to_slot : str
+            Slot of the receiving actor.
 
         Raises
         ------
@@ -981,7 +972,109 @@ class TcpOslServer(OslServer):
         TimeoutError
             Raised when the timeout float value expires.
         """
-        return self.send_command(queries.basic_project_info(self.__password))
+        self.send_command(
+            commands.connect_nodes(
+                from_actor_uid=from_actor_uid,
+                from_slot=from_slot,
+                to_actor_uid=to_actor_uid,
+                to_slot=to_slot,
+                password=self.__password,
+            )
+        )
+
+    def create_node(
+        self,
+        type_: str,
+        name: Union[str, None] = None,
+        algorithm_type: str = None,
+        integration_type: str = None,
+        mop_node_type: str = None,
+        node_type: str = None,
+        parent_uid: Union[str, None] = None,
+        design_flow: Union[str, None] = None,
+    ) -> str:
+        """Create a new node of given type.
+
+        Parameters
+        ----------
+        type_ : str
+            Type of the node.
+        name : Union[str, None], optional
+            Node name, by default ``None``.
+        algorithm_type : str, optional
+            Algorithm type, e. g. 'algorithm_plugin', by default None.
+        integration_type : str, optional
+            Integration type, e. g. 'integration_plugin', by default None.
+        mop_node_type : str, optional
+            MOP node type, e. g. 'python_based_mop_node_plugin', by default None.
+        node_type: str, optional
+            Node type, e. g. 'python_based_node_plugin`, by default None.
+        parent_uid : Union[str, None], optional
+            Parent uid, by default ``None``.
+        design_flow : Union[str, None], optional
+            Design flow option, by default ``None``.
+
+        Returns
+        -------
+        str
+            Uid of the created node.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        # TODO: test
+        output: List[dict] = self.send_command(
+            commands.create_node(
+                type_=type_,
+                name=name,
+                algorithm_type=algorithm_type,
+                integration_type=integration_type,
+                mop_node_type=mop_node_type,
+                node_type=node_type,
+                parent_uid=parent_uid,
+                design_flow=design_flow,
+                password=self.__password,
+            )
+        )
+        if len(output) > 1:
+            self._logger.error(f"``len(output) == {len(output)}``, but only 1 item was expected.")
+        return output[0].get("result_data", {}).get("actor_uid")
+
+    def disconnect_slot(self, uid: str, slot_name: str, direction: str) -> None:
+        """Remove all connections for a given slot.
+
+        Parameters
+        ----------
+        uid : str
+            Node uid.
+        slot_name : str
+            Slot name.
+        direction : str
+            String specifying direction, either 'sdInputs' <or> 'sdOuputs'.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        self.send_command(
+            commands.disconnect_slot(
+                actor_uid=uid,
+                slot_name=slot_name,
+                direction=direction,
+                password=self.__password,
+            )
+        )
 
     def dispose(self) -> None:
         """Terminate all local threads and unregister listeners.
@@ -1155,6 +1248,47 @@ class TcpOslServer(OslServer):
             Raised when the timeout float value expires.
         """
         return self.send_command(queries.actor_properties(uid=uid, password=self.__password))
+
+    def get_available_nodes(self) -> Dict[str, List[str]]:
+        """Get available node types for current oSL server.
+
+        Returns
+        -------
+        Dict[str, List[str]]
+            Dictionary of available nodes types
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        available_nodes = self.send_command(queries.available_nodes(self.__password))
+        available_nodes.pop("message")
+        available_nodes.pop("status")
+        return available_nodes
+
+    def get_basic_project_info(self) -> Dict:
+        """Get basic project info, like name, location, global settings and status.
+
+        Returns
+        -------
+        Dict
+            Information data as dictionary.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        return self.send_command(queries.basic_project_info(self.__password))
 
     def get_full_project_status_info(self) -> Dict:
         """Get full project status info.
@@ -1529,6 +1663,25 @@ class TcpOslServer(OslServer):
             queries.project_tree_systems_with_properties(password=self.__password)
         )
 
+    def get_server_info(self) -> Dict:
+        """Get information about the application, the server configuration and the open projects.
+
+        Returns
+        -------
+        Dict
+            Information data as dictionary.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        return self.send_command(queries.server_info(self.__password))
+
     def get_server_is_alive(self) -> bool:
         """Get info whether the server is alive.
 
@@ -1672,6 +1825,26 @@ class TcpOslServer(OslServer):
                 password=self.__password,
             )
         )
+
+    def remove_node(self, actor_uid: str) -> None:
+        """Remove node specified by uid.
+
+        Parameters
+        ----------
+        actor_uid : str
+            Actor uid.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        # TODO: test
+        self.send_command(commands.remove_node(actor_uid=actor_uid, password=self.__password))
 
     def reset(self):
         """Reset complete project.
@@ -1841,6 +2014,33 @@ class TcpOslServer(OslServer):
         file_path = self.__cast_to_path(file_path=file_path)
         self.__validate_path(file_path=file_path)
         self.send_command(commands.save_copy(str(file_path.as_posix()), self.__password))
+
+    def set_actor_property(self, actor_uid: str, name: str, value: Any) -> None:
+        """Set an actor property.
+
+        Parameters
+        ----------
+        actor_uid : str
+            Actor uid.
+        name : str
+            Property name.
+        value : Any
+            Property value.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        self.send_command(
+            commands.set_actor_property(
+                actor_uid=actor_uid, name=name, value=value, password=self.__password
+            )
+        )
 
     def set_timeout(self, timeout: Union[float, None] = None) -> None:
         """Set timeout value for execution of commands.

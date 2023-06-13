@@ -7,6 +7,7 @@ _ACTOR_PROPERTIES = "ACTOR_PROPERTIES"
 _ACTOR_STATES = "ACTOR_STATES"
 _ACTOR_STATUS_INFO = "ACTOR_STATUS_INFO"
 _ACTOR_SUPPORTS = "ACTOR_SUPPORTS"
+_AVAILABLE_NODES = "AVAILABLE_NODES"
 _BASIC_PROJECT_INFO = "BASIC_PROJECT_INFO"
 _FULL_PROJECT_STATUS_INFO = "FULL_PROJECT_STATUS_INFO"
 _FULL_PROJECT_TREE = "FULL_PROJECT_TREE"
@@ -115,6 +116,22 @@ def actor_supports(uid: str, feature_name: str, password=None) -> str:
     args = {}
     args["feature"] = feature_name
     return _to_json(_gen_query(what=_ACTOR_SUPPORTS, uid=uid, args=args, password=password))
+
+
+def available_nodes(password=None) -> str:
+    """Generate JSON string of available nodes query.
+
+    Parameters
+    ----------
+    password : str, opt
+        Password.
+
+    Returns
+    -------
+    str
+        JSON string of available nodes query.
+    """
+    return _to_json(_gen_query(what=_AVAILABLE_NODES, password=password))
 
 
 def basic_project_info(password: str = None) -> str:

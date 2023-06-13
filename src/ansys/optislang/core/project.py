@@ -1,8 +1,9 @@
 """Contains class ProjectSystem."""
 from __future__ import annotations
 
+import logging
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Dict, List
 
 from ansys.optislang.core.nodes import RootSystem
 
@@ -19,7 +20,7 @@ if TYPE_CHECKING:
 class Project:
     """Provides the class containing the root system and queries related to the loaded project."""
 
-    def __init__(self, osl_server: OslServer, uid: str) -> None:
+    def __init__(self, osl_server: OslServer, uid: str, logger=None) -> None:
         """Initialize an instance of the ``Project`` class.
 
         Parameters
@@ -28,12 +29,16 @@ class Project:
             Instance of ``OslServer``.
         uid: str
             Unique ID of the loaded project.
+        logger: Any, optional
+            Object for logging. If ``None``, standard logging object is used. Defaults to ``None``.
         """
         self.__osl_server = osl_server
         self.__uid = uid
+        self.__logger = logging.getLogger(__name__) if logger is None else logger
         self.__root_system = RootSystem(
             uid=uid,
             osl_server=self.__osl_server,
+            logger=self.__logger,
         )
 
     def __str__(self):
@@ -44,6 +49,75 @@ class Project:
             f"Status: {self.get_status()}\n"
             f"Location: {str(self.get_location())}"
         )
+
+    @property
+    def criteria_manager(self) -> CriteriaManager:
+        """Instance of the ``CriteriaManager`` class at the root system.
+
+        Returns
+        -------
+        CriteriaManager
+            Criteria manager at the root system.
+        """
+        return self.__root_system.criteria_manager
+
+    @property
+    def logger(self):
+        """Return object for logging."""
+        return self.__logger
+
+    @property
+    def parameter_manager(self) -> ParameterManager:
+        """Instance of the ``ParameterManager`` class at the root system.
+
+        Returns
+        -------
+        ParameterManager
+            Parameter manager at the root system.
+        """
+        return self.__root_system.parameter_manager
+
+    @property
+    def response_manager(self) -> ResponseManager:
+        """Instance of the ``ResponseManager`` class at the root system.
+
+        Returns
+        -------
+        ResponseManager
+            Response manager at the root system.
+        """
+        return self.__root_system.response_manager
+
+    @property
+    def root_system(self) -> RootSystem:
+        """Instance of the ``RootSystem`` class.
+
+        Returns
+        -------
+        RootSystem
+            Loaded project's root system.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        return self.__root_system
+
+    @property
+    def uid(self) -> str:
+        """Unique ID of the optiSLang project.
+
+        Returns
+        -------
+        str
+            Unique ID of the loaded project.
+        """
+        return self.__uid
 
     def evaluate_design(self, design: Design, update_design: bool = True) -> Design:
         """Evaluate a design.
@@ -72,6 +146,25 @@ class Project:
             Raised when the timeout float value expires.
         """
         return self.root_system.evaluate_design(design=design, update_design=update_design)
+
+    def get_available_nodes(self) -> Dict[str, List[str]]:
+        """Get raw dictionary of available nodes sorted by subtypes.
+
+        Returns
+        -------
+        Dict[str, List[str]]
+            Dictionary of available node types, sorted by subtype.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        return self.__osl_server.get_available_nodes()
 
     def get_description(self) -> str:
         """Get the description of the optiSLang project.
@@ -171,67 +264,3 @@ class Project:
             Raised when the timeout float value expires.
         """
         return self.__osl_server.get_project_status()
-
-    @property
-    def parameter_manager(self) -> ParameterManager:
-        """Instance of the ``ParameterManager`` class at the root system.
-
-        Returns
-        -------
-        ParameterManager
-            Parameter manager at the root system.
-        """
-        return self.__root_system.parameter_manager
-
-    @property
-    def response_manager(self) -> ResponseManager:
-        """Instance of the ``ResponseManager`` class at the root system.
-
-        Returns
-        -------
-        ResponseManager
-            Response manager at the root system.
-        """
-        return self.__root_system.response_manager
-
-    @property
-    def criteria_manager(self) -> CriteriaManager:
-        """Instance of the ``CriteriaManager`` class at the root system.
-
-        Returns
-        -------
-        CriteriaManager
-            Criteria manager at the root system.
-        """
-        return self.__root_system.criteria_manager
-
-    @property
-    def root_system(self) -> RootSystem:
-        """Instance of the ``RootSystem`` class.
-
-        Returns
-        -------
-        RootSystem
-            Loaded project's root system.
-
-        Raises
-        ------
-        OslCommunicationError
-            Raised when an error occurs while communicating with the server.
-        OslCommandError
-            Raised when a command or query fails.
-        TimeoutError
-            Raised when the timeout float value expires.
-        """
-        return self.__root_system
-
-    @property
-    def uid(self) -> str:
-        """Unique ID of the optiSLang project.
-
-        Returns
-        -------
-        str
-            Unique ID of the loaded project.
-        """
-        return self.__uid

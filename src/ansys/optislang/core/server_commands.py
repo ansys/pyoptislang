@@ -195,7 +195,15 @@ def create_input_slot(
 
 
 def create_node(
-    type_: str, name: str, parent_uid: str = None, design_flow: str = None, password: str = None
+    type_: str,
+    name: str,
+    algorithm_type: str = None,
+    integration_type: str = None,
+    mop_node_type: str = None,
+    node_type: str = None,
+    parent_uid: str = None,
+    design_flow: str = None,
+    password: str = None,
 ) -> str:
     """Generate JSON string of create_node command.
 
@@ -205,11 +213,19 @@ def create_node(
         Type.
     name: str
         Name.
-    parent_uid: str, opt
+    algorithm_type : str, optional
+        Algorithm type, e. g. 'algorithm_plugin', by default None.
+    integration_type : str, optional
+        Integration type, e. g. 'integration_plugin', by default None.
+    mop_node_type : str, optional
+        MOP node type, e. g. 'python_based_mop_node_plugin', by default None.
+    node_type: str, optional
+        Node type, e. g. 'python_based_node_plugin`, by default None.
+    parent_uid: str, optional
         Parent uid entry.
-    design_flow: str, opt
+    design_flow: str, optional
         Design flow, optional values are ["RECEIVE", "SEND", "RECEIVE_SEND"].
-    password : str, opt
+    password : str, optional
         Password.
 
     Returns
@@ -220,6 +236,14 @@ def create_node(
     args = {}
     args["type"] = type_
     args["name"] = name
+    if algorithm_type:
+        args["algorithm_type"] = algorithm_type
+    if integration_type:
+        args["integration_type"] = integration_type
+    if mop_node_type:
+        args["mop_node_type"] = mop_node_type
+    if node_type:
+        args["node_type"] = node_type
     if parent_uid is not None:
         args["parent_uid"] = parent_uid
     if design_flow not in [None, "NONE"]:

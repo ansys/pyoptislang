@@ -3,55 +3,15 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import Dict, List, Sequence, Tuple, Union
+from typing import Any, Dict, List, Sequence, Tuple, Union
 
 
 class OslServer(ABC):
     """Base class for classes which provide access to optiSLang server."""
 
     @abstractmethod
-    def __init__(self):
+    def __init__(self):  # pragma: no cover
         """``OslServer`` class is an abstract base class and cannot be instantiated."""
-
-    @abstractmethod
-    def get_server_info(self) -> Dict:  # pragma: no cover
-        """Get information about the application, the server configuration and the open projects.
-
-        Returns
-        -------
-        Dict
-            Information data as dictionary.
-
-        Raises
-        ------
-        OslCommunicationError
-            Raised when an error occurs while communicating with server.
-        OslCommandError
-            Raised when the command or query fails.
-        TimeoutError
-            Raised when the timeout float value expires.
-        """
-        pass
-
-    @abstractmethod
-    def get_basic_project_info(self) -> Dict:  # pragma: no cover
-        """Get basic project info, like name, location, global settings and status.
-
-        Returns
-        -------
-        Dict
-            Information data as dictionary.
-
-        Raises
-        ------
-        OslCommunicationError
-            Raised when an error occurs while communicating with server.
-        OslCommandError
-            Raised when the command or query fails.
-        TimeoutError
-            Raised when the timeout float value expires.
-        """
-        pass
 
     # @abstractmethod
     # def close(self) -> None:
@@ -67,6 +27,98 @@ class OslServer(ABC):
     #         Raised when the timeout float value expires.
     #     """
     #     pass
+
+    @abstractmethod
+    def connect_nodes(
+        self, from_actor_uid: str, from_slot: str, to_actor_uid: str, to_slot: str
+    ) -> None:
+        """Connect 2 nodes.
+
+        Parameters
+        ----------
+        from_actor_uid : str
+            Uid of the sending actor.
+        from_slot : str
+            Slot of the sending actor.
+        to_actor_uid : str
+            Uid of the receiving actor.
+        to_slot : str
+            Slot of the receiving actor.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        pass
+
+    @abstractmethod
+    def create_node(
+        self,
+        type_: str,
+        name: Union[str, None] = None,
+        algorithm_type: str = None,
+        integration_type: str = None,
+        mop_node_type: str = None,
+        node_type: str = None,
+        parent_uid: Union[str, None] = None,
+        design_flow: Union[str, None] = None,
+    ) -> str:  # pragma: no cover
+        """Create a new node of given type.
+
+        Parameters
+        ----------
+        type_ : str
+            Type of the node.
+        name : Union[str, None], optional
+            Node name, by default ``None``.
+        algorithm_type : str, optional
+            Algorithm type, e. g. 'algorithm_plugin', by default None.
+        integration_type : str, optional
+            Integration type, e. g. 'integration_plugin', by default None.
+        mop_node_type : str, optional
+            MOP node type, e. g. 'python_based_mop_node_plugin', by default None.
+        node_type: str, optional
+            Node type, e. g. 'python_based_node_plugin`, by default None.
+        parent_uid : Union[str, None], optional
+            Parent uid, by default ``None``.
+        design_flow : Union[str, None], optional
+            Design flow option, by default ``None``.
+
+        Returns
+        -------
+        str
+            Uid of the created node.
+        """
+        pass
+
+    @abstractmethod
+    def disconnect_slot(self, uid: str, slot_name: str, direction: str) -> None:
+        """Remove all connections for a given slot.
+
+        Parameters
+        ----------
+        uid : str
+            Node uid.
+        slot_name : str
+            Slot name.
+        direction : str
+            String specifying direction, either 'sdInputs' <or> 'sdOuputs'.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        pass
 
     @abstractmethod
     def dispose(self) -> None:  # pragma: no cover
@@ -224,6 +276,46 @@ class OslServer(ABC):
         -------
         Dict
             Properties of actor defined by uid.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        pass
+
+    @abstractmethod
+    def get_available_nodes(self) -> Dict[str, List[str]]:  # pragma: no cover
+        """Get available node types for current oSL server.
+
+        Returns
+        -------
+        Dict[str, List[str]]
+            Dictionary of available nodes types
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        pass
+
+    @abstractmethod
+    def get_basic_project_info(self) -> Dict:  # pragma: no cover
+        """Get basic project info, like name, location, global settings and status.
+
+        Returns
+        -------
+        Dict
+            Information data as dictionary.
 
         Raises
         ------
@@ -565,6 +657,26 @@ class OslServer(ABC):
         pass
 
     @abstractmethod
+    def get_server_info(self) -> Dict:  # pragma: no cover
+        """Get information about the application, the server configuration and the open projects.
+
+        Returns
+        -------
+        Dict
+            Information data as dictionary.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        pass
+
+    @abstractmethod
     def get_server_is_alive(self) -> bool:  # pragma: no cover
         """Get info whether the server is alive.
 
@@ -687,6 +799,26 @@ class OslServer(ABC):
             Whether to restore project from last (auto) save point (if present).
         reset : bool, optional
             Whether to reset project after load.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        pass
+
+    @abstractmethod
+    def remove_node(self, actor_uid: str) -> None:  # pragma: no cover
+        """Remove node specified by uid.
+
+        Parameters
+        ----------
+        actor_uid : str
+            Actor uid.
 
         Raises
         ------
@@ -836,6 +968,30 @@ class OslServer(ABC):
         ----------
         file_path : Union[str, pathlib.Path]
             Path where to save the project copy.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        pass
+
+    @abstractmethod
+    def set_actor_property(self, actor_uid: str, name: str, value: Any) -> None:  # pragma: no cover
+        """Set an actor property.
+
+        Parameters
+        ----------
+        actor_uid : str
+            Actor uid.
+        name : str
+            Property name.
+        value : Any
+            Property value.
 
         Raises
         ------

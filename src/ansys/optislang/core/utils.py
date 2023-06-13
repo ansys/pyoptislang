@@ -43,7 +43,6 @@ def enum_from_str(
         raise TypeError(f"String was expected, but `{type(string)}` was given.")
     if not issubclass(enum_class, Enum):
         raise TypeError(f"Enumeration class was expected, but `{type(enum_class)}` was given.")
-    string = string.upper()
     if replace is not None:
         string = string.replace(replace[0], replace[1])
     try:

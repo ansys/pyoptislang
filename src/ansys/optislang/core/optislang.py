@@ -118,7 +118,9 @@ class Optislang:
         self.__osl_server: OslServer = self.__init_osl_server("tcp")
         project_uid = self.__osl_server.get_project_uid()
         self.__project = (
-            Project(osl_server=self.__osl_server, uid=project_uid) if project_uid else None
+            Project(osl_server=self.__osl_server, uid=project_uid, logger=self.__logger)
+            if project_uid
+            else None
         )
 
     def __init_osl_server(self, server_type: str) -> OslServer:
