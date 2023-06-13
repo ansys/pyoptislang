@@ -615,6 +615,7 @@ def register_listener(
     timeout: int = None,
     notifications: Iterable[str] = None,
     password: str = None,
+    listener_uid: str = None,
 ) -> str:
     """Generate JSON string of register_listener command.
 
@@ -632,6 +633,8 @@ def register_listener(
         Notifications.
     password : str, opt
         Password.
+    listener_uid : str, opt
+        Listener UID.
 
     Returns
     -------
@@ -653,6 +656,8 @@ def register_listener(
         args["timeout"] = timeout
     if notifications is not None:
         args["notifications"] = notifications
+    if listener_uid is not None:
+        args["uid"] = listener_uid
 
     return _to_json(_gen_server_command(command=_REGISTER_LISTENER, args=args, password=password))
 

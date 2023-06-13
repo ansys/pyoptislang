@@ -6,7 +6,7 @@ from enum import Enum
 import os
 from pathlib import Path
 import re
-from typing import Dict, Iterable, OrderedDict, Tuple, Union
+from typing import Dict, Iterable, Optional, OrderedDict, Tuple, Union
 
 from ansys.optislang.core import FIRST_SUPPORTED_VERSION
 
@@ -112,6 +112,39 @@ def find_all_osl_exec() -> OrderedDict[int, Tuple[Path, ...]]:
     # another os
     else:
         raise NotImplementedError(f"Unsupported OS {os.name}.")
+
+
+def get_osl_opx_import_script(osl_executable: Union[str, Path] = None) -> Optional[Path]:
+    """Get the path to the optiSLang OPX import script file.
+
+    Parameters
+    ----------
+    osl_executable : Union[str, pathlib.Path], optional
+        optiSLang executable path to use as a reference for locating the import script file.
+        The default is ``None``, in which case the default optiSLang executable file is used.
+
+    Returns
+    -------
+    Tuple[int, pathlib.Path], None
+        Path to the optiSLang OPX import script file, if location succeeded,
+        ``None`` is returned otherwise.
+
+    Raises
+    ------
+    NotImplementedError
+        Raised when the operating system is not supported.
+    """
+    if osl_executable is None:
+        osl_executable = get_osl_exec()[1]
+
+    if osl_executable is not None:
+        osl_opx_import_script_path = (
+            osl_executable.parent / "tools" / "import" / "opx" / "convert_opx_to_opf.py"
+        )
+        if osl_opx_import_script_path.is_file():
+            return osl_opx_import_script_path
+
+    return None
 
 
 def _find_all_osl_exec_in_windows() -> OrderedDict[int, Tuple[Path, ...]]:

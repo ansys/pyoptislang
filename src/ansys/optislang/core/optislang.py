@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import TYPE_CHECKING, Sequence, Tuple, Union
+from typing import TYPE_CHECKING, Iterable, Mapping, Optional, Sequence, Tuple, Union
 
 from importlib_metadata import version
 
@@ -48,10 +48,48 @@ class Optislang:
         - If the project file does not exist, a project is created in the specified path.
         - If the path is ``None``, a new project is created in the temporary directory.
 
+    batch : bool, optional
+        Determines whether to start optiSLang server in batch mode. Defaults to ``True``.
+    port_range : Tuple[int, int], optional
+        Defines the port range for optiSLang server. Defaults to ``None``.
+    no_run : bool, optional
+        Determines whether not to run the specified project when started in batch mode.
+        Defaults to ``None``.
+
+        .. note:: Only supported in batch mode.
+
     no_save : bool, optional
         Whether to save the specified project after all other actions are completed.
         The default is ``False``. This parameter is ignored when ``host`` and
         ``port`` parameters are specified.
+
+        .. note:: Only supported in batch mode.
+
+    force : bool, optional
+        Determines whether to force opening/processing specified project when started in batch mode
+        even if issues occur.
+        Defaults to ``True``.
+
+        .. note:: Only supported in batch mode.
+
+    reset : bool, optional
+        Determines whether to reset specified project after load.
+        Defaults to ``False``.
+
+        .. note:: Only supported in batch mode.
+
+    auto_relocate : bool, optional
+        Determines whether to automatically relocate missing file paths.
+        Defaults to ``False``.
+
+        .. note:: Only supported in batch mode.
+
+    listener_id : str, optional
+        Specific unique ID for the TCP listener. Defaults to ``None``.
+    multi_listener : Iterable[Tuple[str, int, Optional[str]]], optional
+        Multiple remote listeners (plain TCP/IP based) to be registered at optiSLang server.
+        Each listener is a combination of host, port and (optionally) listener ID.
+        Defaults to ``None``.
     ini_timeout : float, optional
         Time in seconds to connect to the optiSLang server. The default is ``20``.
     name : str, optional
@@ -72,6 +110,45 @@ class Optislang:
         Whether to shut down when execution is finished and no listeners are registered.
         The default is ``True``. This parameter is ignored when ``host`` and
         ``port`` parameters are specified.
+
+        .. note:: Only supported in batch mode.
+
+    env_vars : Mapping[str, str], optional
+        Additional environmental variables (key and value) for the optiSLang server process.
+        Defaults to ``None``.
+    import_project_properties_file : Union[str, pathlib.Path], optional
+        Optional path to a project properties file to import. Defaults to ``None``.
+    export_project_properties_file : Union[str, pathlib.Path], optional
+        Optional path to a project properties file to export. Defaults to ``None``.
+
+        .. note:: Only supported in batch mode.
+
+    import_placeholders_file : Union[str, pathlib.Path], optional
+        Optional path to a placeholders file to import. Defaults to ``None``.
+    export_placeholders_file : Union[str, pathlib.Path], optional
+        Optional path to a placeholders file to export. Defaults to ``None``.
+
+        .. note:: Only supported in batch mode.
+
+    output_file : Union[str, pathlib.Path], optional
+        Optional path to an output file for writing project run results to. Defaults to ``None``.
+
+        .. note:: Only supported in batch mode.
+
+    dump_project_state : Union[str, pathlib.Path], optional
+        Optional path to a project state dump file to export. If a relative path is provided,
+        it is considered to be relative to the project working directory. Defaults to ``None``.
+
+        .. note:: Only supported in batch mode.
+
+    opx_project_definition_file : Union[str, pathlib.Path], optional
+        Optional path to an OPX project definition file. Defaults to ``None``.
+
+        .. note:: Only supported in batch mode.
+
+    additional_args : Iterable[str], optional
+        Additional command line arguments used for execution of the optiSLang server process.
+        Defaults to ``None``.
 
     Raises
     ------
@@ -97,23 +174,57 @@ class Optislang:
         port: int = None,
         executable: Union[str, Path] = None,
         project_path: Union[str, Path] = None,
+        batch: bool = True,
+        port_range: Tuple[int, int] = None,
+        no_run: bool = None,
         no_save: bool = False,
+        force: bool = True,
+        reset: bool = False,
+        auto_relocate: bool = False,
+        listener_id: str = None,
+        multi_listener: Iterable[Tuple[str, int, Optional[str]]] = None,
         ini_timeout: Union[int, float] = 20,
         name: str = None,
         password: str = None,
         loglevel: str = None,
         shutdown_on_finished: bool = True,
+        env_vars: Mapping[str, str] = None,
+        import_project_properties_file: Union[str, Path] = None,
+        export_project_properties_file: Union[str, Path] = None,
+        import_placeholders_file: Union[str, Path] = None,
+        export_placeholders_file: Union[str, Path] = None,
+        output_file: Union[str, Path] = None,
+        dump_project_state: Union[str, Path] = None,
+        opx_project_definition_file: Union[str, Path] = None,
+        additional_args: Iterable[str] = None,
     ) -> None:
         """Initialize a new instance of the ``Optislang`` class."""
         self.__host = host
         self.__port = port
         self.__executable = Path(executable) if executable is not None else None
         self.__project_path = Path(project_path) if project_path is not None else None
+        self.__batch = batch
+        self.__port_range = port_range
+        self.__no_run = no_run
         self.__no_save = no_save
+        self.__force = force
+        self.__reset = reset
+        self.__auto_relocate = auto_relocate
         self.__ini_timeout = ini_timeout
         self.__name = name
         self.__password = password
         self.__shutdown_on_finished = shutdown_on_finished
+        self.__env_vars = env_vars
+        self.__listener_id = listener_id
+        self.__multi_listener = multi_listener
+        self.__import_project_properties_file = import_project_properties_file
+        self.__export_project_properties_file = export_project_properties_file
+        self.__import_placeholders_file = import_placeholders_file
+        self.__export_placeholders_file = export_placeholders_file
+        self.__output_file = output_file
+        self.__dump_project_state = dump_project_state
+        self.__opx_project_definition_file = opx_project_definition_file
+        self.__additional_args = additional_args
         self.__logger = LOG.add_instance_logger(self.name, self, loglevel)
         self.__osl_server: OslServer = self.__init_osl_server("tcp")
         project_uid = self.__osl_server.get_project_uid()
@@ -153,6 +264,23 @@ class Optislang:
                 password=self.__password,
                 logger=self.log,
                 shutdown_on_finished=self.__shutdown_on_finished,
+                batch=self.__batch,
+                port_range=self.__port_range,
+                no_run=self.__no_run,
+                force=self.__force,
+                reset=self.__reset,
+                auto_relocate=self.__auto_relocate,
+                env_vars=self.__env_vars,
+                import_project_properties_file=self.__import_project_properties_file,
+                export_project_properties_file=self.__export_project_properties_file,
+                import_placeholders_file=self.__import_placeholders_file,
+                export_placeholders_file=self.__export_placeholders_file,
+                output_file=self.__output_file,
+                dump_project_state=self.__dump_project_state,
+                opx_project_definition_file=self.__opx_project_definition_file,
+                listener_id=self.__listener_id,
+                multi_listener=self.__multi_listener,
+                additional_args=self.__additional_args,
             )
         else:
             raise NotImplementedError(f'OptiSLang server of type "{server_type}" is not supported.')
