@@ -1073,9 +1073,6 @@ class Node:
                 isinstance(self.__class__, System) or issubclass(self.__class__, System)
             ) and isinstance(slot_type, SlotType):
                 info = self._osl_server.get_actor_info(connection[uid_keys[0]])
-                print(connection[slot_name_keys[0]])
-                print([item for item in info[slot_type.name.lower() + "_slots"]])
-                print("**********************")
                 if True in [
                     item["name"] == connection[slot_name_keys[0]]
                     for item in info[slot_type.name.lower() + "_slots"]
