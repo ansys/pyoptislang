@@ -514,15 +514,17 @@ class Node:
             > 0
         )
 
-    def get_connections(self, slot_type: SlotType, slot_name: str = None) -> Tuple[Edge]:
+    def get_connections(
+        self, slot_type: Union[SlotType, None] = None, slot_name: Union[str, None] = None
+    ) -> Tuple[Edge]:
         """Get connections of a given direction and slot.
 
         Parameters
         ----------
-        slot_type: SlotType
-            Slot type.
-        slot_name : str, optional
-            _description_, by default None
+        slot_type: Union[SlotType, None], optional
+            Slot type, by default ``None``.
+        slot_name : Union[SlotType, None], optional
+            Slot name, by default ``None``.
 
         Returns
         -------
@@ -541,9 +543,12 @@ class Node:
         # TODO: test
         project_tree = self._osl_server.get_full_project_tree_with_properties()
         connections = project_tree.get("projects", [{}])[0].get("connections")
-        direction = SlotType.to_dir_str(type_=slot_type)
-        filtered_connections = __class__._filter_connections(
-            connections=connections, uid=self.uid, direction=direction
+
+        filtered_connections = self._filter_connections(
+            connections=connections,
+            uid=self.uid,
+            slot_type=slot_type,
+            slot_name=slot_name,
         )
         edges = []
         for connection in filtered_connections:
@@ -553,85 +558,6 @@ class Node:
                 )
             )
         return tuple(edges)
-
-    def get_input_slots(self) -> Tuple[InputSlot, ...]:
-        """Get node's input slots.
-
-        Returns
-        -------
-        Tuple[Slot,...]
-            Tuple of defined input slots.
-
-        Raises
-        ------
-        OslCommunicationError
-            Raised when an error occurs while communicating with the server.
-        OslCommandError
-            Raised when a command or query fails.
-        TimeoutError
-            Raised when the timeout float value expires.
-        """
-        # TODO: test
-        return self._get_slots(type_=SlotType.INPUT)
-
-    def get_input_connections(self) -> Tuple[Edge]:
-        """Get nodes input connections.
-
-        Returns
-        -------
-        Tuple[Edge]
-            Nodes input connections.
-
-        Raises
-        ------
-        OslCommunicationError
-            Raised when an error occurs while communicating with the server.
-        OslCommandError
-            Raised when a command or query fails.
-        TimeoutError
-            Raised when the timeout float value expires.
-        """
-        # TODO: test
-        return self.get_connections(slot_type=SlotType.INPUT)
-
-    def get_output_connections(self) -> Tuple[Edge]:
-        """Get nodes output connections.
-
-        Returns
-        -------
-        Tuple[Edge]
-            Nodes output connections.
-
-        Raises
-        ------
-        OslCommunicationError
-            Raised when an error occurs while communicating with the server.
-        OslCommandError
-            Raised when a command or query fails.
-        TimeoutError
-        """
-        # TODO: test
-        return self.get_connections(slot_type=SlotType.OUTPUT)
-
-    def get_output_slots(self) -> Tuple[OutputSlot, ...]:
-        """Get node's output slots.
-
-        Returns
-        -------
-        Tuple[Slot,...]
-            Tuple of defined output slots.
-
-        Raises
-        ------
-        OslCommunicationError
-            Raised when an error occurs while communicating with the server.
-        OslCommandError
-            Raised when a command or query fails.
-        TimeoutError
-            Raised when the timeout float value expires.
-        """
-        # TODO: test
-        return self._get_slots(type_=SlotType.OUTPUT)
 
     def get_name(self) -> str:
         """Get the name of the node.
@@ -752,34 +678,57 @@ class Node:
         """
         return self._osl_server.get_actor_properties(self.uid)
 
-    def get_slot(self, name: str, type_: SlotType) -> Slot:
-        """Get current node's slot of a given type and name.
+    def get_slots(
+        self, type_: Union[SlotType, None] = None, name: Union[str, None] = None
+    ) -> Tuple[Slot, ...]:
+        """Get current node's slots of given type and optionally name.
 
         Parameters
         ----------
-        name : str
-            Slot name.
-        type_ : SlotType
-            Slot type.
+        type_: Union[SlotType, None], optional
+            Type of slots to be returned, by default ``None``.
+        name : Union[str, None], optional
+            Slot name, by default ``None``.
 
         Returns
         -------
-        Slot
-            Specified slot.
+        Tuple[Slot, ...]
+            Tuple of current node's slots of given type.
 
         Raises
         ------
-        NameError
-            Raised when slot for given combination of ``name`` and ``type_`` could not be found.
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
         """
-        # TODO: test
-        slots = self._get_slots(type_=type_, name=name)
-        if len(slots) > 1:
-            self._logger.error("Multiple slots with the same name and type were found.")
-        if len(slots) > 0:
-            return slots[0]
+        info = self._get_info()
+        if isinstance(type_, SlotType):
+            keys = [type_.name.lower() + "_slots"]
         else:
-            raise NameError(f"Slot of type: ``{type_}`` and name: ``{name}`` could not be found.")
+            keys = [slot_type.name.lower() + "_slots" for slot_type in SlotType]
+
+        slots_dicts_mapping = {}
+        for key in keys:
+            slots_dicts_mapping[key] = info.get(key, [])
+
+        slots_list = []
+        for slot_type, slots_dicts in slots_dicts_mapping.items():
+            for slot_dict in slots_dicts:
+                if name is not None and name != slot_dict["name"]:
+                    continue
+                slots_list.append(
+                    Slot.create_slot(
+                        osl_server=self._osl_server,
+                        node=self,
+                        name=slot_dict["name"],
+                        type_=SlotType.from_str(string=slot_type[0:-6]),
+                        type_hint=slot_dict["type"],
+                    )
+                )
+        return tuple(slots_list)
 
     def get_status(self) -> str:
         """Get the status of the node.
@@ -891,48 +840,6 @@ class Node:
             node_uid=self.uid,
         )
 
-    def _get_slots(self, type_: SlotType, name: Union[str, None] = None) -> Tuple[Slot, ...]:
-        """Get current node's slots of given type and optionally name.
-
-        Parameters
-        ----------
-        type_: SlotType
-            Type of slots to be returned.
-        name : Union[str, None], optional
-            Slot name.
-
-        Returns
-        -------
-        Tuple[Slot, ...]
-            Tuple of current node's slots of given type.
-
-        Raises
-        ------
-        OslCommunicationError
-            Raised when an error occurs while communicating with the server.
-        OslCommandError
-            Raised when a command or query fails.
-        TimeoutError
-            Raised when the timeout float value expires.
-        """
-        info = self._get_info()
-        key = type_.name.lower() + "_slots"
-        slots_dict_list = info.get(key)
-        slots_list = []
-        for slot_dict in slots_dict_list:
-            if name is not None and name != slot_dict["name"]:
-                continue
-            slots_list.append(
-                Slot.create_slot(
-                    osl_server=self._osl_server,
-                    node=self,
-                    name=slot_dict["name"],
-                    type_=type_,
-                    type_hint=slot_dict["type"],
-                )
-            )
-        return tuple(slots_list)
-
     def _create_edge_from_dict(self, project_tree: dict, connection: dict) -> Edge:
         """Create edge from project tree and connection dictionary.
 
@@ -949,14 +856,18 @@ class Node:
             Instance of the Edge class.
         """
         rec_slot_name = connection["receiving_slot"]
+        rec_slot_type = connection.get("receiving_slot_type", None)
         # TODO: replace query after dictionary extension
-        info = self._osl_server.get_actor_info(connection["receiving_uuid"])
-        if True in [item["name"] == rec_slot_name for item in info["input_slots"]]:
-            rec_slot_type = SlotType.INPUT
-        elif True in [item["name"] == rec_slot_name for item in info.get("inner_input_slots", [])]:
-            rec_slot_type = SlotType.INNER_INPUT
-        else:
-            raise ValueError(f"Slot ``{rec_slot_name}`` doesn't exist for given node.")
+        if not rec_slot_type:
+            info = self._osl_server.get_actor_info(connection["receiving_uuid"])
+            if True in [item["name"] == rec_slot_name for item in info["input_slots"]]:
+                rec_slot_type = SlotType.INPUT
+            elif True in [
+                item["name"] == rec_slot_name for item in info.get("inner_input_slots", [])
+            ]:
+                rec_slot_type = SlotType.INNER_INPUT
+            else:
+                raise ValueError(f"Slot ``{rec_slot_name}`` doesn't exist for given node.")
         rec_slot = self._create_slot_from_project_tree(
             project_tree=project_tree,
             uid=connection["receiving_uuid"],
@@ -965,14 +876,18 @@ class Node:
         )
 
         sen_slot_name = connection["sending_slot"]
+        sen_slot_type = connection.get("sending_slot_type", None)
         # TODO: replace query after dictionary extension
-        info = self._osl_server.get_actor_info(connection["sending_uuid"])
-        if True in [item["name"] == sen_slot_name for item in info["output_slots"]]:
-            sen_slot_type = SlotType.OUTPUT
-        elif True in [item["name"] == sen_slot_name for item in info.get("inner_output_slots", [])]:
-            sen_slot_type = SlotType.INNER_OUTPUT
-        else:
-            raise ValueError(f"Slot ``{rec_slot_name}`` doesn't exist for given node.")
+        if not sen_slot_type:
+            info = self._osl_server.get_actor_info(connection["sending_uuid"])
+            if True in [item["name"] == sen_slot_name for item in info["output_slots"]]:
+                sen_slot_type = SlotType.OUTPUT
+            elif True in [
+                item["name"] == sen_slot_name for item in info.get("inner_output_slots", [])
+            ]:
+                sen_slot_type = SlotType.INNER_OUTPUT
+            else:
+                raise ValueError(f"Slot ``{rec_slot_name}`` doesn't exist for given node.")
         sen_slot = self._create_slot_from_project_tree(
             project_tree=project_tree,
             uid=connection["sending_uuid"],
@@ -1105,9 +1020,12 @@ class Node:
         props = self._osl_server.get_actor_properties(uid=uid)
         return "ParameterManager" in props["properties"]
 
-    @staticmethod
     def _filter_connections(
-        connections: List[dict], uid: str, direction: str, slot_name: Union[str, None] = None
+        self,
+        connections: List[dict],
+        uid: str,
+        slot_type: Union[SlotType, None],
+        slot_name: Union[str, None] = None,
     ) -> Tuple[dict]:
         """Filter list of connections to by given node, slot type and optionally slot name.
 
@@ -1117,10 +1035,10 @@ class Node:
             List of connections.
         uid: str
             Node uid.
-        direction: str
-            Direction type, either 'receiving' or 'sending'.
+        slot_type: Union[SlotType, None], optional
+            Type of the slot, by default ``None``.
         slot_name: Union[str, None], optional
-            Name of the slot.
+            Name of the slot, by default ``None``.
 
         Returns
         -------
@@ -1128,15 +1046,52 @@ class Node:
             Tuple of filtered connections dictionaries.
         """
         filtered_connections = []
-        uid_key = direction + "_uuid"
-        if slot_name:
-            slot_name_key = slot_name + "_slot"
+
+        # prepare keys for tcp server output dictionary
+        if isinstance(slot_type, SlotType):
+            direction = SlotType.to_dir_str(slot_type)
+            uid_keys = [direction + "_uuid"]
+            slot_name_keys = [direction + "_slot"]
+        else:
+            uid_keys = ["receiving_uuid", "sending_uuid"]
+            slot_name_keys = ["receiving_slot", "sending_slot"]
+
         for connection in connections:
-            if connection[uid_key] != uid:
+            # filter connections, that do not contain current node
+            if uid not in [connection[key] for key in uid_keys]:
                 continue
-            if slot_name is not None and connection[slot_name_key] != slot_name:
+
+            # filter slots, that do not contain given name
+            if slot_name is not None and slot_name not in [
+                connection[key] for key in slot_name_keys
+            ]:
                 continue
+
+            # filter connections by slot type (only for system and subclasses), since nodes
+            # do not have inner input slots
+            if (
+                isinstance(self.__class__, System) or issubclass(self.__class__, System)
+            ) and isinstance(slot_type, SlotType):
+                info = self._osl_server.get_actor_info(connection[uid_keys[0]])
+                print(connection[slot_name_keys[0]])
+                print([item for item in info[slot_type.name.lower() + "_slots"]])
+                print("**********************")
+                if True in [
+                    item["name"] == connection[slot_name_keys[0]]
+                    for item in info[slot_type.name.lower() + "_slots"]
+                ]:
+                    connection[slot_name_keys[0] + "_type"] = slot_type
+                else:
+                    continue
+            # do not query for combination of inner slot with Node or it's subclasses
+            elif (
+                isinstance(self.__class__, Node) or issubclass(self.__class__, Node)
+            ) and isinstance(slot_type, SlotType):
+                if slot_type in [SlotType.INNER_INPUT, SlotType.INNER_OUTPUT]:
+                    continue
+
             filtered_connections.append(connection)
+
         return tuple(filtered_connections)
 
     @staticmethod
@@ -1569,44 +1524,6 @@ class System(Node):
             return tuple()
 
         return self._create_nodes_from_properties_dicts(properties_dicts_list=properties_dicts_list)
-
-    def get_inner_input_slots(self) -> Tuple[Slot, ...]:
-        """Get node's inner input slots.
-
-        Returns
-        -------
-        Tuple[Slot,...]
-            Tuple of defined inner input slots.
-
-        Raises
-        ------
-        OslCommunicationError
-            Raised when an error occurs while communicating with the server.
-        OslCommandError
-            Raised when a command or query fails.
-        TimeoutError
-            Raised when the timeout float value expires.
-        """
-        return self._get_slots(type_=SlotType.INNER_INPUT)
-
-    def get_inner_output_slots(self) -> Tuple[Slot, ...]:
-        """Get node's inner output slots.
-
-        Returns
-        -------
-        Tuple[Slot,...]
-            Tuple of defined inner output slots.
-
-        Raises
-        ------
-        OslCommunicationError
-            Raised when an error occurs while communicating with the server.
-        OslCommandError
-            Raised when a command or query fails.
-        TimeoutError
-            Raised when the timeout float value expires.
-        """
-        return self._get_slots(type_=SlotType.INNER_OUTPUT)
 
     def get_nodes(self) -> Tuple[Node, ...]:
         """Get the direct children nodes.
