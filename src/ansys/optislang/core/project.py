@@ -1,95 +1,25 @@
-"""Contains class ProjectSystem."""
+"""Contains abstract ``Project`` class."""
 from __future__ import annotations
 
-import logging
+from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import TYPE_CHECKING, Dict, List
-
-from ansys.optislang.core.nodes import RootSystem
+from typing import TYPE_CHECKING, Sequence, Tuple, Union
 
 if TYPE_CHECKING:
-    from ansys.optislang.core.osl_server import OslServer
-    from ansys.optislang.core.project_parametric import (
-        CriteriaManager,
-        Design,
-        ParameterManager,
-        ResponseManager,
-    )
+    from ansys.optislang.core.base_nodes import RootSystem
 
 
-class Project:
-    """Provides the class containing the root system and queries related to the loaded project."""
+class Project(ABC):
+    """Base class for classes which operate with active project."""
 
-    def __init__(self, osl_server: OslServer, uid: str, logger=None) -> None:
-        """Initialize an instance of the ``Project`` class.
-
-        Parameters
-        ----------
-        osl_server: OslServer
-            Instance of ``OslServer``.
-        uid: str
-            Unique ID of the loaded project.
-        logger: Any, optional
-            Object for logging. If ``None``, standard logging object is used. Defaults to ``None``.
-        """
-        self.__osl_server = osl_server
-        self.__uid = uid
-        self.__logger = logging.getLogger(__name__) if logger is None else logger
-        self.__root_system = RootSystem(
-            uid=uid,
-            osl_server=self.__osl_server,
-            logger=self.__logger,
-        )
-
-    def __str__(self):
-        """Return formatted string."""
-        return (
-            f"Name: {self.get_name()}\n"
-            f"Description: {self.get_description()}\n"
-            f"Status: {self.get_status()}\n"
-            f"Location: {str(self.get_location())}"
-        )
+    @abstractmethod
+    def __init__(self):  # pragma: no cover
+        """``Project`` class is an abstract base class and cannot be instantiated."""
+        pass
 
     @property
-    def criteria_manager(self) -> CriteriaManager:
-        """Instance of the ``CriteriaManager`` class at the root system.
-
-        Returns
-        -------
-        CriteriaManager
-            Criteria manager at the root system.
-        """
-        return self.__root_system.criteria_manager
-
-    @property
-    def logger(self):
-        """Return object for logging."""
-        return self.__logger
-
-    @property
-    def parameter_manager(self) -> ParameterManager:
-        """Instance of the ``ParameterManager`` class at the root system.
-
-        Returns
-        -------
-        ParameterManager
-            Parameter manager at the root system.
-        """
-        return self.__root_system.parameter_manager
-
-    @property
-    def response_manager(self) -> ResponseManager:
-        """Instance of the ``ResponseManager`` class at the root system.
-
-        Returns
-        -------
-        ResponseManager
-            Response manager at the root system.
-        """
-        return self.__root_system.response_manager
-
-    @property
-    def root_system(self) -> RootSystem:
+    @abstractmethod
+    def root_system(self) -> RootSystem:  # pragma: no cover
         """Instance of the ``RootSystem`` class.
 
         Returns
@@ -106,10 +36,11 @@ class Project:
         TimeoutError
             Raised when the timeout float value expires.
         """
-        return self.__root_system
+        pass
 
     @property
-    def uid(self) -> str:
+    @abstractmethod
+    def uid(self) -> str:  # pragma: no cover
         """Unique ID of the optiSLang project.
 
         Returns
@@ -117,61 +48,15 @@ class Project:
         str
             Unique ID of the loaded project.
         """
-        return self.__uid
+        pass
 
-    def evaluate_design(self, design: Design, update_design: bool = True) -> Design:
-        """Evaluate a design.
-
-        Parameters
-        ----------
-        design: Design
-            Instance of a ``Design`` class with defined parameters.
-        update_design: bool, optional
-            Determines whether given design should be updated and returned or new instance
-            should be created. When ``True`` given design is updated and returned, otherwise
-            new ``Design`` is created. Defaults to ``True``.
-
-        Returns
-        -------
-        Design
-            Evaluated design.
-
-        Raises
-        ------
-        OslCommunicationError
-            Raised when an error occurs while communicating with the server.
-        OslCommandError
-            Raised when a command or query fails.
-        TimeoutError
-            Raised when the timeout float value expires.
-        """
-        return self.root_system.evaluate_design(design=design, update_design=update_design)
-
-    def get_available_nodes(self) -> Dict[str, List[str]]:
-        """Get raw dictionary of available nodes sorted by subtypes.
-
-        Returns
-        -------
-        Dict[str, List[str]]
-            Dictionary of available node types, sorted by subtype.
-
-        Raises
-        ------
-        OslCommunicationError
-            Raised when an error occurs while communicating with the server.
-        OslCommandError
-            Raised when a command or query fails.
-        TimeoutError
-            Raised when the timeout float value expires.
-        """
-        return self.__osl_server.get_available_nodes()
-
-    def get_description(self) -> str:
+    @abstractmethod
+    def get_description(self) -> Union[str, None]:  # pragma: no cover
         """Get the description of the optiSLang project.
 
         Returns
         -------
-        str
+        Union[str, None]
             Description of the optiSLang project. If no project is loaded in optiSLang,
             ``None`` is returned.
 
@@ -184,9 +69,10 @@ class Project:
         TimeoutError
             Raised when the timeout float value expires.
         """
-        return self.__osl_server.get_project_description()
+        pass
 
-    def get_location(self) -> Path:
+    @abstractmethod
+    def get_location(self) -> Path:  # pragma: no cover
         """Get the path to the optiSLang project file.
 
         Returns
@@ -204,9 +90,10 @@ class Project:
         TimeoutError
             Raised when the timeout float value expires.
         """
-        return self.__osl_server.get_project_location()
+        pass
 
-    def get_name(self) -> str:
+    @abstractmethod
+    def get_name(self) -> str:  # pragma: no cover
         """Get the name of the optiSLang project.
 
         Returns
@@ -224,28 +111,10 @@ class Project:
         TimeoutError
             Raised when the timeout float value expires.
         """
-        return self.__osl_server.get_project_name()
+        pass
 
-    def get_reference_design(self) -> Design:
-        """Get a design with reference values of the parameters.
-
-        Returns
-        -------
-        Design
-            Instance of the ``Design`` class with defined parameters and reference values.
-
-        Raises
-        ------
-        OslCommunicationError
-            Raised when an error occurs while communicating with the server.
-        OslCommandError
-            Raised when a command or query fails.
-        TimeoutError
-            Raised when the timeout float value expires.
-        """
-        return self.root_system.get_reference_design()
-
-    def get_status(self) -> str:
+    @abstractmethod
+    def get_status(self) -> str:  # pragma: no cover
         """Get the status of the optiSLang project.
 
         Returns
@@ -263,4 +132,186 @@ class Project:
         TimeoutError
             Raised when the timeout float value expires.
         """
-        return self.__osl_server.get_project_status()
+        pass
+
+    @abstractmethod
+    def get_working_dir(self) -> Path:  # pragma: no cover
+        """Get the path to the optiSLang project's working directory.
+
+        Returns
+        -------
+        pathlib.Path
+            Path to the optiSLang project's working directory. If no project is loaded
+            in optiSLang, ``None`` is returned.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        pass
+
+    @abstractmethod
+    def reset(self) -> None:  # pragma: no cover
+        """Reset the project.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        pass
+
+    @abstractmethod
+    def run_python_file(
+        self,
+        file_path: Union[str, Path],
+        args: Union[Sequence[object], None] = None,
+    ) -> Tuple[str, str]:  # pragma: no cover
+        """Read a Python script from a file, load it in a project context, and run it.
+
+        Parameters
+        ----------
+        file_path : Union[str, pathlib.Path]
+            Path to the Python script file with the content to execute on the server.
+        args : Sequence[object], None, optional
+            Sequence of arguments to use in the Python script. The default is ``None``.
+
+        Returns
+        -------
+        Tuple[str, str]
+            STDOUT and STDERR from the executed Python script.
+
+        Raises
+        ------
+        FileNotFoundError
+            Raised when the specified Python script file does not exist.
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        pass
+
+    @abstractmethod
+    def run_python_script(
+        self,
+        script: str,
+        args: Union[Sequence[object], None] = None,
+    ) -> Tuple[str, str]:  # pragma: no cover
+        """Load a Python script in a project context and run it.
+
+        Parameters
+        ----------
+        script : str
+            Python commands to execute on the server.
+        args : Sequence[object], None, optional
+            Sequence of arguments used in the Python script. The default
+            is ``None``.
+
+        Returns
+        -------
+        Tuple[str, str]
+            STDOUT and STDERR from the executed Python script.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        pass
+
+    @abstractmethod
+    def start(
+        self, wait_for_started: bool = True, wait_for_finished: bool = True
+    ) -> None:  # pragma: no cover
+        """Start project execution.
+
+        Parameters
+        ----------
+        wait_for_started : bool, optional
+            Determines whether this function call should wait on the optiSlang to start
+            the command execution. I.e. don't continue on next line of python script
+            after command was successfully sent to optiSLang but wait for execution of
+            flow inside optiSLang to start.
+            Defaults to ``True``.
+        wait_for_finished : bool, optional
+            Determines whether this function call should wait on the optiSlang to finish
+            the command execution. I.e. don't continue on next line of python script
+            after command was successfully sent to optiSLang but wait for execution of
+            flow inside optiSLang to finish.
+            This implicitly interprets wait_for_started as True.
+            Defaults to ``True``.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        pass
+
+    @abstractmethod
+    def stop(self, wait_for_finished: bool = True) -> None:  # pragma: no cover
+        """Stop project execution.
+
+        Parameters
+        ----------
+        wait_for_finished : bool, optional
+            Determines whether this function call should wait on the optiSlang to finish
+            the command execution. I.e. don't continue on next line of python script after command
+            was successfully sent to optiSLang but wait for execution of command inside optiSLang.
+            Defaults to ``True``.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        pass
+
+    # FUTURES:
+    # @abstractmethod
+    # TODO: Add this after it's fixed on optiSLang server side.
+    # stop_gently method doesn't work properly in optiSLang 2023R1, therefore it was commented out
+    # def stop_gently(self, wait_for_finished: bool = True) -> None:
+    #     """Stop project execution after the current design is finished.
+
+    #     Parameters
+    #     ----------
+    #     wait_for_finished : bool, optional
+    #         Determines whether this function call should wait on the optiSlang to finish
+    #         the command execution. I.e. don't continue on next line of python script after command
+    #         was successfully sent to optiSLang but wait for execution of command inside optiSLang.
+    #         Defaults to ``True``.
+
+    #     Raises
+    #     ------
+    #     OslCommunicationError
+    #         Raised when an error occurs while communicating with server.
+    #     OslCommandError
+    #         Raised when the command or query fails.
+    #     TimeoutError
+    #         Raised when the timeout float value expires.
+    #     """

@@ -3,8 +3,8 @@ from contextlib import nullcontext as does_not_raise
 import pytest
 
 from ansys.optislang.core import Optislang, examples
-from ansys.optislang.core.nodes import Node, ParametricSystem, RootSystem, System
 from ansys.optislang.core.project_parametric import ParameterManager
+from ansys.optislang.core.tcp.tcp_nodes import Node, ParametricSystem, RootSystem, System
 
 pytestmark = pytest.mark.local_osl
 single_node = examples.get_files("calculator_with_params")[1][0]

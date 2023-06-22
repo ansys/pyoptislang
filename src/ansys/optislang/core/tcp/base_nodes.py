@@ -1,433 +1,63 @@
 """Contains classes for a node, system, parametric system, and root system."""
 from __future__ import annotations
 
-import copy
-from enum import Enum
 import logging
 from typing import TYPE_CHECKING, Any, Dict, Iterable, List, Tuple, Union
 
 from deprecated import deprecated
 
+from ansys.optislang.core.base_nodes import (
+    DesignFlow,
+    Edge,
+    InputSlot,
+    Node,
+    NodeType,
+    ParametricSystem,
+    RootSystem,
+    Slot,
+    SlotType,
+    System,
+    TcpInnerInputSlotProxy,
+    TcpInnerOutputSlotProxy,
+    TcpOutputSlotProxy,
+)
 from ansys.optislang.core.project_parametric import (
     ConstraintCriterion,
-    CriteriaManager,
-    Design,
+    DesignStatus,
+    DesignVariable,
     LimitStateCriterion,
     ObjectiveCriterion,
-    ParameterManager,
-    ResponseManager,
     VariableCriterion,
 )
-from ansys.optislang.core.utils import enum_from_str
+from ansys.optislang.core.tcp.managers import (
+    Design,
+    TcpCriteriaManagerProxy,
+    TcpParameterManagerProxy,
+    TcpResponseManagerProxy,
+)
 
 if TYPE_CHECKING:
-    from ansys.optislang.core.osl_server import OslServer
     from ansys.optislang.core.project_parametric import Criterion
+    from ansys.optislang.core.tcp.osl_server import TcpOslServer
 
 
-class DesignFlow(Enum):
-    """Provides design flow options."""
-
-    NONE = 0
-    RECEIVE = 1
-    SEND = 2
-    RECEIVE_SEND = 3
-
-    @staticmethod
-    def from_str(string: str) -> DesignFlow:
-        """Convert string to an instance of the ``DesignFlow`` class.
-
-        Parameters
-        ----------
-        string: str
-            String to be converted.
-
-        Returns
-        -------
-        DesignFlow
-            Instance of the ``DesignFlow`` class.
-
-        Raises
-        ------
-        TypeError
-            Raised when an invalid type of ``string`` is given.
-        ValueError
-            Raised when an invalid value of ``string`` is given.
-        """
-        return enum_from_str(string=string.upper(), enum_class=__class__, replace=(" ", "_"))
-
-
-class NodeType(Enum):
-    """Provides node type options.
-
-    Builtin nodes: 0-999
-    Integration plugins: 1000-1999
-    Python based algorithm plugins: 2000-2999
-    Python based integration plugins: 3000-3999
-    Python based MOP node plugins: 4000-4999
-    Python based node plugins: 5000-5999
-    Algorithm plugins: 6000-6999
-    """
-
-    # TODO: test
-    # built-in nodes 0-999
-    ProEParameterize = 0
-    ParameterSet = 1
-    Mopsolver = 2
-    BashScript = 3
-    Sum = 4
-    ProEProcess = 5
-    Compare = 6
-    ETKAsciiOutput = 7
-    Calculator = 8
-    Variable = 9
-    SIMPLEX = 10
-    AnsysAPDLParameterize = 11
-    Parameterize = 12
-    CatiaParameterize = 13
-    VCollabProcess = 14
-    Mathcad = 15
-    PSO = 16
-    LSDynaParameterize = 17
-    MultiplasParameterize = 18
-    TaggedParametersParameterize = 19
-    Monitoring = 20
-    Stringlist = 21
-    PMOPPostprocessing = 22
-    VariantMonitoring = 23
-    Postprocessing = 24
-    String = 25
-    Path = 26
-    ETKAbaqus = 27
-    ScriptFile = 28
-    Matlab = 29
-    CFturboInput = 30
-    AMOP = 31
-    Sensitivity = 32
-    Robustness = 33
-    Excel = 34
-    Parameter = 35
-    Mop = 36
-    SDI = 37
-    PMop = 38
-    PMopsolver = 39
-    ETKComplete = 40
-    ETKAnsys = 41
-    EA = 42
-    ReliabilityFORM = 43
-    NOA2 = 44
-    PythonScript = 45
-    NLPQLP = 46
-    ARSM = 47
-    Memetic = 48
-    OOCalc = 49
-    ETKAdams = 50
-    ETKMadymo = 51
-    ETKEdyson = 52
-    Designexport = 53
-    ETKMidas = 54
-    SoSPostprocessing = 55
-    Octave = 56
-    Objectives = 57
-    Constraints = 58
-    Variables = 59
-    CalculatorSet = 60
-    AnsysWorkbench = 61
-    Criteria = 62
-    Process = 63
-    AbaqusProcess = 64
-    CatiaProcess = 65
-    AppendDesignsToBinFile = 66
-    BatchScript = 67
-    PerlScript = 68
-    SolverTemplate = 69
-    ParametricSystem = 70
-    SimulationX = 71
-    DesignExport = 72
-    DPS = 73
-    DesignImport = 74
-    MergeDesigns = 75
-    Wait = 76
-    While = 77
-    File = 78
-    Reevaluate = 79
-    FloEFDInput = 80
-    DataExport = 81
-    ReliabilityMC = 82
-    ReliabilityAS = 83
-    ReliabilityDS = 84
-    ReliabilityARSM = 85
-    ReliabilityAsym = 86
-    ReliabilityISPUD = 87
-    DataImport = 88
-    ASCMOsolver = 89
-    IntegrationPlugin = 90
-    AlgorithmSystemPlugin = 91
-    TurboOptInput = 92
-    PDM = 93
-    PDMReceive = 94
-    PDMSend = 95
-    Python2 = 96
-    SoSGenerate = 97
-    DataMining = 98
-    AmesimInput = 99
-    SimPackInput = 100
-    CetolInput = 101
-    ETKAMESim = 102
-    Custom = 103
-    ETKLSDYNA = 104
-    ETKFloEFD = 105
-    ETKCFturbo = 106
-    ETKSimPack = 107
-    ETKTurboOpt = 108
-    ETKExtOut = 109
-    ETKCetol = 110
-    CustomIntegration = 111
-    CustomAlgorithm = 112
-    CustomETKIntegration = 113
-    CustomMop = 114
-    RunnableSystem = 115
-
-    # integration plugins 1000-1999
-    awb2_plugin = 1000
-    discovery_plugin = 1001
-    lsdyna_plugin = 1002
-    optislang_node = 1003
-    spaceclaim_plugin = 1004
-    speos_plugin = 1005
-
-    # python based algorithm plugins 2000-2999
-    BASS = 2000
-    DXAMO = 2001
-    DXASO = 2002
-    DXMISQP = 2003
-    DXUPEGO = 2004
-    GLAD = 2005
-    OCO = 2006
-    PIBO = 2007
-    Replace_constant_parameter = 2008
-    Unigene_EA = 2009
-    while_loop = 2010
-
-    # python based integration plugins 3000-3999
-    AEDT2 = 3000
-    AEDT2_lsdso = 3001
-    ANSA_input = 3002
-    ANSA_output = 3003
-    AmplitudesFromField_SoS = 3004
-    AxSTREAM = 3005
-    CAD_CATIA = 3006
-    CAD_Creo = 3007
-    CAD_Inventor = 3008
-    CAD_NX = 3009
-    CAESES_input = 3010
-    CFX_Partitioner = 3011  # `-` symbol was replaced for `_`
-    CFX_Partitioner_v3 = 3012  # `-` symbol was replaced for `_`
-    CFX_Pre = 3013  # `-` symbol was replaced for `_`
-    CFX_Pre_v3 = 3014  # `-` symbol was replaced for `_`
-    CFX_Solver = 3015  # `-` symbol was replaced for `_`
-    CFX_Solver_v3 = 3016  # `-` symbol was replaced for `_`
-    CFturbo_input = 3017
-    COMSOL2 = 3018
-    COMSOL_input = 3019
-    COMSOL_output = 3020
-    Convert_OMDB_to_BIN_SoS = 3021
-    DPF = 3022
-    ETK_nD = 3023
-    FMU_SoS = 3024
-    Field_Data_Collector = 3025
-    Field_MOP_2D_Nested_DOE_SoS = 3026
-    Field_MOP_ANSYSMECH_SoS = 3027
-    FloEFD_input = 3028
-    FloEFD_output = 3029
-    Fluent = 3030
-    Fluent_mesher = 3031
-    Fluent_solver = 3032
-    Flux_input = 3033
-    GTSUITE_input = 3034
-    GTSUITE_output = 3035
-    Generate_SoS = 3036
-    GeoDict_input = 3037
-    GeoDict_output = 3038
-    IPG_Automotive = 3039
-    JMAG_Designer_input = 3040
-    JMAG_Designer_output = 3041
-    JMAG_Designer_solve = 3042
-    JSON_input = 3043
-    JSON_output = 3044
-    KULI = 3045
-    Lumerical = 3046
-    META_output = 3047
-    Matlab_mat_input = 3048
-    Matlab_mat_output = 3049
-    ModelCenter = 3050
-    MotorCAD_input = 3051
-    MotorCAD_output = 3052
-    MotorCAD_solve = 3053
-    NASTRAN = 3054
-    OpticStudio = 3055
-    PuTTY_SSH = 3056
-    ROCKY_input = 3057
-    ROCKY_output = 3058
-    SPEOSCore = 3059
-    SPEOS_Report_Reader = 3060
-    SimulationX_SXOA = 3061
-    Viewer_SoS = 3062
-    VirtualLab_input = 3063
-    VirtualLab_output = 3064
-    ZEMAX = 3065
-    ZEMAX_input = 3066
-    ZEMAX_output = 3067
-    ZEMAX_solve = 3068
-    optislang_omdb = 3069
-
-    # python based MOP node plugins 4000-4999
-    MOP = 4000
-
-    # python based node plugins 5000-5999
-
-    # algorithm plugins 6000-6999
-
-    @staticmethod
-    def from_str(string: str) -> Union[NodeType, str]:
-        """Convert string to an instance of the ``NodeType`` class.
-
-        Parameters
-        ----------
-        string: str
-            String to be converted.
-
-        Returns
-        -------
-        Union[NodeType, str]
-            Instance of the ``NodeType`` class for supported nodes, ``string`` otherwise.
-
-        Raises
-        ------
-        TypeError
-            Raised when an invalid type of ``string`` is given.
-        """
-        # TODO: IF `CFX` in name, replace `_` with `-` when creating node
-        return enum_from_str(string=string, enum_class=__class__, replace=("-", "_"))
-
-    @staticmethod
-    def get_subtype(
-        node_type_value: int,
-    ) -> Tuple[Union[str, None], Union[str, None], Union[str, None], Union[str, None]]:
-        """Get node subtype from type.
-
-        Parameters
-        ----------
-        type_ : int
-            Value of NodeType enumeration item.
-
-        Returns
-        -------
-        Tuple[Union[str, None], Union[str, None], Union[str, None], Union[str, None]]
-            algorithm_type, integration_type, mop_node_type, node_type
-        """
-        algorithm_type, integration_type, mop_node_type, node_type = None, None, None, None
-        if node_type_value < 1000:
-            pass
-        elif 1000 <= node_type_value < 2000:
-            integration_type = "integration_plugin"
-        elif 2000 <= node_type_value < 3000:
-            algorithm_type = "python_based_algorithm_plugin"
-        elif 3000 <= node_type_value < 4000:
-            integration_type = "python_based_integration_plugin"
-        elif 4000 <= node_type_value < 5000:
-            mop_node_type = "python_based_mop_node_plugin"
-        elif 5000 <= node_type_value < 6000:
-            node_type = "python_based_node_plugin"
-        elif 6000 <= node_type_value < 7000:
-            algorithm_type = "algorithm_plugin"
-        else:
-            raise ValueError(
-                f"Unsupported value of node_type_value: ``{node_type_value}``."
-                "Integer in range <0, 7000) was expected."
-            )
-
-        return algorithm_type, integration_type, mop_node_type, node_type
-
-
-class SlotType(Enum):
-    """Provides slot type options."""
-
-    # TODO: test
-    INPUT = 0
-    OUTPUT = 1
-    INNER_INPUT = 2
-    INNER_OUTPUT = 3
-
-    @staticmethod
-    def from_str(string: str) -> SlotType:
-        """Convert string to an instance of the ``SlotType`` class.
-
-        Parameters
-        ----------
-        string: str
-            String to be converted.
-
-        Returns
-        -------
-        SlotType
-            Instance of the ``SlotType`` class.
-
-        Raises
-        ------
-        TypeError
-            Raised when an invalid type of ``string`` is given.
-        """
-        return enum_from_str(string=string.upper(), enum_class=__class__, replace=(" ", "_"))
-
-    @staticmethod
-    def to_dir_str(type_: SlotType) -> str:
-        """Convert string to an instance of the ``SlotType`` class.
-
-        Parameters
-        ----------
-        string: str
-            String to be converted.
-
-        Returns
-        -------
-        SlotType
-            Instance of the ``SlotType`` class.
-
-        Raises
-        ------
-        TypeError
-            Raised when an invalid type of ``string`` is given.
-        ValueError
-            Raised when an invalid value of ``string`` is given.
-        """
-        if not isinstance(type_, SlotType):
-            raise TypeError(f"Unsupported type of type_: ``{type(type_)}``.")
-        if type_ in [SlotType.INPUT, SlotType.INNER_INPUT]:
-            return "receiving"
-        elif type_ in [SlotType.OUTPUT, SlotType.INNER_OUTPUT]:
-            return "sending"
-        else:
-            raise ValueError(f"Unsupported value of type_: ``{type_}``.")
-
-
-class Node:
+class TcpNodeProxy(Node):
     """Provides for creating and operating on nodes."""
 
     def __init__(
         self,
         uid: str,
-        osl_server: OslServer,
+        osl_server: TcpOslServer,
         type_: Union[NodeType, str],
         logger=None,
     ) -> None:
-        """Create a ``Node`` instance.
+        """Create a ``TcpNodeProxy`` instance.
 
         Parameters
         ----------
         uid: str
             Unique ID of the node.
-        osl_server: OslServer
+        osl_server: TcpOslServer
             Object providing access to the optiSLang server.
         type_: Union[NodeType, str]
             Instance of the ``NodeType`` class for supported nodes, ``string`` otherwise.
@@ -436,12 +66,17 @@ class Node:
         """
         self._osl_server = osl_server
         self.__uid = uid
+        if isinstance(type_, str):
+            try:
+                type_ = NodeType.from_str(string=type_)
+            except ValueError:
+                pass
         self.__type = type_
         self._logger = logging.getLogger(__name__) if logger is None else logger
 
     def __str__(self):
         """Return formatted string."""
-        type_ = self.type.name if isinstance(type_, NodeType) else type_
+        type_ = self.type.name if isinstance(type_, NodeType) else self.type
         return f"Node type: {type_} Name: {self.get_name()} Uid: {self.uid}"
 
     @property
@@ -522,8 +157,8 @@ class Node:
         Parameters
         ----------
         slot_type: Union[SlotType, None], optional
-            Slot type, by default ``None``.
-        slot_name : Union[SlotType, None], optional
+            Slot type, by default ``None``
+        slot_name : Union[str, None], optional
             Slot name, by default ``None``.
 
         Returns
@@ -543,11 +178,11 @@ class Node:
         # TODO: test
         project_tree = self._osl_server.get_full_project_tree_with_properties()
         connections = project_tree.get("projects", [{}])[0].get("connections")
-
+        direction = SlotType.to_dir_str(type_=slot_type)
         filtered_connections = self._filter_connections(
             connections=connections,
             uid=self.uid,
-            slot_type=slot_type,
+            direction=direction,
             slot_name=slot_name,
         )
         edges = []
@@ -579,12 +214,12 @@ class Node:
         actor_info = self._osl_server.get_actor_info(uid=self.__uid)
         return actor_info["name"]
 
-    def get_ancestors(self) -> Tuple[Node, ...]:
+    def get_ancestors(self) -> Tuple[TcpNodeProxy, ...]:
         """Get tuple of ordered ancestors starting from root system at position 0.
 
         Return
         ------
-        Tuple[Node, ...]
+        Tuple[TcpNodeProxy, ...]
             Tuple of ordered ancestors, starting from root system at position.
 
         Raises
@@ -596,9 +231,9 @@ class Node:
         TimeoutError
             Raised when the timeout float value expires.
         """
-        if isinstance(self, RootSystem):
+        if isinstance(self, TcpRootSystemProxy):
             self._logger.warning(
-                "``RootSystem`` doesn't have any ancestors, empty tuple will be returned."
+                "``TcpRootSystemProxy`` doesn't have any ancestors, empty tuple will be returned."
             )
             return ()
         project_tree = self._osl_server.get_full_project_tree_with_properties()
@@ -621,12 +256,12 @@ class Node:
         )
         return self._create_nodes_from_properties_dicts(properties_dicts_list=ancestors_line_dicts)
 
-    def get_parent(self) -> Node:
+    def get_parent(self) -> TcpNodeProxy:
         """Get the instance of the parent node.
 
         Returns
         -------
-        Node
+        TcpNodeProxy
             Instance of the parent node.
 
         Raises
@@ -676,12 +311,37 @@ class Node:
         TimeoutError
             Raised when the timeout float value expires.
         """
-        return self._osl_server.get_actor_properties(self.uid)
+        return self._osl_server.get_actor_properties(uid=self.uid)
+
+    def get_property(self, name: str) -> Any:
+        """Get property from properties dictionary.
+
+        Parameters
+        ----------
+        name
+            Name of property to be returned.
+
+        Returns
+        -------
+        Any
+            Value of given property, ``None`` if property doesn't exits.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        # TODO: test
+        return self._osl_server.get_actor_properties(uid=self.uid).get(name, None)
 
     def get_slots(
-        self, type_: Union[SlotType, None] = None, name: Union[str, None] = None
-    ) -> Tuple[Slot, ...]:
-        """Get current node's slots of given type and optionally name.
+        self, type_: Union[SlotType, None], name: Union[str, None] = None
+    ) -> Tuple[TcpSlotProxy, ...]:
+        """Get current node's slots of given type and name.
 
         Parameters
         ----------
@@ -692,7 +352,7 @@ class Node:
 
         Returns
         -------
-        Tuple[Slot, ...]
+        Tuple[TcpSlotProxy, ...]
             Tuple of current node's slots of given type.
 
         Raises
@@ -709,18 +369,16 @@ class Node:
             keys = [type_.name.lower() + "_slots"]
         else:
             keys = [slot_type.name.lower() + "_slots" for slot_type in SlotType]
-
         slots_dicts_mapping = {}
         for key in keys:
             slots_dicts_mapping[key] = info.get(key, [])
-
         slots_list = []
         for slot_type, slots_dicts in slots_dicts_mapping.items():
             for slot_dict in slots_dicts:
                 if name is not None and name != slot_dict["name"]:
                     continue
                 slots_list.append(
-                    Slot.create_slot(
+                    TcpSlotProxy.create_slot(
                         osl_server=self._osl_server,
                         node=self,
                         name=slot_dict["name"],
@@ -750,7 +408,7 @@ class Node:
         actor_info = self._osl_server.get_actor_info(uid=self.__uid)
         return actor_info["status"]
 
-    @deprecated(version="0.2.1", reason="Use ``Node.type`` instead.")
+    @deprecated(version="0.2.1", reason="Use ``TcpNodeProxy.type`` instead.")
     def get_type(self) -> Union[NodeType, str]:
         """Get the type of the node.
 
@@ -858,6 +516,7 @@ class Node:
         rec_slot_name = connection["receiving_slot"]
         rec_slot_type = connection.get("receiving_slot_type", None)
         # TODO: replace query after dictionary extension
+        info = self._osl_server.get_actor_info(connection["receiving_uuid"])
         if not rec_slot_type:
             info = self._osl_server.get_actor_info(connection["receiving_uuid"])
             if True in [item["name"] == rec_slot_name for item in info["input_slots"]]:
@@ -899,7 +558,7 @@ class Node:
 
     def _create_nodes_from_properties_dicts(
         self, properties_dicts_list: List[dict]
-    ) -> Tuple[Node, ...]:
+    ) -> Tuple[TcpNodeProxy, ...]:
         """Create nodes from a dictionary of properties.
 
         Parameters
@@ -909,7 +568,7 @@ class Node:
 
         Returns
         -------
-        Tuple[Node, ...]
+        Tuple[TcpNodeProxy, ...]
             Tuple of nodes.
 
         Raises
@@ -924,24 +583,28 @@ class Node:
             type_ = node["type"]
             if kind == "actor":
                 nodes_list.append(
-                    Node(uid=uid, osl_server=self._osl_server, type_=type_, logger=self._logger)
+                    TcpNodeProxy(
+                        uid=uid, osl_server=self._osl_server, type_=type_, logger=self._logger
+                    )
                 )
             elif kind == "system":
                 if node["is_parametric_system"]:
                     nodes_list.append(
-                        ParametricSystem(
+                        TcpParametricSystemProxy(
                             uid=uid, osl_server=self._osl_server, type_=type_, logger=self._logger
                         )
                     )
                 else:
                     nodes_list.append(
-                        System(
+                        TcpSystemProxy(
                             uid=uid, osl_server=self._osl_server, type_=type_, logger=self._logger
                         )
                     )
             elif kind == "root_system":
                 nodes_list.append(
-                    RootSystem(uid=node["uid"], osl_server=self._osl_server, logger=self._logger)
+                    TcpRootSystemProxy(
+                        uid=node["uid"], osl_server=self._osl_server, logger=self._logger
+                    )
                 )
             else:
                 TypeError(
@@ -957,8 +620,8 @@ class Node:
         uid: str,
         slot_name: str,
         slot_type: SlotType,
-        node: Union[Node, None] = None,
-    ) -> Slot:
+        node: Union[TcpNodeProxy, None] = None,
+    ) -> TcpSlotProxy:
         """Create slot from project tree.
 
         Parameters
@@ -974,13 +637,13 @@ class Node:
 
         Returns
         -------
-        Slot
-            Instance of the Slot class.
+        TcpSlotProxy
+            Instance of the ``TcpSlotProxy`` class.
         """
         if uid == self.uid:
             node = self
         elif uid == project_tree["uid"]:
-            node = RootSystem(uid=uid, osl_server=self._osl_server, logger=self._logger)
+            node = TcpRootSystemProxy(uid=uid, osl_server=self._osl_server, logger=self._logger)
         else:
             node_dict = self.__class__._find_node_with_uid(
                 uid=uid,
@@ -990,7 +653,7 @@ class Node:
                 max_search_depth=float("inf"),
             )
             node = self._create_nodes_from_properties_dicts(properties_dicts_list=node_dict)[0]
-        return Slot.create_slot(
+        return TcpSlotProxy.create_slot(
             osl_server=self._osl_server, node=node, name=slot_name, type_=slot_type
         )
 
@@ -1047,6 +710,13 @@ class Node:
         """
         filtered_connections = []
 
+        # skip for combination of inner slot with TcpNodeProxy or it's subclasses
+        if not (
+            isinstance(self.__class__, TcpSystemProxy) or issubclass(self.__class__, TcpSystemProxy)
+        ) and isinstance(slot_type, SlotType):
+            if slot_type in [SlotType.INNER_INPUT, SlotType.INNER_OUTPUT]:
+                return tuple(filtered_connections)
+
         # prepare keys for tcp server output dictionary
         if isinstance(slot_type, SlotType):
             direction = SlotType.to_dir_str(slot_type)
@@ -1055,27 +725,22 @@ class Node:
         else:
             uid_keys = ["receiving_uuid", "sending_uuid"]
             slot_name_keys = ["receiving_slot", "sending_slot"]
-
         for connection in connections:
             # filter connections, that do not contain current node
             if uid not in [connection[key] for key in uid_keys]:
                 continue
-
             # filter slots, that do not contain given name
             if slot_name is not None and slot_name not in [
                 connection[key] for key in slot_name_keys
             ]:
                 continue
-
             # filter connections by slot type (only for system and subclasses), since nodes
-            # do not have inner input slots
+            # do not have inner input slots and this combination was excluded at the beginning
             if (
-                isinstance(self.__class__, System) or issubclass(self.__class__, System)
+                isinstance(self.__class__, TcpSystemProxy)
+                or issubclass(self.__class__, TcpSystemProxy)
             ) and isinstance(slot_type, SlotType):
                 info = self._osl_server.get_actor_info(connection[uid_keys[0]])
-                print(connection[slot_name_keys[0]])
-                print([item for item in info[slot_type.name.lower() + "_slots"]])
-                print("**********************")
                 if True in [
                     item["name"] == connection[slot_name_keys[0]]
                     for item in info[slot_type.name.lower() + "_slots"]
@@ -1083,15 +748,7 @@ class Node:
                     connection[slot_name_keys[0] + "_type"] = slot_type
                 else:
                     continue
-            # do not query for combination of inner slot with Node or it's subclasses
-            elif (
-                isinstance(self.__class__, Node) or issubclass(self.__class__, Node)
-            ) and isinstance(slot_type, SlotType):
-                if slot_type in [SlotType.INNER_INPUT, SlotType.INNER_OUTPUT]:
-                    continue
-
             filtered_connections.append(connection)
-
         return tuple(filtered_connections)
 
     @staticmethod
@@ -1303,23 +960,23 @@ class Node:
                 )
 
 
-class System(Node):
-    """Provides for creating and operatating on a system."""
+class TcpSystemProxy(TcpNodeProxy, System):
+    """Provides for creating and operating on a system."""
 
     def __init__(
         self,
         uid: str,
-        osl_server: OslServer,
+        osl_server: TcpOslServer,
         type_: Union[NodeType, str],
         logger=None,
     ) -> None:
-        """Create a ``System`` instance.
+        """Create an ``TcpSystemProxy`` instance.
 
         Parameters
         ----------
         uid: str
             Unique ID.
-        osl_server: OslServer
+        osl_server: TcpOslServer
             Object providing access to the optiSLang server.
         type_: Union[NodeType, str]
             Instance of the ``NodeType`` class for supported nodes, ``string`` otherwise.
@@ -1342,7 +999,7 @@ class System(Node):
         integration_type: Union[str, None] = None,
         mop_node_type: Union[str, None] = None,
         node_type: Union[str, None] = None,
-    ) -> Node:
+    ) -> TcpNodeProxy:
         """Create a new node in current system in active project.
 
         Parameters
@@ -1368,7 +1025,7 @@ class System(Node):
 
         Returns
         -------
-        Node
+        TcpNodeProxy
             Instance of the created node.
         """
         # TODO: test
@@ -1380,9 +1037,7 @@ class System(Node):
             algorithm_type, integration_type, mop_node_type, node_type = NodeType.get_subtype(
                 type_.value
             )
-            type_ = type_.name
-            if "CFX" in type_:
-                type_ = type_.replace("_", "-")
+            type_ = type_.to_str()
         elif not isinstance(type_, str):
             raise TypeError(
                 f"Invalid type of ``type_: {type(type_)}``, "
@@ -1404,7 +1059,7 @@ class System(Node):
         return self._create_nodes_from_properties_dicts([info])
 
     def delete_children_nodes(self) -> None:
-        """Delete all children nodes from active project.
+        """Delete all children nodes from the active project.
 
         Raises
         ------
@@ -1420,7 +1075,7 @@ class System(Node):
         for node in nodes:
             node.delete()
 
-    def find_node_by_uid(self, uid: str, search_depth: int = 1) -> Union[Node, None]:
+    def find_node_by_uid(self, uid: str, search_depth: int = 1) -> Union[TcpNodeProxy, None]:
         """Find a node in the system with a specified unique ID.
 
         This method searches only in the descendant nodes for the current system.
@@ -1435,8 +1090,8 @@ class System(Node):
 
         Returns
         -------
-        Union[Node, None]
-            ``Node`` with the specified unique ID. If this ID isn't located in any
+        Union[TcpNodeProxy, None]
+            ``TcpNodeProxy`` with the specified unique ID. If this ID isn't located in any
             descendant node, ``None`` is returned.
 
         Raises
@@ -1474,7 +1129,7 @@ class System(Node):
             properties_dicts_list=properties_dicts_list
         )[0]
 
-    def find_nodes_by_name(self, name: str, search_depth: int = 1) -> Tuple[Node, ...]:
+    def find_nodes_by_name(self, name: str, search_depth: int = 1) -> Tuple[TcpNodeProxy, ...]:
         """Find nodes in the system with a specified name.
 
         This method searches only in the descendant nodes for the current system.
@@ -1489,7 +1144,7 @@ class System(Node):
 
         Returns
         -------
-        Tuple[Node, ...]
+        Tuple[TcpNodeProxy, ...]
             Tuple of nodes with the specified name.
 
         Raises
@@ -1525,12 +1180,12 @@ class System(Node):
 
         return self._create_nodes_from_properties_dicts(properties_dicts_list=properties_dicts_list)
 
-    def get_nodes(self) -> Tuple[Node, ...]:
+    def get_nodes(self) -> Tuple[TcpNodeProxy, ...]:
         """Get the direct children nodes.
 
         Returns
         -------
-        Tuple[Node, ...]
+        Tuple[TcpNodeProxy, ...]
             Current system nodes.
 
         Raises
@@ -1612,13 +1267,13 @@ class System(Node):
                 __class__._find_subtree(tree=node, uid=uid)
 
 
-class ParametricSystem(System):
-    """Provides methods to obtain data from a parametric system."""
+class TcpParametricSystemProxy(TcpSystemProxy, ParametricSystem):
+    """Provides for creating and operationg on parametric system."""
 
     def __init__(
         self,
         uid: str,
-        osl_server: OslServer,
+        osl_server: TcpOslServer,
         type_: Union[NodeType, str],
         logger=None,
     ) -> None:
@@ -1628,7 +1283,7 @@ class ParametricSystem(System):
         ----------
         uid: str
             Unique ID.
-        osl_server: OslServer
+        osl_server: TcpOslServer
             Object providing access to the optiSLang server.
         type_: Union[NodeType, str]
             Instance of the ``NodeType`` class for supported nodes, ``string`` otherwise.
@@ -1641,60 +1296,60 @@ class ParametricSystem(System):
             type_=type_,
             logger=logger,
         )
-        self.__criteria_manager = CriteriaManager(uid, osl_server)
-        self.__parameter_manager = ParameterManager(uid, osl_server)
-        self.__response_manager = ResponseManager(uid, osl_server)
+        self.__criteria_manager = TcpCriteriaManagerProxy(uid, osl_server)
+        self.__parameter_manager = TcpParameterManagerProxy(uid, osl_server)
+        self.__response_manager = TcpResponseManagerProxy(uid, osl_server)
 
     @property
-    def criteria_manager(self) -> CriteriaManager:
+    def criteria_manager(self) -> TcpCriteriaManagerProxy:
         """Criteria manager of the current system.
 
         Returns
         -------
-        CriteriaManager
-            Instance of the ``CriteriaManager`` class.
+        TcpCriteriaManagerProxy
+            Instance of the ``TcpCriteriaManagerProxy`` class.
         """
         return self.__criteria_manager
 
     @property
-    def parameter_manager(self) -> ParameterManager:
+    def parameter_manager(self) -> TcpParameterManagerProxy:
         """Parameter manager of the current system.
 
         Returns
         -------
-        ParameterManager
-            Instance of the ``ParameterManager`` class.
+        TcpParameterManagerProxy
+            Instance of the ``TcpParameterManagerProxy`` class.
         """
         return self.__parameter_manager
 
     @property
-    def response_manager(self) -> ResponseManager:
+    def response_manager(self) -> TcpResponseManagerProxy:
         """Response manager of the current system.
 
         Returns
         -------
-        ResponseManager
-            Instance of the ``ResponseManager`` class.
+        TcpResponseManagerProxy
+            Instance of the ``TcpResponseManagerProxy`` class.
         """
         return self.__response_manager
 
 
-class RootSystem(ParametricSystem):
+class TcpRootSystemProxy(TcpParametricSystemProxy, RootSystem):
     """Provides for creating and operating on a project system."""
 
     def __init__(
         self,
         uid: str,
-        osl_server: OslServer,
+        osl_server: TcpOslServer,
         logger=None,
     ) -> None:
-        """Create a ``RootSystem`` system.
+        """Create an instance of ``TcpRootSystemProxy`` class.
 
         Parameters
         ----------
         uid: str
             Unique ID.
-        osl_server: OslServer
+        osl_server: TcpOslServer
             Object providing access to the optiSLang server.
         logger: Any, optional
             Object for logging. If ``None``, standard logging object is used. Defaults to ``None``.
@@ -1717,17 +1372,13 @@ class RootSystem(ParametricSystem):
         # TODO: test
         raise NotImplementedError("``RootSystem`` cannot be deleted.")
 
-    def evaluate_design(self, design: Design, update_design: bool = True) -> Design:
+    def evaluate_design(self, design: Design) -> Design:
         """Evaluate a design.
 
         Parameters
         ----------
         design: Design
             Instance of a ``Design`` class with defined parameters.
-        update_design: bool, optional
-            Determines whether given design should be updated and returned or new instance
-            should be created. When ``True`` given design is updated and returned, otherwise
-            new ``Design`` is created. Defaults to ``True``.
 
         Returns
         -------
@@ -1746,54 +1397,19 @@ class RootSystem(ParametricSystem):
         evaluate_dict = {}
         for parameter in design.parameters:
             evaluate_dict[parameter.name] = parameter.value
+
         output_dict = self._osl_server.evaluate_design(evaluate_dict=evaluate_dict)
-        if update_design:
-            return_design = design
-            return_design._receive_results(output_dict[0])
-        else:
-            return_design = copy.deepcopy(design)
-            return_design._receive_results(output_dict[0])
-
-        design_parameters = return_design.parameters_names
-        output_parameters = output_dict[0]["result_design"]["parameter_names"]
-        missing_parameters = __class__.__get_sorted_difference_of_sets(
-            output_parameters, design_parameters
+        return self.__create_evaluated_design(
+            input_design=design, evaluate_dict=evaluate_dict, results=output_dict[0]
         )
-        undefined_parameters = __class__.__get_sorted_difference_of_sets(
-            design_parameters, output_parameters
-        )
-        unused = __class__.__compare_input_w_processed_values(evaluate_dict, output_dict)
-
-        if undefined_parameters:
-            self._logger.debug(f"Parameters ``{undefined_parameters}`` weren't used.")
-        if missing_parameters:
-            self._logger.warning(
-                f"Parameters ``{missing_parameters}`` were missing, "
-                "reference values were used for evaluation and list of parameters will be updated."
-            )
-        if unused:
-            self._logger.warning(
-                "Values of parameters were changed:"
-                f"{[par[0] + ': ' + str(par[1]) + ' -> ' + str(par[2]) for par in unused]}"
-            )
-
-        for parameter in missing_parameters:
-            position = output_dict[0]["result_design"]["parameter_names"].index(parameter)
-            design.set_parameter_by_name(
-                parameter,
-                output_dict[0]["result_design"]["parameter_values"][position],
-                False,
-            )
-
-        return return_design
 
     def get_reference_design(self) -> Design:
         """Get the design with reference values of the parameters.
 
         Returns
         -------
-        Design
-            Instance of the ``Design`` class with defined parameters and reference values.
+        TcpDesign
+            Instance of the ``TcpDesign`` class with defined parameters and reference values.
 
         Raises
         ------
@@ -1824,7 +1440,7 @@ class RootSystem(ParametricSystem):
 
         Parameters
         ----------
-        design: Design
+        design: TcpDesign
             Instance of the ``Design`` class with defined parameters.
 
         Returns
@@ -1853,7 +1469,7 @@ class RootSystem(ParametricSystem):
 
         Parameters
         ----------
-        design: Design
+        design: TcpDesign
             Instance of the ``Design`` class with defined parameters.
 
         Returns
@@ -1874,6 +1490,124 @@ class RootSystem(ParametricSystem):
             first=design.parameters_names,
             second=self.parameter_manager.get_parameters_names(),
         )
+
+    def __create_evaluated_design(
+        self, input_design: Design, evaluate_dict: Dict, results: Dict
+    ) -> Design:
+        """Create a new instance of ``Design`` with results.
+
+        Parameters
+        ----------
+        input_design: Design
+            Design that was evaluated.
+        evaluate_dict: dict
+            Dictionary used for evaluation.
+        results: Dict
+            Output from the evaluation of the input design.
+
+        Return
+        ------
+        Design
+            Instance of the ``Design`` class with results.
+        """
+        id = results["result_design"]["hid"]
+        feasibility = results["result_design"]["feasible"]
+        status = DesignStatus.from_str(results["result_design"]["status"])
+
+        # constraint
+        constraints = []
+        for position, constraint in enumerate(results["result_design"]["constraint_names"]):
+            constraints.append(
+                DesignVariable(
+                    name=constraint,
+                    value=results["result_design"]["constraint_values"][position],
+                )
+            )
+        # limit state
+        limit_states = []
+        for position, limit_state in enumerate(results["result_design"]["limit_state_names"]):
+            limit_states.append(
+                DesignVariable(
+                    name=limit_state,
+                    value=results["result_design"]["limit_state_values"][position],
+                )
+            )
+        # objective
+        objectives = []
+        for position, objective in enumerate(results["result_design"]["objective_names"]):
+            objectives.append(
+                DesignVariable(
+                    name=objective,
+                    value=results["result_design"]["objective_values"][position],
+                )
+            )
+        # responses
+        responses = []
+        for position, response in enumerate(results["result_design"]["response_names"]):
+            responses.append(
+                DesignVariable(
+                    name=response,
+                    value=results["result_design"]["response_values"][position],
+                )
+            )
+        # variables
+        variables = []
+        for position, variable in enumerate(results["result_design"]["variable_names"]):
+            variables.append(
+                DesignVariable(
+                    name=variable,
+                    value=results["result_design"]["variable_values"][position],
+                )
+            )
+
+        # create instance of design with new values
+        output_design = Design(
+            parameters=input_design.parameters,
+            constraints=constraints,
+            limit_states=limit_states,
+            objectives=objectives,
+            variables=variables,
+            responses=responses,
+            feasibility=feasibility,
+            design_id=id,
+            status=status,
+        )
+
+        # compare input and output values
+        input_design_parameters = input_design.parameters_names
+        output_parameters = results["result_design"]["parameter_names"]
+        missing_parameters = __class__.__get_sorted_difference_of_sets(
+            output_parameters, input_design_parameters
+        )
+        undefined_parameters = __class__.__get_sorted_difference_of_sets(
+            input_design_parameters, output_parameters
+        )
+        unused = __class__.__compare_input_w_processed_parameters_values(evaluate_dict, results)
+
+        if undefined_parameters:
+            self._logger.debug(f"Parameters ``{undefined_parameters}`` weren't used.")
+        if missing_parameters:
+            self._logger.warning(
+                f"Parameters ``{missing_parameters}`` were missing, "
+                "reference values were used for evaluation and list of parameters will be updated."
+            )
+        if unused:
+            self._logger.warning(
+                "Values of parameters were changed:"
+                f"{[par[0] + ': ' + str(par[1]) + ' -> ' + str(par[2]) for par in unused]}"
+            )
+
+        # update design with missing parameters
+        # (parameters not defined in input design, but used for evaluation)
+        for parameter in missing_parameters:
+            position = results["result_design"]["parameter_names"].index(parameter)
+            output_design.set_parameter_by_name(
+                parameter,
+                results["result_design"]["parameter_values"][position],
+                False,
+            )
+
+        return output_design
 
     @staticmethod
     def __categorize_criteria(criteria: Tuple[Criterion]) -> Dict[str, List[Criterion]]:
@@ -1917,6 +1651,35 @@ class RootSystem(ParametricSystem):
         }
 
     @staticmethod
+    def __compare_input_w_processed_parameters_values(
+        input: dict, processed: dict
+    ) -> Tuple[Tuple[str, Union[float, str, bool], Union[float, str, bool]]]:
+        """Compare input values of parameters before and after it's processed by server.
+
+        Parameters
+        ----------
+        input: Dict[str: Union[float, str, bool]]
+            Dictionary with parameter's names and values.
+        processed: dict
+            Server output.
+
+        Return
+        ------
+        Tuple[Tuple[str, Union[float, str, bool], Union[float, str, bool]]]
+            Tuple of parameters with different values before and after processing by server.
+                Tuple[0]: name
+                Tuple[1]: input value
+                Tuple[2]: processed value
+        """
+        differences = []
+        for index, parameter_name in enumerate(processed["result_design"]["parameter_names"]):
+            input_value = input.get(parameter_name)
+            output_value = processed["result_design"]["parameter_values"][index]
+            if input_value and input_value != output_value:
+                differences.append((parameter_name, input_value, output_value))
+        return tuple(differences)
+
+    @staticmethod
     def __get_sorted_difference_of_sets(
         first: Iterable[str], second: Iterable[str]
     ) -> Tuple[str, ...]:
@@ -1940,55 +1703,26 @@ class RootSystem(ParametricSystem):
         diff.sort()
         return tuple(diff)
 
-    @staticmethod
-    def __compare_input_w_processed_values(
-        input: dict, processed: dict
-    ) -> Tuple[Tuple[str, Union[float, str, bool], Union[float, str, bool]]]:
-        """Compare input values of parameters before and after it's processed by server.
-
-        Parameters
-        ----------
-        input: Dict[str: Union[float, str, bool]]
-            Dictionary with parameter's names and values.
-        processed: dict
-            Server output.
-
-        Return
-        ------
-        Tuple[Tuple[str, Union[float, str, bool], Union[float, str, bool]]]
-            Tuple of parameters with different values before and after processing by server.
-                Tuple[0]: name
-                Tuple[1]: input value
-                Tuple[2]: processed value
-        """
-        differences = []
-        for index, parameter_name in enumerate(processed[0]["result_design"]["parameter_names"]):
-            input_value = input.get(parameter_name)
-            output_value = processed[0]["result_design"]["parameter_values"][index]
-            if input_value and input_value != output_value:
-                differences.append((parameter_name, input_value, output_value))
-        return tuple(differences)
-
 
 # TODO: test
-class Slot:
+class TcpSlotProxy(Slot):
     """Provides for creating and operating on slots."""
 
     def __init__(
         self,
-        osl_server: OslServer,
-        node: Node,
+        osl_server: TcpOslServer,
+        node: TcpNodeProxy,
         name: str,
         type_: SlotType,
         type_hint: Union[str, None] = None,
     ) -> None:
-        """Create a ``Slot`` instance.
+        """Create an ``TcpSlotProxy`` instance.
 
         Parameters
         ----------
-        osl_server: OslServer
+        osl_server: TcpOslServer
             Object providing access to the optiSLang server.
-        node : Node
+        node : TcpNodeProxy
             Node to which the slot belongs.
         name : str
            Slot name.
@@ -2009,26 +1743,50 @@ class Slot:
 
     @property
     def name(self) -> str:
-        """Get slot name."""
+        """Get slot name.
+
+        Return
+        ------
+        str
+            Slot name.
+        """
         return self.__name
 
     @property
-    def node(self) -> Node:
-        """Get node to which the slot belongs."""
+    def node(self) -> TcpNodeProxy:
+        """Get node to which the slot belongs.
+
+        Return
+        ------
+        TcpNodeProxy
+            Node to which the slot belongs.
+        """
         return self.__node
 
     @property
     def type(self) -> SlotType:
-        """Get slot type."""
+        """Get slot type.
+
+        Return
+        ------
+        SlotType
+            Type of current slot.
+        """
         return self.__type
 
     @property
     def type_hint(self) -> Union[str, None]:
-        """Get type hint."""
+        """Get type hint.
+
+        Return
+        ------
+        Union[str, None]
+            Data type of the current slot, ``None`` if not specified.
+        """
         return self.__type_hint
 
     def get_connections(self) -> Tuple[Edge]:
-        """Get connections for current slot.
+        """Get connections for the current slot.
 
         Returns
         -------
@@ -2065,19 +1823,19 @@ class Slot:
 
     @staticmethod
     def create_slot(
-        osl_server: OslServer,
-        node: Node,
+        osl_server: TcpOslServer,
+        node: TcpNodeProxy,
         name: str,
         type_: SlotType,
         type_hint: Union[str, None] = None,
-    ) -> Slot:
+    ) -> TcpSlotProxy:
         """Create instance of new slot.
 
         Parameters
         ----------
-        osl_server: OslServer
+        osl_server: TcpOslServer
             Object providing access to the optiSLang server.
-        node : Node
+        node : TcpNodeProxy
             Node to which slot belongs to.
         name : str
             Slot name.
@@ -2088,23 +1846,24 @@ class Slot:
 
         Returns
         -------
-        Union[InputSlot, OutputSlot]
-            Instance of InputSlot or OutputSlot.
+        TcpSlotProxy
+            Instance of TcpInputSlotProxy, TcpOutputSlotProxy, TcpInnerInputSlotProxy
+            or TcpInnerOutputSlotProxy class.
         """
         if type_ == SlotType.INPUT:
-            return InputSlot(
+            return TcpInputSlotProxy(
                 osl_server=osl_server, node=node, name=name, type_=type_, type_hint=type_hint
             )
         elif type_ == SlotType.INNER_INPUT:
-            return InnerInputSlot(
+            return TcpInnerInputSlotProxy(
                 osl_server=osl_server, node=node, name=name, type_=type_, type_hint=type_hint
             )
         elif type_ == SlotType.OUTPUT:
-            return OutputSlot(
+            return TcpOutputSlotProxy(
                 osl_server=osl_server, node=node, name=name, type_=type_, type_hint=type_hint
             )
         elif type_ == SlotType.INNER_OUTPUT:
-            return InnerOutputSlot(
+            return TcpInnerOutputSlotProxy(
                 osl_server=osl_server, node=node, name=name, type_=type_, type_hint=type_hint
             )
         else:
@@ -2113,14 +1872,14 @@ class Slot:
             )
 
     @staticmethod
-    def _create_connection_script(from_slot: Slot, to_slot: Slot) -> str:
+    def _create_connection_script(from_slot: TcpSlotProxy, to_slot: TcpSlotProxy) -> str:
         """Create optiSLang python script for slot connection.
 
         Parameters
         ----------
-        from_slot : Slot
+        from_slot : TcpSlotProxy
             Sending slot.
-        to_slot : Slot
+        to_slot : TcpSlotProxy
             Receiving slot.
 
         Returns
@@ -2129,17 +1888,19 @@ class Slot:
             Python script for slot connection.
         """
         # TODO: Remove this, after server command `connect_nodes` is fixed (works for inner slots).
-        if isinstance(from_slot.node, RootSystem):
+        if isinstance(from_slot.node, TcpRootSystemProxy):
             from_actor_script = "from_actor = project.get_root_system()\n"
         else:
             from_actor_script = __class__._create_find_actor_script(
-                slot=from_slot, name="from_actor"
+                node=from_slot.node, name="from_actor"
             )
 
-        if isinstance(to_slot.node, RootSystem):
+        if isinstance(to_slot.node, TcpRootSystemProxy):
             to_actor_script = "to_actor = project.get_root_system()"
         else:
-            to_actor_script = __class__._create_find_actor_script(slot=to_slot, name="to_actor")
+            to_actor_script = __class__._create_find_actor_script(
+                node=to_slot.node, name="to_actor"
+            )
 
         final_script = (
             f"{from_actor_script}\n"
@@ -2150,8 +1911,22 @@ class Slot:
         return final_script
 
     @staticmethod
-    def _create_find_actor_script(slot: Slot, name: str):
-        actor_ancestors = slot.node.get_ancestors()
+    def _create_find_actor_script(node: TcpNodeProxy, name: str):
+        """Create optiSLang python script to find actor.
+
+        Parameters
+        ----------
+        node : TcpNodeProxy
+            Node to be found.
+        name : str
+            Name used to store actor.
+
+        Returns
+        -------
+        str
+            Python script for finding given node.
+        """
+        actor_ancestors = node.get_ancestors()
         actor_ancestors_uids = [ancestor.uid for ancestor in actor_ancestors]
         actor_script = f"{name}_children_0 = get_children()\n"
         idx = 0
@@ -2164,29 +1939,29 @@ class Slot:
                 )
             idx += 1
         actor_script += f"for child in {name}_children_{idx}:\n"
-        actor_script += f"   if str(child.uuid)=='{slot.node.uid}': {name} = child\n"
+        actor_script += f"   if str(child.uuid)=='{node.uid}': {name} = child\n"
         return actor_script
 
 
 # TODO: test
-class InputSlot(Slot):
+class TcpInputSlotProxy(TcpSlotProxy, InputSlot):
     """Provides for creating and operating on input slots."""
 
     def __init__(
         self,
-        osl_server: OslServer,
-        node: Node,
+        osl_server: TcpOslServer,
+        node: TcpNodeProxy,
         name: str,
         type_: SlotType,
         type_hint: Union[str, None] = None,
     ) -> None:
-        """Create a ``InputSlot`` instance.
+        """Create an ``TcpInputSlotProxy`` instance.
 
         Parameters
         ----------
-        osl_server: OslServer
+        osl_server: TcpOslServer
             Object providing access to the optiSLang server.
-        node : Node
+        node : TcpNodeProxy
             Node to which the slot belongs.
         name : str
            Slot name.
@@ -2203,13 +1978,13 @@ class InputSlot(Slot):
             type_hint=type_hint,
         )
 
-    def connect_from(self, from_slot: Slot) -> Edge:
+    def connect_from(self, from_slot: TcpSlotProxy) -> Edge:
         """Connect slot from another slot.
 
         Parameters
         ----------
-        from_slot: Slot
-            Sending (output) slot
+        from_slot: TcpSlotProxy
+            Sending (output) slot.
 
         Return
         ------
@@ -2225,7 +2000,7 @@ class InputSlot(Slot):
         TimeoutError
             Raised when the timeout float value expires.
         """
-        if not isinstance(from_slot, (InnerInputSlot, InnerOutputSlot)):
+        if not isinstance(from_slot, (TcpInnerInputSlotProxy, TcpInnerOutputSlotProxy)):
             self._osl_server.connect_nodes(
                 from_actor_uid=from_slot.node.uid,
                 from_slot=from_slot.name,
@@ -2240,7 +2015,7 @@ class InputSlot(Slot):
         return Edge(from_slot=from_slot, to_slot=self)
 
     def disconnect(self) -> None:
-        """Remove all connections for given slot.
+        """Remove all connections for the current slot.
 
         Raises
         ------
@@ -2261,24 +2036,24 @@ class InputSlot(Slot):
 
 
 # TODO: test
-class OutputSlot(Slot):
+class TcpOutputSlotProxy(TcpSlotProxy, TcpOutputSlotProxy):
     """Provides for creating and operating on output slots."""
 
     def __init__(
         self,
-        osl_server: OslServer,
-        node: Node,
+        osl_server: TcpOslServer,
+        node: TcpNodeProxy,
         name: str,
         type_: SlotType,
         type_hint: Union[str, None] = None,
     ) -> None:
-        """Create a ``OutputSlot`` instance.
+        """Create an ``OutputSlotProxy`` instance.
 
         Parameters
         ----------
-        osl_server: OslServer
+        osl_server: TcpOslServer
             Object providing access to the optiSLang server.
-        node : Node
+        node : TcpNodeProxy
             Node to which the slot belongs.
         name : str
            Slot name.
@@ -2295,12 +2070,12 @@ class OutputSlot(Slot):
             type_hint=type_hint,
         )
 
-    def connect_to(self, to_slot: Slot) -> Edge:
+    def connect_to(self, to_slot: TcpSlotProxy) -> Edge:
         """Connect slot to another slot.
 
         Parameters
         ----------
-        to_slot: Slot
+        to_slot: TcpSlotProxy
             Receiving (input) slot
 
         Return
@@ -2317,7 +2092,7 @@ class OutputSlot(Slot):
         TimeoutError
             Raised when the timeout float value expires.
         """
-        if not isinstance(to_slot, (InnerInputSlot, InnerOutputSlot)):
+        if not isinstance(to_slot, (TcpInnerInputSlotProxy, TcpInnerOutputSlotProxy)):
             self._osl_server.connect_nodes(
                 from_actor_uid=self.node.uid,
                 from_slot=self.name,
@@ -2332,7 +2107,7 @@ class OutputSlot(Slot):
         return Edge(from_slot=self, to_slot=to_slot)
 
     def disconnect(self) -> None:
-        """Remove all connections for given slot.
+        """Remove all connections for the current slot.
 
         Raises
         ------
@@ -2353,24 +2128,24 @@ class OutputSlot(Slot):
 
 
 # TODO: test
-class InnerInputSlot(Slot):
+class TcpInnerInputSlotProxy(TcpSlotProxy, TcpInnerInputSlotProxy):
     """Provides for creating and operating on inner input slots."""
 
     def __init__(
         self,
-        osl_server: OslServer,
-        node: Node,
+        osl_server: TcpOslServer,
+        node: TcpNodeProxy,
         name: str,
         type_: SlotType,
         type_hint: Union[str, None] = None,
     ) -> None:
-        """Create a ``InnerInputSlot`` instance.
+        """Create a ``InnerInputSlotProxy`` instance.
 
         Parameters
         ----------
-        osl_server: OslServer
+        osl_server: TcpOslServer
             Object providing access to the optiSLang server.
-        node : Node
+        node : TcpNodeProxy
             Node to which the slot belongs.
         name : str
            Slot name.
@@ -2387,12 +2162,12 @@ class InnerInputSlot(Slot):
             type_hint=type_hint,
         )
 
-    def connect_from(self, from_slot: Slot) -> Edge:
+    def connect_from(self, from_slot: TcpSlotProxy) -> Edge:
         """Connect slot from another slot.
 
         Parameters
         ----------
-        from_slot: Slot
+        from_slot: TcpSlotProxy
             Sending (output) slot
 
         Return
@@ -2415,24 +2190,24 @@ class InnerInputSlot(Slot):
 
 
 # TODO: test
-class InnerOutputSlot(Slot):
+class TcpInnerOutputSlotProxy(TcpSlotProxy, TcpInnerOutputSlotProxy):
     """Provides for creating and operating on inner output slots."""
 
     def __init__(
         self,
-        osl_server: OslServer,
-        node: Node,
+        osl_server: TcpOslServer,
+        node: TcpNodeProxy,
         name: str,
         type_: SlotType,
         type_hint: Union[str, None] = None,
     ) -> None:
-        """Create a ``InnerOutputSlot`` instance.
+        """Create a ``InnerOutputSlotProxy`` instance.
 
         Parameters
         ----------
-        osl_server: OslServer
+        osl_server: TcpOslServer
             Object providing access to the optiSLang server.
-        node : Node
+        node : TcpNodeProxy
             Node to which the slot belongs.
         name : str
            Slot name.
@@ -2449,12 +2224,12 @@ class InnerOutputSlot(Slot):
             type_hint=type_hint,
         )
 
-    def connect_to(self, to_slot: Slot) -> Edge:
+    def connect_to(self, to_slot: TcpSlotProxy) -> Edge:
         """Connect slot to another slot.
 
         Parameters
         ----------
-        to_slot: Slot
+        to_slot: TcpSlotProxy
             Receiving (input) slot
 
         Return
@@ -2474,82 +2249,3 @@ class InnerOutputSlot(Slot):
         python_script = self.__class__._create_connection_script(from_slot=self, to_slot=to_slot)
         self._osl_server.run_python_script(script=python_script)
         return Edge(from_slot=self, to_slot=to_slot)
-
-
-# TODO: test
-class Edge:
-    """Provides for creating and operating on connections."""
-
-    def __init__(
-        self,
-        from_slot: Slot,
-        to_slot: Slot,
-    ) -> None:
-        """Create an ``Edge`` instance.
-
-        Parameters
-        ----------
-        from_slot: Slot
-            Output slot.
-        to_slot: Slot
-            Input slot.
-        """
-        if from_slot.type not in [SlotType.INNER_OUTPUT, SlotType.OUTPUT]:
-            raise ValueError(
-                f"Invalid value of ``from_slot.type``: ``{from_slot.type}``."
-                f"``{SlotType.OUTPUT}<or>{SlotType.INNER_OUTPUT}`` was expected."
-            )
-        self.__from_slot = from_slot
-        if to_slot.type not in [SlotType.INNER_INPUT, SlotType.INPUT]:
-            raise ValueError(
-                f"Invalid value of ``to_slot.type``: ``{to_slot.type}``."
-                f"``{SlotType.INPUT}<or>{SlotType.INNER_INPUT}`` was expected."
-            )
-        self.__to_slot = to_slot
-
-    def __str__(self):
-        """Return formatted string."""
-        return (
-            "From_slot:\n"
-            f"   type: {self.from_slot.type.name}\n"
-            f"   name: {self.from_slot.name}\n"
-            "To_slot:\n"
-            f"   type: {self.to_slot.type.name}\n"
-            f"   name: {self.to_slot.name}\n"
-        )
-
-    @property
-    def from_slot(self) -> Slot:
-        """Get output slot."""
-        return self.__from_slot
-
-    @property
-    def to_slot(self) -> Slot:
-        """Get input slot."""
-        return self.__to_slot
-
-    def exists(self) -> bool:
-        """Get info whether connection exists in active project.
-
-        Returns
-        -------
-        bool
-            Whether current connection exists in active project.
-
-        Raises
-        ------
-        OslCommunicationError
-            Raised when an error occurs while communicating with the server.
-        OslCommandError
-            Raised when a command or query fails.
-        TimeoutError
-            Raised when the timeout float value expires.
-        """
-        connections = self.from_slot.get_connections()
-        for connection in connections:
-            if (
-                connection.to_slot.node.uid == self.to_slot.node.uid
-                and connection.to_slot.name == self.to_slot.name
-            ):
-                return True
-        return False

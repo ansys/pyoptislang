@@ -5,7 +5,7 @@ import time
 import pytest
 
 from ansys.optislang.core import Optislang
-from ansys.optislang.core.nodes import RootSystem
+from ansys.optislang.core.nodes import TcpRootSystem
 from ansys.optislang.core.project_parametric import Design, ParameterManager
 
 pytestmark = pytest.mark.local_osl
@@ -75,7 +75,7 @@ def test_project_properties(optislang: Optislang):
     uid = project.uid
     assert isinstance(uid, str)
     root_system = project.root_system
-    assert isinstance(root_system, RootSystem)
+    assert isinstance(root_system, TcpRootSystem)
     parameter_manager = project.parameter_manager
     assert isinstance(parameter_manager, ParameterManager)
     with does_not_raise() as dnr:

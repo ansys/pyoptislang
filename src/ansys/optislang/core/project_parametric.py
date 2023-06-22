@@ -1,15 +1,12 @@
-"""Contains these classes: ``Parameter``, ``ParameterManager``, and ``Design``."""
+"""Contains ``Parameter``, ``Criterion``, ``Response``, it's child classes and enumerations."""
 from __future__ import annotations
 
 import copy
 from enum import Enum
-from typing import TYPE_CHECKING, Any, Dict, Iterable, List, Mapping, Sequence, Tuple, Union
+from typing import Any, Iterable, List, Mapping, Sequence, Tuple, Union
 import uuid
 
 from ansys.optislang.core.utils import enum_from_str
-
-if TYPE_CHECKING:
-    from ansys.optislang.core.osl_server import OslServer
 
 
 # ENUMERATIONS:
@@ -3338,213 +3335,7 @@ class Response:
         )
 
 
-# MANAGERS:
-
-
-class CriteriaManager:
-    """Contains methods for obtaining criteria."""
-
-    def __init__(self, uid: str, osl_server: OslServer) -> None:
-        """Initialize a new instance of the ``CriteriaManager`` class.
-
-        Parameters
-        ----------
-        uid: str
-            Unique ID of the instance.
-        osl_server: OslServer
-            Object providing access to the optiSLang server.
-        """
-        self.__uid = uid
-        self.__osl_server = osl_server
-
-    def __str__(self) -> str:
-        """Get the unique ID of the ``CriteriaManager`` instance."""
-        return f"CriteriaManager uid: {self.__uid}"
-
-    def get_criteria(self) -> Tuple[Criterion, ...]:
-        """Get the criteria of the system.
-
-        Returns
-        -------
-        Tuple[Criterion, ...]
-            Tuple of the criterion for the system.
-
-        Raises
-        ------
-        OslCommunicationError
-            Raised when an error occurs while communicating with the server.
-        OslCommandError
-            Raised when a command or query fails.
-        TimeoutError
-            Raised when the timeout float value expires.
-        """
-        props = self.__osl_server.get_actor_properties(uid=self.__uid)
-        container = props.get("properties", {}).get("Criteria", {}).get("sequence", [{}])
-        criteria = []
-        for criterion_dict in container:
-            criteria.append(Criterion.from_dict(criterion_dict))
-        return tuple(criteria)
-
-    def get_criteria_names(self) -> Tuple[str, ...]:
-        """Get all criteria names.
-
-        Returns
-        -------
-        Tuple[str, ...]
-            Tuple of all criteria names.
-
-        Raises
-        ------
-        OslCommunicationError
-            Raised when an error occurs while communicating with the server.
-        OslCommandError
-            Raised when a command or query fails.
-        TimeoutError
-            Raised when the timeout float value expires.
-        """
-        props = self.__osl_server.get_actor_properties(uid=self.__uid)
-        container = props.get("properties", {}).get("Criteria", {}).get("sequence", [{}])
-        criteria_list = []
-        for par in container:
-            criteria_list.append(par["First"])
-        return tuple(criteria_list)
-
-
-class ParameterManager:
-    """Contains methods for obtaining parameters."""
-
-    def __init__(self, uid: str, osl_server: OslServer) -> None:
-        """Initialize a new instance of the ``ParameterManager`` class.
-
-        Parameters
-        ----------
-        uid: str
-            Unique ID of the instance.
-        osl_server: OslServer
-            Object providing access to the optiSLang server.
-        """
-        self.__uid = uid
-        self.__osl_server = osl_server
-
-    def __str__(self) -> str:
-        """Get the unique ID of the ``ParameterManager`` instance."""
-        return f"ParameterManager uid: {self.__uid}"
-
-    def get_parameters(self) -> Tuple[Parameter, ...]:
-        """Get the parameters of the system.
-
-        Returns
-        -------
-        Tuple[Parameter, ...]
-            Tuple of the parameters for the system.
-
-        Raises
-        ------
-        OslCommunicationError
-            Raised when an error occurs while communicating with the server.
-        OslCommandError
-            Raised when a command or query fails.
-        TimeoutError
-            Raised when the timeout float value expires.
-        """
-        props = self.__osl_server.get_actor_properties(uid=self.__uid)
-        container = props["properties"].get("ParameterManager", {}).get("parameter_container", [])
-        parameters = []
-        for par_dict in container:
-            parameters.append(Parameter.from_dict(par_dict))
-        return tuple(parameters)
-
-    def get_parameters_names(self) -> Tuple[str, ...]:
-        """Get all parameter names.
-
-        Returns
-        -------
-        Tuple[str, ...]
-            Tuple of all parameter names.
-
-        Raises
-        ------
-        OslCommunicationError
-            Raised when an error occurs while communicating with the server.
-        OslCommandError
-            Raised when a command or query fails.
-        TimeoutError
-            Raised when the timeout float value expires.
-        """
-        props = self.__osl_server.get_actor_properties(uid=self.__uid)
-        container = props["properties"].get("ParameterManager", {}).get("parameter_container", [])
-        parameters_list = []
-        for par in container:
-            parameters_list.append(par["name"])
-        return tuple(parameters_list)
-
-
-class ResponseManager:
-    """Contains methods for obtaining responses."""
-
-    def __init__(self, uid: str, osl_server: OslServer) -> None:
-        """Initialize a new instance of the ``ResponseManager`` class.
-
-        Parameters
-        ----------
-        uid: str
-            Unique ID of the instance.
-        osl_server: OslServer
-            Object providing access to the optiSLang server.
-        """
-        self.__uid = uid
-        self.__osl_server = osl_server
-
-    def __str__(self) -> str:
-        """Get the unique ID of the ``ResponseManager`` instance."""
-        return f"ResponseManager uid: {self.__uid}"
-
-    def get_responses(self) -> Tuple[Response, ...]:
-        """Get the responses of the system.
-
-        Returns
-        -------
-        Tuple[Criterion, ...]
-            Tuple of the responses for the system.
-
-        Raises
-        ------
-        OslCommunicationError
-            Raised when an error occurs while communicating with the server.
-        OslCommandError
-            Raised when a command or query fails.
-        TimeoutError
-            Raised when the timeout float value expires.
-        """
-        info = self.__osl_server.get_actor_info(uid=self.__uid)
-        container = info.get("responses", {})
-        responses = []
-        for key, res_dict in container.items():
-            responses.append(Response.from_dict(key, res_dict))
-        return tuple(responses)
-
-    def get_responses_names(self) -> Tuple[str, ...]:
-        """Get all responses names.
-
-        Returns
-        -------
-        Tuple[str, ...]
-            Tuple of all responses names.
-
-        Raises
-        ------
-        OslCommunicationError
-            Raised when an error occurs while communicating with the server.
-        OslCommandError
-            Raised when a command or query fails.
-        TimeoutError
-            Raised when the timeout float value expires.
-        """
-        info = self.__osl_server.get_actor_info(uid=self.__uid)
-        container = info.get("responses", {})
-        return tuple(container.keys())
-
-
+# Design
 class Design:
     """Stores information about the design point, exclusively for the root system.
 
@@ -3663,35 +3454,6 @@ class Design:
         if responses:
             self.__responses = self.__parse_responses_to_designvariables(responses=responses)
 
-    def __str__(self) -> str:
-        """Return information about the design."""
-        return (
-            f"ID: {self.id}\n"
-            f"Status: {self.__status.name}\n"
-            f"Feasibility: {self.__feasibility}\n"
-            f"Criteria:\n"
-            f"   constraints: {self.constraints_names}\n"
-            f"   objectives: {self.objectives_names}\n"
-            f"   limit_states: {self.limit_states_names}\n"
-            f"Parameters: {self.parameters_names}\n"
-            f"Responses: {self.responses_names}\n"
-            f"Variables: {self.variables_names}\n"
-        )
-
-    def __deepcopy__(self, memo) -> Design:
-        """Return deep copy of given Design."""
-        return Design(
-            parameters=copy.deepcopy(self.parameters),
-            constraints=copy.deepcopy(self.constraints),
-            limit_states=copy.deepcopy(self.limit_states),
-            objectives=copy.deepcopy(self.objectives),
-            variables=copy.deepcopy(self.variables),
-            responses=copy.deepcopy(self.responses),
-            feasibility=self.feasibility,
-            design_id=self.id,
-            status=self.status,
-        )
-
     @property
     def constraints(self) -> Tuple[DesignVariable, ...]:
         """Tuple of all constraints."""
@@ -3785,6 +3547,7 @@ class Design:
             limit_states=self.__reset_output_value(copy.deepcopy(self.limit_states)),
             objectives=self.__reset_output_value(copy.deepcopy(self.objectives)),
             variables=self.__reset_output_value(copy.deepcopy(self.variables)),
+            responses=self.__reset_output_value(copy.deepcopy(self.responses)),
         )
 
     def remove_parameter(self, name: str) -> None:
@@ -3800,14 +3563,14 @@ class Design:
             self.__parameters.pop(index)
 
     def __reset(self) -> None:
-        """Reset the status and feasibilit, clear output values."""
+        """Reset the status and feasibility, clear output values."""
         self.__status = DesignStatus.IDLE
         self.__feasibility = None
-        self.__constraints.clear()
-        self.__limit_states.clear()
-        self.__objectives.clear()
-        self.__responses.clear()
-        self.__variables.clear()
+        self.__reset_output_value(self.constraints)
+        self.__reset_output_value(self.limit_states)
+        self.__reset_output_value(self.objectives)
+        self.__reset_output_value(self.variables)
+        self.__reset_output_value(self.responses)
 
     def set_parameter(
         self,
@@ -3897,60 +3660,6 @@ class Design:
             self.__parameters[index].value = value
         else:
             self.__parameters.append(DesignVariable(name=name, value=value))
-
-    def _receive_results(self, results: Dict) -> None:
-        """Store received results.
-
-        Parameters
-        ----------
-        results: Dict
-            Output from the ``evaluate_design`` server command.
-        """
-        self.__reset()
-        self.__id = results["result_design"]["hid"]
-        self.__feasibility = results["result_design"]["feasible"]
-        self.__status = DesignStatus.from_str(results["result_design"]["status"])
-
-        # constraint
-        for position, constraint in enumerate(results["result_design"]["constraint_names"]):
-            self.__constraints.append(
-                DesignVariable(
-                    name=constraint,
-                    value=results["result_design"]["constraint_values"][position],
-                )
-            )
-        # limit state
-        for position, limit_state in enumerate(results["result_design"]["limit_state_names"]):
-            self.__limit_states.append(
-                DesignVariable(
-                    name=limit_state,
-                    value=results["result_design"]["limit_state_values"][position],
-                )
-            )
-        # objective
-        for position, objective in enumerate(results["result_design"]["objective_names"]):
-            self.__objectives.append(
-                DesignVariable(
-                    name=objective,
-                    value=results["result_design"]["objective_values"][position],
-                )
-            )
-        # responses
-        for position, response in enumerate(results["result_design"]["response_names"]):
-            self.__responses.append(
-                DesignVariable(
-                    name=response,
-                    value=results["result_design"]["response_values"][position],
-                )
-            )
-        # variables
-        for position, variable in enumerate(results["result_design"]["variable_names"]):
-            self.__variables.append(
-                DesignVariable(
-                    name=variable,
-                    value=results["result_design"]["variable_values"][position],
-                )
-            )
 
     def __find_name_index(self, name: str, type_: str) -> Union[int, None]:
         """Find the index of a criterion, parameter, response, or variable by name.

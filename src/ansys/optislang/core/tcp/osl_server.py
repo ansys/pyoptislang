@@ -17,8 +17,8 @@ import time
 from typing import Any, Callable, Dict, Iterable, List, Mapping, Optional, Sequence, Tuple, Union
 import uuid
 
-from ansys.optislang.core import server_commands as commands
-from ansys.optislang.core import server_queries as queries
+from deprecated import deprecated
+
 from ansys.optislang.core.encoding import force_bytes, force_text
 from ansys.optislang.core.errors import (
     ConnectionEstablishedError,
@@ -31,6 +31,8 @@ from ansys.optislang.core.errors import (
 )
 from ansys.optislang.core.osl_process import OslServerProcess, ServerNotification
 from ansys.optislang.core.osl_server import OslServer
+from ansys.optislang.core.tcp import server_commands as commands
+from ansys.optislang.core.tcp import server_queries as queries
 
 
 def _get_current_timeout(initial_timeout: Union[float, None], start_time: float) -> None:
@@ -801,8 +803,8 @@ class TcpOslServer(OslServer):
     Additionally, the generic
     :mod:`send_command <ansys.optislang.core.tcp_osl_server.TcpOslServer.send_command>` method
     can be used in conjunction with the convenience functions from the
-    :ref:`ansys.optislang.core.server_queries <ref_osl_server_api_queries>` and
-    :ref:`ansys.optislang.core.server_commands <ref_osl_server_api_commands>` modules.
+    :ref:`ansys.optislang.core.tcp.tcp_server_queries <ref_osl_server_api_queries>` and
+    :ref:`ansys.optislang.core.tcp.tcp_server_commands <ref_osl_server_api_commands>` modules.
 
     For remote connection, it is assumed that the optiSLang server process is already running
     on remote (or local) host. In that case, the host and port must be specified and other
@@ -995,10 +997,7 @@ class TcpOslServer(OslServer):
         self.__port = port
         self.__timeout = None
 
-        if logger is None:
-            self._logger = logging.getLogger(__name__)
-        else:
-            self._logger = logger
+        self._logger = logging.getLogger(__name__) if logger is None else logger
 
         self.__executable = Path(executable) if executable is not None else None
         self.__project_path = Path(project_path) if project_path is not None else None
@@ -1011,7 +1010,7 @@ class TcpOslServer(OslServer):
         self.__auto_relocate = auto_relocate
         self.__password = password
         self.__osl_process = None
-        self.__listeners = {}
+        self.__listeners: Dict[str, TcpOslListener] = {}
         self.__listeners_registration_thread = None
         self.__refresh_listeners = threading.Event()
         self.__listeners_refresh_interval = 20
@@ -1062,6 +1061,83 @@ class TcpOslServer(OslServer):
                     f"The version of the used Ansys optiSLang ({osl_version_string})"
                     " is not fully supported. Please use at least version 23.1."
                 )
+
+    @property
+    def host(self) -> Union[str, None]:
+        """Get optiSLang server address or domain name.
+
+        Get a string representation of an IPv4/v6 address or domain name
+        of the running optiSLang server.
+
+        Returns
+        -------
+        timeout: Union[int, None]
+            The IPv4/v6 address or domain name of the running optiSLang server, if applicable.
+            Defaults to ``None``.
+        """
+        return self.__host
+
+    @property
+    def port(self) -> Union[int, None]:
+        """Get the port the osl server is listening on.
+
+        Returns
+        -------
+        timeout: Union[int, None]
+            The port the osl server is listening on, if applicable.
+            Defaults to ``None``.
+        """
+        return self.__port
+
+    @property
+    def timeout(self) -> Union[float, None]:
+        """Get current timeout value for execution of commands.
+
+        Returns
+        -------
+        timeout: Union[float, None]
+            Timeout in seconds to perform commands.
+        """
+        return self.__timeout
+
+    @timeout.setter
+    def timeout(self, timeout: Union[float, None] = None) -> None:
+        """Set timeout value for execution of commands.
+
+        Parameters
+        ----------
+        timeout: Union[float, None]
+            Timeout in seconds to perform commands, it must be greater than zero or ``None``.
+            Another functions will raise a timeout exception if the timeout period value has
+            elapsed before the operation has completed.
+            If ``None`` is given, functions will wait until they're finished (no timeout
+            exception is raised). Defaults to ``None``.
+
+        Raises
+        ------
+        ValueError
+            Raised when timeout <= 0.
+        TypeError
+            Raised when timeout not Union[float, None].
+        """
+        if timeout is None:
+            self.__timeout = timeout
+        elif isinstance(timeout, (int, float)):
+            if timeout > 0:
+                self.__timeout = timeout
+            else:
+                raise ValueError(
+                    "Timeout must be float greater than zero or ``None`` but "
+                    f"``{timeout}`` was given."
+                )
+        else:
+            raise TypeError(
+                "Invalid type of timeout, timeout must be float greater than zero or "
+                f"``None`` but {type(timeout)} was given."
+            )
+
+        for listener in self.__listeners.values():
+            listener.timeout = timeout
 
     def connect_nodes(
         self, from_actor_uid: str, from_slot: str, to_actor_uid: str, to_slot: str
@@ -1465,6 +1541,21 @@ class TcpOslServer(OslServer):
             queries.full_project_tree_with_properties(password=self.__password)
         )
 
+    @deprecated(version="0.2.1", reason="Use ``TcpOslServer.host`` instead.")
+    def get_host(self) -> Union[str, None]:
+        """Get optiSLang server address or domain name.
+
+        Get a string representation of an IPv4/v6 address or domain name
+        of the running optiSLang server.
+
+        Returns
+        -------
+        timeout: Union[int, None]
+            The IPv4/v6 address or domain name of the running optiSLang server, if applicable.
+            Defaults to ``None``.
+        """
+        return self.__host
+
     def get_hpc_licensing_forwarded_environment(self, uid: str) -> Dict:
         """Get hpc licensing forwarded environment for certain actor.
 
@@ -1555,6 +1646,7 @@ class TcpOslServer(OslServer):
             )
         )
 
+    @deprecated(version="0.2.1", reason="Use ``TcpApplicationProxy.get_version_string()`` instead.")
     def get_osl_version_string(self) -> str:
         """Get version of used optiSLang.
 
@@ -1575,6 +1667,7 @@ class TcpOslServer(OslServer):
         server_info = self.get_server_info()
         return server_info["application"]["version"]
 
+    @deprecated(version="0.2.1", reason="Use ``TcpApplicationProxy.get_version()`` instead.")
     def get_osl_version(self) -> Tuple[Union[int, None], ...]:
         """Get version of used optiSLang.
 
@@ -1625,12 +1718,25 @@ class TcpOslServer(OslServer):
 
         return major_version, minor_version, maint_version, revision
 
-    def get_project_description(self) -> str:
+    @deprecated(version="0.2.1", reason="Use ``TcpOslServer.port`` instead.")
+    def get_port(self) -> Union[int, None]:
+        """Get the port the osl server is listening on.
+
+        Returns
+        -------
+        timeout: Union[int, None]
+            The port the osl server is listening on, if applicable.
+            Defaults to ``None``.
+        """
+        return self.__port
+
+    @deprecated(version="0.2.1", reason="Use ``TcpProject.get_description()`` instead.")
+    def get_project_description(self) -> Union[str, None]:
         """Get description of optiSLang project.
 
         Returns
         -------
-        str
+        Union[str, None]
             optiSLang project description. If no project is loaded in the optiSLang,
             returns ``None``.
 
@@ -1650,12 +1756,13 @@ class TcpOslServer(OslServer):
             project_info.get("projects", [{}])[0].get("settings", {}).get("short_description", None)
         )
 
-    def get_project_location(self) -> Path:
+    @deprecated(version="0.2.1", reason="Use ``TcpProject.get_location()`` instead.")
+    def get_project_location(self) -> Union[Path, None]:
         """Get path to the optiSLang project file.
 
         Returns
         -------
-        pathlib.Path
+        Union[pathlib.Path, None]
             Path to the optiSLang project file. If no project is loaded in the optiSLang,
             returns ``None``.
 
@@ -1672,12 +1779,13 @@ class TcpOslServer(OslServer):
         project_path = project_info.get("projects", [{}])[0].get("location", None)
         return None if not project_path else Path(project_path)
 
-    def get_project_name(self) -> str:
+    @deprecated(version="0.2.1", reason="Use ``TcpProject.get_name()`` instead.")
+    def get_project_name(self) -> Union[str, None]:
         """Get name of the optiSLang project.
 
         Returns
         -------
-        str
+        Union[str, None]
             Name of the optiSLang project. If no project is loaded in the optiSLang,
             returns ``None``.
 
@@ -1695,12 +1803,13 @@ class TcpOslServer(OslServer):
             return None
         return project_info.get("projects", [{}])[0].get("name", None)
 
-    def get_project_status(self) -> str:
+    @deprecated(version="0.2.1", reason="Use ``TcpProject.get_status()`` instead.")
+    def get_project_status(self) -> Union[str, None]:
         """Get status of the optiSLang project.
 
         Returns
         -------
-        str
+        Union[str, None]
             optiSLang project status. If no project is loaded in the optiSLang,
             returns ``None``.
 
@@ -1718,6 +1827,7 @@ class TcpOslServer(OslServer):
             return None
         return project_info.get("projects", [{}])[0].get("state", None)
 
+    @deprecated(version="0.2.1", reason="Use ``TcpProject.uid`` instead.")
     def get_project_uid(self) -> str:
         """Get project uid.
 
@@ -1838,6 +1948,7 @@ class TcpOslServer(OslServer):
         """
         return self.send_command(queries.systems_status_info(password=self.__password))
 
+    @deprecated(version="0.2.1", reason="Use ``TcpOslServer.timeout`` instead.")
     def get_timeout(self) -> Union[float, None]:
         """Get current timeout value for execution of commands.
 
@@ -1845,18 +1956,10 @@ class TcpOslServer(OslServer):
         -------
         timeout: Union[float, None]
             Timeout in seconds to perform commands.
-
-        Raises
-        ------
-        OslCommunicationError
-            Raised when an error occurs while communicating with server.
-        OslCommandError
-            Raised when the command or query fails.
-        TimeoutError
-            Raised when the timeout float value expires.
         """
         return self.__timeout
 
+    @deprecated(version="0.2.1", reason="Use ``TcpProject.get_working_dir()`` instead.")
     def get_working_dir(self) -> Path:
         """Get path to the optiSLang project working directory.
 
@@ -2158,6 +2261,7 @@ class TcpOslServer(OslServer):
             )
         )
 
+    @deprecated(version="0.2.1", reason="Use ``TcpOslServer.timeout`` instead.")
     def set_timeout(self, timeout: Union[float, None] = None) -> None:
         """Set timeout value for execution of commands.
 
@@ -2172,33 +2276,12 @@ class TcpOslServer(OslServer):
 
         Raises
         ------
-        OslCommunicationError
-            Raised when an error occurs while communicating with server.
-        OslCommandError
-            Raised when the command or query fails.
         ValueError
             Raised when timeout <= 0.
         TypeError
             Raised when timeout not Union[float, None].
         """
-        if timeout is None:
-            self.__timeout = timeout
-        elif isinstance(timeout, (int, float)):
-            if timeout > 0:
-                self.__timeout = timeout
-            else:
-                raise ValueError(
-                    "Timeout must be float greater than zero or ``None`` but "
-                    f"``{timeout}`` was given."
-                )
-        else:
-            raise TypeError(
-                "Invalid type of timeout, timeout must be float greater than zero or "
-                f"``None`` but {type(timeout)} was given."
-            )
-
-        for listener in self.__listeners.values():
-            listener.timeout = timeout
+        self.timeout = timeout
 
     def shutdown(self, force: bool = False) -> None:
         """Shutdown the optiSLang server.
@@ -2415,31 +2498,6 @@ class TcpOslServer(OslServer):
             if successfully_finished == "Terminate":
                 raise TimeoutError("Waiting for finished timed out.")
             self._logger.info(f"Successfully_finished: {successfully_finished}.")
-
-    def get_host(self) -> Union[str, None]:
-        """Get optiSLang server address or domain name.
-
-        Get a string representation of an IPv4/v6 address or domain name
-        of the running optiSLang server.
-
-        Returns
-        -------
-        timeout: Union[int, None]
-            The IPv4/v6 address or domain name of the running optiSLang server, if applicable.
-            Defaults to ``None``.
-        """
-        return self.__host
-
-    def get_port(self) -> Union[int, None]:
-        """Get the port the osl server is listening on.
-
-        Returns
-        -------
-        timeout: Union[int, None]
-            The port the osl server is listening on, if applicable.
-            Defaults to ``None``.
-        """
-        return self.__port
 
     def _unregister_listener(self, listener: TcpOslListener) -> None:
         """Unregister a listener.
@@ -2871,7 +2929,7 @@ class TcpOslServer(OslServer):
 
         return response
 
-    # To be fixed in 2023R2:
+    # FUTURES:
     # close method doesn't work properly in optiSLang 2023R1, therefore it was commented out
     # def close(self) -> None:
     #     """Close the current project.

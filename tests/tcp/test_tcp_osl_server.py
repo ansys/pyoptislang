@@ -11,7 +11,7 @@ import uuid
 import pytest
 
 from ansys.optislang.core import OslServerProcess, errors, examples
-import ansys.optislang.core.tcp_osl_server as tos
+import ansys.optislang.core.tcp.osl_server as tos
 
 _host = socket.gethostbyname(socket.gethostname())
 
@@ -297,7 +297,7 @@ def test_evaluate_design(tmp_path: Path):
         shutdown_on_finished=False, project_path=parametric_project
     )
     tcp_osl_server = create_tcp_osl_server(osl_server_process)
-    tcp_osl_server.save_copy(file_path=tmp_path / "test_evaluate_design.opf")
+    tcp_osl_server.save_as(file_path=tmp_path / "test_evaluate_design.opf")
     tcp_osl_server.reset()
     result = tcp_osl_server.evaluate_design({"a": 5, "b": 10})
     tcp_osl_server.shutdown()
@@ -766,10 +766,20 @@ def test_save_as(
         arg_path = file_path
 
     tcp_osl_server = create_tcp_osl_server(osl_server_process)
+    old_wdir = tcp_osl_server.get_working_dir()
+    old_loc = tcp_osl_server.get_project_location()
+
     tcp_osl_server.save_as(file_path=arg_path)
-    assert file_path.is_file()
+
+    new_wdir = tcp_osl_server.get_working_dir()
+    new_loc = tcp_osl_server.get_project_location()
+    assert new_wdir != old_wdir
+    assert new_loc != old_loc
+
     tcp_osl_server.shutdown()
     tcp_osl_server.dispose()
+
+    assert file_path.is_file()
 
 
 @pytest.mark.parametrize("path_type", [str, Path])
@@ -786,9 +796,19 @@ def test_save_copy(
         arg_path = copy_path
 
     tcp_osl_server = create_tcp_osl_server(osl_server_process)
+    old_wdir = tcp_osl_server.get_working_dir()
+    old_loc = tcp_osl_server.get_project_location()
+
     tcp_osl_server.save_copy(arg_path)
+
+    new_wdir = tcp_osl_server.get_working_dir()
+    new_loc = tcp_osl_server.get_project_location()
+    assert new_wdir == old_wdir
+    assert new_loc == old_loc
+
     tcp_osl_server.shutdown()
     tcp_osl_server.dispose()
+
     assert copy_path.is_file()
 
 

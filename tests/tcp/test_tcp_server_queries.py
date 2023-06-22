@@ -3,7 +3,7 @@ import json
 
 import pytest
 
-from ansys.optislang.core import server_queries as sq
+from ansys.optislang.core import tcp_server_queries as sq
 
 my_string = "5cdfb20b-bef6-4412-9985-89f5ded5ee95"
 my_dict = {"feature": "CAN_FINALIZE"}

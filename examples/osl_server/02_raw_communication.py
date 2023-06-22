@@ -19,10 +19,10 @@ from pathlib import Path
 import tempfile
 
 from ansys.optislang.core import Optislang
-from ansys.optislang.core import server_commands as commands
-from ansys.optislang.core import server_queries as queries
 import ansys.optislang.core.examples as examples
 from ansys.optislang.core.project_parametric import Parameter
+from ansys.optislang.core.tcp import server_commands as commands
+from ansys.optislang.core.tcp import server_queries as queries
 
 #########################################################
 # Create optiSLang instance

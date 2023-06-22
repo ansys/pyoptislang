@@ -41,7 +41,7 @@ def test_get_reference_design(optislang: Optislang):
 @pytest.mark.parametrize("update_design", [True, False])
 def test_evaluate_design(optislang: Optislang, tmp_path: Path, update_design: bool):
     """Test ``evaluate_design``."""
-    optislang.save_copy(file_path=tmp_path / "test_modify_parameter.opf")
+    optislang.save_as(file_path=tmp_path / "test_modify_parameter.opf")
     optislang.reset()
     project = optislang.project
     root_system = project.root_system
