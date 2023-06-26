@@ -11,7 +11,6 @@ from ansys.optislang.core.base_nodes import (
     Edge,
     InputSlot,
     Node,
-    NodeType,
     ParametricSystem,
     RootSystem,
     Slot,
@@ -21,6 +20,7 @@ from ansys.optislang.core.base_nodes import (
     TcpInnerOutputSlotProxy,
     TcpOutputSlotProxy,
 )
+from ansys.optislang.core.node_types import AddinType, NodeType
 from ansys.optislang.core.project_parametric import (
     ConstraintCriterion,
     DesignStatus,
@@ -66,17 +66,14 @@ class TcpNodeProxy(Node):
         """
         self._osl_server = osl_server
         self.__uid = uid
-        if isinstance(type_, str):
-            try:
-                type_ = NodeType.from_str(string=type_)
-            except ValueError:
-                pass
+        if not isinstance(type_, NodeType):
+            raise TypeError(f"Unsupported type of type_: ``{type(type_)}``.")
         self.__type = type_
         self._logger = logging.getLogger(__name__) if logger is None else logger
 
     def __str__(self):
         """Return formatted string."""
-        type_ = self.type.name if isinstance(type_, NodeType) else self.type
+        type_ = self.type.id
         return f"Node type: {type_} Name: {self.get_name()} Uid: {self.uid}"
 
     @property
@@ -91,13 +88,13 @@ class TcpNodeProxy(Node):
         return self.__uid
 
     @property
-    def type(self) -> Union[NodeType, str]:
+    def type(self) -> NodeType:
         """Type of the node.
 
         Returns
         -------
-        Union[NodeType, str]
-            Instance of the ``NodeType`` class for supported nodes, ``string`` otherwise.
+        NodeType
+            Instance of the ``NodeType`` class.
         """
         # TODO: test
         return self.__type
@@ -409,13 +406,13 @@ class TcpNodeProxy(Node):
         return actor_info["status"]
 
     @deprecated(version="0.2.1", reason="Use ``TcpNodeProxy.type`` instead.")
-    def get_type(self) -> Union[NodeType, str]:
+    def get_type(self) -> NodeType:
         """Get the type of the node.
 
         Returns
         -------
-        Union[NodeType,str]
-            Type of the node, ``NodeType`` is returned for supported nodes, ``string`` otherwise.
+        NodeType
+            Type of the node.
 
         Raises
         ------
@@ -427,10 +424,7 @@ class TcpNodeProxy(Node):
             Raised when the timeout float value expires.
         """
         actor_info = self._osl_server.get_actor_info(uid=self.__uid)
-        actor_type = NodeType.from_str(actor_info["type"])
-        if isinstance(actor_type, str):
-            self._logger.warning(f"Node type ``{actor_type}`` is not fully supported.")
-        return actor_type
+        return self.__class__._create_nodetype_from_str(string=actor_info["type"])
 
     def set_property(self, name: str, value: Any) -> None:
         """Set node's property.
@@ -580,7 +574,7 @@ class TcpNodeProxy(Node):
         for node in properties_dicts_list:
             kind = node["kind"]
             uid = node["uid"]
-            type_ = node["type"]
+            type_ = self.__class__._create_nodetype_from_str(node["type"])
             if kind == "actor":
                 nodes_list.append(
                     TcpNodeProxy(
@@ -750,6 +744,45 @@ class TcpNodeProxy(Node):
                     continue
             filtered_connections.append(connection)
         return tuple(filtered_connections)
+
+    @staticmethod
+    def _create_nodetype_from_str(string: str) -> NodeType:
+        """Create instance of ``NodeType`` from optiSLang server output.
+
+        Parameters
+        ----------
+        string : str
+            Actor type in optiSLang server output format.
+
+        Returns
+        -------
+        NodeType
+            Instance of ``NodeType`` class.
+        """
+        customs = {
+            "AlgorithmSystem_": AddinType.PYTHON_BASED_ALGORITHM_PLUGIN,
+            "AlgorithmSystemPlugin_": AddinType.ALGORITHM_PLUGIN,
+            "Custom_": AddinType.PYTHON_BASED_NODE_PLUGIN,
+            "CustomETKIntegration_": "",  # TODO: append addin type
+            "CustomIntegration_": AddinType.PYTHON_BASED_INTEGRATION_PLUGIN,
+            "CustomMop_": AddinType.PYTHON_BASED_MOP_NODE_PLUGIN,
+            "IntegrationPlugin_": AddinType.INTEGRATION_PLUGIN,
+        }
+        if string in customs.keys():
+            id = string[:-1]
+            subtype = AddinType.BUILT_IN
+        else:
+            was_found = False
+            for custom in customs.keys():
+                if string.startswith(custom):
+                    id = string.replace(custom, "")
+                    subtype = customs[custom]
+                    was_found = True
+                    break
+            if not was_found:
+                id = string
+                subtype = AddinType.BUILT_IN
+        return NodeType(id=id, subtype=subtype)
 
     @staticmethod
     def _find_ancestor_line(
@@ -967,7 +1000,7 @@ class TcpSystemProxy(TcpNodeProxy, System):
         self,
         uid: str,
         osl_server: TcpOslServer,
-        type_: Union[NodeType, str],
+        type_: NodeType,
         logger=None,
     ) -> None:
         """Create an ``TcpSystemProxy`` instance.
@@ -978,8 +1011,8 @@ class TcpSystemProxy(TcpNodeProxy, System):
             Unique ID.
         osl_server: TcpOslServer
             Object providing access to the optiSLang server.
-        type_: Union[NodeType, str]
-            Instance of the ``NodeType`` class for supported nodes, ``string`` otherwise.
+        type_: NodeType
+            Instance of the ``NodeType`` class.
         logger: Any, optional
             Object for logging. If ``None``, standard logging object is used. Defaults to ``None``.
         """
@@ -992,60 +1025,52 @@ class TcpSystemProxy(TcpNodeProxy, System):
 
     def create_node(
         self,
-        type_: Union[NodeType, str],
+        type_: NodeType,
         name: Union[str, None] = None,
         design_flow: Union[DesignFlow, None] = None,
-        algorithm_type: Union[str, None] = None,
-        integration_type: Union[str, None] = None,
-        mop_node_type: Union[str, None] = None,
-        node_type: Union[str, None] = None,
     ) -> TcpNodeProxy:
         """Create a new node in current system in active project.
 
         Parameters
         ----------
-        type_ : Union[NodeType, str]
+        type_ : NodeType
             Type of created node.
         name : Union[str, None], optional
             Name of created node, by default None.
         design_flow : Union[DesignFlow, None], optional
             Design flow, by default None.
-        algorithm_type : Union[str, None], optional
-            Algorithm type, e. g. 'algorithm_plugin'.
-            Ignored when ``type(type_) == NodeType``, by default None.
-        integration_type : Union[str, None], optional
-            Integration type, e. g. 'integration_plugin'.
-            Ignored when ``type(type_) == NodeType``, by default None.
-        mop_node_type : Union[str, None], optional
-            MOP node type, e. g. 'python_based_mop_node_plugin'.
-            Ignored when ``type(type_) == NodeType``, by default None.
-        node_type: Union[str, None], optional
-            Node type, e. g. 'python_based_node_plugin'.
-            Ignored when ``type(type_) == NodeType``, by default None.
 
         Returns
         -------
         TcpNodeProxy
             Instance of the created node.
+
+        Raises
+        ------
+        TypeError
+            Raised when unsupported type of type_ is given.
+        ValueError
+            Raised when unsupported value of type_ is given.
         """
         # TODO: test
-        if isinstance(type_, NodeType):
-            if type_ == NodeType.RunnableSystem:
-                raise ValueError(
-                    "Creation of RootSystem (NodeType.RunnableSystem) is not supported."
-                )
-            algorithm_type, integration_type, mop_node_type, node_type = NodeType.get_subtype(
-                type_.value
-            )
-            type_ = type_.to_str()
-        elif not isinstance(type_, str):
+        if not isinstance(type_, NodeType):
             raise TypeError(
                 f"Invalid type of ``type_: {type(type_)}``, "
                 "``NodeType`` or ``str`` was expected."
             )
+        if type_.id == "RunnableSystem":
+            raise ValueError("Creation of RootSystem is not supported.")
+
+        (
+            algorithm_type,
+            integration_type,
+            mop_node_type,
+            node_type,
+        ) = self.__class__._get_subtypes(addin_type=type_.subtype)
+
         design_flow_name = design_flow.name.lower() if design_flow is not None else None
         uid = self._osl_server.create_node(
-            type_=type_,
+            type_=type_.id,
             name=name,
             algorithm_type=algorithm_type,
             integration_type=integration_type,
@@ -1056,7 +1081,7 @@ class TcpSystemProxy(TcpNodeProxy, System):
         )
         info = self._osl_server.get_actor_info(uid=uid)
         info["is_parametric_system"] = "estimated_designs" in info.keys()
-        return self._create_nodes_from_properties_dicts([info])
+        return self._create_nodes_from_properties_dicts([info])[0]
 
     def delete_children_nodes(self) -> None:
         """Delete all children nodes from the active project.
@@ -1266,6 +1291,45 @@ class TcpSystemProxy(TcpNodeProxy, System):
             if node["kind"] == "system":
                 __class__._find_subtree(tree=node, uid=uid)
 
+    @staticmethod
+    def _get_subtypes(
+        addin_type: AddinType,
+    ) -> Tuple[Union[str, None], Union[str, None], Union[str, None], Union[str, None]]:
+        """Get subtypes in tcp server input format.
+
+        Parameters
+        ----------
+        addin_type: AddinType
+            Node's subtype.
+
+        Returns
+        -------
+        Tuple[Union[str, None], Union[str, None], Union[str, None], Union[str, None]]
+            algorithm_type, integration_type, mop_node_type, node_type
+        """
+        if not isinstance(addin_type, AddinType):
+            raise TypeError(f"Unsupported value of addin_type: ``{type(addin_type)}``.")
+
+        algorithm_type, integration_type, mop_node_type, node_type = None, None, None, None
+        if addin_type == AddinType.BUILT_IN:
+            pass
+        elif addin_type == AddinType.INTEGRATION_PLUGIN:
+            integration_type = "integration_plugin"
+        elif addin_type == AddinType.PYTHON_BASED_INTEGRATION_PLUGIN:
+            integration_type = "python_based_integration_plugin"
+        elif addin_type == AddinType.PYTHON_BASED_ALGORITHM_PLUGIN:
+            algorithm_type = "python_based_algorithm_plugin"
+        elif addin_type == AddinType.ALGORITHM_PLUGIN:
+            algorithm_type = "algorithm_plugin"
+        elif addin_type == AddinType.PYTHON_BASED_MOP_NODE_PLUGIN:
+            mop_node_type = "python_based_mop_node_plugin"
+        elif addin_type == AddinType.PYTHON_BASED_NODE_PLUGIN:
+            node_type = "python_based_node_plugin"
+        else:
+            raise ValueError(f"Unsupported value of addin_type: ``{addin_type}``.")
+
+        return algorithm_type, integration_type, mop_node_type, node_type
+
 
 class TcpParametricSystemProxy(TcpSystemProxy, ParametricSystem):
     """Provides for creating and operationg on parametric system."""
@@ -1274,7 +1338,7 @@ class TcpParametricSystemProxy(TcpSystemProxy, ParametricSystem):
         self,
         uid: str,
         osl_server: TcpOslServer,
-        type_: Union[NodeType, str],
+        type_: NodeType,
         logger=None,
     ) -> None:
         """Create a parametric system.
@@ -1285,8 +1349,8 @@ class TcpParametricSystemProxy(TcpSystemProxy, ParametricSystem):
             Unique ID.
         osl_server: TcpOslServer
             Object providing access to the optiSLang server.
-        type_: Union[NodeType, str]
-            Instance of the ``NodeType`` class for supported nodes, ``string`` otherwise.
+        type_: NodeType
+            Instance of the ``NodeType`` class.
         logger: Any, optional
             Object for logging. If ``None``, standard logging object is used. Defaults to ``None``.
         """
@@ -1357,7 +1421,7 @@ class TcpRootSystemProxy(TcpParametricSystemProxy, RootSystem):
         super().__init__(
             uid=uid,
             osl_server=osl_server,
-            type_=NodeType.RunnableSystem,
+            type_=NodeType(id="RunnableSystem", subtype=AddinType.BUILT_IN),
             logger=logger,
         )
 

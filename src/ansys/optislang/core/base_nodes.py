@@ -9,6 +9,7 @@ from ansys.optislang.core.utils import enum_from_str
 
 if TYPE_CHECKING:
     from ansys.optislang.core.managers import CriteriaManager, ParameterManager, ResponseManager
+    from ansys.optislang.core.node_types import NodeType
     from ansys.optislang.core.osl_server import OslServer
     from ansys.optislang.core.project_parametric import Design
 
@@ -43,312 +44,6 @@ class DesignFlow(Enum):
             Raised when an invalid value of ``string`` is given.
         """
         return enum_from_str(string=string.upper(), enum_class=__class__, replace=(" ", "_"))
-
-
-class NodeType(Enum):
-    """Provides node type options.
-
-    Builtin nodes: 0-999
-    Integration plugins: 1000-1999
-    Python based algorithm plugins: 2000-2999
-    Python based integration plugins: 3000-3999
-    Python based MOP node plugins: 4000-4999
-    Python based node plugins: 5000-5999
-    Algorithm plugins: 6000-6999
-    """
-
-    # TODO: test
-    # built-in nodes 0-999
-    ProEParameterize = 0
-    ParameterSet = 1
-    Mopsolver = 2
-    BashScript = 3
-    Sum = 4
-    ProEProcess = 5
-    Compare = 6
-    ETKAsciiOutput = 7
-    Calculator = 8
-    Variable = 9
-    SIMPLEX = 10
-    AnsysAPDLParameterize = 11
-    Parameterize = 12
-    CatiaParameterize = 13
-    VCollabProcess = 14
-    Mathcad = 15
-    PSO = 16
-    LSDynaParameterize = 17
-    MultiplasParameterize = 18
-    TaggedParametersParameterize = 19
-    Monitoring = 20
-    Stringlist = 21
-    PMOPPostprocessing = 22
-    VariantMonitoring = 23
-    Postprocessing = 24
-    String = 25
-    Path = 26
-    ETKAbaqus = 27
-    ScriptFile = 28
-    Matlab = 29
-    CFturboInput = 30
-    AMOP = 31
-    Sensitivity = 32
-    Robustness = 33
-    Excel = 34
-    Parameter = 35
-    Mop = 36
-    SDI = 37
-    PMop = 38
-    PMopsolver = 39
-    ETKComplete = 40
-    ETKAnsys = 41
-    EA = 42
-    ReliabilityFORM = 43
-    NOA2 = 44
-    PythonScript = 45
-    NLPQLP = 46
-    ARSM = 47
-    Memetic = 48
-    OOCalc = 49
-    ETKAdams = 50
-    ETKMadymo = 51
-    ETKEdyson = 52
-    Designexport = 53
-    ETKMidas = 54
-    SoSPostprocessing = 55
-    Octave = 56
-    Objectives = 57
-    Constraints = 58
-    Variables = 59
-    CalculatorSet = 60
-    AnsysWorkbench = 61
-    Criteria = 62
-    Process = 63
-    AbaqusProcess = 64
-    CatiaProcess = 65
-    AppendDesignsToBinFile = 66
-    BatchScript = 67
-    PerlScript = 68
-    SolverTemplate = 69
-    ParametricSystem = 70
-    SimulationX = 71
-    DesignExport = 72
-    DPS = 73
-    DesignImport = 74
-    MergeDesigns = 75
-    Wait = 76
-    While = 77
-    File = 78
-    Reevaluate = 79
-    FloEFDInput = 80
-    DataExport = 81
-    ReliabilityMC = 82
-    ReliabilityAS = 83
-    ReliabilityDS = 84
-    ReliabilityARSM = 85
-    ReliabilityAsym = 86
-    ReliabilityISPUD = 87
-    DataImport = 88
-    ASCMOsolver = 89
-    IntegrationPlugin = 90
-    AlgorithmSystemPlugin = 91
-    TurboOptInput = 92
-    PDM = 93
-    PDMReceive = 94
-    PDMSend = 95
-    Python2 = 96
-    SoSGenerate = 97
-    DataMining = 98
-    AmesimInput = 99
-    SimPackInput = 100
-    CetolInput = 101
-    ETKAMESim = 102
-    Custom = 103
-    ETKLSDYNA = 104
-    ETKFloEFD = 105
-    ETKCFturbo = 106
-    ETKSimPack = 107
-    ETKTurboOpt = 108
-    ETKExtOut = 109
-    ETKCetol = 110
-    CustomIntegration = 111
-    CustomAlgorithm = 112
-    CustomETKIntegration = 113
-    CustomMop = 114
-    RunnableSystem = 115
-
-    # integration plugins 1000-1999
-    awb2_plugin = 1000
-    discovery_plugin = 1001
-    lsdyna_plugin = 1002
-    optislang_node = 1003
-    spaceclaim_plugin = 1004
-    speos_plugin = 1005
-
-    # python based algorithm plugins 2000-2999
-    BASS = 2000
-    DXAMO = 2001
-    DXASO = 2002
-    DXMISQP = 2003
-    DXUPEGO = 2004
-    GLAD = 2005
-    OCO = 2006
-    PIBO = 2007
-    Replace_constant_parameter = 2008
-    Unigene_EA = 2009
-    while_loop = 2010
-
-    # python based integration plugins 3000-3999
-    AEDT2 = 3000
-    AEDT2_lsdso = 3001
-    ANSA_input = 3002
-    ANSA_output = 3003
-    AmplitudesFromField_SoS = 3004
-    AxSTREAM = 3005
-    CAD_CATIA = 3006
-    CAD_Creo = 3007
-    CAD_Inventor = 3008
-    CAD_NX = 3009
-    CAESES_input = 3010
-    CFX_Partitioner = 3011  # `-` symbol was replaced for `_`
-    CFX_Partitioner_v3 = 3012  # `-` symbol was replaced for `_`
-    CFX_Pre = 3013  # `-` symbol was replaced for `_`
-    CFX_Pre_v3 = 3014  # `-` symbol was replaced for `_`
-    CFX_Solver = 3015  # `-` symbol was replaced for `_`
-    CFX_Solver_v3 = 3016  # `-` symbol was replaced for `_`
-    CFturbo_input = 3017
-    COMSOL2 = 3018
-    COMSOL_input = 3019
-    COMSOL_output = 3020
-    Convert_OMDB_to_BIN_SoS = 3021
-    DPF = 3022
-    ETK_nD = 3023
-    FMU_SoS = 3024
-    Field_Data_Collector = 3025
-    Field_MOP_2D_Nested_DOE_SoS = 3026
-    Field_MOP_ANSYSMECH_SoS = 3027
-    FloEFD_input = 3028
-    FloEFD_output = 3029
-    Fluent = 3030
-    Fluent_mesher = 3031
-    Fluent_solver = 3032
-    Flux_input = 3033
-    GTSUITE_input = 3034
-    GTSUITE_output = 3035
-    Generate_SoS = 3036
-    GeoDict_input = 3037
-    GeoDict_output = 3038
-    IPG_Automotive = 3039
-    JMAG_Designer_input = 3040
-    JMAG_Designer_output = 3041
-    JMAG_Designer_solve = 3042
-    JSON_input = 3043
-    JSON_output = 3044
-    KULI = 3045
-    Lumerical = 3046
-    META_output = 3047
-    Matlab_mat_input = 3048
-    Matlab_mat_output = 3049
-    ModelCenter = 3050
-    MotorCAD_input = 3051
-    MotorCAD_output = 3052
-    MotorCAD_solve = 3053
-    NASTRAN = 3054
-    OpticStudio = 3055
-    PuTTY_SSH = 3056
-    ROCKY_input = 3057
-    ROCKY_output = 3058
-    SPEOSCore = 3059
-    SPEOS_Report_Reader = 3060
-    SimulationX_SXOA = 3061
-    Viewer_SoS = 3062
-    VirtualLab_input = 3063
-    VirtualLab_output = 3064
-    ZEMAX = 3065
-    ZEMAX_input = 3066
-    ZEMAX_output = 3067
-    ZEMAX_solve = 3068
-    optislang_omdb = 3069
-
-    # python based MOP node plugins 4000-4999
-    MOP = 4000
-
-    # python based node plugins 5000-5999
-
-    # algorithm plugins 6000-6999
-
-    @staticmethod
-    def from_str(string: str) -> Union[NodeType, str]:
-        """Convert string to an instance of the ``NodeType`` class.
-
-        Parameters
-        ----------
-        string: str
-            String to be converted.
-
-        Returns
-        -------
-        Union[NodeType, str]
-            Instance of the ``NodeType`` class for supported nodes, ``string`` otherwise.
-
-        Raises
-        ------
-        TypeError
-            Raised when an invalid type of ``string`` is given.
-        """
-        return enum_from_str(string=string, enum_class=__class__, replace=("-", "_"))
-
-    @staticmethod
-    def get_subtype(
-        node_type_value: int,
-    ) -> Tuple[Union[str, None], Union[str, None], Union[str, None], Union[str, None]]:
-        """Get node subtype from type.
-
-        Parameters
-        ----------
-        type_ : int
-            Value of NodeType enumeration item.
-
-        Returns
-        -------
-        Tuple[Union[str, None], Union[str, None], Union[str, None], Union[str, None]]
-            algorithm_type, integration_type, mop_node_type, node_type
-        """
-        algorithm_type, integration_type, mop_node_type, node_type = None, None, None, None
-        if node_type_value < 1000:
-            pass
-        elif 1000 <= node_type_value < 2000:
-            integration_type = "integration_plugin"
-        elif 2000 <= node_type_value < 3000:
-            algorithm_type = "python_based_algorithm_plugin"
-        elif 3000 <= node_type_value < 4000:
-            integration_type = "python_based_integration_plugin"
-        elif 4000 <= node_type_value < 5000:
-            mop_node_type = "python_based_mop_node_plugin"
-        elif 5000 <= node_type_value < 6000:
-            node_type = "python_based_node_plugin"
-        elif 6000 <= node_type_value < 7000:
-            algorithm_type = "algorithm_plugin"
-        else:
-            raise ValueError(
-                f"Unsupported value of node_type_value: ``{node_type_value}``."
-                "Integer in range <0, 7000) was expected."
-            )
-
-        return algorithm_type, integration_type, mop_node_type, node_type
-
-    def to_str(self) -> str:
-        """Convert enumeration item to string..
-
-        Returns
-        -------
-        str
-            Item converted to str.
-        """
-        # fix name of cfx items
-        if 3011 <= self.value <= 3016:
-            return self.name.replace("_", "-")
-        else:
-            return self.name
 
 
 class SlotType(Enum):
@@ -434,13 +129,13 @@ class Node(ABC):
 
     @property
     @abstractmethod
-    def type(self) -> Union[NodeType, str]:  # pragma: no cover
+    def type(self) -> NodeType:  # pragma: no cover
         """Type of the node.
 
         Returns
         -------
-        Union[NodeType, str]
-            Instance of the ``NodeType`` class for supported nodes, ``string`` otherwise.
+        NodeType
+            Instance of the ``NodeType`` class.
         """
         pass
 
@@ -696,42 +391,34 @@ class System(Node):
     @abstractmethod
     def create_node(
         self,
-        type_: Union[NodeType, str],
+        type_: NodeType,
         name: Union[str, None] = None,
         design_flow: Union[DesignFlow, None] = None,
-        algorithm_type: Union[str, None] = None,
-        integration_type: Union[str, None] = None,
-        mop_node_type: Union[str, None] = None,
-        node_type: Union[str, None] = None,
     ) -> Node:  # pragma: no cover
         """Create a new node in current system in active project.
 
         Parameters
         ----------
-        type_ : Union[NodeType, str]
+        type_ : NodeType
             Type of created node.
         name : Union[str, None], optional
             Name of created node, by default None.
         design_flow : Union[DesignFlow, None], optional
             Design flow, by default None.
-        algorithm_type : Union[str, None], optional
-            Algorithm type, e. g. 'algorithm_plugin'.
-            Ignored when ``type(type_) == NodeType``, by default None.
-        integration_type : Union[str, None], optional
-            Integration type, e. g. 'integration_plugin'.
-            Ignored when ``type(type_) == NodeType``, by default None.
-        mop_node_type : Union[str, None], optional
-            MOP node type, e. g. 'python_based_mop_node_plugin'.
-            Ignored when ``type(type_) == NodeType``, by default None.
-        node_type: Union[str, None], optional
-            Node type, e. g. 'python_based_node_plugin'.
-            Ignored when ``type(type_) == NodeType``, by default None.
 
         Returns
         -------
-        Node
+        TcpNodeProxy
             Instance of the created node.
+
+        Raises
+        ------
+        TypeError
+            Raised when unsupported type of type_ is given.
+        ValueError
+            Raised when unsupported value of type_ is given.
         """
+        pass
 
     @abstractmethod
     def delete_children_nodes(self) -> None:  # pragma: no cover
