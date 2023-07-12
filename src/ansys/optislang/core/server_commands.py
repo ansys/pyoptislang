@@ -790,15 +790,11 @@ def restart(actor_uid: str = None, hid: str = None, password: str = None) -> str
     )
 
 
-def resume(actor_uid: str = None, hid: str = None, password: str = None) -> str:
+def resume(password: str = None) -> str:
     """Generate JSON string of ``resume`` command.
 
     Parameters
     ----------
-    actor_uid: str, opt
-        Actor uid entry.
-    hid: str, opt
-        Hid entry.
     password : str, opt
         Password.
 
@@ -807,9 +803,7 @@ def resume(actor_uid: str = None, hid: str = None, password: str = None) -> str:
     str
         JSON string of ``resume`` command.
     """
-    return _to_json(
-        _gen_server_command(command=_RESUME, actor_uid=actor_uid, hid=hid, password=password)
-    )
+    return _to_json(_gen_server_command(command=_RESUME, password=password))
 
 
 def run_python_script(
