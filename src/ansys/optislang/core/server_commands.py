@@ -768,11 +768,15 @@ def reset(actor_uid: str = None, hid: str = None, password: str = None) -> str:
     )
 
 
-def restart(password: str = None) -> str:
+def restart(actor_uid: str = None, hid: str = None, password: str = None) -> str:
     """Generate JSON string of ``restart`` command.
 
     Parameters
     ----------
+    actor_uid: str, opt
+        Actor uid entry.
+    hid: str, opt
+        Hid entry.
     password : str, opt
         Password.
 
@@ -781,7 +785,9 @@ def restart(password: str = None) -> str:
     str
         JSON string of ``restart`` command.
     """
-    return _to_json(_gen_server_command(command=_RESTART, password=password))
+    return _to_json(
+        _gen_server_command(command=_RESTART, actor_uid=actor_uid, hid=hid, password=password)
+    )
 
 
 def resume(password: str = None) -> str:
@@ -1282,11 +1288,15 @@ def shutdown_when_finished(password: str = None) -> str:
     return _to_json(_gen_server_command(command=_SHUTDOWN_WHEN_FINISHED, password=password))
 
 
-def start(password: str = None) -> str:
+def start(actor_uid: str = None, hid: str = None, password: str = None) -> str:
     """Generate JSON string of ``start`` command.
 
     Parameters
     ----------
+    actor_uid: str, opt
+        Actor uid entry.
+    hid: str, opt
+        Hid entry.
     password : str, opt
         Password.
 
@@ -1295,14 +1305,20 @@ def start(password: str = None) -> str:
     str
         JSON string of ``start`` command.
     """
-    return _to_json(_gen_server_command(command=_START, password=password))
+    return _to_json(
+        _gen_server_command(command=_START, actor_uid=actor_uid, hid=hid, password=password)
+    )
 
 
-def stop(password: str = None) -> str:
+def stop(actor_uid: str = None, hid: str = None, password: str = None) -> str:
     """Generate JSON string of ``stop`` command.
 
     Parameters
     ----------
+    actor_uid: str, opt
+        Actor uid entry.
+    hid: str, opt
+        Hid entry.
     password : str, opt
         Password.
 
@@ -1311,14 +1327,20 @@ def stop(password: str = None) -> str:
     str
         JSON string of ``stop`` command.
     """
-    return _to_json(_gen_server_command(command=_STOP, password=password))
+    return _to_json(
+        _gen_server_command(command=_STOP, actor_uid=actor_uid, hid=hid, password=password)
+    )
 
 
-def stop_gently(password: str = None) -> str:
+def stop_gently(actor_uid: str = None, hid: str = None, password: str = None) -> str:
     """Generate JSON string of ``stop_gently`` command.
 
     Parameters
     ----------
+    actor_uid: str, opt
+        Actor uid entry.
+    hid: str, opt
+        Hid entry.
     password : str, opt
         Password.
 
@@ -1327,7 +1349,9 @@ def stop_gently(password: str = None) -> str:
     str
         JSON string of ``stop_gently`` command.
     """
-    return _to_json(_gen_server_command(command=_STOP_GENTLY, password=password))
+    return _to_json(
+        _gen_server_command(command=_STOP_GENTLY, actor_uid=actor_uid, hid=hid, password=password)
+    )
 
 
 def subscribe_for_push_notifications(
