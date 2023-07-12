@@ -1332,11 +1332,15 @@ def stop(actor_uid: str = None, hid: str = None, password: str = None) -> str:
     )
 
 
-def stop_gently(password: str = None) -> str:
+def stop_gently(actor_uid: str = None, hid: str = None, password: str = None) -> str:
     """Generate JSON string of ``stop_gently`` command.
 
     Parameters
     ----------
+    actor_uid: str, opt
+        Actor uid entry.
+    hid: str, opt
+        Hid entry.
     password : str, opt
         Password.
 
@@ -1345,7 +1349,9 @@ def stop_gently(password: str = None) -> str:
     str
         JSON string of ``stop_gently`` command.
     """
-    return _to_json(_gen_server_command(command=_STOP_GENTLY, password=password))
+    return _to_json(
+        _gen_server_command(command=_STOP_GENTLY, actor_uid=actor_uid, hid=hid, password=password)
+    )
 
 
 def subscribe_for_push_notifications(
