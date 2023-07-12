@@ -785,7 +785,9 @@ def restart(actor_uid: str = None, hid: str = None, password: str = None) -> str
     str
         JSON string of ``restart`` command.
     """
-    return _to_json(_gen_server_command(command=_RESTART, actor_uid=actor_uid, hid=hid, password=password))
+    return _to_json(
+        _gen_server_command(command=_RESTART, actor_uid=actor_uid, hid=hid, password=password)
+    )
 
 
 def resume(actor_uid: str = None, hid: str = None, password: str = None) -> str:
@@ -805,7 +807,9 @@ def resume(actor_uid: str = None, hid: str = None, password: str = None) -> str:
     str
         JSON string of ``resume`` command.
     """
-    return _to_json(_gen_server_command(command=_RESUME, actor_uid=actor_uid, hid=hid, password=password))
+    return _to_json(
+        _gen_server_command(command=_RESUME, actor_uid=actor_uid, hid=hid, password=password)
+    )
 
 
 def run_python_script(
@@ -1307,7 +1311,9 @@ def start(actor_uid: str = None, hid: str = None, password: str = None) -> str:
     str
         JSON string of ``start`` command.
     """
-    return _to_json(_gen_server_command(command=_START, actor_uid=actor_uid, hid=hid, password=password))
+    return _to_json(
+        _gen_server_command(command=_START, actor_uid=actor_uid, hid=hid, password=password)
+    )
 
 
 def stop(actor_uid: str = None, hid: str = None, password: str = None) -> str:
@@ -1327,7 +1333,9 @@ def stop(actor_uid: str = None, hid: str = None, password: str = None) -> str:
     str
         JSON string of ``stop`` command.
     """
-    return _to_json(_gen_server_command(command=_STOP, actor_uid=actor_uid, hid=hid, password=password))
+    return _to_json(
+        _gen_server_command(command=_STOP, actor_uid=actor_uid, hid=hid, password=password)
+    )
 
 
 def stop_gently(password: str = None) -> str:
