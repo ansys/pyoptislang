@@ -21,8 +21,17 @@ def optislang(scope="function", autouse=False) -> Optislang:
         Connects to the optiSLang application and provides an API to control it.
     """
     osl = Optislang(project_path=parametric_project)
-    osl.set_timeout(20)
+    osl.timeout = 20
     return osl
+
+
+def test_delete(optislang: Optislang):
+    """Test `delete` method."""
+    project = optislang.project
+    root_system = project.root_system
+    with pytest.raises(NotImplementedError):
+        root_system.delete()
+    optislang.dispose()
 
 
 def test_get_reference_design(optislang: Optislang):

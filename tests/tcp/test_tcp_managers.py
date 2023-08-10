@@ -17,7 +17,7 @@ def optislang(scope="function", autouse=False) -> Optislang:
         Connects to the optiSLang application and provides an API to control it.
     """
     osl = Optislang(project_path=parametric_project)
-    osl.set_timeout(20)
+    osl.timeout = 20
     return osl
 
 

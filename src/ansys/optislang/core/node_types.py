@@ -7,7 +7,6 @@ from enum import Enum
 from ansys.optislang.core.utils import enum_from_str
 
 
-# TODO: test
 class AddinType(Enum):
     """Provides ``AddinType`` options."""
 
@@ -40,10 +39,9 @@ class AddinType(Enum):
         ValueError
             Raised when an invalid value of ``string`` is given.
         """
-        return enum_from_str(string=string.upper(), enum_class=__class__, replace=(" ", "_"))
+        return enum_from_str(string=string, enum_class=__class__, replace=(" ", "_"))
 
 
-# TODO: test
 class NodeType:
     """Class containing information about node type."""
 
@@ -63,6 +61,27 @@ class NodeType:
     def __str__(self):
         """Return formatted string."""
         return f"type: {self.id}, subtype: {self.subtype}"
+
+    def __eq__(self, other: NodeType) -> bool:
+        """Compare properties of two instances of the ``NodeType`` class.
+
+        Parameters
+        ----------
+        other: NodeType
+            Criterion for comparison.
+
+        Returns
+        -------
+        bool
+            ``True`` if all properties match; ``False`` otherwise.
+        """
+        if type(self) == type(other):
+            checks = {}
+            checks["id"] = self.id == other.id
+            checks["subtype"] = self.subtype == other.subtype
+            return False not in checks.values()
+        else:
+            return False
 
     @property
     def id(self) -> str:

@@ -39,7 +39,7 @@ class CriterionType(Enum):
         ValueError
             Raised when the value for the ``string`` is invalid.
         """
-        return enum_from_str(string=string.upper(), enum_class=__class__, replace=(" ", "_"))
+        return enum_from_str(string=string, enum_class=__class__, replace=(" ", "_"))
 
 
 class ComparisonType(Enum):
@@ -75,7 +75,7 @@ class ComparisonType(Enum):
         ValueError
             Raised when the value for the ``string`` is invalid.
         """
-        return enum_from_str(string=string.upper(), enum_class=__class__)
+        return enum_from_str(string=string, enum_class=__class__)
 
 
 class CriterionValueType(Enum):
@@ -110,7 +110,7 @@ class CriterionValueType(Enum):
         ValueError
             Raised when the value for the ``string`` is invalid.
         """
-        return enum_from_str(string=string.upper(), enum_class=__class__)
+        return enum_from_str(string=string, enum_class=__class__)
 
 
 class DesignStatus(Enum):
@@ -143,7 +143,7 @@ class DesignStatus(Enum):
         ValueError
             Raised when the value for the ``string`` is invalid.
         """
-        return enum_from_str(string=string.upper(), enum_class=__class__, replace=(" ", "_"))
+        return enum_from_str(string=string, enum_class=__class__, replace=(" ", "_"))
 
 
 class DistributionType(Enum):
@@ -217,7 +217,7 @@ class DistributionType(Enum):
         ValueError
             Raised when invalid value of ``string`` was given.
         """
-        return enum_from_str(string=string.upper(), enum_class=__class__, replace=(" ", "_"))
+        return enum_from_str(string=string, enum_class=__class__, replace=(" ", "_"))
 
 
 class ParameterResolution(Enum):
@@ -255,7 +255,7 @@ class ParameterResolution(Enum):
         ValueError
             Raised when invalid value of ``string`` was given.
         """
-        return enum_from_str(string=string.upper(), enum_class=__class__, replace=(" ", "_"))
+        return enum_from_str(string=string, enum_class=__class__, replace=(" ", "_"))
 
 
 class ParameterType(Enum):
@@ -287,7 +287,7 @@ class ParameterType(Enum):
         ValueError
             Raised when invalid value of ``string`` was given.
         """
-        return enum_from_str(string=string.upper(), enum_class=__class__)
+        return enum_from_str(string=string, enum_class=__class__)
 
 
 class ParameterValueType(Enum):
@@ -321,7 +321,7 @@ class ParameterValueType(Enum):
         ValueError
             Raised when invalid value of ``string`` was given.
         """
-        return enum_from_str(string=string.upper(), enum_class=__class__)
+        return enum_from_str(string=string, enum_class=__class__)
 
 
 class ResponseValueType(Enum):
@@ -355,7 +355,7 @@ class ResponseValueType(Enum):
         ValueError
             Raised when invalid value of ``string`` was given.
         """
-        return enum_from_str(string=string.upper(), enum_class=__class__)
+        return enum_from_str(string=string, enum_class=__class__)
 
 
 # CLASSES:

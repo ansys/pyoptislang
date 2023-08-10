@@ -1052,8 +1052,9 @@ class TcpOslServer(OslServer):
             self.__listeners["main"] = listener
             self.__start_listeners_registration_thread()
 
-        osl_version = self.get_osl_version()
-        osl_version_string = self.get_osl_version_string()
+        # osl version
+        osl_version_string = self.get_server_info()["application"]["version"]
+        osl_version = self.__class__.__osl_version_string_to_int(version=osl_version_string)
 
         if osl_version[0] is not None:
             if osl_version[0] < 23:
@@ -1220,7 +1221,6 @@ class TcpOslServer(OslServer):
         TimeoutError
             Raised when the timeout float value expires.
         """
-        # TODO: test
         output: List[dict] = self.send_command(
             commands.create_node(
                 type_=type_,
@@ -2062,7 +2062,6 @@ class TcpOslServer(OslServer):
         TimeoutError
             Raised when the timeout float value expires.
         """
-        # TODO: test
         self.send_command(commands.remove_node(actor_uid=actor_uid, password=self.__password))
 
     def reset(self):
@@ -2234,6 +2233,67 @@ class TcpOslServer(OslServer):
         self.__validate_path(file_path=file_path)
         self.send_command(commands.save_copy(str(file_path.as_posix()), self.__password))
 
+    def send_command(self, command: str) -> Dict:
+        """Send command or query to the optiSLang server.
+
+        Parameters
+        ----------
+        command : str
+            Command or query to be executed on optiSLang server.
+
+        Returns
+        -------
+        Dict
+            Response from the server.
+
+        Raises
+        ------
+        RuntimeError
+            Raised when the optiSLang server is not started.
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout expires.
+        """
+        if self.__disposed:
+            raise OslDisposedError("Cannot send command, instance was already disposed.")
+        if self.__host is None or self.__port is None:
+            raise RuntimeError("optiSLang server is not started.")
+
+        start_time = time.time()
+        self._logger.debug("Sending command or query to the server: %s", command)
+        client = TcpClient(logger=self._logger)
+        try:
+            client.connect(
+                self.__host, self.__port, timeout=_get_current_timeout(self.__timeout, start_time)
+            )
+            client.send_msg(command, timeout=_get_current_timeout(self.__timeout, start_time))
+            response_str = client.receive_msg(
+                timeout=_get_current_timeout(self.__timeout, start_time)
+            )
+
+        except TimeoutError as ex:
+            raise
+        except Exception as ex:
+            raise OslCommunicationError(
+                "An error occurred while communicating with the optiSLang server."
+            ) from ex
+        finally:
+            client.disconnect()
+
+        self._logger.debug("Response received: %s", response_str)
+        response = json.loads(response_str)
+
+        if isinstance(response, list):
+            for resp_elem in response:
+                self.__class__.__check_command_response(resp_elem)
+        else:
+            self.__class__.__check_command_response(response)
+
+        return response
+
     def set_actor_property(self, actor_uid: str, name: str, value: Any) -> None:
         """Set an actor property.
 
@@ -2323,24 +2383,6 @@ class TcpOslServer(OslServer):
         # If desired actively force osl process to terminate
         if force and self.__osl_process is not None:
             self._force_shutdown_local_process()
-
-    def _force_shutdown_local_process(self):
-        """Force shutdown local optiSLang server process.
-
-        It waits a while and then terminates the process.
-        """
-        start_time = datetime.now()
-        while (
-            self.__osl_process.is_running()
-            and (datetime.now() - start_time).seconds < self.__class__._SHUTDOWN_WAIT
-        ):
-            time.sleep(0.5)
-
-        if self.__osl_process.is_running():
-            self.__osl_process.terminate()
-        self.__osl_process = None
-        self.__host = None
-        self.__port = None
 
     def start(self, wait_for_started: bool = True, wait_for_finished: bool = True) -> None:
         """Start project execution.
@@ -2499,25 +2541,23 @@ class TcpOslServer(OslServer):
                 raise TimeoutError("Waiting for finished timed out.")
             self._logger.info(f"Successfully_finished: {successfully_finished}.")
 
-    def _unregister_listener(self, listener: TcpOslListener) -> None:
-        """Unregister a listener.
+    def _force_shutdown_local_process(self):
+        """Force shutdown local optiSLang server process.
 
-        Parameters
-        ----------
-        listener : TcpOslListener
-            Class with listener properties.
-
-        Raises
-        ------
-        OslCommunicationError
-            Raised when an error occurs while communicating with server.
-        OslCommandError
-            Raised when the command or query fails.
-        TimeoutError
-            Raised when the timeout float value expires.
+        It waits a while and then terminates the process.
         """
-        self.send_command(commands.unregister_listener(str(listener.uid), self.__password))
-        listener.uid = None
+        start_time = datetime.now()
+        while (
+            self.__osl_process.is_running()
+            and (datetime.now() - start_time).seconds < self.__class__._SHUTDOWN_WAIT
+        ):
+            time.sleep(0.5)
+
+        if self.__osl_process.is_running():
+            self.__osl_process.terminate()
+        self.__osl_process = None
+        self.__host = None
+        self.__port = None
 
     def _start_local(self, ini_timeout: float, shutdown_on_finished: bool) -> None:
         """Start local optiSLang server.
@@ -2604,10 +2644,32 @@ class TcpOslServer(OslServer):
         self.__listeners["main_listener"] = listener
         self.__start_listeners_registration_thread()
 
-    def __signal_handler(self, signum, frame):
-        self._logger.error("Interrupt from keyboard (CTRL + C), terminating execution.")
-        self.dispose()
-        raise KeyboardInterrupt
+    def _unregister_listener(self, listener: TcpOslListener) -> None:
+        """Unregister a listener.
+
+        Parameters
+        ----------
+        listener : TcpOslListener
+            Class with listener properties.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        self.send_command(commands.unregister_listener(str(listener.uid), self.__password))
+        listener.uid = None
+
+    def __cast_to_path(self, file_path: Union[str, Path]) -> Path:
+        """Cast path to Path."""
+        if isinstance(file_path, Path):
+            return file_path
+        else:
+            return Path(file_path)
 
     def __create_listener(self, timeout: float, name: str, uid: str = None) -> TcpOslListener:
         """Create new listener.
@@ -2735,23 +2797,41 @@ class TcpOslServer(OslServer):
         self.__listeners.pop("exec_finished_listener")
         del exec_finished_listener
 
-    def __start_listeners_registration_thread(self) -> None:
-        """Create new thread for refreshing of listeners registrations and start it."""
-        self.__listeners_registration_thread = threading.Thread(
-            target=self.__refresh_listeners_registration,
-            name="PyOptiSLang.ListenersRegistrationThread",
-            args=(),
-            daemon=True,
-        )
-        self.__refresh_listeners.set()
-        self.__listeners_registration_thread.start()
+    def __dispose_all_listeners(self) -> None:
+        """Dispose all listeners."""
+        for listener in self.__listeners.values():
+            listener.dispose()
+        self.__listeners = {}
 
-    def __stop_listeners_registration_thread(self) -> None:
-        """Stop listeners registration thread."""
-        if self.__listeners_registration_thread and self.__listeners_registration_thread.is_alive():
-            self.__refresh_listeners.clear()
-            self.__listeners_registration_thread.join()
-            self._logger.debug("Listener registration thread stopped.")
+    def __refresh_listeners_registration(self) -> None:  # pragma: no cover
+        """Refresh listeners registration.
+
+        Raises
+        ------
+        RuntimeError
+            Raised when the optiSLang server is not started.
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout expires.
+        """
+        check_for_refresh = 0.5
+        counter = 0
+        while self.__refresh_listeners.is_set():
+            if counter >= self.__listeners_refresh_interval:
+                for listener in self.__listeners.values():
+                    if listener.refresh_listener_registration:
+                        response = self.send_command(
+                            commands.refresh_listener_registration(
+                                uid=listener.uid, password=self.__password
+                            )
+                        )
+                counter = 0
+            counter += check_for_refresh
+            time.sleep(check_for_refresh)
+        self._logger.debug("Stop refreshing listener registration, self.__refresh = False")
 
     def __register_listener(
         self,
@@ -2806,35 +2886,28 @@ class TcpOslServer(OslServer):
         )
         return msg[0]["uid"]
 
-    def __refresh_listeners_registration(self) -> None:  # pragma: no cover
-        """Refresh listeners registration.
+    def __signal_handler(self, signum, frame):
+        self._logger.error("Interrupt from keyboard (CTRL + C), terminating execution.")
+        self.dispose()
+        raise KeyboardInterrupt
 
-        Raises
-        ------
-        RuntimeError
-            Raised when the optiSLang server is not started.
-        OslCommunicationError
-            Raised when an error occurs while communicating with server.
-        OslCommandError
-            Raised when the command or query fails.
-        TimeoutError
-            Raised when the timeout expires.
-        """
-        check_for_refresh = 0.5
-        counter = 0
-        while self.__refresh_listeners.is_set():
-            if counter >= self.__listeners_refresh_interval:
-                for listener in self.__listeners.values():
-                    if listener.refresh_listener_registration:
-                        response = self.send_command(
-                            commands.refresh_listener_registration(
-                                uid=listener.uid, password=self.__password
-                            )
-                        )
-                counter = 0
-            counter += check_for_refresh
-            time.sleep(check_for_refresh)
-        self._logger.debug("Stop refreshing listener registration, self.__refresh = False")
+    def __start_listeners_registration_thread(self) -> None:
+        """Create new thread for refreshing of listeners registrations and start it."""
+        self.__listeners_registration_thread = threading.Thread(
+            target=self.__refresh_listeners_registration,
+            name="PyOptiSLang.ListenersRegistrationThread",
+            args=(),
+            daemon=True,
+        )
+        self.__refresh_listeners.set()
+        self.__listeners_registration_thread.start()
+
+    def __stop_listeners_registration_thread(self) -> None:
+        """Stop listeners registration thread."""
+        if self.__listeners_registration_thread and self.__listeners_registration_thread.is_alive():
+            self.__refresh_listeners.clear()
+            self.__listeners_registration_thread.join()
+            self._logger.debug("Listener registration thread stopped.")
 
     def __unregister_all_listeners(self) -> None:
         """Unregister all instance listeners."""
@@ -2846,19 +2919,6 @@ class TcpOslServer(OslServer):
                 except Exception as ex:
                     self._logger.warning("Cannot unregister port listener: %s", ex)
 
-    def __dispose_all_listeners(self) -> None:
-        """Dispose all listeners."""
-        for listener in self.__listeners.values():
-            listener.dispose()
-        self.__listeners = {}
-
-    def __cast_to_path(self, file_path: Union[str, Path]) -> Path:
-        """Cast path to Path."""
-        if isinstance(file_path, Path):
-            return file_path
-        else:
-            return Path(file_path)
-
     def __validate_path(self, file_path: Path) -> None:
         """Check type and suffix of project_file path."""
         if not isinstance(file_path, Path):
@@ -2868,66 +2928,123 @@ class TcpOslServer(OslServer):
         if not file_path.suffix == ".opf":
             raise ValueError('Invalid optiSLang project file, project must end with ".opf".')
 
-    def send_command(self, command: str) -> Dict:
-        """Send command or query to the optiSLang server.
+    @staticmethod
+    def __osl_version_string_to_int(version: str) -> Tuple[Union[int, None], ...]:
+        """Get version of used optiSLang.
 
         Parameters
         ----------
-        command : str
-            Command or query to be executed on optiSLang server.
+        version: str
+            OptiSLang version.
 
         Returns
         -------
-        Dict
-            Response from the server.
+        tuple
+            optiSLang version as tuple containing
+            major version, minor version, maintenance version and revision.
 
         Raises
         ------
-        RuntimeError
-            Raised when the optiSLang server is not started.
         OslCommunicationError
             Raised when an error occurs while communicating with server.
         OslCommandError
             Raised when the command or query fails.
         TimeoutError
-            Raised when the timeout expires.
+            Raised when the timeout float value expires.
         """
-        if self.__disposed:
-            raise OslDisposedError("Cannot send command, instance was already disposed.")
-        if self.__host is None or self.__port is None:
-            raise RuntimeError("optiSLang server is not started.")
+        osl_version_entries = re.findall(r"[\w']+", version)
 
-        start_time = time.time()
-        self._logger.debug("Sending command or query to the server: %s", command)
-        client = TcpClient(logger=self._logger)
+        major_version = None
+        minor_version = None
+        maint_version = None
+        revision = None
+
+        if len(osl_version_entries) > 0:
+            try:
+                major_version = int(osl_version_entries[0])
+            except:
+                pass
+        if len(osl_version_entries) > 1:
+            try:
+                minor_version = int(osl_version_entries[1])
+            except:
+                pass
+        if len(osl_version_entries) > 2:
+            try:
+                maint_version = int(osl_version_entries[2])
+            except:
+                pass
+        if len(osl_version_entries) > 3:
+            try:
+                revision = int(osl_version_entries[3])
+            except:
+                pass
+
+        return major_version, minor_version, maint_version, revision
+
+    @staticmethod
+    def __check_command_response(response: Dict) -> None:
+        """Check whether the server response for a sent command contains any failure information.
+
+        Parameters
+        ----------
+        response : Dict
+            Server response as dictionary.
+
+        Raises
+        ------
+        OslCommandError
+            Raised when the server response for the sent command contains any failure information.
+        """
+        if "status" in response and response["status"].lower() == "failure":
+            message = None
+            if "message" in response:
+                message = response["message"]
+            if "std_err" in response:
+                message += "; " + response["std_err"]
+            if message is None:
+                message = "Command error: " + str(response)
+            raise OslCommandError(message)
+
+    @staticmethod
+    def __port_on_listended(
+        sender: TcpOslListener, response: dict, port_queue: Queue, logger
+    ) -> None:
+        """Listen to the optiSLang server port."""
         try:
-            client.connect(
-                self.__host, self.__port, timeout=_get_current_timeout(self.__timeout, start_time)
-            )
-            client.send_msg(command, timeout=_get_current_timeout(self.__timeout, start_time))
-            response_str = client.receive_msg(
-                timeout=_get_current_timeout(self.__timeout, start_time)
-            )
+            if "port" in response:
+                port = int(response["port"])
+                port_queue.put(port)
+                sender.stop_listening()
+                sender.clear_callbacks()
+        except:
+            logger.debug("Port cannot be received from response: %s", str(response))
 
-        except TimeoutError as ex:
-            raise
-        except Exception as ex:
-            raise OslCommunicationError(
-                "An error occurred while communicating with the optiSLang server."
-            ) from ex
-        finally:
-            client.disconnect()
-
-        self._logger.debug("Response received: %s", response_str)
-        response = json.loads(response_str)
-
-        if isinstance(response, list):
-            for resp_elem in response:
-                self.__class__.__check_command_response(resp_elem)
+    @staticmethod
+    def __terminate_listener_thread(
+        sender: TcpOslListener,
+        response: dict,
+        target_notifications: List[str],
+        target_queue: Queue,
+        logger: logging.Logger,
+    ) -> None:
+        """Terminate listener thread if execution finished or failed."""
+        type = response.get("type", None)
+        if type is not None:
+            sender.stop_listening()
+            sender.clear_callbacks()
+            sender.refresh_listener_registration = False
+            if type in [ServerNotification.EXEC_FAILED.name, ServerNotification.CHECK_FAILED.name]:
+                target_queue.put(False)
+                logger.error(f"Listener {sender.name} received error notification.")
+            elif type in target_notifications:
+                target_queue.put(True)
+                logger.debug(f"Listener {sender.name} received expected notification.")
+            elif type == "TimeoutError":
+                target_queue.put("Terminate")
+                logger.error(f"Listener {sender.name} timed out.")
         else:
-            self.__class__.__check_command_response(response)
-
-        return response
+            logger.error("Invalid response from server, push notification not evaluated.")
 
     # FUTURES:
     # close method doesn't work properly in optiSLang 2023R1, therefore it was commented out
@@ -3012,67 +3129,3 @@ class TcpOslServer(OslServer):
     #         if successfully_finished == "Terminate":
     #             raise TimeoutError("Waiting for finished timed out.")
     #         self._logger.info(f"Successfully_finished: {successfully_finished}.")
-
-    @staticmethod
-    def __check_command_response(response: Dict) -> None:
-        """Check whether the server response for a sent command contains any failure information.
-
-        Parameters
-        ----------
-        response : Dict
-            Server response as dictionary.
-
-        Raises
-        ------
-        OslCommandError
-            Raised when the server response for the sent command contains any failure information.
-        """
-        if "status" in response and response["status"].lower() == "failure":
-            message = None
-            if "message" in response:
-                message = response["message"]
-            if "std_err" in response:
-                message += "; " + response["std_err"]
-            if message is None:
-                message = "Command error: " + str(response)
-            raise OslCommandError(message)
-
-    @staticmethod
-    def __port_on_listended(
-        sender: TcpOslListener, response: dict, port_queue: Queue, logger
-    ) -> None:
-        """Listen to the optiSLang server port."""
-        try:
-            if "port" in response:
-                port = int(response["port"])
-                port_queue.put(port)
-                sender.stop_listening()
-                sender.clear_callbacks()
-        except:
-            logger.debug("Port cannot be received from response: %s", str(response))
-
-    @staticmethod
-    def __terminate_listener_thread(
-        sender: TcpOslListener,
-        response: dict,
-        target_notifications: List[str],
-        target_queue: Queue,
-        logger: logging.Logger,
-    ) -> None:
-        """Terminate listener thread if execution finished or failed."""
-        type = response.get("type", None)
-        if type is not None:
-            sender.stop_listening()
-            sender.clear_callbacks()
-            sender.refresh_listener_registration = False
-            if type in [ServerNotification.EXEC_FAILED.name, ServerNotification.CHECK_FAILED.name]:
-                target_queue.put(False)
-                logger.error(f"Listener {sender.name} received error notification.")
-            elif type in target_notifications:
-                target_queue.put(True)
-                logger.debug(f"Listener {sender.name} received expected notification.")
-            elif type == "TimeoutError":
-                target_queue.put("Terminate")
-                logger.error(f"Listener {sender.name} timed out.")
-        else:
-            logger.error("Invalid response from server, push notification not evaluated.")

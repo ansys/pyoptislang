@@ -33,6 +33,7 @@ from ansys.optislang.core.project_parametric import (
 if TYPE_CHECKING:
     from enum import Enum
 
+# region DICTIONARIES AND EXPECTED RESULTS
 DEPENDENT_PARAMETER = DependentParameter(
     name="dependent",
     id="aaba5b78-4b8c-4cc3-a308-4e122e2af665",
@@ -335,9 +336,10 @@ VARIABLE_CRITERION_DICT = {
 }
 RESPONSE = Response(name="variable_1", reference_value=0)
 RESPONSE_DICT = {"variable_1": 0}
+# endregion
 
 
-# TEST ENUMERATION METHODS:
+# region TEST ENUMERATION METHODS:
 def enumeration_test_method(enumeration_class: Enum, enumeration_name: str):
     """Test instance creation, method `from_str` and spelling."""
     mixed_name = ""
@@ -572,7 +574,10 @@ def test_invalid_inputs(enumeration_class: Enum, invalid_value: str, invalid_val
     )
 
 
-# TEST PARAMETERS:
+# endregion
+
+
+# region TEST PARAMETERS:
 def test_design_variable():
     """Test `DesignVariable`."""
     design_variable = DesignVariable(name="par1", value=12)
@@ -910,7 +915,10 @@ def test_dependent_parameter():
     assert dependent_parameter_copy.operation == "10+Parameter_1"
 
 
-# TEST CRITERIA:
+# endregion
+
+
+# region TEST CRITERIA:
 def test_criterion():
     """Test `Criterion`."""
     criterion = Criterion(
@@ -1095,7 +1103,10 @@ def test_variable_criterion():
     assert VARIABLE_CRITERION == variable_criterion_copy
 
 
-# TEST RESPONSES:
+# endregion
+
+
+# region TEST RESPONSES:
 def test_response():
     """Test `Response`."""
     response = Response(name="variable_1", reference_value=0)
@@ -1148,7 +1159,10 @@ def test_response():
         response.reference_value = (1, 2, 3)
 
 
-# TEST DESIGN:
+# endregion
+
+
+# region TEST DESIGN:
 @pytest.fixture()
 def design(scope="function", autouse=False) -> Design:
     """Create an instance of Design class."""
@@ -1228,3 +1242,6 @@ def test_set_parameter_value(design: Design):
         assert isinstance(parameter, DesignVariable)
         assert parameter.name in ["par1", "par2"]
         assert parameter.value in [15, 20]
+
+
+# endregion

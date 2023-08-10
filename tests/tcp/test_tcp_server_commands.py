@@ -3,7 +3,7 @@ import json
 
 import pytest
 
-from ansys.optislang.core import server_commands as sc
+from ansys.optislang.core.tcp import server_commands as sc
 
 actor_uid = "5cdfb20b-bef6-4412-9985-89f5ded5ee95"
 uid = "d2ab72dd-0d46-488a-aa05-0ddc19794c60"

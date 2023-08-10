@@ -407,7 +407,7 @@ class Optislang:
             an operation has completed. If the timeout is ``None``, functions
             wait until they're finished, and no timeout exception is raised.
         """
-        return self.__osl_server.timeout()
+        return self.__osl_server.timeout
 
     @timeout.setter
     def timeout(self, timeout: Union[float, None] = None) -> None:

@@ -12,7 +12,10 @@ from ansys.optislang.core import FIRST_SUPPORTED_VERSION
 
 
 def enum_from_str(
-    string: str, enum_class: Enum, replace: Union[Tuple[str, str], None] = None
+    string: str,
+    enum_class: Enum,
+    replace: Union[Tuple[str, str], None] = None,
+    upper_case: bool = True,
 ) -> Enum:
     """Convert string to enumeration.
 
@@ -26,6 +29,8 @@ def enum_from_str(
         Characters to be replaced in given ``string``.
             Tuple[0]: Replace from.
             Tuple[1]: Replace to.
+    upper_case: bool, optional
+        Whether string should be converted to upper_case. Defaults to `True`.
 
     Returns
     -------
@@ -45,6 +50,8 @@ def enum_from_str(
         raise TypeError(f"Enumeration class was expected, but `{type(enum_class)}` was given.")
     if replace is not None:
         string = string.replace(replace[0], replace[1])
+    if upper_case:
+        string = string.upper()
     try:
         enum_type = enum_class[string]
         return enum_type

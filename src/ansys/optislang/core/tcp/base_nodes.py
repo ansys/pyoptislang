@@ -23,6 +23,7 @@ from ansys.optislang.core.base_nodes import (
 from ansys.optislang.core.node_types import AddinType, NodeType
 from ansys.optislang.core.project_parametric import (
     ConstraintCriterion,
+    Design,
     DesignStatus,
     DesignVariable,
     LimitStateCriterion,
@@ -30,7 +31,6 @@ from ansys.optislang.core.project_parametric import (
     VariableCriterion,
 )
 from ansys.optislang.core.tcp.managers import (
-    Design,
     TcpCriteriaManagerProxy,
     TcpParameterManagerProxy,
     TcpResponseManagerProxy,
@@ -96,7 +96,6 @@ class TcpNodeProxy(Node):
         NodeType
             Instance of the ``NodeType`` class.
         """
-        # TODO: test
         return self.__type
 
     def delete(self) -> None:
@@ -111,7 +110,6 @@ class TcpNodeProxy(Node):
         TimeoutError
             Raised when the timeout float value expires.
         """
-        # TODO: test
         self._osl_server.remove_node(self.uid)
 
     def exists(self) -> bool:
@@ -131,7 +129,6 @@ class TcpNodeProxy(Node):
         TimeoutError
             Raised when the timeout float value expires.
         """
-        # TODO: test
         project_tree = self._osl_server.get_full_project_tree()
         return (
             len(
@@ -145,71 +142,6 @@ class TcpNodeProxy(Node):
             )
             > 0
         )
-
-    def get_connections(
-        self, slot_type: Union[SlotType, None] = None, slot_name: Union[str, None] = None
-    ) -> Tuple[Edge]:
-        """Get connections of a given direction and slot.
-
-        Parameters
-        ----------
-        slot_type: Union[SlotType, None], optional
-            Slot type, by default ``None``
-        slot_name : Union[str, None], optional
-            Slot name, by default ``None``.
-
-        Returns
-        -------
-        Tuple[Edge]
-            Tuple of connections of given direction and slot.
-
-        Raises
-        ------
-        OslCommunicationError
-            Raised when an error occurs while communicating with the server.
-        OslCommandError
-            Raised when a command or query fails.
-        TimeoutError
-            Raised when the timeout float value expire
-        """
-        # TODO: test
-        project_tree = self._osl_server.get_full_project_tree_with_properties()
-        connections = project_tree.get("projects", [{}])[0].get("connections")
-        direction = SlotType.to_dir_str(type_=slot_type)
-        filtered_connections = self._filter_connections(
-            connections=connections,
-            uid=self.uid,
-            direction=direction,
-            slot_name=slot_name,
-        )
-        edges = []
-        for connection in filtered_connections:
-            edges.append(
-                self._create_edge_from_dict(
-                    project_tree=project_tree["projects"][0]["system"], connection=connection
-                )
-            )
-        return tuple(edges)
-
-    def get_name(self) -> str:
-        """Get the name of the node.
-
-        Returns
-        -------
-        str
-            Name of the node.
-
-        Raises
-        ------
-        OslCommunicationError
-            Raised when an error occurs while communicating with the server.
-        OslCommandError
-            Raised when a command or query fails.
-        TimeoutError
-            Raised when the timeout float value expires.
-        """
-        actor_info = self._osl_server.get_actor_info(uid=self.__uid)
-        return actor_info["name"]
 
     def get_ancestors(self) -> Tuple[TcpNodeProxy, ...]:
         """Get tuple of ordered ancestors starting from root system at position 0.
@@ -252,6 +184,70 @@ class TcpNodeProxy(Node):
             was_found=[],
         )
         return self._create_nodes_from_properties_dicts(properties_dicts_list=ancestors_line_dicts)
+
+    def get_connections(
+        self, slot_type: Union[SlotType, None] = None, slot_name: Union[str, None] = None
+    ) -> Tuple[Edge]:
+        """Get connections of a given direction and slot.
+
+        Parameters
+        ----------
+        slot_type: Union[SlotType, None], optional
+            Slot type, by default ``None``
+        slot_name : Union[str, None], optional
+            Slot name, by default ``None``.
+
+        Returns
+        -------
+        Tuple[Edge]
+            Tuple of connections of given direction and slot.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expire
+        """
+        project_tree = self._osl_server.get_full_project_tree_with_properties()
+        connections = project_tree.get("projects", [{}])[0].get("connections")
+        direction = SlotType.to_dir_str(type_=slot_type)
+        filtered_connections = self._filter_connections(
+            connections=connections,
+            uid=self.uid,
+            direction=direction,
+            slot_name=slot_name,
+        )
+        edges = []
+        for connection in filtered_connections:
+            edges.append(
+                self._create_edge_from_dict(
+                    project_tree=project_tree["projects"][0]["system"], connection=connection
+                )
+            )
+        return tuple(edges)
+
+    def get_name(self) -> str:
+        """Get the name of the node.
+
+        Returns
+        -------
+        str
+            Name of the node.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        actor_info = self._osl_server.get_actor_info(uid=self.__uid)
+        return actor_info["name"]
 
     def get_parent(self) -> TcpNodeProxy:
         """Get the instance of the parent node.
@@ -332,11 +328,10 @@ class TcpNodeProxy(Node):
         TimeoutError
             Raised when the timeout float value expires.
         """
-        # TODO: test
         return self._osl_server.get_actor_properties(uid=self.uid).get(name, None)
 
     def get_slots(
-        self, type_: Union[SlotType, None], name: Union[str, None] = None
+        self, type_: Union[SlotType, None] = None, name: Union[str, None] = None
     ) -> Tuple[TcpSlotProxy, ...]:
         """Get current node's slots of given type and name.
 
@@ -1052,7 +1047,6 @@ class TcpSystemProxy(TcpNodeProxy, System):
         ValueError
             Raised when unsupported value of type_ is given.
         """
-        # TODO: test
         if not isinstance(type_, NodeType):
             raise TypeError(
                 f"Invalid type of ``type_: {type(type_)}``, "
@@ -1095,7 +1089,6 @@ class TcpSystemProxy(TcpNodeProxy, System):
         TimeoutError
             Raised when the timeout float value expires.
         """
-        # TODO: test
         nodes = self.get_nodes()
         for node in nodes:
             node.delete()
@@ -1433,7 +1426,6 @@ class TcpRootSystemProxy(TcpParametricSystemProxy, RootSystem):
         NotImplementedError
             Raised always.
         """
-        # TODO: test
         raise NotImplementedError("``RootSystem`` cannot be deleted.")
 
     def evaluate_design(self, design: Design) -> Design:

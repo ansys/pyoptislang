@@ -43,13 +43,12 @@ class DesignFlow(Enum):
         ValueError
             Raised when an invalid value of ``string`` is given.
         """
-        return enum_from_str(string=string.upper(), enum_class=__class__, replace=(" ", "_"))
+        return enum_from_str(string=string, enum_class=__class__, replace=(" ", "_"))
 
 
 class SlotType(Enum):
     """Provides slot type options."""
 
-    # TODO: test
     INPUT = 0
     OUTPUT = 1
     INNER_INPUT = 2
@@ -74,7 +73,7 @@ class SlotType(Enum):
         TypeError
             Raised when an invalid type of ``string`` is given.
         """
-        return enum_from_str(string=string.upper(), enum_class=__class__, replace=(" ", "_"))
+        return enum_from_str(string=string, enum_class=__class__, replace=(" ", "_"))
 
     @staticmethod
     def to_dir_str(type_: SlotType) -> str:
@@ -310,7 +309,7 @@ class Node(ABC):
 
     @abstractmethod
     def get_slots(
-        self, type_: Union[SlotType, None], name: Union[str, None] = None
+        self, type_: Union[SlotType, None] = None, name: Union[str, None] = None
     ) -> Tuple[Slot, ...]:  # pragma: no cover
         """Get current node's slots of given type and name.
 
@@ -909,7 +908,7 @@ class TcpInnerOutputSlotProxy(Slot):
         pass
 
 
-# TODO: test
+# TODO: test (test_nodes_connection)
 class Edge:
     """Provides for creating and operating on connections."""
 

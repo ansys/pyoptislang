@@ -25,6 +25,7 @@ def find_free_port():
 
 _msg = '{ "What": "SYSTEMS_STATUS_INFO" }'
 parametric_project = examples.get_files("calculator_with_params")[1][0]
+connect_nodes = examples.get_files("nodes_connection")[1][0]
 
 pytestmark = pytest.mark.local_osl
 
@@ -105,7 +106,7 @@ def create_tcp_osl_server(osl_server_process: OslServerProcess) -> tos.TcpOslSer
     return tcp_osl_server
 
 
-# TcpClient
+# region TcpClient
 def test_client_properties(osl_server_process: OslServerProcess, tcp_client: tos.TcpClient):
     "Test ``local_address`` and ``remote_address``."
     with does_not_raise() as dnr:
@@ -219,7 +220,10 @@ def test_receive_file(
     assert dnr is None
 
 
-# TcpListener
+# endregion
+
+
+# region TcpListener
 def test_is_initialized(osl_server_process: OslServerProcess, tcp_listener: tos.TcpOslListener):
     """Test `is_initialized`."""
     assert tcp_listener.is_initialized()
@@ -280,7 +284,10 @@ def test_start_stop_listening(
     osl_server_process.terminate()
 
 
-# TcpOslServer
+# endregion
+
+
+# region TcpOslServer
 
 # def test_close(osl_server_process: OslServerProcess):
 #     tcp_osl_server = create_tcp_osl_server(osl_server_process)
@@ -289,6 +296,43 @@ def test_start_stop_listening(
 #         tcp_osl_server.new()
 #         tcp_osl_server.dispose()
 #     assert dnr is None
+
+
+def test_connect_nodes(tmp_path: Path):
+    """Test `connect_nodes` method."""
+    osl_server_process = create_osl_server_process(
+        shutdown_on_finished=False, project_path=connect_nodes
+    )
+    tcp_osl_server = create_tcp_osl_server(osl_server_process)
+    tcp_osl_server.save_as(file_path=tmp_path / "test_connect_nodes.opf")
+    variable_uid = "b8b8b48f-b806-4382-9777-f03ceb5dccc0"
+    calculator_uid = "e63ce638-ec33-47cf-ba02-2d83771678fa"
+
+    tcp_osl_server.connect_nodes(
+        from_actor_uid=variable_uid, from_slot="OVar", to_actor_uid=calculator_uid, to_slot="A"
+    )
+    info = tcp_osl_server.get_actor_info(calculator_uid)
+    assert len(info["connections"]) == 1
+    tcp_osl_server.shutdown()
+    tcp_osl_server.dispose()
+
+
+def test_create_remove_node(osl_server_process: OslServerProcess):
+    """Test `create_node` and `remove_node` methods."""
+    tcp_osl_server = create_tcp_osl_server(osl_server_process)
+    tree = tcp_osl_server.get_full_project_tree()
+    assert len(tree["projects"][0]["system"]["nodes"]) == 0
+
+    uid = tcp_osl_server.create_node(type_="CalculatorSet")
+    new_tree = tcp_osl_server.get_full_project_tree()
+    assert len(new_tree["projects"][0]["system"]["nodes"]) == 1
+
+    tcp_osl_server.remove_node(uid)
+    empty_tree = tcp_osl_server.get_full_project_tree()
+    assert len(empty_tree["projects"][0]["system"]["nodes"]) == 0
+
+    tcp_osl_server.shutdown()
+    tcp_osl_server.dispose()
 
 
 def test_evaluate_design(tmp_path: Path):
@@ -628,20 +672,6 @@ def test_get_server_is_alive(osl_server_process: OslServerProcess):
     assert isinstance(is_alive, bool)
 
 
-def test_get_set_timeout(osl_server_process: OslServerProcess):
-    """Test ``get_get_timeout``."""
-    tcp_osl_server = create_tcp_osl_server(osl_server_process)
-    timeout = tcp_osl_server.get_timeout()
-    assert isinstance(timeout, (int, float))
-    assert timeout == 10
-    tcp_osl_server.set_timeout(15)
-    new_timeout = tcp_osl_server.get_timeout()
-    assert isinstance(new_timeout, (int, float))
-    assert new_timeout == 15
-    tcp_osl_server.shutdown()
-    tcp_osl_server.dispose()
-
-
 def test_get_systems_status_info(osl_server_process: OslServerProcess):
     """Test `get_project_tree_systems_with_properties`."""
     tcp_osl_server = create_tcp_osl_server(osl_server_process)
@@ -844,6 +874,25 @@ def test_stop(osl_server_process: OslServerProcess):
     assert dnr is None
 
 
+def test_timeout_getter_setter(osl_server_process: OslServerProcess):
+    """Test ``timeout`` getter and setter."""
+    tcp_osl_server = create_tcp_osl_server(osl_server_process)
+    timeout = tcp_osl_server.timeout
+    assert isinstance(timeout, (int, float))
+    assert timeout == 10
+    tcp_osl_server.timeout = 20
+    assert isinstance(tcp_osl_server.timeout, (int, float))
+    assert tcp_osl_server.timeout == 20
+
+    with pytest.raises(TypeError):
+        tcp_osl_server.timeout = "20"
+    with pytest.raises(ValueError):
+        tcp_osl_server.timeout = -20
+
+    tcp_osl_server.shutdown()
+    tcp_osl_server.dispose()
+
+
 # def test_stop_gently(osl_server_process: OslServerProcess):
 #     """Test ``stop_gently``."""
 #     tcp_osl_server = create_tcp_osl_server(osl_server_process)
@@ -878,3 +927,6 @@ def test_get_project_uid(osl_server_process: OslServerProcess):
     assert isinstance(uid, str)
     tcp_osl_server.shutdown()
     tcp_osl_server.dispose()
+
+
+# endregion

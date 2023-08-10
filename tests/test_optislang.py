@@ -22,7 +22,7 @@ def optislang(scope="function", autouse=False) -> Optislang:
         Connects to the optiSLang application and provides an API to control it.
     """
     osl = Optislang()
-    osl.set_timeout(20)
+    osl.timeout = 20
     return osl
 
 
@@ -82,19 +82,6 @@ def test_get_project(optislang: Optislang):
     optislang.dispose()
     assert dnr is None
     assert isinstance(project, Project)
-
-
-def test_get_set_timeout(optislang: Optislang):
-    """Test `get_timeout` and `set_timeout`.
-    Note: default value is `None` but timeout set to 20 in @pytest.fixture optislang.
-    """
-    timeout = optislang.get_timeout()
-    assert isinstance(timeout, (float, int))
-    assert timeout == 20
-    with does_not_raise() as dnr:
-        optislang.dispose()
-        time.sleep(3)
-    assert dnr is None
 
 
 def test_get_working_dir(optislang: Optislang):
@@ -254,6 +241,26 @@ connect(python, "ODesign", sens, "IIDesign")
         optislang.start(wait_for_finished=False)
         optislang.stop()
     assert dnr is None
+    with does_not_raise() as dnr:
+        optislang.dispose()
+        time.sleep(3)
+    assert dnr is None
+
+
+def test_timeout_getter_setter(optislang: Optislang):
+    """Test `timeout` getter and setter.
+    Note: default value is `None` but timeout set to 20 in @pytest.fixture optislang.
+    """
+    timeout = optislang.timeout
+    assert isinstance(timeout, (float, int))
+    assert timeout == 20
+    optislang.timeout = 30
+    assert isinstance(timeout, (int, float))
+    assert optislang.timeout == 30
+    with pytest.raises(TypeError):
+        optislang.timeout = "20"
+    with pytest.raises(ValueError):
+        optislang.timeout = -20
     with does_not_raise() as dnr:
         optislang.dispose()
         time.sleep(3)
