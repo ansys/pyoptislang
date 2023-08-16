@@ -16,12 +16,12 @@ PyOptiSLang
 .. |PyPIact| image:: https://img.shields.io/pypi/dm/ansys-optislang-core.svg?label=PyPI%20downloads
    :target: https://pypi.org/project/ansys-optislang-core/
 
-.. |codecov| image:: https://codecov.io/gh/pyansys/pyoptislang/branch/main/graph/badge.svg
-   :target: https://codecov.io/gh/pyansys/pyoptislang
+.. |codecov| image:: https://codecov.io/gh/ansys/pyoptislang/branch/main/graph/badge.svg
+   :target: https://codecov.io/gh/ansys/pyoptislang
    :alt: Codecov
 
-.. |GH-CI| image:: https://github.com/pyansys/pyoptislang/actions/workflows/ci_cd.yml/badge.svg
-   :target: https://github.com/pyansys/pyoptislang/actions/workflows/ci_cd.yml
+.. |GH-CI| image:: https://github.com/ansys/pyoptislang/actions/workflows/ci_cd.yml/badge.svg
+   :target: https://github.com/ansys/pyoptislang/actions/workflows/ci_cd.yml
    :alt: GH-CI
 
 .. |MIT| image:: https://img.shields.io/badge/License-MIT-yellow.svg
@@ -53,7 +53,7 @@ Documentation and issues
 ------------------------
 For comprehensive information on PyOptiSLang, see the latest release
 `documentation <https://optislang.docs.pyansys.com>`_. On the
-`PyOptiSLang Issues <https://github.com/pyansys/pyoptislang/issues>`_ page,
+`PyOptiSLang Issues <https://github.com/ansys/pyoptislang/issues>`_ page,
 you can create issues to submit questions, report bugs, and request new features.
 This is the best place to post questions and code.
 
@@ -80,11 +80,11 @@ Install the latest release from `PyPi
 
 
 Alternatively, install the latest `PyOptiSLang GitHub
-<https://github.com/pyansys/pyoptislang/issues>`_ package with this command:
+<https://github.com/ansys/pyoptislang/issues>`_ package with this command:
 
 .. code::
 
-   pip install git+https://github.com/pyansys/pyoptislang.git
+   pip install git+https://github.com/ansys/pyoptislang.git
 
 
 Developer installation
@@ -94,7 +94,7 @@ install PyOptiSLang with this code:
 
 .. code::
 
-   git clone https://github.com/pyansys/pyoptislang.git
+   git clone https://github.com/ansys/pyoptislang.git
    cd pyoptislang
    pip install -e .
 
@@ -106,7 +106,7 @@ after restarting the Python kernel.
 Offline installation
 ~~~~~~~~~~~~~~~~~~~~
 Using a wheelhouse can be helpful if you work for a company that restricts access to
-external networks. From the `Releases <https://github.com/pyansys/pyoptislang/releases>`_
+external networks. From the `Releases <https://github.com/ansys/pyoptislang/releases>`_
 page in the PyOptiSLang repository, you can find the wheelhouses for a particular release in its
 assets and download the wheelhouse corresponding to your setup.
 

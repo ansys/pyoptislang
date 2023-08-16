@@ -4,7 +4,7 @@
 Contribute
 ==========
 Overall guidance on contributing to a PyAnsys library appears in the
-`Contributing <https://dev.docs.pyansys.com/overview/contributing.html>`_ topic
+`Contributing <https://dev.docs.pyansys.com/how-to/contributing.html>`_ topic
 in the *PyAnsys Developer's Guide*. Ensure that you are thoroughly familiar
 with this guide before attempting to contribute to PyOptiSLang.
 
@@ -17,7 +17,7 @@ release in development mode, run this code:
 
 .. code::
 
-    git clone https://github.com/pyansys/pyoptislang
+    git clone https://github.com/ansys/pyoptislang
     cd pyoptislang
     pip install pip -U
     pip install -e .
@@ -25,7 +25,7 @@ release in development mode, run this code:
 
 Post issues
 -----------
-Use the `PyOptiSLang Issues <https://github.com/pyansys/pyoptislang/issues>`_
+Use the `PyOptiSLang Issues <https://github.com/ansys/pyoptislang/issues>`_
 page to submit questions, report bugs, and request new features. When possible,
 use these issue templates:
 
