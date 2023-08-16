@@ -55,7 +55,7 @@ Documentation and issues
 In addition to installation and usage information, the PyOptiSLang documentation provides
 API member descriptions, examples, and contribution information.
 
-On the `PyOptiSLang Issues <https://github.com/pyansys/pyoptislang/issues>`_ page, you can create
+On the `PyOptiSLang Issues <https://github.com/ansys/pyoptislang/issues>`_ page, you can create
 issues to submit questions, report bugs, and request new features. This is the best place to post
 questions and code.
 

@@ -17,7 +17,7 @@ release in development mode, run this code:
 
 .. code::
 
-    git clone https://github.com/pyansys/pyoptislang
+    git clone https://github.com/ansys/pyoptislang
     cd pyoptislang
     pip install pip -U
     pip install -e .
@@ -25,7 +25,7 @@ release in development mode, run this code:
 
 Post issues
 -----------
-Use the `PyOptiSLang Issues <https://github.com/pyansys/pyoptislang/issues>`_
+Use the `PyOptiSLang Issues <https://github.com/ansys/pyoptislang/issues>`_
 page to submit questions, report bugs, and request new features. When possible,
 use these issue templates:
 
