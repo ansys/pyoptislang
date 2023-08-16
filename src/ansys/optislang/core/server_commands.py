@@ -752,9 +752,9 @@ def reset(actor_uid: str = None, hid: str = None, password: str = None) -> str:
     Parameters
     ----------
     actor_uid: str, opt
-        Actor uid entry.
+        Actor uid entry. A Hirearchical ID (hid) is required.
     hid: str, opt
-        Hid entry.
+        Hid entry. The actor uid is required.
     password : str, opt
         Password.
 
@@ -763,6 +763,10 @@ def reset(actor_uid: str = None, hid: str = None, password: str = None) -> str:
     str
         JSON string of ``reset`` command.
     """
+    if actor_uid and hid is None:
+        raise ValueError("The Hirearchical ID (hid) is required.")
+    elif actor_uid is None and hid:
+        raise ValueError("The actor uid is required.")
     return _to_json(
         _gen_server_command(command=_RESET, actor_uid=actor_uid, hid=hid, password=password)
     )
@@ -774,9 +778,9 @@ def restart(actor_uid: str = None, hid: str = None, password: str = None) -> str
     Parameters
     ----------
     actor_uid: str, opt
-        Actor uid entry.
+        Actor uid entry. A Hirearchical ID (hid) is required.
     hid: str, opt
-        Hid entry.
+        Hid entry. The actor uid is required.
     password : str, opt
         Password.
 
@@ -785,6 +789,10 @@ def restart(actor_uid: str = None, hid: str = None, password: str = None) -> str
     str
         JSON string of ``restart`` command.
     """
+    if actor_uid and hid is None:
+        raise ValueError("The Hirearchical ID (hid) is required.")
+    elif actor_uid is None and hid:
+        raise ValueError("The actor uid is required.")
     return _to_json(
         _gen_server_command(command=_RESTART, actor_uid=actor_uid, hid=hid, password=password)
     )
@@ -1316,9 +1324,9 @@ def stop(actor_uid: str = None, hid: str = None, password: str = None) -> str:
     Parameters
     ----------
     actor_uid: str, opt
-        Actor uid entry.
+        Actor uid entry. A Hirearchical ID (hid) is required.
     hid: str, opt
-        Hid entry.
+        Hid entry. The actor uid is required.
     password : str, opt
         Password.
 
@@ -1327,6 +1335,11 @@ def stop(actor_uid: str = None, hid: str = None, password: str = None) -> str:
     str
         JSON string of ``stop`` command.
     """
+    if actor_uid and hid is None:
+        raise ValueError("The Hirearchical ID (hid) is required.")
+    elif actor_uid is None and hid:
+        raise ValueError("The actor uid is required.")
+
     return _to_json(
         _gen_server_command(command=_STOP, actor_uid=actor_uid, hid=hid, password=password)
     )
@@ -1338,9 +1351,9 @@ def stop_gently(actor_uid: str = None, hid: str = None, password: str = None) ->
     Parameters
     ----------
     actor_uid: str, opt
-        Actor uid entry.
+        Actor uid entry. A Hirearchical ID (hid) is required.
     hid: str, opt
-        Hid entry.
+        Hid entry. The actor uid is required.
     password : str, opt
         Password.
 
@@ -1349,6 +1362,10 @@ def stop_gently(actor_uid: str = None, hid: str = None, password: str = None) ->
     str
         JSON string of ``stop_gently`` command.
     """
+    if actor_uid and hid is None:
+        raise ValueError("The Hirearchical ID (hid) is required.")
+    elif actor_uid is None and hid:
+        raise ValueError("The actor uid is required.")
     return _to_json(
         _gen_server_command(command=_STOP_GENTLY, actor_uid=actor_uid, hid=hid, password=password)
     )
