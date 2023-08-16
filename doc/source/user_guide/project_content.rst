@@ -121,7 +121,7 @@ method for returning tuple with detailed information for instance of the
     # ...
 
     response_manager = root_system.response_manager
-    responses = criteria_manager.get_responses()
+    responses = response_manager.get_responses()
     responses_names = response_manager.get_responses_names()
 
 
