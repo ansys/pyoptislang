@@ -7,7 +7,7 @@ from typing import Tuple
 import ansys.optislang.core.examples as examples
 
 # TODO: implement automatic download from online repository
-# EXAMPLE_REPO = "https://github.com/pyansys/pyoptislang/tree/main/examples/files"
+# EXAMPLE_REPO = "https://github.com/ansys/pyoptislang/tree/main/examples/files"
 
 
 def _download_files(scriptname: str) -> Tuple[Path, ...]:
