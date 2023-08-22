@@ -1,15 +1,18 @@
 from contextlib import nullcontext as does_not_raise
+from pathlib import Path
 
 import pytest
 
 from ansys.optislang.core import Optislang, examples
+from ansys.optislang.core.io import File, FileOutputFormat, RegisteredFile
 from ansys.optislang.core.nodes import Node, ParametricSystem, RootSystem, System
 from ansys.optislang.core.project_parametric import ParameterManager
 
 pytestmark = pytest.mark.local_osl
-single_node = examples.get_files("calculator_with_params")[1][0]
+calculator_w_parameters = examples.get_files("calculator_with_params")[1][0]
 nested_systems = examples.get_files("nested_systems")[1][0]
 connect_nodes = examples.get_files("nodes_connection")[1][0]
+omdb_files = examples.get_files("omdb_files")[1][0]
 
 
 @pytest.fixture()
@@ -29,7 +32,7 @@ def optislang(scope="function", autouse=False) -> Optislang:
 # TEST NODE
 def test_node_initialization(optislang: Optislang):
     """Test `Node` initialization."""
-    optislang.open(file_path=single_node)
+    optislang.open(file_path=calculator_w_parameters)
     project = optislang.project
     root_system = project.root_system
     node = root_system.get_nodes()[0]
@@ -39,7 +42,7 @@ def test_node_initialization(optislang: Optislang):
 
 def test_node_properties(optislang: Optislang):
     """Test properties of the instance of `Node` class."""
-    optislang.open(file_path=single_node)
+    optislang.open(file_path=calculator_w_parameters)
     project = optislang.project
     root_system = project.root_system
     node = root_system.get_nodes()[0]
@@ -50,7 +53,7 @@ def test_node_properties(optislang: Optislang):
 
 def test_node_queries(optislang: Optislang):
     """Test get methods of the instance of `Node` class."""
-    optislang.open(file_path=single_node)
+    optislang.open(file_path=calculator_w_parameters)
     project = optislang.project
     root_system = project.root_system
     node = root_system.find_nodes_by_name("Calculator")[0]
@@ -71,6 +74,18 @@ def test_node_queries(optislang: Optislang):
 
     properties = node.get_properties()
     assert isinstance(properties, dict)
+
+    reg_files = node.get_registered_files()
+    assert len(reg_files) == 1
+    assert isinstance(reg_files[0], RegisteredFile)
+
+    res_files = node.get_result_files()
+    assert len(res_files) == 1
+    assert isinstance(res_files[0], RegisteredFile)
+
+    states_ids = node.get_states_ids()
+    assert len(states_ids) == 1
+    assert isinstance(states_ids[0], str)
 
     status = node.get_status()
     assert isinstance(status, str)
@@ -198,3 +213,56 @@ def test_get_parameter_manager(optislang: Optislang):
         assert isinstance(parameter_manager, ParameterManager)
     optislang.dispose()
     assert dnr is None
+
+
+def test_get_omdb_files(tmp_path: Path):
+    """Test `get_omdb_files()` method."""
+    optislang = Optislang(project_path=omdb_files)
+    optislang.set_timeout(30)
+    optislang.reset()
+    optislang.start()
+    project = optislang.project
+    root_system = project.root_system
+
+    sensitivity: ParametricSystem = root_system.find_nodes_by_name("Sensitivity")[0]
+    s_omdb_file = sensitivity.get_omdb_files()
+    assert len(s_omdb_file) > 0
+    assert isinstance(s_omdb_file[0], File)
+
+    most_inner_sensitivity: ParametricSystem = root_system.find_nodes_by_name(
+        "MostInnerSensitivity", search_depth=3
+    )[0]
+    mis_omdb_file = most_inner_sensitivity.get_omdb_files()
+    assert len(mis_omdb_file) > 0
+    assert isinstance(mis_omdb_file[0], File)
+    optislang.dispose()
+
+
+def test_save_designs_as(tmp_path: Path):
+    """Test `save_designs_as` method."""
+    optislang = Optislang(project_path=omdb_files)
+    optislang.set_timeout(30)
+    optislang.reset()
+    optislang.start()
+    project = optislang.project
+    root_system = project.root_system
+
+    sensitivity: ParametricSystem = root_system.find_nodes_by_name("Sensitivity")[0]
+    s_hids = sensitivity.get_states_ids()
+    s_file = sensitivity.save_designs_as(s_hids[0], "FirstDesign", FileOutputFormat.CSV, tmp_path)
+    assert isinstance(s_file, File)
+    assert s_file.exists
+    assert s_file.path.suffix == ".csv"
+
+    most_inner_sensitivity: ParametricSystem = root_system.find_nodes_by_name(
+        "MostInnerSensitivity", 3
+    )[0]
+    mis_hids = most_inner_sensitivity.get_states_ids()
+    mis_file = most_inner_sensitivity.save_designs_as(mis_hids[0], "InnerDesign")
+    assert isinstance(mis_file, File)
+    assert mis_file.exists
+    assert mis_file.path.suffix == ".json"
+    mis_file.path.unlink()
+    assert not mis_file.exists
+
+    optislang.dispose()

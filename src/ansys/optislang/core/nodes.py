@@ -867,7 +867,7 @@ class ParametricSystem(System):
             omdb_files.extend([File(path) for path in wdir.glob("*.omdb")])
         return tuple(omdb_files)
 
-    def save_design_as(
+    def save_designs_as(
         self,
         hid: str,
         file_name: str,

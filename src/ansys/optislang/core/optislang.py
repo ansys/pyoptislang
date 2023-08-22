@@ -11,7 +11,7 @@ from ansys.optislang.core.project import Project
 from ansys.optislang.core.tcp_osl_server import TcpOslServer
 
 if TYPE_CHECKING:
-    from ansys.optislang.core.logging import OslLogger
+    from ansys.optislang.core.logging import OslCustomAdapter
     from ansys.optislang.core.osl_server import OslServer
 
 
@@ -324,7 +324,7 @@ class Optislang:
         return self.__name
 
     @property
-    def log(self) -> OslLogger:
+    def log(self) -> OslCustomAdapter:
         """Instance logger."""
         return self.__logger
 

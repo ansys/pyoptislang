@@ -12,19 +12,46 @@ from ansys.optislang.core.utils import enum_from_str
 class File:
     """Provides for operating on files."""
 
-    def __init__(self, path: Path) -> None:
+    def __init__(self, path: Union[Path, str]) -> None:
         """Create a ``File`` instance.
 
         Parameters
         ----------
-        path : Path
+        path : Union[pathlib.Path, str]
             Path to the file.
         id: str, optional
             File ID.
         comment:  str, optional
             Description of the file.
         """
-        self.__path = path
+        self.__path = Path(path)
+
+    def __eq__(self, other: File) -> bool:
+        r"""Compare properties of two instances of the ``File`` class.
+
+        Parameters
+        ----------
+        other: File
+            File for comparison.
+
+        Returns
+        -------
+        bool
+            ``True`` if all properties match, ``False`` otherwise.
+        """
+        if type(self) == type(other):
+            checks = {}
+            checks["exists"] = self.exists == other.exists
+            checks["filename"] = self.filename == other.filename
+            checks["last_modified_seconds"] = (
+                self.last_modified_seconds == other.last_modified_seconds
+            )
+            checks["last_modified_str"] = self.last_modified_str == other.last_modified_str
+            checks["path"] = self.path == other.path
+            checks["size"] = self.size == other.size
+            return False not in checks.values()
+        else:
+            return False
 
     @property
     def exists(self) -> bool:
@@ -49,26 +76,32 @@ class File:
         return self.path.name
 
     @property
-    def last_modified_seconds(self) -> float:
+    def last_modified_seconds(self) -> Union[float, None]:
         """Last modified time as a timestamp.
 
         Returns
         -------
-        float
-            Last modified time in seconds since the Epoch.
+        Union[float, None]
+            Last modified time in seconds since the Epoch, `None` if file doesn't exist.
         """
-        return self.path.stat().st_mtime
+        if self.exists:
+            return self.path.stat().st_mtime
+        else:
+            return None
 
     @property
-    def last_modified_str(self) -> str:
+    def last_modified_str(self) -> Union[str, None]:
         """Last modified time as a datetime.
 
         Returns
         -------
-        str
-            Last modified time as string.
+        Union[str, None]
+            Last modified time as string, `None` if file doesn't exist.
         """
-        return time.ctime(self.last_modified_seconds)
+        if self.exists:
+            return time.ctime(self.last_modified_seconds)
+        else:
+            return None
 
     @property
     def path(self) -> Path:
@@ -82,28 +115,36 @@ class File:
         return self.__path
 
     @property
-    def size(self) -> int:
+    def size(self) -> Union[int, None]:
         """File size in bytes.
 
         Returns
         -------
-        int
-            File size in bytes.
+        Union[int, None]
+            File size in bytes, `None` in file doesn't exist.
         """
-        return self.path.stat().st_size
+        if self.exists:
+            return self.path.stat().st_size
+        else:
+            return None
 
 
 class RegisteredFile(File):
     """Provides for operating on registered files."""
 
     def __init__(
-        self, path: Path, id: str, comment: str, tag: str, usage: Union[RegisteredFileUsage, str]
+        self,
+        path: Union[Path, str],
+        id: str,
+        comment: str,
+        tag: str,
+        usage: Union[RegisteredFileUsage, str],
     ) -> None:
         """Create a ``RegisteredFile`` instance.
 
         Parameters
         ----------
-        path : Path
+        path : Union[pathlib.Path, str]
             Path to the file.
         id: str
             File ID.
@@ -121,6 +162,37 @@ class RegisteredFile(File):
         if not isinstance(usage, RegisteredFileUsage):
             usage = RegisteredFileUsage.from_str(usage)
         self.__usage = usage
+
+    def __eq__(self, other: File) -> bool:
+        r"""Compare properties of two instances of the ``File`` class.
+
+        Parameters
+        ----------
+        other: File
+            File for comparison.
+
+        Returns
+        -------
+        bool
+            ``True`` if all properties match, ``False`` otherwise.
+        """
+        if type(self) == type(other):
+            checks = {}
+            checks["exists"] = self.exists == other.exists
+            checks["filename"] = self.filename == other.filename
+            checks["last_modified_seconds"] = (
+                self.last_modified_seconds == other.last_modified_seconds
+            )
+            checks["last_modified_str"] = self.last_modified_str == other.last_modified_str
+            checks["path"] = self.path == other.path
+            checks["size"] = self.size == other.size
+            checks["comment"] = self.comment == other.comment
+            checks["id"] = self.id == other.id
+            checks["tag"] = self.tag == other.tag
+            checks["usage"] = self.usage == other.usage
+            return False not in checks.values()
+        else:
+            return False
 
     @property
     def comment(self) -> str:
@@ -153,7 +225,7 @@ class RegisteredFile(File):
         str
             File uid.
         """
-        return self.__usage
+        return self.__tag
 
     @property
     def usage(self) -> RegisteredFileUsage:
