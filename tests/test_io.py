@@ -8,6 +8,7 @@ import pytest
 from ansys.optislang.core.io import File, FileOutputFormat, RegisteredFile, RegisteredFileUsage
 
 CURRENT_FILE = __file__
+NON_EXISTING_FILE = Path().cwd() / "non_existing.py"
 
 
 # region TEST ENUMERATION METHODS:
@@ -61,7 +62,7 @@ def test_file_output_format(registered_file_usage: RegisteredFileUsage, name: st
 def test_file():
     """Test ``File`` class."""
     existing_file = File(CURRENT_FILE)
-    non_existing_file = File(r"XX\XX")
+    non_existing_file = File(NON_EXISTING_FILE)
 
     assert isinstance(existing_file.exists, bool)
     assert isinstance(non_existing_file.exists, bool)
@@ -70,7 +71,7 @@ def test_file():
 
     assert isinstance(existing_file.filename, str)
     assert existing_file.filename == "test_io.py"
-    assert non_existing_file.filename == "XX"
+    assert non_existing_file.filename == "non_existing.py"
 
     assert isinstance(existing_file.last_modified_seconds, float)
     assert non_existing_file.last_modified_seconds == None
