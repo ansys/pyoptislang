@@ -164,11 +164,11 @@ class RegisteredFile(File):
         self.__usage = usage
 
     def __eq__(self, other: File) -> bool:
-        r"""Compare properties of two instances of the ``File`` class.
+        r"""Compare properties of two instances of the ``RegisteredFile`` class.
 
         Parameters
         ----------
-        other: File
+        other: RegisteredFile
             File for comparison.
 
         Returns

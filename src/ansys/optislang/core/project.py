@@ -154,7 +154,7 @@ class Project:
         return self.root_system.get_reference_design()
 
     def get_registered_files(self) -> Tuple[RegisteredFile]:
-        """Get all registered files in current project.
+        """Get all registered files in the current project.
 
         Returns
         -------

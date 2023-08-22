@@ -863,7 +863,6 @@ class ParametricSystem(System):
         wdirs = [Path(status_info["working dir"]) for status_info in statuses_info]
         omdb_files = []
         for wdir in wdirs:
-            # omdb_paths.extend([path for path in wdir.iterdir() if path.suffix == ".omdb"])
             omdb_files.extend([File(path) for path in wdir.glob("*.omdb")])
         return tuple(omdb_files)
 
@@ -874,7 +873,7 @@ class ParametricSystem(System):
         format: FileOutputFormat = FileOutputFormat.JSON,
         dir: Union[Path, str] = None,
     ) -> File:
-        """Save designs for given state.
+        """Save designs for a given state.
 
         Parameters
         ----------
