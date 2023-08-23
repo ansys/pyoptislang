@@ -1,10 +1,16 @@
 """Contains classes for a node, system, parametric system, and root system."""
 from __future__ import annotations
 
+from collections import OrderedDict
 import copy
+import csv
 from enum import Enum
+from io import StringIO
+import json
+from pathlib import Path
 from typing import TYPE_CHECKING, Dict, Iterable, List, Tuple, Union
 
+from ansys.optislang.core.io import File, FileOutputFormat, RegisteredFile, RegisteredFileUsage
 from ansys.optislang.core.project_parametric import (
     ConstraintCriterion,
     CriteriaManager,
@@ -88,25 +94,6 @@ class Node:
             Unique ID of the node.
         """
         return self.__uid
-
-    def _get_info(self) -> dict:
-        """Get the raw server output with the node info.
-
-        Returns
-        -------
-        dict
-            Dictionary with the node info.
-
-        Raises
-        ------
-        OslCommunicationError
-            Raised when an error occurs while communicating with the server.
-        OslCommandError
-            Raised when a command or query fails.
-        TimeoutError
-            Raised when the timeout float value expires.
-        """
-        return self._osl_server.get_actor_info(self.uid)
 
     def get_name(self) -> str:
         """Get the name of the node.
@@ -203,6 +190,90 @@ class Node:
         """
         return self._osl_server.get_actor_properties(self.uid)
 
+    def get_registered_files(self) -> Tuple[RegisteredFile]:
+        """Get node's registered files.
+
+        Returns
+        -------
+        Tuple[RegisteredFile]
+            Tuple of registered files.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        registered_files_uids = self._get_info()["registered_files"]
+        if not registered_files_uids:
+            return ()
+        project_registered_files = self._osl_server.get_basic_project_info()["projects"][0][
+            "registered_files"
+        ]
+        return tuple(
+            [
+                RegisteredFile(
+                    path=Path(file["local_location"]["split_path"]["head"])
+                    / file["local_location"]["split_path"]["tail"],
+                    id=file["ident"],
+                    comment=file["comment"],
+                    tag=file["tag"],
+                    usage=file["usage"],
+                )
+                for file in project_registered_files
+                if file["tag"] in registered_files_uids
+            ]
+        )
+
+    def get_result_files(self) -> Tuple[RegisteredFile]:
+        """Get node's result files.
+
+        Returns
+        -------
+        Tuple[RegisteredFile]
+            Tuple of result files.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        return tuple(
+            filter(
+                lambda file: file.usage == RegisteredFileUsage.OUTPUT_FILE,
+                self.get_registered_files(),
+            )
+        )
+
+    def get_states_ids(self) -> Tuple[str]:
+        """Get available actor states ids.
+
+        Returns
+        -------
+        Tuple[str]
+            Actor states ids.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        states = self._osl_server.get_actor_states(self.uid)
+        if not states.get("states", None):
+            return tuple([])
+        return tuple([state["hid"] for state in states["states"]])
+
     def get_status(self) -> str:
         """Get the status of the node.
 
@@ -242,32 +313,6 @@ class Node:
         """
         actor_info = self._osl_server.get_actor_info(uid=self.__uid)
         return actor_info["type"]
-
-    def _get_parent_uid(self) -> str:
-        """Get the unique ID of the parent node.
-
-        Return
-        ------
-        str
-            Unique ID of the parent node.
-
-        Raises
-        ------
-        OslCommunicationError
-            Raised when an error occurs while communicating with the server.
-        OslCommandError
-            Raised when a command or query fails.
-        TimeoutError
-            Raised when the timeout float value expires.
-        """
-        project_tree = self._osl_server.get_full_project_tree_with_properties()
-        root_system_uid = project_tree["projects"][0]["system"]["uid"]
-        parent_tree = project_tree["projects"][0]["system"]
-        return Node._find_parent_node_uid(
-            tree=parent_tree,
-            parent_uid=root_system_uid,
-            node_uid=self.uid,
-        )
 
     def _create_nodes_from_properties_dicts(
         self, properties_dicts_list: List[dict]
@@ -309,6 +354,71 @@ class Node:
                 )
 
         return tuple(nodes_list)
+
+    def _get_info(self) -> dict:
+        """Get the raw server output with the node info.
+
+        Returns
+        -------
+        dict
+            Dictionary with the node info.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        return self._osl_server.get_actor_info(self.uid)
+
+    def _get_parent_uid(self) -> str:
+        """Get the unique ID of the parent node.
+
+        Return
+        ------
+        str
+            Unique ID of the parent node.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        project_tree = self._osl_server.get_full_project_tree_with_properties()
+        root_system_uid = project_tree["projects"][0]["system"]["uid"]
+        parent_tree = project_tree["projects"][0]["system"]
+        return Node._find_parent_node_uid(
+            tree=parent_tree,
+            parent_uid=root_system_uid,
+            node_uid=self.uid,
+        )
+
+    def _get_status_info(self) -> Tuple[dict]:
+        """Get node's status info for each state.
+
+        Returns
+        -------
+        Tuple[dict]
+            Tuple with status info dictionary for each state.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        hids = self.get_states_ids()
+        return tuple([self._osl_server.get_actor_status_info(self.uid, hid) for hid in hids])
 
     def _is_parametric_system(self, uid: str) -> bool:
         """Check if the system is parametric.
@@ -731,6 +841,187 @@ class ParametricSystem(System):
             Instance of the ``ResponseManager`` class.
         """
         return self.__response_manager
+
+    def get_omdb_files(self) -> Tuple[File]:
+        """Get paths to omdb files.
+
+        Returns
+        -------
+        Tuple[File]
+            Tuple with File objects containing path.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        statuses_info = self._get_status_info()
+        wdirs = [Path(status_info["working dir"]) for status_info in statuses_info]
+        omdb_files = []
+        for wdir in wdirs:
+            omdb_files.extend([File(path) for path in wdir.glob("*.omdb")])
+        return tuple(omdb_files)
+
+    def save_designs_as(
+        self,
+        hid: str,
+        file_name: str,
+        format: FileOutputFormat = FileOutputFormat.JSON,
+        dir: Union[Path, str] = None,
+    ) -> File:
+        """Save designs for a given state.
+
+        Parameters
+        ----------
+        hid : str
+            Actor's state.
+        file_name : str
+            Name of the file.
+        format : FileOutputFormat, optional
+            Format of the file, by default ``FileOutputFormat.JSON``.
+        dir : Union[Path, str], optional
+            Directory, where file should be saved, by default ``None``.
+            Project's working directory is used by default.
+
+        Returns
+        -------
+        File
+            Object representing saved file.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        TypeError
+            Raised when incorrect type of ``dir`` is passed.
+        ValueError
+            Raised when unsupported value of ``format`` or non-existing ``hid``
+            is passed.
+        """
+        if dir is not None and isinstance(dir, str):
+            dir = Path(dir)
+        elif dir is None:
+            dir = self._osl_server.get_working_dir()
+
+        if not isinstance(dir, Path):
+            raise TypeError(f"Unsupported type of dir: `{type(dir)}`.")
+
+        designs = self._get_designs_dicts()
+        if not designs.get(hid):
+            raise ValueError(f"Design for given hid: `{hid}` not available.")
+
+        if format == FileOutputFormat.JSON:
+            output_file = json.dumps(designs[hid])
+            newline = None
+        elif format == FileOutputFormat.CSV:
+            output_file = self.__class__.__convert_design_dict_to_csv(designs[hid])
+            newline = ""
+        else:
+            raise ValueError(f"Output type `{format}` is not supported.")
+
+        output_file_path = dir / (file_name + format.to_str())
+        with open(output_file_path, "w", newline=newline) as f:
+            f.write(output_file)
+        return File(output_file_path)
+
+    def _get_designs_dicts(self) -> OrderedDict:
+        """Get parametric system's designs.
+
+        Returns
+        -------
+        OrderedDict
+            Ordered dictionary of designs, key is hid and value
+            is list of corresponding designs.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        statuses_info = self._get_status_info()
+        if not statuses_info:
+            return {}
+        designs = {}
+        # TODO: sort by hid? -> delete / use OrderedDict
+        for status_info in statuses_info:
+            designs[status_info["hid"]] = status_info["designs"]
+            for idx, design in enumerate(designs[status_info["hid"]]["values"]):
+                self.__class__.__append_status_info_to_design(
+                    design, status_info["design_status"][idx]
+                )
+        for i in range(2, len(statuses_info[0]["designs"]["values"][0]["hid"].split("."))):
+            designs = self.__class__.__sort_dict_by_key_hid(
+                designs, max(1, len(statuses_info[0]["designs"]["values"][0]["hid"].split(".")) - i)
+            )
+        for hid, design in designs.items():
+            # sort by design number, stripped from hid prefix
+            # (0.10, 0.9 ..., 0.1) -> (0.1, ..., 0.9, 0.10)
+            design["values"] = self.__class__.__sort_list_of_dicts_by_hid(
+                design["values"], len(hid.split("."))
+            )
+        return designs
+
+    @staticmethod
+    def __append_status_info_to_design(design: dict, status_info: dict) -> None:
+        if design["hid"] != status_info["id"]:
+            raise ValueError(f'{design["hid"]} != {status_info["id"]}')
+        to_append = {
+            key: status_info[key] for key in ("feasible", "status", "pareto_design", "directory")
+        }
+        design.update(to_append)
+
+    @staticmethod
+    def __convert_design_dict_to_csv(designs: dict) -> str:
+        csv_buffer = StringIO()
+        try:
+            csv_writer = csv.writer(csv_buffer)
+            header = ["Design"]
+            header.append("Feasible")
+            header.append("Status")
+            header.append("Pareto")
+            header.extend(designs["constraint_names"])
+            header.extend(designs["limit_state_names"])
+            header.extend(designs["objective_names"])
+            header.extend(designs["parameter_names"])
+            header.extend(designs["response_names"])
+            csv_writer.writerow(header)
+            for design in designs["values"]:
+                line = [design["hid"]]
+                line.append(design["feasible"])
+                line.append(design["status"])
+                line.append(design["pareto_design"])
+                line.extend(design["constraint_values"])
+                line.extend(design["limit_state_values"])
+                line.extend(design["objective_values"])
+                line.extend(design["parameter_values"])
+                line.extend(design["response_values"])
+                csv_writer.writerow(line)
+            return csv_buffer.getvalue()
+        finally:
+            if csv_buffer is not None:
+                csv_buffer.close()
+
+    @staticmethod
+    def __sort_list_of_dicts_by_hid(unsorted_list: List[dict], sort_by_position: int) -> List[dict]:
+        sort_key = lambda x: int(x["hid"].split(".")[sort_by_position])
+        return sorted(unsorted_list, key=sort_key)
+
+    @staticmethod
+    def __sort_dict_by_key_hid(unsorted_dict: dict, sort_by_position: int) -> dict:
+        sort_key = lambda item: int(item[0].split(".")[sort_by_position])
+        return OrderedDict(sorted(unsorted_dict.items(), key=sort_key))
 
 
 class RootSystem(ParametricSystem):
