@@ -314,6 +314,21 @@ class Node:
         actor_info = self._osl_server.get_actor_info(uid=self.__uid)
         return actor_info["type"]
 
+    def get_hids(self) -> list:
+        """Return the hirearchical ID (hid) of the actor.
+
+        Returns
+        -------
+        list
+            List of hids.
+        """
+        actor_states = self._osl_server.get_actor_states(self.__uid)
+        if "states" in actor_states.keys():
+            if len(actor_states["states"]):
+                return [state["hid"] for state in actor_states["states"]]
+        else:
+            return []
+
     def _create_nodes_from_properties_dicts(
         self, properties_dicts_list: List[dict]
     ) -> Tuple[Node, ...]:
