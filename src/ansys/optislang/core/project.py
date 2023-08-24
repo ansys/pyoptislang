@@ -5,7 +5,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Tuple
 
 from ansys.optislang.core.io import RegisteredFile, RegisteredFileUsage
-from ansys.optislang.core.nodes import RootSystem
+from ansys.optislang.core.nodes import Node, RootSystem, System
 
 if TYPE_CHECKING:
     from ansys.optislang.core.osl_server import OslServer
@@ -227,6 +227,45 @@ class Project:
             Raised when the timeout float value expires.
         """
         return self.__osl_server.get_project_status()
+
+    def get_project_tree(self) -> list:
+        """Return the project tree in a list format.
+
+        Returns
+        -------
+        List
+            List with project tree.
+        """
+        project_tree = [
+            {
+                "uid": self.__root_system.uid,
+                "name": self.__root_system.get_name(),
+                "is_root": True,
+                "kind": str(type(self.__root_system).__name__),
+                "level": 0,
+            }
+        ]
+        return self._get_child_node_tree(self.__root_system, project_tree)
+
+    def _get_child_node_tree(self, node: Node, project_tree: list) -> list:
+        level = project_tree[-1]["level"]
+
+        for i, child_node in enumerate(node.get_nodes()):
+            if i == 0:
+                level += 1
+            project_tree.append(
+                {
+                    "uid": child_node.uid,
+                    "name": child_node.get_name(),
+                    "is_root": False,
+                    "kind": str(type(child_node).__name__),
+                    "level": level,
+                }
+            )
+            if isinstance(child_node, System):
+                project_tree = self._get_child_node_tree(child_node, project_tree)
+
+        return project_tree
 
     @property
     def parameter_manager(self) -> ParameterManager:
