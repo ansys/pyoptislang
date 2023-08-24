@@ -504,7 +504,8 @@ class System(Node):
             Unique ID of the node.
         search_depth: int, optional
             Depth of the node subtree to search. The default is ``1``, which corresponds
-            to direct children nodes of the current system.
+            to direct children nodes of the current system. Set to ``-1`` to search throughout
+            the full depth.
 
         Returns
         -------
@@ -732,7 +733,7 @@ class System(Node):
         current_depth: int
             Current depth of the search.
         max_search_depth: int
-            Maximum depth of the search.
+            Maximum depth of the search. Set to ``-1`` to search throughout the full depth.
 
         Returns
         -------
@@ -751,7 +752,12 @@ class System(Node):
                         "kind": node["kind"],
                     }
                 )
-            if node["kind"] == "system" and current_depth < max_search_depth:
+            if (
+                node["kind"] == "system"
+                and current_depth < max_search_depth
+                or node["kind"] == "system"
+                and max_search_depth == -1
+            ):
                 System._find_node_with_uid(
                     uid=uid,
                     tree=node,
