@@ -8,6 +8,7 @@ from enum import Enum
 from io import StringIO
 import json
 from pathlib import Path
+import time
 from typing import TYPE_CHECKING, Dict, Iterable, List, Tuple, Union
 
 from ansys.optislang.core.io import File, FileOutputFormat, RegisteredFile, RegisteredFileUsage
@@ -26,6 +27,25 @@ from ansys.optislang.core.utils import enum_from_str
 if TYPE_CHECKING:
     from ansys.optislang.core.osl_server import OslServer
     from ansys.optislang.core.project_parametric import Criterion
+
+from ansys.optislang.core import server_commands as commands
+
+PROJECT_COMMANDS_RETURN_STATES = {
+    "start": "PROCESSING",
+    "restart": "PROCESSING",
+    "stop": "STOPPED",
+    "stop_gently": "GENTLY_STOPPED",
+    "reset": "FINISHED",
+}
+
+
+ACTOR_COMMANDS_RETURN_STATES = {
+    "start": "Running",
+    "restart": "Running",
+    "stop": "Aborted",
+    "stop_gently": "Gently stopped",
+    "reset": "Finished",
+}
 
 
 class DesignFlow(Enum):
@@ -314,20 +334,63 @@ class Node:
         actor_info = self._osl_server.get_actor_info(uid=self.__uid)
         return actor_info["type"]
 
-    def get_hids(self) -> list:
-        """Return the hirearchical ID (hid) of the actor.
+    def control(
+        self,
+        command: str,
+        hid: str = None,
+        wait_for_completion: bool = True,
+        timeout: Union[float, int] = 100,
+    ) -> Union[str, None]:
+        """Control the node state.
 
-        Returns
-        -------
-        list
-            List of hids.
+        Parameters
+        ----------
+        command: str
+            Command to be executed. Posisble values are ``restart``, ``stop_gently``, ``stop`` and
+            ``reset``.
+        hid: str, opt
+            Hid entry. The actor uid is required.
+        wait_for_completion: bool, opt
+            True/False
+        timeout: Union[float, int], opt
+            Time limit for monitoring the status of the command. Default is 100 s.
+
+        Return
+        ------
+        str
+            success/failure
         """
-        actor_states = self._osl_server.get_actor_states(self.__uid)
-        if "states" in actor_states.keys():
-            if len(actor_states["states"]):
-                return [state["hid"] for state in actor_states["states"]]
-        else:
-            return []
+        if not hid:  # Run command against all designs
+            hids = self.get_states_ids()
+        else:  # Run command against the given design
+            hids = [hid]
+
+        for hid in hids:
+            response = self._osl_server.send_command(
+                getattr(commands, command)(actor_uid=self.uid, hid=hid)
+            )
+            if response[0]["status"] != "success":
+                raise Exception(f"{command} command execution failed.")
+
+        if wait_for_completion:
+            time_stamp = time.time()
+            while True:
+                print(
+                    f"Project: {self.get_name()} | "
+                    f"State: {self.get_status()} | "
+                    f"Time: {round(time.time() - time_stamp)}s"
+                )
+                if self.get_status() == ACTOR_COMMANDS_RETURN_STATES[command]:
+                    print(f"{command} command successfully executed.")
+                    status = "success"
+                    break
+                if (time.time() - time_stamp) > timeout:
+                    print("Timeout limit reached. Skip monitoring of command {command}.")
+                    status = "failure"
+                    break
+                time.sleep(3)
+
+            return status
 
     def _create_nodes_from_properties_dicts(
         self, properties_dicts_list: List[dict]
@@ -1224,6 +1287,50 @@ class RootSystem(ParametricSystem):
             first=design.parameters_names,
             second=self.parameter_manager.get_parameters_names(),
         )
+
+    def control(
+        self, command: str, wait_for_completion: bool = True, timeout: Union[float, int] = 100
+    ) -> Union[str, None]:
+        """Control the node state.
+
+        Parameters
+        ----------
+        command: str
+            Command to be executed. Posisble values are ``restart``, ``stop_gently``, ``stop`` and
+            ``reset``.
+        wait_for_completion: bool, opt
+            True/False
+        timeout: Union[float, int], opt
+            Time limit for monitoring the status of the command. Default is 100 s.
+
+        Return
+        ------
+        str
+            success/failure
+        """
+        response = self._osl_server.send_command(getattr(commands, command)())
+        if response[0]["status"] != "success":
+            raise Exception(f"{command} command execution failed.")
+
+        if wait_for_completion:
+            time_stamp = time.time()
+            while True:
+                print(
+                    f"Project: {self.get_name()} | "
+                    f"State: {self.get_status()} | "
+                    f"Time: {round(time.time() - time_stamp)}s"
+                )
+                if self.get_status() == PROJECT_COMMANDS_RETURN_STATES[command]:
+                    print(f"{command} command successfully executed.")
+                    status = "success"
+                    break
+                if (time.time() - time_stamp) > timeout:
+                    print("Timeout limit reached. Skip monitoring of command {command}.")
+                    status = "failure"
+                    break
+                time.sleep(3)
+
+            return status
 
     @staticmethod
     def __categorize_criteria(criteria: Tuple[Criterion]) -> Dict[str, List[Criterion]]:
