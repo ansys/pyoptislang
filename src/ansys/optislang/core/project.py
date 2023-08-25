@@ -228,7 +228,7 @@ class Project:
         """
         return self.__osl_server.get_project_status()
 
-    def get_project_tree(self) -> list:
+    def _get_project_tree(self) -> list:
         """Return the project tree in a list format.
 
         Returns
