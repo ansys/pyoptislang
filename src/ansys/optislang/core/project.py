@@ -5,7 +5,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Tuple
 
 from ansys.optislang.core.io import RegisteredFile, RegisteredFileUsage
-from ansys.optislang.core.nodes import Node, RootSystem, System
+from ansys.optislang.core.nodes import RootSystem
 
 if TYPE_CHECKING:
     from ansys.optislang.core.osl_server import OslServer
@@ -234,37 +234,52 @@ class Project:
         Returns
         -------
         List
-            List with project tree.
+            List with all the nodes in the project tree.
         """
+        full_project_tree = self.__osl_server.get_full_project_tree()
         project_tree = [
             {
-                "uid": self.__root_system.uid,
-                "name": self.__root_system.get_name(),
+                "uid": full_project_tree["projects"][0]["system"]["uid"],
+                "name": full_project_tree["projects"][0]["system"]["name"],
                 "is_root": True,
-                "kind": str(type(self.__root_system).__name__),
+                "kind": full_project_tree["projects"][0]["system"]["kind"],
                 "level": 0,
             }
         ]
-        return self._get_child_node_tree(self.__root_system, project_tree)
+        return self._get_child_nodes(
+            full_project_tree["projects"][0]["system"]["nodes"], project_tree
+        )
 
-    def _get_child_node_tree(self, node: Node, project_tree: list) -> list:
+    def _get_child_nodes(self, node_properties: dict, project_tree: list) -> list:
+        """Recursively walk throughout the full_project_tree and collect the nodes.
+
+        Parameters
+        ----------
+        node_properties : dict
+            Properties of the node from the full_project_tree querie.
+        project_tree: list
+           Current lList with collected nodes from the project tree.
+
+        Returns
+        -------
+        List
+            Updated list with collected nodes from the project tree.
+        """
         level = project_tree[-1]["level"]
-
-        for i, child_node in enumerate(node.get_nodes()):
+        for i, child_node_properties in enumerate(node_properties):
             if i == 0:
                 level += 1
             project_tree.append(
                 {
-                    "uid": child_node.uid,
-                    "name": child_node.get_name(),
+                    "uid": child_node_properties["uid"],
+                    "name": child_node_properties["name"],
                     "is_root": False,
-                    "kind": str(type(child_node).__name__),
+                    "kind": child_node_properties["kind"],
                     "level": level,
                 }
             )
-            if isinstance(child_node, System):
-                project_tree = self._get_child_node_tree(child_node, project_tree)
-
+            if "nodes" in child_node_properties.keys():
+                project_tree = self._get_child_nodes(child_node_properties["nodes"], project_tree)
         return project_tree
 
     @property
