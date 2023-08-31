@@ -251,7 +251,7 @@ class Project:
         )
 
     def _get_child_nodes(self, node_properties: dict, project_tree: list) -> list:
-        """Recursively walk throughout the full_project_tree and collect the nodes.
+        """Recursively walk throughout the full project tree and collect the nodes.
 
         Parameters
         ----------
