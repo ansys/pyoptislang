@@ -762,8 +762,8 @@ class System(Node):
         current_depth: int
             Current depth of the search.
         max_search_depth: int, optional
-            Maximum depth of the search. Set to ``-1`` to search throughout the full depth.
-            Defaults to ``1``.
+            Maximum depth of the search. The default is ``1``. Set to ``-1``
+            to search throughout the full depth.
 
         Returns
         -------
