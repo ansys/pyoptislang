@@ -355,8 +355,8 @@ class Node:
         timeout: Union[float, int], optional
             Time limit for monitoring the status of the command. The default is ``100 s``.
 
-        Return
-        ------
+        Returns
+        -------
         boolean
             ``True`` when successful, ``False`` when failed.
         """
@@ -1306,8 +1306,8 @@ class RootSystem(ParametricSystem):
         timeout: Union[float, int], opt
             Time limit for monitoring the status of the command. Default is 100 s.
 
-        Return
-        ------
+        Returns
+        -------
         boolean
             ``True`` when successful, ``False`` when failed.
         """
