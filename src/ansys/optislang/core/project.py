@@ -263,7 +263,7 @@ class Project:
         Returns
         -------
         List
-            Updated list with collected nodes from the project tree.
+            Updated list with collected nodes from the full project tree.
         """
         level = project_tree[-1]["level"]
         for i, child_node_properties in enumerate(node_properties):
