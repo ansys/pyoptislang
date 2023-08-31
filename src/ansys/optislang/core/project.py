@@ -256,9 +256,9 @@ class Project:
         Parameters
         ----------
         node_properties : dict
-            Properties of the node from the full_project_tree querie.
+            Properties of the node from querying the full project tree.
         project_tree: list
-           Current lList with collected nodes from the project tree.
+           List with nodes collected from the full project tree.
 
         Returns
         -------
