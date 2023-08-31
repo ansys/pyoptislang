@@ -1299,8 +1299,8 @@ class RootSystem(ParametricSystem):
         Parameters
         ----------
         command: str
-            Command to be executed. Posisble values are ``restart``, ``stop_gently``, ``stop`` and
-            ``reset``.
+            Command to execute. Options are ``"restart"``, ``"stop_gently"``, ``"stop"``
+            and ``"reset"``.
         wait_for_completion: bool, opt
             True/False
         timeout: Union[float, int], opt
