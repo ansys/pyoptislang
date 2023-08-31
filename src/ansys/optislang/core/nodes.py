@@ -346,14 +346,14 @@ class Node:
         Parameters
         ----------
         command: str
-            Command to be executed. Posisble values are ``restart``, ``stop_gently``, ``stop`` and
-            ``reset``.
-        hid: str, opt
-            Hid entry. The actor uid is required.
-        wait_for_completion: bool, opt
-            True/False
-        timeout: Union[float, int], opt
-            Time limit for monitoring the status of the command. Default is 100 s.
+            Command to execute. Options are ``"restart"``, ``"stop_gently"``, ``"stop"``, and
+            ``"reset"``.
+        hid: str, optional
+            Hid entry. The default is ``None``. The actor unique ID is required.
+        wait_for_completion: bool, optional
+            Whether to wait for completion. The default is ``True``.
+        timeout: Union[float, int], optional
+            Time limit for monitoring the status of the command. The default is ``100 s``.
 
         Return
         ------
