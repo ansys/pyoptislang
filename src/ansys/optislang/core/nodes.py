@@ -357,8 +357,8 @@ class Node:
 
         Return
         ------
-        str
-            success/failure
+        boolean
+            ``True`` when successful, ``False`` when failed.
         """
         if not hid:  # Run command against all designs
             hids = self.get_states_ids()
@@ -382,11 +382,11 @@ class Node:
                 )
                 if self.get_status() == ACTOR_COMMANDS_RETURN_STATES[command]:
                     print(f"{command} command successfully executed.")
-                    status = "success"
+                    status = True
                     break
                 if (time.time() - time_stamp) > timeout:
                     print("Timeout limit reached. Skip monitoring of command {command}.")
-                    status = "failure"
+                    status = False
                     break
                 time.sleep(3)
 
@@ -817,7 +817,7 @@ class System(Node):
         max_search_depth: int, optional
             Maximum depth of the search. The default is ``1``. Set to ``-1``
             to search throughout the full depth.
-            
+
 
         Returns
         -------
@@ -1308,8 +1308,8 @@ class RootSystem(ParametricSystem):
 
         Return
         ------
-        str
-            success/failure
+        boolean
+            ``True`` when successful, ``False`` when failed.
         """
         response = self._osl_server.send_command(getattr(commands, command)())
         if response[0]["status"] != "success":
@@ -1325,11 +1325,11 @@ class RootSystem(ParametricSystem):
                 )
                 if self.get_status() == PROJECT_COMMANDS_RETURN_STATES[command]:
                     print(f"{command} command successfully executed.")
-                    status = "success"
+                    status = True
                     break
                 if (time.time() - time_stamp) > timeout:
                     print("Timeout limit reached. Skip monitoring of command {command}.")
-                    status = "failure"
+                    status = False
                     break
                 time.sleep(3)
 
