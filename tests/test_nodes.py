@@ -98,6 +98,12 @@ def test_node_queries(optislang: Optislang):
         print(node)
     assert dnr is None
 
+    for command in ["start", "restart", "stop_gently", "stop", "reset"]:
+        output = node.control(command, wait_for_completion=False)
+        assert isinstance(output, None)
+        output = node.control(command, timeout=3)
+        assert isinstance(output, bool)
+
     optislang.dispose()
 
 
