@@ -346,8 +346,8 @@ class Node:
         Parameters
         ----------
         command: str
-            Command to execute. Options are ``"restart"``, ``"stop_gently"``, ``"stop"``, and
-            ``"reset"``.
+            Command to execute. Options are ``"start"``, ``"restart"``, ``"stop_gently"``,
+            ``"stop"``, and ``"reset"``.
         hid: str, optional
             Hid entry. The default is ``None``. The actor unique ID is required.
         wait_for_completion: bool, optional
@@ -362,6 +362,11 @@ class Node:
         """
         if not hid:  # Run command against all designs
             hids = self.get_states_ids()
+            if len(hids) == 0:
+                raise RuntimeError(
+                    "There are no hids available because the node has not been started yet."
+                    f" The {command} command cannot be executed."
+                )
         else:  # Run command against the given design
             hids = [hid]
 

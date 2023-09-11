@@ -101,6 +101,22 @@ def test_node_queries(optislang: Optislang):
     optislang.dispose()
 
 
+def test_control(optislang: Optislang):
+    """Test control methods of the instance of `Node` class."""
+    optislang.open(file_path=calculator_w_parameters)
+    project = optislang.project
+    root_system = project.root_system
+    node = root_system.find_nodes_by_name("Calculator")[0]
+
+    for command in ["start", "restart", "stop_gently", "stop", "reset"]:
+        output = node.control(command, wait_for_completion=False)
+        assert isinstance(output, None)
+        output = node.control(command, timeout=3)
+        assert isinstance(output, bool)
+
+    optislang.dispose()
+
+
 # TEST SYSTEM
 def test_find_node_by_uid(optislang: Optislang):
     """Test `find_node_by_uid`."""
