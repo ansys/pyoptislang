@@ -363,7 +363,7 @@ class Node:
         if not hid:  # Run command against all designs
             hids = self.get_states_ids()
             if len(hids) == 0:
-                raise Exception(f"Node wasn't executed. {command} command can'r be executed.")
+                raise Exception(f"Node wasn't executed. {command} command can't be executed.")
         else:  # Run command against the given design
             hids = [hid]
 
