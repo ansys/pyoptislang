@@ -363,7 +363,10 @@ class Node:
         if not hid:  # Run command against all designs
             hids = self.get_states_ids()
             if len(hids) == 0:
-                raise Exception(f"Node wasn't executed. {command} command can't be executed.")
+                raise RuntimeError(
+                    "There are no hids available because the node has not been started yet."
+                    f" The {command} command cannot be executed."
+                )
         else:  # Run command against the given design
             hids = [hid]
 
