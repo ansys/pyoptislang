@@ -1049,7 +1049,7 @@ class TcpOslServer(OslServer):
                 ],
             )
             listener.refresh_listener_registration = True
-            self.__listeners["main"] = listener
+            self.__listeners["main_listener"] = listener
             self.__start_listeners_registration_thread()
 
         osl_version = self.get_osl_version()
