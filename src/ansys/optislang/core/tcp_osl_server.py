@@ -1048,6 +1048,7 @@ class TcpOslServer(OslServer):
                     ServerNotification.SERVER_DOWN,
                 ],
             )
+            listener.refresh_listener_registration = True
             self.__listeners["main"] = listener
             self.__start_listeners_registration_thread()
 
