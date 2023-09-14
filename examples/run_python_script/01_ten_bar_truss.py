@@ -38,16 +38,16 @@ paths1 = examples.get_files("arsm_ten_bar_truss")
 paths2 = examples.get_files("ten_bar_modify_parameters")
 paths3 = examples.get_files("ten_bar_truss_lc2")
 
-osl.run_python_file(paths1[0])
-osl.run_python_file(paths2[0])
-osl.run_python_file(paths3[0])
+osl.application.project.run_python_file(paths1[0])
+osl.application.project.run_python_file(paths2[0])
+osl.application.project.run_python_file(paths3[0])
 
 #########################################################
 # Run workflow
 # ~~~~~~~~~~~~
 # Run the workflow created by the preceding scripts.
 
-osl.start()
+osl.application.project.start()
 
 #########################################################
 # Optionally save project
@@ -58,7 +58,7 @@ osl.start()
 # .. code:: python
 #
 #   path = r'<insert-desired-location>'
-#   osl.save_as(os.path.join(path, "test_project.opf"))
+#   osl.application.save_as(os.path.join(path, "test_project.opf"))
 #
 
 #########################################################

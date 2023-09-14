@@ -2,10 +2,10 @@
 
 Server commands
 ===============
-These methods are specific to the :mod:`ansys.optislang.core.server_commands <ansys.optislang.core.server_commands>` module
+These methods are specific to the :py:mod:`ansys.optislang.core.tcp.server_commands <ansys.optislang.core.tcp.server_commands>` module
 and can be used to generate commands to the optiSLang server:
 
-.. currentmodule:: ansys.optislang.core.server_commands
+.. currentmodule:: ansys.optislang.core.tcp.server_commands
 
 .. autosummary::
    :toctree: _autosummary

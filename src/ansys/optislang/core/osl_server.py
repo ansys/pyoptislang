@@ -15,6 +15,35 @@ class OslServer(ABC):
 
     @property
     @abstractmethod
+    def host(self) -> Union[str, None]:  # pragma no cover
+        """Get optiSLang server address or domain name.
+
+        Get a string representation of an IPv4/v6 address or domain name
+        of the running optiSLang server.
+
+        Returns
+        -------
+        timeout: Union[int, None]
+            The IPv4/v6 address or domain name of the running optiSLang server, if applicable.
+            Defaults to ``None``.
+        """
+        pass
+
+    @property
+    @abstractmethod
+    def port(self) -> Union[int, None]:  # pragma: no cover
+        """Get the port the osl server is listening on.
+
+        Returns
+        -------
+        timeout: Union[int, None]
+            The port the osl server is listening on, if applicable.
+            Defaults to ``None``.
+        """
+        pass
+
+    @property
+    @abstractmethod
     def timeout(self) -> Union[float, None]:  # pragma: no cover
         """Get current timeout value for execution of commands.
 

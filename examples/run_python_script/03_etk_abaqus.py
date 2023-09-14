@@ -35,7 +35,7 @@ print(osl)
 # script.
 
 paths = examples.get_files("etk_abaqus")
-osl.run_python_file(paths[0])
+osl.application.project.run_python_file(paths[0])
 
 #########################################################
 # Optionally save project
@@ -46,7 +46,7 @@ osl.run_python_file(paths[0])
 # .. code:: python
 #
 #   path = r'<insert-desired-location>'
-#   osl.save_as(os.path.join(path, "test_project.opf"))
+#   osl.application.save_as(os.path.join(path, "test_project.opf"))
 #
 
 #########################################################

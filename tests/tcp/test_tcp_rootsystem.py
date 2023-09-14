@@ -47,11 +47,12 @@ def test_get_reference_design(optislang: Optislang):
     assert isinstance(design.responses[0], DesignVariable)
 
 
-@pytest.mark.parametrize("update_design", [True, False])
-def test_evaluate_design(optislang: Optislang, tmp_path: Path, update_design: bool):
+def test_evaluate_design(optislang: Optislang, tmp_path: Path):
     """Test ``evaluate_design``."""
-    optislang.save_as(file_path=tmp_path / "test_modify_parameter.opf")
-    optislang.reset()
+    application = optislang.application
+    project = application.project
+    application.save_as(file_path=tmp_path / "test_modify_parameter.opf")
+    project.reset()
     project = optislang.project
     root_system = project.root_system
     design = Design(parameters=parameters)
@@ -59,47 +60,26 @@ def test_evaluate_design(optislang: Optislang, tmp_path: Path, update_design: bo
     assert design.id == None
     assert design.feasibility == None
     assert isinstance(design.variables, tuple)
-    result = root_system.evaluate_design(design=design, update_design=update_design)
+    result = root_system.evaluate_design(design=design)
     optislang.dispose()
-    if update_design:
-        assert isinstance(result, Design)
-        assert result.status == DesignStatus.SUCCEEDED
-        assert design.status == DesignStatus.SUCCEEDED
-        assert isinstance(result.responses, tuple)
-        assert isinstance(design.responses, tuple)
-        assert isinstance(result.responses[0], DesignVariable)
-        assert isinstance(design.responses[0], DesignVariable)
-        assert result.responses[0].value == 15
-        assert design.responses[0].value == 15
-        assert isinstance(result.constraints, tuple)
-        assert isinstance(design.constraints, tuple)
-        assert isinstance(result.limit_states, tuple)
-        assert isinstance(design.limit_states, tuple)
-        assert isinstance(result.objectives, tuple)
-        assert isinstance(design.objectives, tuple)
-        assert isinstance(result.variables, tuple)
-        assert isinstance(design.variables, tuple)
-        assert result.feasibility
-        assert design.feasibility
-    else:
-        assert isinstance(result, Design)
-        assert result.status == DesignStatus.SUCCEEDED
-        assert design.status == DesignStatus.IDLE
-        assert isinstance(result.responses, tuple)
-        assert isinstance(design.responses, tuple)
-        assert isinstance(result.responses[0], DesignVariable)
-        assert result.responses[0].value == 15
-        assert len(design.responses) == 0
-        assert isinstance(result.constraints, tuple)
-        assert isinstance(design.constraints, tuple)
-        assert isinstance(result.limit_states, tuple)
-        assert isinstance(design.limit_states, tuple)
-        assert isinstance(result.objectives, tuple)
-        assert isinstance(design.objectives, tuple)
-        assert isinstance(result.variables, tuple)
-        assert isinstance(design.variables, tuple)
-        assert result.feasibility
-        assert design.feasibility == None
+    assert isinstance(result, Design)
+    assert result.status == DesignStatus.SUCCEEDED
+    assert design.status == DesignStatus.IDLE
+    assert isinstance(result.responses, tuple)
+    assert isinstance(design.responses, tuple)
+    assert isinstance(result.responses[0], DesignVariable)
+    assert result.responses[0].value == 15
+    assert len(design.responses) == 0
+    assert isinstance(result.constraints, tuple)
+    assert isinstance(design.constraints, tuple)
+    assert isinstance(result.limit_states, tuple)
+    assert isinstance(design.limit_states, tuple)
+    assert isinstance(result.objectives, tuple)
+    assert isinstance(design.objectives, tuple)
+    assert isinstance(result.variables, tuple)
+    assert isinstance(design.variables, tuple)
+    assert result.feasibility
+    assert design.feasibility == None
 
 
 def test_design_structure(optislang: Optislang):

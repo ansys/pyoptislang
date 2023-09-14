@@ -1,7 +1,7 @@
 Managers
 ========
 
-.. currentmodule:: ansys.optislang.core.project_parametric
+.. currentmodule:: ansys.optislang.core.managers
    
 .. autosummary::
    :toctree: _autosummary

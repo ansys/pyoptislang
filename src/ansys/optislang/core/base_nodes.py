@@ -226,8 +226,8 @@ class Node(ABC):
     def get_ancestors(self) -> Tuple[Node, ...]:  # pragma: no cover
         """Get tuple of ordered ancestors starting from root system at position 0.
 
-        Return
-        ------
+        Returns
+        -------
         Tuple[Node, ...]
             Tuple of ordered ancestors, starting from root system at position.
 
@@ -407,7 +407,7 @@ class System(Node):
 
         Returns
         -------
-        TcpNodeProxy
+        Node
             Instance of the created node.
 
         Raises
@@ -622,6 +622,60 @@ class RootSystem(ParametricSystem):
         """
         pass
 
+    @abstractmethod
+    def get_missing_parameters_names(self, design: Design) -> Tuple[str, ...]:  # pragma: no cover
+        """Get the names of the parameters that are missing in a design.
+
+        This method compare design parameters with the root system's parameters.
+
+        Parameters
+        ----------
+        design: TcpDesign
+            Instance of the ``Design`` class with defined parameters.
+
+        Returns
+        -------
+        Tuple[str, ...]
+            Names of the parameters that are missing in the instance of ``Design`` class.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        pass
+
+    @abstractmethod
+    def get_undefined_parameters_names(self, design: Design) -> Tuple[str, ...]:  # pragma: no cover
+        """Get the names of the parameters that are not defined in the root system.
+
+        This method compare design parameters with the root system's parameters.
+
+        Parameters
+        ----------
+        design: TcpDesign
+            Instance of the ``Design`` class with defined parameters.
+
+        Returns
+        -------
+        Tuple[str, ...]
+            Names of the parameters that are not defined in the root system.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        pass
+
 
 class Slot(ABC):
     """Provides for creating and operating on slots."""
@@ -636,8 +690,8 @@ class Slot(ABC):
     def name(self) -> str:  # pragma: no cover
         """Get slot name.
 
-        Return
-        ------
+        Returns
+        -------
         str
             Slot name.
         """
@@ -648,8 +702,8 @@ class Slot(ABC):
     def node(self) -> Node:  # pragma: no cover
         """Get node to which the slot belongs.
 
-        Return
-        ------
+        Returns
+        -------
         Node
             Node to which the slot belongs.
         """
@@ -660,8 +714,8 @@ class Slot(ABC):
     def type(self) -> SlotType:  # pragma: no cover
         """Get slot type.
 
-        Return
-        ------
+        Returns
+        -------
         SlotType
             Type of current slot.
         """
@@ -672,8 +726,8 @@ class Slot(ABC):
     def type_hint(self) -> Union[str, None]:  # pragma: no cover
         """Get type hint.
 
-        Return
-        ------
+        Returns
+        -------
         Union[str, None]
             Data type of the current slot, ``None`` if not specified.
         """
@@ -759,8 +813,8 @@ class InputSlot(Slot):
         from_slot: Slot
             Sending (output) slot.
 
-        Return
-        ------
+        Returns
+        -------
         Edge
             Object determining connection.
 
@@ -791,7 +845,7 @@ class InputSlot(Slot):
         pass
 
 
-class TcpOutputSlotProxy(Slot):
+class OutputSlot(Slot):
     """Provides for creating and operating on output slots."""
 
     @abstractmethod
@@ -808,8 +862,8 @@ class TcpOutputSlotProxy(Slot):
         to_slot: Slot
             Receiving (input) slot
 
-        Return
-        ------
+        Returns
+        -------
         Edge
             Object determining connection.
 
@@ -840,7 +894,7 @@ class TcpOutputSlotProxy(Slot):
         pass
 
 
-class TcpInnerInputSlotProxy(Slot):
+class InnerInputSlot(Slot):
     """Provides for creating and operating on inner input slots."""
 
     @abstractmethod
@@ -857,8 +911,8 @@ class TcpInnerInputSlotProxy(Slot):
         from_slot: Slot
             Sending (output) slot.
 
-        Return
-        ------
+        Returns
+        -------
         Edge
             Object determining connection.
 
@@ -874,7 +928,7 @@ class TcpInnerInputSlotProxy(Slot):
         pass
 
 
-class TcpInnerOutputSlotProxy(Slot):
+class InnerOutputSlot(Slot):
     """Provides for creating and operating on inner output slots."""
 
     @abstractmethod
@@ -891,8 +945,8 @@ class TcpInnerOutputSlotProxy(Slot):
         to_slot: Slot
             Receiving (input) slot
 
-        Return
-        ------
+        Returns
+        -------
         Edge
             Object determining connection.
 
@@ -908,7 +962,6 @@ class TcpInnerOutputSlotProxy(Slot):
         pass
 
 
-# TODO: test (test_nodes_connection)
 class Edge:
     """Provides for creating and operating on connections."""
 

@@ -28,7 +28,7 @@ of the tools provided in this module to extend or modify these loggers.
 
 Logging API
 -----------
-These classes are specific to the :mod:`ansys.optislang.core.logging <ansys.optislang.core.logging>` module:
+These classes are specific to the :py:mod:`ansys.optislang.core.logging <ansys.optislang.core.logging>` module:
 
 .. currentmodule:: ansys.optislang.core.logging
 

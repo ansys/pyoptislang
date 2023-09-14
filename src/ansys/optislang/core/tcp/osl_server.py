@@ -17,7 +17,7 @@ import time
 from typing import Any, Callable, Dict, Iterable, List, Mapping, Optional, Sequence, Tuple, Union
 import uuid
 
-from deprecated import deprecated
+from deprecated.sphinx import deprecated
 
 from ansys.optislang.core.encoding import force_bytes, force_text
 from ansys.optislang.core.errors import (
@@ -801,7 +801,7 @@ class TcpOslServer(OslServer):
 
     TcpOslServer class provides explicit methods for accessing specific optiSLang API endpoints.
     Additionally, the generic
-    :mod:`send_command <ansys.optislang.core.tcp_osl_server.TcpOslServer.send_command>` method
+    :py:mod:`send_command <ansys.optislang.core.tcp_osl_server.TcpOslServer.send_command>` method
     can be used in conjunction with the convenience functions from the
     :ref:`ansys.optislang.core.tcp.tcp_server_queries <ref_osl_server_api_queries>` and
     :ref:`ansys.optislang.core.tcp.tcp_server_commands <ref_osl_server_api_commands>` modules.
@@ -1541,7 +1541,7 @@ class TcpOslServer(OslServer):
             queries.full_project_tree_with_properties(password=self.__password)
         )
 
-    @deprecated(version="0.2.1", reason="Use ``TcpOslServer.host`` instead.")
+    @deprecated(version="0.5.0", reason="Use :py:attr:`TcpOslServer.host` instead.")
     def get_host(self) -> Union[str, None]:
         """Get optiSLang server address or domain name.
 
@@ -1646,7 +1646,13 @@ class TcpOslServer(OslServer):
             )
         )
 
-    @deprecated(version="0.2.1", reason="Use ``TcpApplicationProxy.get_version_string()`` instead.")
+    @deprecated(
+        version="0.5.0",
+        reason=(
+            "This functionality was moved to "
+            ":py:class:`Application <ansys.optislang.core.application.Application>`."
+        ),
+    )
     def get_osl_version_string(self) -> str:
         """Get version of used optiSLang.
 
@@ -1667,7 +1673,13 @@ class TcpOslServer(OslServer):
         server_info = self.get_server_info()
         return server_info["application"]["version"]
 
-    @deprecated(version="0.2.1", reason="Use ``TcpApplicationProxy.get_version()`` instead.")
+    @deprecated(
+        version="0.5.0",
+        reason=(
+            "This functionality was moved to "
+            ":py:class:`Application <ansys.optislang.core.application.Application>`."
+        ),
+    )
     def get_osl_version(self) -> Tuple[Union[int, None], ...]:
         """Get version of used optiSLang.
 
@@ -1718,7 +1730,7 @@ class TcpOslServer(OslServer):
 
         return major_version, minor_version, maint_version, revision
 
-    @deprecated(version="0.2.1", reason="Use ``TcpOslServer.port`` instead.")
+    @deprecated(version="0.5.0", reason="Use :py:attr:`TcpOslServer.port` instead.")
     def get_port(self) -> Union[int, None]:
         """Get the port the osl server is listening on.
 
@@ -1730,7 +1742,13 @@ class TcpOslServer(OslServer):
         """
         return self.__port
 
-    @deprecated(version="0.2.1", reason="Use ``TcpProject.get_description()`` instead.")
+    @deprecated(
+        version="0.5.0",
+        reason=(
+            "This functionality was moved to "
+            ":py:class:`Project <ansys.optislang.core.project.Project>`."
+        ),
+    )
     def get_project_description(self) -> Union[str, None]:
         """Get description of optiSLang project.
 
@@ -1756,7 +1774,13 @@ class TcpOslServer(OslServer):
             project_info.get("projects", [{}])[0].get("settings", {}).get("short_description", None)
         )
 
-    @deprecated(version="0.2.1", reason="Use ``TcpProject.get_location()`` instead.")
+    @deprecated(
+        version="0.5.0",
+        reason=(
+            "This functionality was moved to "
+            ":py:class:`Project <ansys.optislang.core.project.Project>`."
+        ),
+    )
     def get_project_location(self) -> Union[Path, None]:
         """Get path to the optiSLang project file.
 
@@ -1779,7 +1803,13 @@ class TcpOslServer(OslServer):
         project_path = project_info.get("projects", [{}])[0].get("location", None)
         return None if not project_path else Path(project_path)
 
-    @deprecated(version="0.2.1", reason="Use ``TcpProject.get_name()`` instead.")
+    @deprecated(
+        version="0.5.0",
+        reason=(
+            "This functionality was moved to "
+            ":py:class:`Project <ansys.optislang.core.project.Project>`."
+        ),
+    )
     def get_project_name(self) -> Union[str, None]:
         """Get name of the optiSLang project.
 
@@ -1803,7 +1833,13 @@ class TcpOslServer(OslServer):
             return None
         return project_info.get("projects", [{}])[0].get("name", None)
 
-    @deprecated(version="0.2.1", reason="Use ``TcpProject.get_status()`` instead.")
+    @deprecated(
+        version="0.5.0",
+        reason=(
+            "This functionality was moved to "
+            ":py:class:`Project <ansys.optislang.core.project.Project>`."
+        ),
+    )
     def get_project_status(self) -> Union[str, None]:
         """Get status of the optiSLang project.
 
@@ -1822,12 +1858,15 @@ class TcpOslServer(OslServer):
         TimeoutError
             Raised when the timeout float value expires.
         """
-        project_info = self.get_basic_project_info()
-        if len(project_info.get("projects", [])) == 0:
-            return None
-        return project_info.get("projects", [{}])[0].get("state", None)
+        return self.__get_project_status()
 
-    @deprecated(version="0.2.1", reason="Use ``TcpProject.uid`` instead.")
+    @deprecated(
+        version="0.5.0",
+        reason=(
+            "This functionality was moved to "
+            ":py:class:`Project <ansys.optislang.core.project.Project>`."
+        ),
+    )
     def get_project_uid(self) -> str:
         """Get project uid.
 
@@ -1948,7 +1987,7 @@ class TcpOslServer(OslServer):
         """
         return self.send_command(queries.systems_status_info(password=self.__password))
 
-    @deprecated(version="0.2.1", reason="Use ``TcpOslServer.timeout`` instead.")
+    @deprecated(version="0.5.0", reason="Use :py:attr:`TcpOslServer.timeout` instead.")
     def get_timeout(self) -> Union[float, None]:
         """Get current timeout value for execution of commands.
 
@@ -1959,7 +1998,13 @@ class TcpOslServer(OslServer):
         """
         return self.__timeout
 
-    @deprecated(version="0.2.1", reason="Use ``TcpProject.get_working_dir()`` instead.")
+    @deprecated(
+        version="0.5.0",
+        reason=(
+            "This functionality was moved to "
+            ":py:class:`Project <ansys.optislang.core.project.Project>`."
+        ),
+    )
     def get_working_dir(self) -> Path:
         """Get path to the optiSLang project working directory.
 
@@ -2321,7 +2366,7 @@ class TcpOslServer(OslServer):
             )
         )
 
-    @deprecated(version="0.2.1", reason="Use ``TcpOslServer.timeout`` instead.")
+    @deprecated(version="0.5.0", reason="Use :py:attr:`TcpOslServer.timeout` instead.")
     def set_timeout(self, timeout: Union[float, None] = None) -> None:
         """Set timeout value for execution of commands.
 
@@ -2415,7 +2460,7 @@ class TcpOslServer(OslServer):
         successfully_started = False
         already_running = False
 
-        if self.get_project_status() == "PROCESSING":
+        if self.__get_project_status() == "PROCESSING":
             already_running = True
             self._logger.debug("Status PROCESSING")
 
@@ -2512,7 +2557,7 @@ class TcpOslServer(OslServer):
             exec_finished_listener.start_listening()
             self._logger.debug("Wait for finished thread was created.")
 
-        status = self.get_project_status()
+        status = self.__get_project_status()
 
         # do not send stop request if project is already stopped or request
         # with higher or equal priority was already sent
@@ -2802,6 +2847,29 @@ class TcpOslServer(OslServer):
         for listener in self.__listeners.values():
             listener.dispose()
         self.__listeners = {}
+
+    def __get_project_status(self) -> Union[str, None]:
+        """Get status of the optiSLang project.
+
+        Returns
+        -------
+        Union[str, None]
+            optiSLang project status. If no project is loaded in the optiSLang,
+            returns ``None``.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        project_info = self.get_basic_project_info()
+        if len(project_info.get("projects", [])) == 0:
+            return None
+        return project_info.get("projects", [{}])[0].get("state", None)
 
     def __refresh_listeners_registration(self) -> None:  # pragma: no cover
         """Refresh listeners registration.

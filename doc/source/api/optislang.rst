@@ -1,6 +1,6 @@
 Optislang
 =========
-These classes are specific to the :mod:`ansys.optislang.core.optislang <ansys.optislang.core.optislang>` module:
+These classes are specific to the :py:mod:`ansys.optislang.core.optislang <ansys.optislang.core.optislang>` module:
 
 .. currentmodule:: ansys.optislang.core.optislang
 

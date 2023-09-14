@@ -164,7 +164,8 @@ class TcpApplicationProxy(Application):
         """
         self.__osl_server.open(file_path=file_path, force=force, restore=restore, reset=reset)
         self.__project = TcpProjectProxy(
-            osl_server=self.__osl_server, uid=self.__osl_server.get_project_uid()
+            osl_server=self.__osl_server,
+            uid=self.__get_project_uid(),
         )
 
     def save(self) -> None:

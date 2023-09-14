@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING, Sequence, Tuple, Union
 
 if TYPE_CHECKING:
     from ansys.optislang.core.base_nodes import RootSystem
+    from ansys.optislang.core.project_parametric import Design
 
 
 class Project(ABC):
@@ -47,6 +48,34 @@ class Project(ABC):
         -------
         str
             Unique ID of the loaded project.
+        """
+        pass
+
+    @abstractmethod
+    def evaluate_design(
+        self,
+        design: Design,
+    ) -> Design:  # pragma: no cover
+        """Evaluate a design.
+
+        Parameters
+        ----------
+        design: Design
+            Instance of a ``Design`` class with defined parameters.
+
+        Returns
+        -------
+        Design
+            Evaluated design.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
         """
         pass
 
@@ -101,6 +130,26 @@ class Project(ABC):
         str
             Name of the optiSLang project. If no project is loaded in the optiSLang,
             ``None`` is returned.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        pass
+
+    @abstractmethod
+    def get_reference_design(self) -> Design:  # pragma: no cover
+        """Get a design with reference values of the parameters.
+
+        Returns
+        -------
+        Design
+            Instance of the ``Design`` class with defined parameters and reference values.
 
         Raises
         ------

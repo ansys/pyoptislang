@@ -4,21 +4,21 @@ from __future__ import annotations
 import logging
 from typing import TYPE_CHECKING, Any, Dict, Iterable, List, Tuple, Union
 
-from deprecated import deprecated
+from deprecated.sphinx import deprecated
 
 from ansys.optislang.core.base_nodes import (
     DesignFlow,
     Edge,
+    InnerInputSlot,
+    InnerOutputSlot,
     InputSlot,
     Node,
+    OutputSlot,
     ParametricSystem,
     RootSystem,
     Slot,
     SlotType,
     System,
-    TcpInnerInputSlotProxy,
-    TcpInnerOutputSlotProxy,
-    TcpOutputSlotProxy,
 )
 from ansys.optislang.core.node_types import AddinType, NodeType
 from ansys.optislang.core.project_parametric import (
@@ -146,8 +146,8 @@ class TcpNodeProxy(Node):
     def get_ancestors(self) -> Tuple[TcpNodeProxy, ...]:
         """Get tuple of ordered ancestors starting from root system at position 0.
 
-        Return
-        ------
+        Returns
+        -------
         Tuple[TcpNodeProxy, ...]
             Tuple of ordered ancestors, starting from root system at position.
 
@@ -213,11 +213,10 @@ class TcpNodeProxy(Node):
         """
         project_tree = self._osl_server.get_full_project_tree_with_properties()
         connections = project_tree.get("projects", [{}])[0].get("connections")
-        direction = SlotType.to_dir_str(type_=slot_type)
         filtered_connections = self._filter_connections(
             connections=connections,
             uid=self.uid,
-            direction=direction,
+            slot_type=slot_type,
             slot_name=slot_name,
         )
         edges = []
@@ -304,7 +303,7 @@ class TcpNodeProxy(Node):
         TimeoutError
             Raised when the timeout float value expires.
         """
-        return self._osl_server.get_actor_properties(uid=self.uid)
+        return self._osl_server.get_actor_properties(uid=self.uid)["properties"]
 
     def get_property(self, name: str) -> Any:
         """Get property from properties dictionary.
@@ -328,7 +327,7 @@ class TcpNodeProxy(Node):
         TimeoutError
             Raised when the timeout float value expires.
         """
-        return self._osl_server.get_actor_properties(uid=self.uid).get(name, None)
+        return self.get_properties().get(name, None)
 
     def get_slots(
         self, type_: Union[SlotType, None] = None, name: Union[str, None] = None
@@ -400,7 +399,7 @@ class TcpNodeProxy(Node):
         actor_info = self._osl_server.get_actor_info(uid=self.__uid)
         return actor_info["status"]
 
-    @deprecated(version="0.2.1", reason="Use ``TcpNodeProxy.type`` instead.")
+    @deprecated(version="0.5.0", reason="Use :py:attr:`TcpNodeProxy.type` instead.")
     def get_type(self) -> NodeType:
         """Get the type of the node.
 
@@ -464,8 +463,8 @@ class TcpNodeProxy(Node):
     def _get_parent_dict(self) -> dict:
         """Get the unique ID of the parent node.
 
-        Return
-        ------
+        Returns
+        -------
         dict
             Dictionary with necessary information for creating instance of parent node.
 
@@ -646,7 +645,7 @@ class TcpNodeProxy(Node):
             osl_server=self._osl_server, node=node, name=slot_name, type_=slot_type
         )
 
-    @deprecated(version="0.2.1", reason="Not used anymore.")
+    @deprecated(version="0.5.0", reason="Not used anymore.")
     def _is_parametric_system(self, uid: str) -> bool:
         """Check if the system is parametric.
 
@@ -802,8 +801,8 @@ class TcpNodeProxy(Node):
         was_found: list
             Empty list, until node_uid is located.
 
-        Return
-        ------
+        Returns
+        -------
         str
             Unique ID of the parent node.
 
@@ -958,8 +957,8 @@ class TcpNodeProxy(Node):
         node_uid: str
             Unique ID of the node for which to search for the parent.
 
-        Return
-        ------
+        Returns
+        -------
         dict
             Dictionary with necessary information for parent node creation.
 
@@ -1459,6 +1458,35 @@ class TcpRootSystemProxy(TcpParametricSystemProxy, RootSystem):
             input_design=design, evaluate_dict=evaluate_dict, results=output_dict[0]
         )
 
+    def get_missing_parameters_names(self, design: Design) -> Tuple[str, ...]:
+        """Get the names of the parameters that are missing in a design.
+
+        This method compare design parameters with the root system's parameters.
+
+        Parameters
+        ----------
+        design: TcpDesign
+            Instance of the ``Design`` class with defined parameters.
+
+        Returns
+        -------
+        Tuple[str, ...]
+            Names of the parameters that are missing in the instance of ``Design`` class.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        return __class__.__get_sorted_difference_of_sets(
+            first=self.parameter_manager.get_parameters_names(),
+            second=design.parameters_names,
+        )
+
     def get_reference_design(self) -> Design:
         """Get the design with reference values of the parameters.
 
@@ -1487,35 +1515,6 @@ class TcpRootSystemProxy(TcpParametricSystemProxy, RootSystem):
             objectives=sorted_criteria.get("objectives", []),
             variables=sorted_criteria.get("variables", []),
             responses=responses,
-        )
-
-    def get_missing_parameters_names(self, design: Design) -> Tuple[str, ...]:
-        """Get the names of the parameters that are missing in a design.
-
-        This method compare design parameters with the root system's parameters.
-
-        Parameters
-        ----------
-        design: TcpDesign
-            Instance of the ``Design`` class with defined parameters.
-
-        Returns
-        -------
-        Tuple[str, ...]
-            Names of the parameters that are missing in the instance of ``Design`` class.
-
-        Raises
-        ------
-        OslCommunicationError
-            Raised when an error occurs while communicating with the server.
-        OslCommandError
-            Raised when a command or query fails.
-        TimeoutError
-            Raised when the timeout float value expires.
-        """
-        return __class__.__get_sorted_difference_of_sets(
-            first=self.parameter_manager.get_parameters_names(),
-            second=design.parameters_names,
         )
 
     def get_undefined_parameters_names(self, design: Design) -> Tuple[str, ...]:
@@ -1561,8 +1560,8 @@ class TcpRootSystemProxy(TcpParametricSystemProxy, RootSystem):
         results: Dict
             Output from the evaluation of the input design.
 
-        Return
-        ------
+        Returns
+        -------
         Design
             Instance of the ``Design`` class with results.
         """
@@ -1719,8 +1718,8 @@ class TcpRootSystemProxy(TcpParametricSystemProxy, RootSystem):
         processed: dict
             Server output.
 
-        Return
-        ------
+        Returns
+        -------
         Tuple[Tuple[str, Union[float, str, bool], Union[float, str, bool]]]
             Tuple of parameters with different values before and after processing by server.
                 Tuple[0]: name
@@ -1760,7 +1759,6 @@ class TcpRootSystemProxy(TcpParametricSystemProxy, RootSystem):
         return tuple(diff)
 
 
-# TODO: test
 class TcpSlotProxy(Slot):
     """Provides for creating and operating on slots."""
 
@@ -1795,14 +1793,14 @@ class TcpSlotProxy(Slot):
 
     def __str__(self):
         """Return formatted string."""
-        return f"Slot type: {self.type.name} Name: {self.name()}"
+        return f"Slot type: {self.type.name} Name: {self.name}"
 
     @property
     def name(self) -> str:
         """Get slot name.
 
-        Return
-        ------
+        Returns
+        -------
         str
             Slot name.
         """
@@ -1812,8 +1810,8 @@ class TcpSlotProxy(Slot):
     def node(self) -> TcpNodeProxy:
         """Get node to which the slot belongs.
 
-        Return
-        ------
+        Returns
+        -------
         TcpNodeProxy
             Node to which the slot belongs.
         """
@@ -1823,8 +1821,8 @@ class TcpSlotProxy(Slot):
     def type(self) -> SlotType:
         """Get slot type.
 
-        Return
-        ------
+        Returns
+        -------
         SlotType
             Type of current slot.
         """
@@ -1834,8 +1832,8 @@ class TcpSlotProxy(Slot):
     def type_hint(self) -> Union[str, None]:
         """Get type hint.
 
-        Return
-        ------
+        Returns
+        -------
         Union[str, None]
             Data type of the current slot, ``None`` if not specified.
         """
@@ -1911,15 +1909,15 @@ class TcpSlotProxy(Slot):
                 osl_server=osl_server, node=node, name=name, type_=type_, type_hint=type_hint
             )
         elif type_ == SlotType.INNER_INPUT:
-            return TcpInnerInputSlotProxy(
+            return InnerInputSlot(
                 osl_server=osl_server, node=node, name=name, type_=type_, type_hint=type_hint
             )
         elif type_ == SlotType.OUTPUT:
-            return TcpOutputSlotProxy(
+            return OutputSlot(
                 osl_server=osl_server, node=node, name=name, type_=type_, type_hint=type_hint
             )
         elif type_ == SlotType.INNER_OUTPUT:
-            return TcpInnerOutputSlotProxy(
+            return InnerOutputSlot(
                 osl_server=osl_server, node=node, name=name, type_=type_, type_hint=type_hint
             )
         else:
@@ -1999,7 +1997,6 @@ class TcpSlotProxy(Slot):
         return actor_script
 
 
-# TODO: test
 class TcpInputSlotProxy(TcpSlotProxy, InputSlot):
     """Provides for creating and operating on input slots."""
 
@@ -2042,8 +2039,8 @@ class TcpInputSlotProxy(TcpSlotProxy, InputSlot):
         from_slot: TcpSlotProxy
             Sending (output) slot.
 
-        Return
-        ------
+        Returns
+        -------
         Edge
             Object determining connection.
 
@@ -2056,7 +2053,7 @@ class TcpInputSlotProxy(TcpSlotProxy, InputSlot):
         TimeoutError
             Raised when the timeout float value expires.
         """
-        if not isinstance(from_slot, (TcpInnerInputSlotProxy, TcpInnerOutputSlotProxy)):
+        if not isinstance(from_slot, InnerOutputSlot):
             self._osl_server.connect_nodes(
                 from_actor_uid=from_slot.node.uid,
                 from_slot=from_slot.name,
@@ -2082,17 +2079,12 @@ class TcpInputSlotProxy(TcpSlotProxy, InputSlot):
         TimeoutError
             Raised when the timeout float value expires.
         """
-        if self.type in [SlotType.INPUT, SlotType.INNER_INPUT]:
-            direction = "sdInputs"
-        elif self.type in [SlotType.OUTPUT, SlotType.INNER_OUTPUT]:
-            direction = "sdOutputs"
         self._osl_server.disconnect_slot(
-            uid=self.node.uid, slot_name=self.name, direction=direction
+            uid=self.node.uid, slot_name=self.name, direction="sdInputs"
         )
 
 
-# TODO: test
-class TcpOutputSlotProxy(TcpSlotProxy, TcpOutputSlotProxy):
+class OutputSlot(TcpSlotProxy, OutputSlot):
     """Provides for creating and operating on output slots."""
 
     def __init__(
@@ -2134,8 +2126,8 @@ class TcpOutputSlotProxy(TcpSlotProxy, TcpOutputSlotProxy):
         to_slot: TcpSlotProxy
             Receiving (input) slot
 
-        Return
-        ------
+        Returns
+        -------
         Edge
             Object determining connection.
 
@@ -2148,7 +2140,7 @@ class TcpOutputSlotProxy(TcpSlotProxy, TcpOutputSlotProxy):
         TimeoutError
             Raised when the timeout float value expires.
         """
-        if not isinstance(to_slot, (TcpInnerInputSlotProxy, TcpInnerOutputSlotProxy)):
+        if not isinstance(to_slot, InnerInputSlot):
             self._osl_server.connect_nodes(
                 from_actor_uid=self.node.uid,
                 from_slot=self.name,
@@ -2174,17 +2166,12 @@ class TcpOutputSlotProxy(TcpSlotProxy, TcpOutputSlotProxy):
         TimeoutError
             Raised when the timeout float value expires.
         """
-        if self.type in [SlotType.INPUT, SlotType.INNER_INPUT]:
-            direction = "sdInputs"
-        elif self.type in [SlotType.OUTPUT, SlotType.INNER_OUTPUT]:
-            direction = "sdOutputs"
         self._osl_server.disconnect_slot(
-            uid=self.node.uid, slot_name=self.name, direction=direction
+            uid=self.node.uid, slot_name=self.name, direction="sdOutputs"
         )
 
 
-# TODO: test
-class TcpInnerInputSlotProxy(TcpSlotProxy, TcpInnerInputSlotProxy):
+class InnerInputSlot(TcpSlotProxy, InnerInputSlot):
     """Provides for creating and operating on inner input slots."""
 
     def __init__(
@@ -2226,8 +2213,8 @@ class TcpInnerInputSlotProxy(TcpSlotProxy, TcpInnerInputSlotProxy):
         from_slot: TcpSlotProxy
             Sending (output) slot
 
-        Return
-        ------
+        Returns
+        -------
         Edge
             Object determining connection.
 
@@ -2245,8 +2232,7 @@ class TcpInnerInputSlotProxy(TcpSlotProxy, TcpInnerInputSlotProxy):
         return Edge(from_slot=from_slot, to_slot=self)
 
 
-# TODO: test
-class TcpInnerOutputSlotProxy(TcpSlotProxy, TcpInnerOutputSlotProxy):
+class InnerOutputSlot(TcpSlotProxy, InnerOutputSlot):
     """Provides for creating and operating on inner output slots."""
 
     def __init__(
@@ -2288,8 +2274,8 @@ class TcpInnerOutputSlotProxy(TcpSlotProxy, TcpInnerOutputSlotProxy):
         to_slot: TcpSlotProxy
             Receiving (input) slot
 
-        Return
-        ------
+        Returns
+        -------
         Edge
             Object determining connection.
 

@@ -1,6 +1,6 @@
 Helper functions
 ================
-These methods are specific to the :mod:`ansys.optislang.core.utils <ansys.optislang.core.utils>` module:
+These methods are specific to the :py:mod:`ansys.optislang.core.utils <ansys.optislang.core.utils>` module:
 
 .. currentmodule:: ansys.optislang.core.utils
 

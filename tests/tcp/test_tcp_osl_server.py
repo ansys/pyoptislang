@@ -102,7 +102,7 @@ def create_tcp_osl_server(osl_server_process: OslServerProcess) -> tos.TcpOslSer
         Class which provides access to optiSLang server using plain TCP/IP communication protocol.
     """
     tcp_osl_server = tos.TcpOslServer(host=_host, port=osl_server_process.port_range[0])
-    tcp_osl_server.set_timeout(timeout=10)
+    tcp_osl_server.timeout = 10
     return tcp_osl_server
 
 
@@ -733,12 +733,7 @@ def test_run_python_file(
     path_type,
 ):
     """Test ``run_python_file``."""
-    cmd = """
-a = 5
-b = 10
-result = a + b
-print(result)
-"""
+    cmd = "a = 5\nb = 10\nresult = a + b\nprint(result)"
     cmd_path = tmp_path / "commands.txt"
     if path_type == str:
         cmd_path = str(cmd_path)
@@ -756,12 +751,7 @@ print(result)
 
 def test_run_python_script(osl_server_process: OslServerProcess):
     """Test ``run_python_script``."""
-    cmd = """
-a = 5
-b = 10
-result = a + b
-print(result)
-"""
+    cmd = "a = 5\nb = 10\nresult = a + b\nprint(result)"
     tcp_osl_server = create_tcp_osl_server(osl_server_process)
     run_script = tcp_osl_server.run_python_script(script=cmd)
     tcp_osl_server.shutdown()

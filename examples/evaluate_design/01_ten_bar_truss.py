@@ -42,11 +42,16 @@ This image shows the workflow:
 
 from pathlib import Path
 import tempfile
+from typing import TYPE_CHECKING, List
 
 import matplotlib.pyplot as plt
 
 from ansys.optislang.core import Optislang
 import ansys.optislang.core.examples as examples
+
+if TYPE_CHECKING:
+    from ansys.optislang.core.project import Project
+    from ansys.optislang.core.project_parametric import Design
 
 #########################################################
 # Create optiSLang instance
@@ -58,22 +63,24 @@ tmp_dir = Path(tempfile.mkdtemp())
 file_path = tmp_dir / "evaluate_design_example.opf"
 
 osl = Optislang(project_path=example_path)
-osl.save_as(file_path)
-print(osl.get_working_dir())
+application = osl.application
+application.save_as(file_path)
+project = application.project
+print(project.get_working_dir())
 
 #########################################################
 # Evaluate reference design
 # ~~~~~~~~~~~~~~~~~~~~~~~~~
 # Get the reference design, evaluate it, and extract the results.
 
-rs = osl.project.root_system
-parameters_count = len(rs.parameter_manager.get_parameters_names())
+root_system = project.root_system
+parameters_count = len(root_system.parameter_manager.get_parameters_names())
 try_decrease_param = [True for i in range(parameters_count)]
-successfull_designs = []
-unsuccessfull_designs = []
+successfull_designs: List[Design] = []
+unsuccessfull_designs: List[Design] = []
 
-design = rs.get_reference_design()
-rs.evaluate_design(design)
+design = root_system.get_reference_design()
+root_system.evaluate_design(design)
 if design.feasibility:
     successfull_designs.append(design)
 else:
@@ -109,7 +116,7 @@ while True in try_decrease_param:
         else:
             try_decrease_param[j] = False
             continue
-        rs.evaluate_design(design)
+        root_system.evaluate_design(design)
         if design.feasibility:
             successfull_designs.append(design)
             objectives = {obj.name: obj.value for obj in design.objectives}

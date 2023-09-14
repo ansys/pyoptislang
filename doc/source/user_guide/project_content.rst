@@ -2,8 +2,8 @@
 
 Project
 -------
-You can access the :class:`Project() <ansys.optislang.core.project.Project>` class
-from the :class:`Optislang() <ansys.optislang.core.optislang.Optislang>` instance.
+You can access the :py:class:`Project <ansys.optislang.core.project.Project>` class
+from the :py:class:`Optislang <ansys.optislang.core.optislang.Optislang>` instance.
 This class provides methods for obtaining information about the loaded project and
 its content:
 
@@ -15,7 +15,7 @@ its content:
 
     example = examples.get_files("calculator_with_params")[1][0]
     osl = Optislang(project_path=example)
-    osl.save_copy(Path.cwd() / "project_content.opf")
+    osl.application.save_copy(Path.cwd() / "project_content.opf")
     project = osl.project
 
     # print project info
@@ -31,11 +31,11 @@ Project structure
 The optiSLang project can be represented by a rooted tree structure. This structure consists 
 of nodes and the connections between these nodes. On the top level, there is one node
 designated as a project root system. It is represented by the
-:class:`RootSystem() <ansys.optislang.core.nodes.RootSystem>` 
-instance. Each :class:`System() <ansys.optislang.core.nodes.System>`
-, such as the :class:`RootSystem() <ansys.optislang.core.nodes.RootSystem>` class or 
-:class:`ParametricSystem() <ansys.optislang.core.nodes.ParametricSystem>` class, has a 
-:func:`get_nodes() <ansys.optislang.core.nodes.get_nodes>` method that returns all its
+:py:class:`RootSystem <ansys.optislang.core.base_nodes.RootSystem>` 
+instance. Each :py:class:`System <ansys.optislang.base_core.nodes.System>`
+, such as the :py:class:`RootSystem <ansys.optislang.core.base_nodes.RootSystem>` class or 
+:py:class:`ParametricSystem <ansys.optislang.core.base_nodes.ParametricSystem>` class, has a 
+:py:meth:`get_nodes() <ansys.optislang.core.bases_nodes.System.get_nodes>` method that returns all its
 direct children nodes. This provides the ability to determine the entire project structure.
 
 The code shows how to go through all nodes in the project and print information about them:
@@ -67,16 +67,16 @@ The code shows how to go through all nodes in the project and print information 
 Parameters
 ----------
 To obtain defined parameters of any parametric system, an instance of the 
-:class:`ParameterManager() <ansys.optislang.core.project_parametric.ParameterManager>`
+:py:class:`ParameterManager <ansys.optislang.core.managers.ParameterManager>`
 class can be used. This class contains the
-:func:`get_parameters() <ansys.optislang.core.project_parametric.ParameterManager.get_parameters>`, 
+:py:meth:`get_parameters() <ansys.optislang.core.managers.ParameterManager.get_parameters>`, 
 method for returning tuple with detailed information for instances of the 
-:class:`OptimizationParameter() <ansys.optislang.core.project_parametric.OptimizationParameter>`,
-:class:`StochasticParameter() <ansys.optislang.core.project_parametric.StochasticParameter>`,
-:class:`MixedParameter() <ansys.optislang.core.project_parametric.MixedParameter>`, and
-:class:`DepenedentParameter() <ansys.optislang.core.project_parametric.DepenedentParameter>` classes.
+:py:class:`OptimizationParameter <ansys.optislang.core.project_parametric.OptimizationParameter>`,
+:py:class:`StochasticParameter <ansys.optislang.core.project_parametric.StochasticParameter>`,
+:py:class:`MixedParameter <ansys.optislang.core.project_parametric.MixedParameter>`, and
+:py:class:`DepenedentParameter <ansys.optislang.core.project_parametric.DepenedentParameter>` classes.
 
-The :func:`get_parameters_names() <ansys.optislang.core.project_parametric.ParameterManager.get_parameters_names>`
+The :py:meth:`get_parameters_names() <ansys.optislang.core.managers.ParameterManager.get_parameters_names>`
 method  returns a tuple with only the names of the parameters:
 
 .. code:: python
@@ -90,14 +90,14 @@ method  returns a tuple with only the names of the parameters:
 Criteria
 --------
 To obtain defined criteria of any parametric system, an instance of the
-:class:`CriteriaManager() <ansys.optislang.core.project_parametric.CriteriaManager>`
+:py:class:`CriteriaManager <ansys.optislang.core.managers.CriteriaManager>`
 class can be used. This class contains the
-:func:`get_criteria() <ansys.optislang.core.project_parametric.CriteriaManager.get_criteria>`, 
+:py:meth:`get_criteria() <ansys.optislang.core.managers.CriteriaManager.get_criteria>`, 
 method for returning tuple with detailed information for instances of the 
-:class:`ConstraintCriterion() <ansys.optislang.core.project_parametric.ConstraintCriterion>`,
-:class:`ObjectiveCriterion() <ansys.optislang.core.project_parametric.ObjectiveCriterion>`,
-:class:`LimitStateCriterion() <ansys.optislang.core.project_parametric.LimitStateCriterion>`, and
-:class:`VariableCriterion() <ansys.optislang.core.project_parametric.VariableCriterion>` classes.
+:py:class:`ConstraintCriterion <ansys.optislang.core.project_parametric.ConstraintCriterion>`,
+:py:class:`ObjectiveCriterion <ansys.optislang.core.project_parametric.ObjectiveCriterion>`,
+:py:class:`LimitStateCriterion <ansys.optislang.core.project_parametric.LimitStateCriterion>`, and
+:py:class:`VariableCriterion <ansys.optislang.core.project_parametric.VariableCriterion>` classes.
 
 .. code:: python
 
@@ -110,11 +110,11 @@ method for returning tuple with detailed information for instances of the
 Responses
 ---------
 To obtain defined responses of any parametric system, an instance of the
-:class:`ResponseManager() <ansys.optislang.core.project_parametric.ResponseManager>`
+:py:class:`ResponseManager <ansys.optislang.core.managers.ResponseManager>`
 class can be used. This class contains the
-:func:`get_responses() <ansys.optislang.core.project_parametric.ResponseManager.get_responses>`, 
+:py:meth:`get_responses() <ansys.optislang.core.managers.ResponseManager.get_responses>`, 
 method for returning tuple with detailed information for instance of the 
-:class:`Response() <ansys.optislang.core.project_parametric.Response>` class.
+:py:class:`Response <ansys.optislang.core.project_parametric.Response>` class.
 
 .. code:: python
 
@@ -125,7 +125,7 @@ method for returning tuple with detailed information for instance of the
     responses_names = response_manager.get_responses_names()
 
 
-When the :class:`Optislang() <ansys.optislang.core.optislang.Optislang>` instance is no longer 
+When the :py:class:`Optislang <ansys.optislang.core.optislang.Optislang>` instance is no longer 
 needed, stop the connection with optiSLang server by running:
 
 .. code:: python

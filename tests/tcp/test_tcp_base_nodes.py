@@ -1,4 +1,5 @@
 from contextlib import nullcontext as does_not_raise
+from pathlib import Path
 
 import pytest
 
@@ -130,6 +131,33 @@ def test_get_ancestors(optislang: Optislang):
     assert isinstance(ancestors[0], TcpRootSystemProxy)
     assert isinstance(ancestors[1], TcpParametricSystemProxy)
     assert isinstance(ancestors[2], TcpSystemProxy)
+
+
+def test_set_property(optislang: Optislang, tmp_path: Path):
+    """Test `set_property` method."""
+    optislang.open(single_node)
+    optislang.save_as(tmp_path / "test_set_property.opf")
+    root_system = optislang.project.root_system
+    node: TcpNodeProxy = root_system.find_nodes_by_name("Calculator")[0]
+    # enum prop
+    set_enum_property = {
+        "enum": ["read_and_write_mode", "classic_reevaluate_mode"],
+        "value": "classic_reevaluate_mode",
+    }
+    node.set_property("ReadMode", set_enum_property)
+    assert node.get_property("ReadMode") == set_enum_property
+
+    # bool prop
+    set_bool_property = True
+    node.set_property("StopAfterExecution", set_bool_property)
+    assert node.get_property("StopAfterExecution") == set_bool_property
+
+    # int prop
+    set_int_property = 2
+    node.set_property("ExecutionOptions", set_int_property)
+    assert node.get_property("ExecutionOptions") == set_int_property
+
+    optislang.dispose()
 
 
 # TEST SYSTEM

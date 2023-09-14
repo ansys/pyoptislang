@@ -361,7 +361,7 @@ class ResponseValueType(Enum):
 # CLASSES:
 
 
-# Criteria
+# region Criteria
 class Criterion:
     """Stores criterion data."""
 
@@ -1650,6 +1650,9 @@ class VariableCriterion(Criterion):
         )
 
 
+# endregion
+
+
 # DesignVariable
 class DesignVariable:
     """Stores information about a design variable."""
@@ -1737,7 +1740,7 @@ class DesignVariable:
         self.__value = value
 
 
-# Parameters
+# region Parameters
 class Parameter:
     """Stores parameter data."""
 
@@ -3111,6 +3114,9 @@ class StochasticParameter(Parameter):
         )
 
 
+# endregion
+
+
 # Response
 class Response:
     """Stores response data."""
@@ -3844,13 +3850,13 @@ class Design:
                 responses_list.append(DesignVariable(name=name, value=value))
         else:
             for response in responses:
-                if isinstance(response, (Response, DesignVariable)):
+                if isinstance(response, Response):
                     value = response.reference_value
-                    responses_list.append(
-                        DesignVariable(name=response.name, value=response.reference_value)
-                    )
+                elif isinstance(response, DesignVariable):
+                    value = response.value
                 else:
                     raise TypeError(f"Response type: ``{type(response)}`` is not supported.")
+                responses_list.append(DesignVariable(name=response.name, value=value))
         return responses_list
 
     def __reset_output_value(self, output: Iterable[DesignVariable]) -> None:

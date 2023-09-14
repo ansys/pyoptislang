@@ -17,12 +17,16 @@ queries convenience classes.
 
 from pathlib import Path
 import tempfile
+from typing import TYPE_CHECKING
 
 from ansys.optislang.core import Optislang
 import ansys.optislang.core.examples as examples
 from ansys.optislang.core.project_parametric import Parameter
 from ansys.optislang.core.tcp import server_commands as commands
 from ansys.optislang.core.tcp import server_queries as queries
+
+if TYPE_CHECKING:
+    from ansys.optislang.core.tcp.osl_server import TcpOslServer
 
 #########################################################
 # Create optiSLang instance
@@ -34,7 +38,8 @@ tmp_dir = Path(tempfile.mkdtemp())
 file_path = tmp_dir / "evaluate_design_example.opf"
 
 osl = Optislang(project_path=example_path)
-osl.save_as(file_path)
+osl.application.save_as(file_path)
+osl_server: TcpOslServer = osl.osl_server
 
 #########################################################
 # Modify root project parameters
@@ -44,9 +49,7 @@ osl.save_as(file_path)
 
 # Get the first parameter on project root level
 root_system_uid = osl.project.root_system.uid
-root_system_properties = osl.get_osl_server().send_command(
-    queries.actor_properties(uid=root_system_uid)
-)
+root_system_properties = osl_server.send_command(queries.actor_properties(uid=root_system_uid))
 root_system_pm_raw = root_system_properties["properties"]["ParameterManager"]
 
 first_parameter = Parameter.from_dict(root_system_pm_raw["parameter_container"][0])
@@ -61,7 +64,7 @@ first_parameter.reference_value = 15.0
 # send the modified parameter manager back to optiSLang
 root_system_pm_raw["parameter_container"][0] = first_parameter.to_dict()
 
-server_response = osl.get_osl_server().send_command(
+server_response = osl_server.send_command(
     commands.set_actor_property(
         actor_uid=root_system_uid, name="ParameterManager", value=root_system_pm_raw
     )
@@ -70,9 +73,7 @@ server_response = osl.get_osl_server().send_command(
 print(f'Modifying parameter reference value: {server_response[0]["status"]}')
 
 # Get and print the (now modified) first parameter on project root level
-root_system_properties = osl.get_osl_server().send_command(
-    queries.actor_properties(uid=root_system_uid)
-)
+root_system_properties = osl_server.send_command(queries.actor_properties(uid=root_system_uid))
 root_system_pm_raw = root_system_properties["properties"]["ParameterManager"]
 
 modified_first_parameter = Parameter.from_dict(root_system_pm_raw["parameter_container"][0])

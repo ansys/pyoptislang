@@ -2,10 +2,10 @@
 
 Server queries
 ==============
-These methods are specific to the :mod:`ansys.optislang.core.server_queries <ansys.optislang.core.server_queries>` module
+These methods are specific to the :py:mod:`ansys.optislang.core.tcp.server_queries <ansys.optislang.core.tcp.server_queries>` module
 and can be used to generate queries to the optiSLang server:
 
-.. currentmodule:: ansys.optislang.core.server_queries
+.. currentmodule:: ansys.optislang.core.tcp.server_queries
 
 .. autosummary::
    :toctree: _autosummary

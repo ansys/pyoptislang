@@ -42,8 +42,8 @@ print(osl)
 
 paths1 = examples.get_files("python_node")
 paths2 = examples.get_files("python_help")
-osl.run_python_file(paths1[0])
-print(osl.run_python_file(paths2[0]))
+osl.application.project.run_python_file(paths1[0])
+print(osl.application.project.run_python_file(paths2[0]))
 
 #########################################################
 # Optionally save project
@@ -54,7 +54,7 @@ print(osl.run_python_file(paths2[0]))
 # .. code:: python
 #
 #   path = r'<insert-desired-location>'
-#   osl.save_as(os.path.join(path, "test_project.opf"))
+#   osl.application.save_as(os.path.join(path, "test_project.opf"))
 #
 
 #########################################################

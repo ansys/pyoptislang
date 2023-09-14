@@ -84,16 +84,16 @@ osl.run_python_file(paths2[0])
 # in the project.
 
 print("*** Project Nodes ***")
-for_each_child_node(osl.project.root_system, print_node, recursive=True)
+for_each_child_node(osl.application.project.root_system, print_node, recursive=True)
 
 print("*** Registered parameters of parametric systems ***")
-for_each_child_node(osl.project.root_system, print_parameters, recursive=True)
+for_each_child_node(osl.application.project.root_system, print_parameters, recursive=True)
 
 print("*** Registered responses of parametric systems ***")
-for_each_child_node(osl.project.root_system, print_responses, recursive=True)
+for_each_child_node(osl.application.project.root_system, print_responses, recursive=True)
 
 print("*** Defined criteria of parametric systems ***")
-for_each_child_node(osl.project.root_system, print_criteria, recursive=True)
+for_each_child_node(osl.application.project.root_system, print_criteria, recursive=True)
 
 #########################################################
 # Stop and cancel project

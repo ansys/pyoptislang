@@ -3,13 +3,14 @@ from __future__ import annotations
 
 import logging
 from pathlib import Path
-from typing import TYPE_CHECKING, Dict, List
+from typing import TYPE_CHECKING, Dict, List, Sequence, Tuple, Union
 
+from ansys.optislang.core.project import Project
 from ansys.optislang.core.tcp.base_nodes import TcpRootSystemProxy
 
 if TYPE_CHECKING:
+    from ansys.optislang.core.project_parametric import Design
     from ansys.optislang.core.tcp.managers import (
-        Design,
         TcpCriteriaManagerProxy,
         TcpParameterManagerProxy,
         TcpResponseManagerProxy,
@@ -17,7 +18,7 @@ if TYPE_CHECKING:
     from ansys.optislang.core.tcp.osl_server import TcpOslServer
 
 
-class TcpProjectProxy:
+class TcpProjectProxy(Project):
     """Provides the class containing the root system and queries related to the loaded project."""
 
     def __init__(self, osl_server: TcpOslServer, uid: str, logger=None) -> None:
@@ -119,17 +120,13 @@ class TcpProjectProxy:
         """
         return self.__uid
 
-    def evaluate_design(self, design: Design, update_design: bool = True) -> Design:
+    def evaluate_design(self, design: Design) -> Design:
         """Evaluate a design.
 
         Parameters
         ----------
         design: Design
             Instance of a ``Design`` class with defined parameters.
-        update_design: bool, optional
-            Determines whether given design should be updated and returned or new instance
-            should be created. When ``True`` given design is updated and returned, otherwise
-            new ``Design`` is created. Defaults to ``True``.
 
         Returns
         -------
@@ -145,7 +142,7 @@ class TcpProjectProxy:
         TimeoutError
             Raised when the timeout float value expires.
         """
-        return self.root_system.evaluate_design(design=design, update_design=update_design)
+        return self.root_system.evaluate_design(design=design)
 
     def get_available_nodes(self) -> Dict[str, List[str]]:
         """Get raw dictionary of available nodes sorted by subtypes.
@@ -308,6 +305,69 @@ class TcpProjectProxy:
             Raised when the timeout float value expires.
         """
         self.__osl_server.reset()
+
+    def run_python_file(
+        self,
+        file_path: Union[str, Path],
+        args: Union[Sequence[object], None] = None,
+    ) -> Tuple[str, str]:
+        """Read a Python script from a file, load it in a project context, and run it.
+
+        Parameters
+        ----------
+        file_path : Union[str, pathlib.Path]
+            Path to the Python script file with the content to execute on the server.
+        args : Sequence[object], None, optional
+            Sequence of arguments to use in the Python script. The default is ``None``.
+
+        Returns
+        -------
+        Tuple[str, str]
+            STDOUT and STDERR from the executed Python script.
+
+        Raises
+        ------
+        FileNotFoundError
+            Raised when the specified Python script file does not exist.
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        return self.__osl_server.run_python_file(file_path, args)
+
+    def run_python_script(
+        self,
+        script: str,
+        args: Union[Sequence[object], None] = None,
+    ) -> Tuple[str, str]:
+        """Load a Python script in a project context and run it.
+
+        Parameters
+        ----------
+        script : str
+            Python commands to execute on the server.
+        args : Sequence[object], None, optional
+            Sequence of arguments used in the Python script. The default
+            is ``None``.
+
+        Returns
+        -------
+        Tuple[str, str]
+            STDOUT and STDERR from the executed Python script.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        return self.__osl_server.run_python_script(script, args)
 
     def start(self, wait_for_started: bool = True, wait_for_finished: bool = True) -> None:
         """Start project execution.
