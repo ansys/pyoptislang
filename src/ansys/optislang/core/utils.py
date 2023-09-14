@@ -247,18 +247,23 @@ def _find_standalone_osl_execs_in_windows() -> Dict[int, Path]:
         The dictionary value is a path to the corresponding optiSLang executable file.
     """
     osl_execs = {}
-    root_install_dir = _get_program_files_path() / "Dynardo" / "Ansys optiSLang"
-    if root_install_dir.is_dir():
-        for osl_version_dir in root_install_dir.glob("*/"):
-            osl_exec_path = osl_version_dir / "optislang.com"
-            if os.path.isfile(osl_exec_path):
-                # convert version fmt "yyyy Rx" to "yyx"
-                # TODO: add '$' at the end of regex pattern to disable dev version
-                match = re.findall("[2][0][1-9][0-9] R[1-9]", str(osl_version_dir))
-                if match:
-                    ansys_version = _try_cast_str_to_int(match[0][2:4] + match[0][6])
-                    if ansys_version >= FIRST_SUPPORTED_VERSION:
-                        osl_execs[ansys_version] = osl_exec_path
+
+    root_install_dirs = [
+        _get_program_files_path() / "Dynardo" / "Ansys optiSLang",
+        _get_program_files_path() / "Ansys optiSLang",
+    ]
+    for root_install_dir in root_install_dirs:
+        if root_install_dir.is_dir():
+            for osl_version_dir in root_install_dir.glob("*/"):
+                osl_exec_path = osl_version_dir / "optislang.com"
+                if os.path.isfile(osl_exec_path):
+                    # convert version fmt "yyyy Rx" to "yyx"
+                    # TODO: add '$' at the end of regex pattern to disable dev version
+                    match = re.findall("[2][0][1-9][0-9] R[1-9]", str(osl_version_dir))
+                    if match:
+                        ansys_version = _try_cast_str_to_int(match[0][2:4] + match[0][6])
+                        if ansys_version >= FIRST_SUPPORTED_VERSION:
+                            osl_execs[ansys_version] = osl_exec_path
     return osl_execs
 
 

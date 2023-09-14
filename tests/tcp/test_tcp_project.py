@@ -4,7 +4,8 @@ import time
 
 import pytest
 
-from ansys.optislang.core import Optislang
+from ansys.optislang.core import Optislang, examples
+from ansys.optislang.core.io import RegisteredFile
 from ansys.optislang.core.project_parametric import Design
 from ansys.optislang.core.tcp.base_nodes import TcpRootSystemProxy
 from ansys.optislang.core.tcp.managers import (
@@ -15,6 +16,7 @@ from ansys.optislang.core.tcp.managers import (
 from ansys.optislang.core.tcp.project import TcpProjectProxy
 
 pytestmark = pytest.mark.local_osl
+calculator_w_parameters = examples.get_files("calculator_with_params")[1][0]
 
 
 @pytest.fixture()
@@ -52,6 +54,22 @@ def test_project_queries(optislang: Optislang):
 
     wdir = project.get_working_dir()
     assert isinstance(wdir, Path)
+
+    project_tree = project._get_project_tree()
+    assert isinstance(project_tree, list)
+
+    optislang.open(file_path=calculator_w_parameters)
+
+    reg_files = project.get_registered_files()
+    assert len(reg_files) == 3
+    assert isinstance(reg_files[0], RegisteredFile)
+
+    res_files = project.get_result_files()
+    assert len(res_files) == 1
+    assert isinstance(res_files[0], RegisteredFile)
+
+    project_tree = project._get_project_tree()
+    assert isinstance(project_tree, list)
 
     optislang.dispose()
     time.sleep(3)

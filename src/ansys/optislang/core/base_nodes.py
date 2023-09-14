@@ -8,10 +8,30 @@ from typing import TYPE_CHECKING, Any, Tuple, Union
 from ansys.optislang.core.utils import enum_from_str
 
 if TYPE_CHECKING:
+    from pathlib import Path
+
+    from ansys.optislang.core.io import File, FileOutputFormat, RegisteredFile
     from ansys.optislang.core.managers import CriteriaManager, ParameterManager, ResponseManager
     from ansys.optislang.core.node_types import NodeType
     from ansys.optislang.core.osl_server import OslServer
     from ansys.optislang.core.project_parametric import Design
+
+PROJECT_COMMANDS_RETURN_STATES = {
+    "start": "PROCESSING",
+    "restart": "PROCESSING",
+    "stop": "STOPPED",
+    "stop_gently": "GENTLY_STOPPED",
+    "reset": "FINISHED",
+}
+
+
+ACTOR_COMMANDS_RETURN_STATES = {
+    "start": "Running",
+    "restart": "Running",
+    "stop": "Aborted",
+    "stop_gently": "Gently stopped",
+    "reset": "Finished",
+}
 
 
 class DesignFlow(Enum):
@@ -135,6 +155,35 @@ class Node(ABC):
         -------
         NodeType
             Instance of the ``NodeType`` class.
+        """
+        pass
+
+    @abstractmethod
+    def control(
+        self,
+        command: str,
+        hid: str = None,
+        wait_for_completion: bool = True,
+        timeout: Union[float, int] = 100,
+    ) -> Union[str, None]:  # pragma: no cover
+        """Control the node state.
+
+        Parameters
+        ----------
+        command: str
+            Command to execute. Options are ``"start"``, ``"restart"``, ``"stop_gently"``,
+            ``"stop"``, and ``"reset"``.
+        hid: str, optional
+            Hid entry. The default is ``None``. The actor unique ID is required.
+        wait_for_completion: bool, optional
+            Whether to wait for completion. The default is ``True``.
+        timeout: Union[float, int], optional
+            Time limit for monitoring the status of the command. The default is ``100 s``.
+
+        Returns
+        -------
+        boolean
+            ``True`` when successful, ``False`` when failed.
         """
         pass
 
@@ -308,6 +357,46 @@ class Node(ABC):
         pass
 
     @abstractmethod
+    def get_registered_files(self) -> Tuple[RegisteredFile]:  # pragma: no cover
+        """Get node's registered files.
+
+        Returns
+        -------
+        Tuple[RegisteredFile]
+            Tuple of registered files.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        pass
+
+    @abstractmethod
+    def get_result_files(self) -> Tuple[RegisteredFile]:  # pragma: no cover
+        """Get node's result files.
+
+        Returns
+        -------
+        Tuple[RegisteredFile]
+            Tuple of result files.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        pass
+
+    @abstractmethod
     def get_slots(
         self, type_: Union[SlotType, None] = None, name: Union[str, None] = None
     ) -> Tuple[Slot, ...]:  # pragma: no cover
@@ -331,6 +420,26 @@ class Node(ABC):
             Raised when an error occurs while communicating with the server.
         OslCommandError
             Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        pass
+
+    @abstractmethod
+    def get_states_ids(self) -> Tuple[str]:  # pragma: no cover
+        """Get available actor states ids.
+
+        Returns
+        -------
+        Tuple[str]
+            Actor states ids.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
         TimeoutError
             Raised when the timeout float value expires.
         """
@@ -448,7 +557,8 @@ class System(Node):
             Unique ID of the node.
         search_depth: int, optional
             Depth of the node subtree to search. The default is ``1``, which corresponds
-            to direct children nodes of the current system.
+            to direct children nodes of the current system. Set to ``-1`` to search throughout
+            the full depth.
 
         Returns
         -------
@@ -483,7 +593,8 @@ class System(Node):
             Name of the node.
         search_depth: int, optional
             Depth of the node subtree to search. The default is ``1``, which corresponds
-            to direct children nodes of the current system.
+            to direct children nodes of the current system. Set to ``-1`` to search throughout
+            the full depth.
 
         Returns
         -------
@@ -568,6 +679,69 @@ class ParametricSystem(System):
         """
         pass
 
+    @abstractmethod
+    def get_omdb_files(self) -> Tuple[File]:  # pragma: no cover
+        """Get paths to omdb files.
+
+        Returns
+        -------
+        Tuple[File]
+            Tuple with File objects containing path.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        pass
+
+    @abstractmethod
+    def save_designs_as(
+        self,
+        hid: str,
+        file_name: str,
+        format: FileOutputFormat = FileOutputFormat.JSON,
+        dir: Union[Path, str] = None,
+    ) -> File:  # pragma: no cover
+        """Save designs for a given state.
+
+        Parameters
+        ----------
+        hid : str
+            Actor's state.
+        file_name : str
+            Name of the file.
+        format : FileOutputFormat, optional
+            Format of the file, by default ``FileOutputFormat.JSON``.
+        dir : Union[Path, str], optional
+            Directory, where file should be saved, by default ``None``.
+            Project's working directory is used by default.
+
+        Returns
+        -------
+        File
+            Object representing saved file.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        TypeError
+            Raised when incorrect type of ``dir`` is passed.
+        ValueError
+            Raised when unsupported value of ``format`` or non-existing ``hid``
+            is passed.
+        """
+        pass
+
 
 class RootSystem(ParametricSystem):
     """Base class for classes which provide for creating and operating on a project system."""
@@ -575,6 +749,29 @@ class RootSystem(ParametricSystem):
     @abstractmethod
     def __init__(self):  # pragma: no cover
         """``Rootsystem`` class is an abstract base class and cannot be instantiated."""
+        pass
+
+    @abstractmethod
+    def control(
+        self, command: str, wait_for_completion: bool = True, timeout: Union[float, int] = 100
+    ) -> Union[str, None]:  # pragma: no cover
+        """Control the node state.
+
+        Parameters
+        ----------
+        command: str
+            Command to execute. Options are ``"start"``, ``"restart"``, ``"stop_gently"``,
+            ``"stop"``, and ``"reset"``.
+        wait_for_completion: bool, optional
+            Whether to wait for completion. The default is ``True``.
+        timeout: Union[float, int], optional
+            Time limit for monitoring the status of the command. The default is ``100 s``.
+
+        Returns
+        -------
+        boolean
+            ``True`` when successful, ``False`` when failed.
+        """
         pass
 
     @abstractmethod

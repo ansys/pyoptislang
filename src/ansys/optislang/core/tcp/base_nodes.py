@@ -1,12 +1,20 @@
 """Contains classes for a node, system, parametric system, and root system."""
 from __future__ import annotations
 
+from collections import OrderedDict
+import csv
+from io import StringIO
+import json
 import logging
+from pathlib import Path
+import time
 from typing import TYPE_CHECKING, Any, Dict, Iterable, List, Tuple, Union
 
 from deprecated.sphinx import deprecated
 
 from ansys.optislang.core.base_nodes import (
+    ACTOR_COMMANDS_RETURN_STATES,
+    PROJECT_COMMANDS_RETURN_STATES,
     DesignFlow,
     Edge,
     InnerInputSlot,
@@ -20,6 +28,7 @@ from ansys.optislang.core.base_nodes import (
     SlotType,
     System,
 )
+from ansys.optislang.core.io import File, FileOutputFormat
 from ansys.optislang.core.node_types import AddinType, NodeType
 from ansys.optislang.core.project_parametric import (
     ConstraintCriterion,
@@ -30,6 +39,7 @@ from ansys.optislang.core.project_parametric import (
     ObjectiveCriterion,
     VariableCriterion,
 )
+from ansys.optislang.core.tcp import server_commands as commands
 from ansys.optislang.core.tcp.managers import (
     TcpCriteriaManagerProxy,
     TcpParameterManagerProxy,
@@ -97,6 +107,69 @@ class TcpNodeProxy(Node):
             Instance of the ``NodeType`` class.
         """
         return self.__type
+
+    def control(
+        self,
+        command: str,
+        hid: str = None,
+        wait_for_completion: bool = True,
+        timeout: Union[float, int] = 100,
+    ) -> Union[str, None]:
+        """Control the node state.
+
+        Parameters
+        ----------
+        command: str
+            Command to execute. Options are ``"start"``, ``"restart"``, ``"stop_gently"``,
+            ``"stop"``, and ``"reset"``.
+        hid: str, optional
+            Hid entry. The default is ``None``. The actor unique ID is required.
+        wait_for_completion: bool, optional
+            Whether to wait for completion. The default is ``True``.
+        timeout: Union[float, int], optional
+            Time limit for monitoring the status of the command. The default is ``100 s``.
+
+        Returns
+        -------
+        boolean
+            ``True`` when successful, ``False`` when failed.
+        """
+        if not hid:  # Run command against all designs
+            hids = self.get_states_ids()
+            if len(hids) == 0:
+                raise RuntimeError(
+                    "There are no hids available because the node has not been started yet."
+                    f" The {command} command cannot be executed."
+                )
+        else:  # Run command against the given design
+            hids = [hid]
+
+        for hid in hids:
+            response = self._osl_server.send_command(
+                getattr(commands, command)(actor_uid=self.uid, hid=hid)
+            )
+            if response[0]["status"] != "success":
+                raise Exception(f"{command} command execution failed.")
+
+        if wait_for_completion:
+            time_stamp = time.time()
+            while True:
+                print(
+                    f"Project: {self.get_name()} | "
+                    f"State: {self.get_status()} | "
+                    f"Time: {round(time.time() - time_stamp)}s"
+                )
+                if self.get_status() == ACTOR_COMMANDS_RETURN_STATES[command]:
+                    print(f"{command} command successfully executed.")
+                    status = True
+                    break
+                if (time.time() - time_stamp) > timeout:
+                    print("Timeout limit reached. Skip monitoring of command {command}.")
+                    status = False
+                    break
+                time.sleep(3)
+
+            return status
 
     def delete(self) -> None:
         """Delete current node and it's children from active project.
@@ -441,51 +514,6 @@ class TcpNodeProxy(Node):
         """
         self._osl_server.set_actor_property(actor_uid=self.uid, name=name, value=value)
 
-    def _get_info(self) -> dict:
-        """Get the raw server output with the node info.
-
-        Returns
-        -------
-        dict
-            Dictionary with the node info.
-
-        Raises
-        ------
-        OslCommunicationError
-            Raised when an error occurs while communicating with the server.
-        OslCommandError
-            Raised when a command or query fails.
-        TimeoutError
-            Raised when the timeout float value expires.
-        """
-        return self._osl_server.get_actor_info(self.uid)
-
-    def _get_parent_dict(self) -> dict:
-        """Get the unique ID of the parent node.
-
-        Returns
-        -------
-        dict
-            Dictionary with necessary information for creating instance of parent node.
-
-        Raises
-        ------
-        OslCommunicationError
-            Raised when an error occurs while communicating with the server.
-        OslCommandError
-            Raised when a command or query fails.
-        TimeoutError
-            Raised when the timeout float value expires.
-        """
-        project_tree = self._osl_server.get_full_project_tree_with_properties()
-        root_system_uid = project_tree["projects"][0]["system"]["uid"]
-        parent_tree = project_tree["projects"][0]["system"]
-        return self.__class__._find_parent_node_info(
-            tree=parent_tree,
-            parent_uid=root_system_uid,
-            node_uid=self.uid,
-        )
-
     def _create_edge_from_dict(self, project_tree: dict, connection: dict) -> Edge:
         """Create edge from project tree and connection dictionary.
 
@@ -645,32 +673,6 @@ class TcpNodeProxy(Node):
             osl_server=self._osl_server, node=node, name=slot_name, type_=slot_type
         )
 
-    @deprecated(version="0.5.0", reason="Not used anymore.")
-    def _is_parametric_system(self, uid: str) -> bool:
-        """Check if the system is parametric.
-
-        Parameters
-        ----------
-        uid : str
-            Unique ID of the system.
-
-        Returns
-        -------
-        bool
-            ``True`` when the system is parametric, ``False`` otherwise.
-
-        Raises
-        ------
-        OslCommunicationError
-            Raised when an error occurs while communicating with the server.
-        OslCommandError
-            Raised when a command or query fails.
-        TimeoutError
-            Raised when the timeout float value expires.
-        """
-        props = self._osl_server.get_actor_properties(uid=uid)
-        return "ParameterManager" in props["properties"]
-
     def _filter_connections(
         self,
         connections: List[dict],
@@ -738,6 +740,97 @@ class TcpNodeProxy(Node):
                     continue
             filtered_connections.append(connection)
         return tuple(filtered_connections)
+
+    def _get_info(self) -> dict:
+        """Get the raw server output with the node info.
+
+        Returns
+        -------
+        dict
+            Dictionary with the node info.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        return self._osl_server.get_actor_info(self.uid)
+
+    def _get_parent_dict(self) -> dict:
+        """Get the unique ID of the parent node.
+
+        Returns
+        -------
+        dict
+            Dictionary with necessary information for creating instance of parent node.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        project_tree = self._osl_server.get_full_project_tree_with_properties()
+        root_system_uid = project_tree["projects"][0]["system"]["uid"]
+        parent_tree = project_tree["projects"][0]["system"]
+        return self.__class__._find_parent_node_info(
+            tree=parent_tree,
+            parent_uid=root_system_uid,
+            node_uid=self.uid,
+        )
+
+    def _get_status_info(self) -> Tuple[dict]:
+        """Get node's status info for each state.
+
+        Returns
+        -------
+        Tuple[dict]
+            Tuple with status info dictionary for each state.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        hids = self.get_states_ids()
+        return tuple([self._osl_server.get_actor_status_info(self.uid, hid) for hid in hids])
+
+    @deprecated(version="0.5.0", reason="Not used anymore.")
+    def _is_parametric_system(self, uid: str) -> bool:
+        """Check if the system is parametric.
+
+        Parameters
+        ----------
+        uid : str
+            Unique ID of the system.
+
+        Returns
+        -------
+        bool
+            ``True`` when the system is parametric, ``False`` otherwise.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        props = self._osl_server.get_actor_properties(uid=uid)
+        return "ParameterManager" in props["properties"]
 
     @staticmethod
     def _create_nodetype_from_str(string: str) -> NodeType:
@@ -844,7 +937,7 @@ class TcpNodeProxy(Node):
         tree: dict,
         properties_dicts_list: List[dict],
         current_depth: int,
-        max_search_depth: int,
+        max_search_depth: int = 1,
     ) -> List[dict]:
         """Find nodes with the specified name.
 
@@ -858,8 +951,9 @@ class TcpNodeProxy(Node):
             Dictionary with properties.
         current_depth: int
             Current depth of the search.
-        max_search_depth: int
-            Maximum depth of the search.
+        max_search_depth: int, optional
+            Maximum depth of the search. The default is ``1``. Set to ``-1``
+            to search throughout the full depth.
 
         Returns
         -------
@@ -881,7 +975,9 @@ class TcpNodeProxy(Node):
                         ),
                     }
                 )
-            if node["kind"] == "system" and current_depth < max_search_depth:
+            if node["kind"] == "system" and (
+                current_depth < max_search_depth or max_search_depth == -1
+            ):
                 __class__._find_nodes_with_name(
                     name=name,
                     tree=node,
@@ -897,7 +993,7 @@ class TcpNodeProxy(Node):
         tree: dict,
         properties_dicts_list: List[dict],
         current_depth: int,
-        max_search_depth: int,
+        max_search_depth: int = 1,
     ) -> List[dict]:
         """Find a node with a specified unique ID.
 
@@ -911,8 +1007,9 @@ class TcpNodeProxy(Node):
             Dictionary with properties.
         current_depth: int
             Current depth of the search.
-        max_search_depth: int
-            Maximum depth of the search.
+        max_search_depth: int, optional
+            Maximum depth of the search. The default is ``1``. Set to ``-1``
+            to search throughout the full depth.
 
         Returns
         -------
@@ -934,7 +1031,9 @@ class TcpNodeProxy(Node):
                         "is_parametric_system": "ParameterManager" in node.get("properties", {}),
                     }
                 )
-            if node["kind"] == "system" and current_depth < max_search_depth:
+            if node["kind"] == "system" and (
+                current_depth < max_search_depth or max_search_depth == -1
+            ):
                 __class__._find_node_with_uid(
                     uid=uid,
                     tree=node,
@@ -1103,7 +1202,8 @@ class TcpSystemProxy(TcpNodeProxy, System):
             Unique ID of the node.
         search_depth: int, optional
             Depth of the node subtree to search. The default is ``1``, which corresponds
-            to direct children nodes of the current system.
+            to direct children nodes of the current system. Set to ``-1`` to search throughout
+            the full depth.
 
         Returns
         -------
@@ -1157,7 +1257,8 @@ class TcpSystemProxy(TcpNodeProxy, System):
             Name of the node.
         search_depth: int, optional
             Depth of the node subtree to search. The default is ``1``, which corresponds
-            to direct children nodes of the current system.
+            to direct children nodes of the current system. Set to ``-1`` to search throughout
+            the full depth.
 
         Returns
         -------
@@ -1389,6 +1490,187 @@ class TcpParametricSystemProxy(TcpSystemProxy, ParametricSystem):
         """
         return self.__response_manager
 
+    def get_omdb_files(self) -> Tuple[File]:
+        """Get paths to omdb files.
+
+        Returns
+        -------
+        Tuple[File]
+            Tuple with File objects containing path.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        statuses_info = self._get_status_info()
+        wdirs = [Path(status_info["working dir"]) for status_info in statuses_info]
+        omdb_files = []
+        for wdir in wdirs:
+            omdb_files.extend([File(path) for path in wdir.glob("*.omdb")])
+        return tuple(omdb_files)
+
+    def save_designs_as(
+        self,
+        hid: str,
+        file_name: str,
+        format: FileOutputFormat = FileOutputFormat.JSON,
+        dir: Union[Path, str] = None,
+    ) -> File:
+        """Save designs for a given state.
+
+        Parameters
+        ----------
+        hid : str
+            Actor's state.
+        file_name : str
+            Name of the file.
+        format : FileOutputFormat, optional
+            Format of the file, by default ``FileOutputFormat.JSON``.
+        dir : Union[Path, str], optional
+            Directory, where file should be saved, by default ``None``.
+            Project's working directory is used by default.
+
+        Returns
+        -------
+        File
+            Object representing saved file.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        TypeError
+            Raised when incorrect type of ``dir`` is passed.
+        ValueError
+            Raised when unsupported value of ``format`` or non-existing ``hid``
+            is passed.
+        """
+        if dir is not None and isinstance(dir, str):
+            dir = Path(dir)
+        elif dir is None:
+            dir = self._osl_server.get_working_dir()
+
+        if not isinstance(dir, Path):
+            raise TypeError(f"Unsupported type of dir: `{type(dir)}`.")
+
+        designs = self._get_designs_dicts()
+        if not designs.get(hid):
+            raise ValueError(f"Design for given hid: `{hid}` not available.")
+
+        if format == FileOutputFormat.JSON:
+            output_file = json.dumps(designs[hid])
+            newline = None
+        elif format == FileOutputFormat.CSV:
+            output_file = self.__class__.__convert_design_dict_to_csv(designs[hid])
+            newline = ""
+        else:
+            raise ValueError(f"Output type `{format}` is not supported.")
+
+        output_file_path = dir / (file_name + format.to_str())
+        with open(output_file_path, "w", newline=newline) as f:
+            f.write(output_file)
+        return File(output_file_path)
+
+    def _get_designs_dicts(self) -> OrderedDict:
+        """Get parametric system's designs.
+
+        Returns
+        -------
+        OrderedDict
+            Ordered dictionary of designs, key is hid and value
+            is list of corresponding designs.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        statuses_info = self._get_status_info()
+        if not statuses_info:
+            return {}
+        designs = {}
+        # TODO: sort by hid? -> delete / use OrderedDict
+        for status_info in statuses_info:
+            designs[status_info["hid"]] = status_info["designs"]
+            for idx, design in enumerate(designs[status_info["hid"]]["values"]):
+                self.__class__.__append_status_info_to_design(
+                    design, status_info["design_status"][idx]
+                )
+        for i in range(2, len(statuses_info[0]["designs"]["values"][0]["hid"].split("."))):
+            designs = self.__class__.__sort_dict_by_key_hid(
+                designs, max(1, len(statuses_info[0]["designs"]["values"][0]["hid"].split(".")) - i)
+            )
+        for hid, design in designs.items():
+            # sort by design number, stripped from hid prefix
+            # (0.10, 0.9 ..., 0.1) -> (0.1, ..., 0.9, 0.10)
+            design["values"] = self.__class__.__sort_list_of_dicts_by_hid(
+                design["values"], len(hid.split("."))
+            )
+        return designs
+
+    @staticmethod
+    def __append_status_info_to_design(design: dict, status_info: dict) -> None:
+        if design["hid"] != status_info["id"]:
+            raise ValueError(f'{design["hid"]} != {status_info["id"]}')
+        to_append = {
+            key: status_info[key] for key in ("feasible", "status", "pareto_design", "directory")
+        }
+        design.update(to_append)
+
+    @staticmethod
+    def __convert_design_dict_to_csv(designs: dict) -> str:
+        csv_buffer = StringIO()
+        try:
+            csv_writer = csv.writer(csv_buffer)
+            header = ["Design"]
+            header.append("Feasible")
+            header.append("Status")
+            header.append("Pareto")
+            header.extend(designs["constraint_names"])
+            header.extend(designs["limit_state_names"])
+            header.extend(designs["objective_names"])
+            header.extend(designs["parameter_names"])
+            header.extend(designs["response_names"])
+            csv_writer.writerow(header)
+            for design in designs["values"]:
+                line = [design["hid"]]
+                line.append(design["feasible"])
+                line.append(design["status"])
+                line.append(design["pareto_design"])
+                line.extend(design["constraint_values"])
+                line.extend(design["limit_state_values"])
+                line.extend(design["objective_values"])
+                line.extend(design["parameter_values"])
+                line.extend(design["response_values"])
+                csv_writer.writerow(line)
+            return csv_buffer.getvalue()
+        finally:
+            if csv_buffer is not None:
+                csv_buffer.close()
+
+    @staticmethod
+    def __sort_list_of_dicts_by_hid(unsorted_list: List[dict], sort_by_position: int) -> List[dict]:
+        sort_key = lambda x: int(x["hid"].split(".")[sort_by_position])
+        return sorted(unsorted_list, key=sort_key)
+
+    @staticmethod
+    def __sort_dict_by_key_hid(unsorted_dict: dict, sort_by_position: int) -> dict:
+        sort_key = lambda item: int(item[0].split(".")[sort_by_position])
+        return OrderedDict(sorted(unsorted_dict.items(), key=sort_key))
+
 
 class TcpRootSystemProxy(TcpParametricSystemProxy, RootSystem):
     """Provides for creating and operating on a project system."""
@@ -1416,6 +1698,50 @@ class TcpRootSystemProxy(TcpParametricSystemProxy, RootSystem):
             type_=NodeType(id="RunnableSystem", subtype=AddinType.BUILT_IN),
             logger=logger,
         )
+
+    def control(
+        self, command: str, wait_for_completion: bool = True, timeout: Union[float, int] = 100
+    ) -> Union[str, None]:
+        """Control the node state.
+
+        Parameters
+        ----------
+        command: str
+            Command to execute. Options are ``"start"``, ``"restart"``, ``"stop_gently"``,
+            ``"stop"``, and ``"reset"``.
+        wait_for_completion: bool, optional
+            Whether to wait for completion. The default is ``True``.
+        timeout: Union[float, int], optional
+            Time limit for monitoring the status of the command. The default is ``100 s``.
+
+        Returns
+        -------
+        boolean
+            ``True`` when successful, ``False`` when failed.
+        """
+        response = self._osl_server.send_command(getattr(commands, command)())
+        if response[0]["status"] != "success":
+            raise Exception(f"{command} command execution failed.")
+
+        if wait_for_completion:
+            time_stamp = time.time()
+            while True:
+                print(
+                    f"Project: {self.get_name()} | "
+                    f"State: {self.get_status()} | "
+                    f"Time: {round(time.time() - time_stamp)}s"
+                )
+                if self.get_status() == PROJECT_COMMANDS_RETURN_STATES[command]:
+                    print(f"{command} command successfully executed.")
+                    status = True
+                    break
+                if (time.time() - time_stamp) > timeout:
+                    print("Timeout limit reached. Skip monitoring of command {command}.")
+                    status = False
+                    break
+                time.sleep(3)
+
+            return status
 
     def delete(self) -> None:
         """Delete current node and it's children from active project.

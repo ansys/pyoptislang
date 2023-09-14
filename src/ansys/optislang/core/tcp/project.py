@@ -5,6 +5,7 @@ import logging
 from pathlib import Path
 from typing import TYPE_CHECKING, Dict, List, Sequence, Tuple, Union
 
+from ansys.optislang.core.io import RegisteredFile, RegisteredFileUsage
 from ansys.optislang.core.project import Project
 from ansys.optislang.core.tcp.base_nodes import TcpRootSystemProxy
 
@@ -248,6 +249,61 @@ class TcpProjectProxy(Project):
         """
         return self.root_system.get_reference_design()
 
+    def get_registered_files(self) -> Tuple[RegisteredFile]:
+        """Get all registered files in the current project.
+
+        Returns
+        -------
+        Tuple[RegisteredFile]
+            Tuple with registered files.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        project_registered_files_dicts = self.__osl_server.get_basic_project_info()["projects"][0][
+            "registered_files"
+        ]
+        return tuple(
+            [
+                RegisteredFile(
+                    path=Path(file["local_location"]["split_path"]["head"]),
+                    id=file["ident"],
+                    comment=file["comment"],
+                    tag=file["tag"],
+                    usage=file["usage"],
+                )
+                for file in project_registered_files_dicts
+            ]
+        )
+
+    def get_result_files(self) -> Tuple[RegisteredFile]:
+        """Get result files.
+
+        Returns
+        -------
+        Tuple[RegisteredFile]
+            Tuple with result files
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        registered_files = self.get_registered_files()
+        return tuple(
+            [file for file in registered_files if file.usage == RegisteredFileUsage.OUTPUT_FILE]
+        )
+
     def get_status(self) -> str:
         """Get the status of the optiSLang project.
 
@@ -422,6 +478,60 @@ class TcpProjectProxy(Project):
             Raised when the timeout float value expires.
         """
         self.__osl_server.stop(wait_for_finished=wait_for_finished)
+
+    def _get_project_tree(self) -> list:
+        """Return the project tree in a list format.
+
+        Returns
+        -------
+        List
+            List with all the nodes in the project tree.
+        """
+        full_project_tree = self.__osl_server.get_full_project_tree()
+        project_tree = [
+            {
+                "uid": full_project_tree["projects"][0]["system"]["uid"],
+                "name": full_project_tree["projects"][0]["system"]["name"],
+                "is_root": True,
+                "kind": full_project_tree["projects"][0]["system"]["kind"],
+                "level": 0,
+            }
+        ]
+        return self._get_child_nodes(
+            full_project_tree["projects"][0]["system"]["nodes"], project_tree
+        )
+
+    def _get_child_nodes(self, node_properties: dict, project_tree: list) -> list:
+        """Recursively walk throughout the full project tree and collect the nodes.
+
+        Parameters
+        ----------
+        node_properties : dict
+            Properties of the node from querying the full project tree.
+        project_tree: list
+           List with nodes collected from the full project tree.
+
+        Returns
+        -------
+        List
+            Updated list with collected nodes from the full project tree.
+        """
+        level = project_tree[-1]["level"]
+        for i, child_node_properties in enumerate(node_properties):
+            if i == 0:
+                level += 1
+            project_tree.append(
+                {
+                    "uid": child_node_properties["uid"],
+                    "name": child_node_properties["name"],
+                    "is_root": False,
+                    "kind": child_node_properties["kind"],
+                    "level": level,
+                }
+            )
+            if "nodes" in child_node_properties.keys():
+                project_tree = self._get_child_nodes(child_node_properties["nodes"], project_tree)
+        return project_tree
 
     # FUTURES:
     # TODO: Add this after it's fixed on optiSLang server side.

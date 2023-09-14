@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING, Sequence, Tuple, Union
 
 if TYPE_CHECKING:
     from ansys.optislang.core.base_nodes import RootSystem
+    from ansys.optislang.core.io import RegisteredFile
     from ansys.optislang.core.project_parametric import Design
 
 
@@ -163,14 +164,13 @@ class Project(ABC):
         pass
 
     @abstractmethod
-    def get_status(self) -> str:  # pragma: no cover
-        """Get the status of the optiSLang project.
+    def get_registered_files(self) -> Tuple[RegisteredFile]:  # pragma: no cover
+        """Get all registered files in the current project.
 
         Returns
         -------
-        str
-            Status of the optiSLang project. If no project is loaded in optiSLang,
-            ``None`` is returned.
+        Tuple[RegisteredFile]
+            Tuple with registered files.
 
         Raises
         ------
@@ -184,14 +184,34 @@ class Project(ABC):
         pass
 
     @abstractmethod
-    def get_working_dir(self) -> Path:  # pragma: no cover
-        """Get the path to the optiSLang project's working directory.
+    def get_result_files(self) -> Tuple[RegisteredFile]:  # pragma: no cover
+        """Get result files.
 
         Returns
         -------
-        pathlib.Path
-            Path to the optiSLang project's working directory. If no project is loaded
-            in optiSLang, ``None`` is returned.
+        Tuple[RegisteredFile]
+            Tuple with result files
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        pass
+
+    @abstractmethod
+    def get_status(self) -> str:  # pragma: no cover
+        """Get the status of the optiSLang project.
+
+        Returns
+        -------
+        str
+            Status of the optiSLang project. If no project is loaded in optiSLang,
+            ``None`` is returned.
 
         Raises
         ------
