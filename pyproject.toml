@@ -32,7 +32,8 @@ classifiers = [
 ]
 dependencies = [
     "importlib-metadata>=4.0,<7",
-    "psutil>=5.9"
+    "psutil>=5.9",
+    "Deprecated>=1.2.14",
 ]
 
 [project.optional-dependencies]
