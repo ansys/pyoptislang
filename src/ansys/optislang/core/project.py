@@ -225,6 +225,27 @@ class Project(ABC):
         pass
 
     @abstractmethod
+    def get_working_dir(self) -> Path:  # pragma: no cover
+        """Get the path to the optiSLang project's working directory.
+
+        Returns
+        -------
+        pathlib.Path
+            Path to the optiSLang project's working directory. If no project is loaded
+            in optiSLang, ``None`` is returned.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        pass
+
+    @abstractmethod
     def reset(self) -> None:  # pragma: no cover
         """Reset the project.
 

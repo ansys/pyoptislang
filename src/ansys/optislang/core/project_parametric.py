@@ -9,7 +9,7 @@ import uuid
 from ansys.optislang.core.utils import enum_from_str
 
 
-# ENUMERATIONS:
+# region ENUMERATIONS:
 class CriterionType(Enum):
     """Available criteria types."""
 
@@ -358,7 +358,9 @@ class ResponseValueType(Enum):
         return enum_from_str(string=string, enum_class=__class__)
 
 
-# CLASSES:
+# endregion
+
+# region CLASSES:
 
 
 # region Criteria
@@ -3872,3 +3874,6 @@ class Design:
         else:
             for item in output:
                 item.value = None
+
+
+# endregion

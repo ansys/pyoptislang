@@ -58,7 +58,7 @@ def test_project_queries(optislang: Optislang):
     project_tree = project._get_project_tree()
     assert isinstance(project_tree, list)
 
-    optislang.open(file_path=calculator_w_parameters)
+    optislang.application.open(file_path=calculator_w_parameters)
 
     reg_files = project.get_registered_files()
     assert len(reg_files) == 3

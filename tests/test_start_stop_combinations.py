@@ -39,8 +39,8 @@ def test_combinations(optislang: Optislang, input, expected):
     with does_not_raise() as dnr:
         for method in input:
             if method[0] == "start":
-                optislang.start(method[1], method[2])
+                optislang.application.project.start(method[1], method[2])
             if method[0] == "stop":
-                optislang.stop(method[1])
+                optislang.application.project.stop(method[1])
         optislang.dispose()
     assert dnr is expected

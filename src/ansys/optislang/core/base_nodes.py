@@ -5,12 +5,12 @@ from abc import ABC, abstractmethod
 from enum import Enum
 from typing import TYPE_CHECKING, Any, Tuple, Union
 
+from ansys.optislang.core.io import File, FileOutputFormat, RegisteredFile
 from ansys.optislang.core.utils import enum_from_str
 
 if TYPE_CHECKING:
     from pathlib import Path
 
-    from ansys.optislang.core.io import File, FileOutputFormat, RegisteredFile
     from ansys.optislang.core.managers import CriteriaManager, ParameterManager, ResponseManager
     from ansys.optislang.core.node_types import NodeType
     from ansys.optislang.core.osl_server import OslServer
@@ -223,6 +223,26 @@ class Node(ABC):
         pass
 
     @abstractmethod
+    def get_ancestors(self) -> Tuple[Node, ...]:  # pragma: no cover
+        """Get tuple of ordered ancestors starting from root system at position 0.
+
+        Returns
+        -------
+        Tuple[Node, ...]
+            Tuple of ordered ancestors, starting from root system at position.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        pass
+
+    @abstractmethod
     def get_connections(
         self, slot_type: Union[SlotType, None] = None, slot_name: Union[str, None] = None
     ) -> Tuple[Edge]:  # pragma: no cover
@@ -259,26 +279,6 @@ class Node(ABC):
         -------
         str
             Name of the node.
-
-        Raises
-        ------
-        OslCommunicationError
-            Raised when an error occurs while communicating with the server.
-        OslCommandError
-            Raised when a command or query fails.
-        TimeoutError
-            Raised when the timeout float value expires.
-        """
-        pass
-
-    @abstractmethod
-    def get_ancestors(self) -> Tuple[Node, ...]:  # pragma: no cover
-        """Get tuple of ordered ancestors starting from root system at position 0.
-
-        Returns
-        -------
-        Tuple[Node, ...]
-            Tuple of ordered ancestors, starting from root system at position.
 
         Raises
         ------

@@ -75,7 +75,7 @@ def test_edge(optislang: Optislang):
 
 def test_connect_nodes(optislang: Optislang, tmp_path: Path):
     """Test connecting nodes, obtaining connections and disconnecting slot."""
-    optislang.save_as(file_path=tmp_path / "test_connect_nodes.opf")
+    optislang.application.save_as(file_path=tmp_path / "test_connect_nodes.opf")
     rs: TcpRootSystemProxy = optislang.project.root_system
     a: TcpNodeProxy = rs.find_nodes_by_name("A")[0]
     b: TcpNodeProxy = rs.find_nodes_by_name("B")[0]

@@ -28,7 +28,7 @@ from ansys.optislang.core.base_nodes import (
     SlotType,
     System,
 )
-from ansys.optislang.core.io import File, FileOutputFormat
+from ansys.optislang.core.io import File, FileOutputFormat, RegisteredFile, RegisteredFileUsage
 from ansys.optislang.core.node_types import AddinType, NodeType
 from ansys.optislang.core.project_parametric import (
     ConstraintCriterion,
@@ -246,7 +246,7 @@ class TcpNodeProxy(Node):
                 "name": parent_tree["name"],
                 "uid": parent_tree["uid"],
                 "kind": "root_system",
-                "is_parametric_system": "ParameterManager" in parent_tree.get("properties", {}),
+                "is_parametric_system": True,
             },
         ]
         ancestors_line_dicts = self.__class__._find_ancestor_line(
@@ -402,6 +402,68 @@ class TcpNodeProxy(Node):
         """
         return self.get_properties().get(name, None)
 
+    def get_registered_files(self) -> Tuple[RegisteredFile]:
+        """Get node's registered files.
+
+        Returns
+        -------
+        Tuple[RegisteredFile]
+            Tuple of registered files.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        registered_files_uids = self._get_info()["registered_files"]
+        if not registered_files_uids:
+            return ()
+        project_registered_files = self._osl_server.get_basic_project_info()["projects"][0][
+            "registered_files"
+        ]
+        return tuple(
+            [
+                RegisteredFile(
+                    path=Path(file["local_location"]["split_path"]["head"])
+                    / file["local_location"]["split_path"]["tail"],
+                    id=file["ident"],
+                    comment=file["comment"],
+                    tag=file["tag"],
+                    usage=file["usage"],
+                )
+                for file in project_registered_files
+                if file["tag"] in registered_files_uids
+            ]
+        )
+
+    def get_result_files(self) -> Tuple[RegisteredFile]:
+        """Get node's result files.
+
+        Returns
+        -------
+        Tuple[RegisteredFile]
+            Tuple of result files.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        return tuple(
+            filter(
+                lambda file: file.usage == RegisteredFileUsage.OUTPUT_FILE,
+                self.get_registered_files(),
+            )
+        )
+
     def get_slots(
         self, type_: Union[SlotType, None] = None, name: Union[str, None] = None
     ) -> Tuple[TcpSlotProxy, ...]:
@@ -451,6 +513,28 @@ class TcpNodeProxy(Node):
                     )
                 )
         return tuple(slots_list)
+
+    def get_states_ids(self) -> Tuple[str]:
+        """Get available actor states ids.
+
+        Returns
+        -------
+        Tuple[str]
+            Actor states ids.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        states = self._osl_server.get_actor_states(self.uid)
+        if not states.get("states", None):
+            return tuple([])
+        return tuple([state["hid"] for state in states["states"]])
 
     def get_status(self) -> str:
         """Get the status of the node.
@@ -905,9 +989,11 @@ class TcpNodeProxy(Node):
             Raised when node was not located in structure tree.
         """
         for node in tree["nodes"]:
+            if len(was_found) == 1:
+                break
             if node["uid"] == node_uid:
                 was_found.append("True")
-                return ancestor_line
+                break
             if node["kind"] == "system":
                 ancestor_line.append(
                     {
@@ -925,10 +1011,8 @@ class TcpNodeProxy(Node):
                     current_depth=current_depth + 1,
                     was_found=was_found,
                 )
-                if len(was_found) == 1:
-                    return ancestor_line
-                else:
-                    ancestor_line = ancestor_line[0:current_depth]
+                if not was_found:
+                    ancestor_line.pop(-1)
         return ancestor_line
 
     @staticmethod
@@ -1031,6 +1115,7 @@ class TcpNodeProxy(Node):
                         "is_parametric_system": "ParameterManager" in node.get("properties", {}),
                     }
                 )
+                break
             if node["kind"] == "system" and (
                 current_depth < max_search_depth or max_search_depth == -1
             ):
@@ -1226,10 +1311,16 @@ class TcpSystemProxy(TcpNodeProxy, System):
         if self.uid == project_tree["projects"][0]["system"]["uid"]:
             system_tree = project_tree["projects"][0]["system"]
         else:
-            system_tree = self.__class__._find_subtree(
+            located_tree = self.__class__._find_subtree(
                 tree=project_tree["projects"][0]["system"],
                 uid=self.uid,
+                nodes_tree=[],
             )
+            if len(located_tree) == 1:
+                system_tree = located_tree[0]
+            else:
+                raise RuntimeError(f"Current system `{self.uid}` wasn't found.")
+
         properties_dicts_list = self.__class__._find_node_with_uid(
             uid=uid,
             tree=system_tree,
@@ -1280,10 +1371,16 @@ class TcpSystemProxy(TcpNodeProxy, System):
         if self.uid == project_tree["projects"][0]["system"]["uid"]:
             system_tree = project_tree["projects"][0]["system"]
         else:
-            system_tree = self.__class__._find_subtree(
+            located_tree = self.__class__._find_subtree(
                 tree=project_tree["projects"][0]["system"],
                 uid=self.uid,
+                nodes_tree=[],
             )
+            if len(located_tree) == 1:
+                system_tree = located_tree[0]
+            else:
+                raise RuntimeError(f"Current system `{self.uid}` wasn't found.")
+
         properties_dicts_list = self.__class__._find_nodes_with_name(
             name=name,
             tree=system_tree,
@@ -1342,12 +1439,15 @@ class TcpSystemProxy(TcpNodeProxy, System):
         if self.uid == project_tree["projects"][0]["system"]["uid"]:
             system_tree = project_tree["projects"][0]["system"]
         else:
-            system_tree = self.__class__._find_subtree(
+            located_tree = self.__class__._find_subtree(
                 tree=project_tree["projects"][0]["system"],
                 uid=self.uid,
+                nodes_tree=[],
             )
-        if len(system_tree) == 0:
-            raise RuntimeError(f"System `{self.uid}` wasn't found.")
+            if len(located_tree) == 1:
+                system_tree = located_tree[0]
+            else:
+                raise RuntimeError(f"Current system `{self.uid}` wasn't found.")
 
         children_dicts_list = []
         for node in system_tree["nodes"]:
@@ -1363,7 +1463,7 @@ class TcpSystemProxy(TcpNodeProxy, System):
         return tuple(children_dicts_list)
 
     @staticmethod
-    def _find_subtree(tree: dict, uid: str) -> dict:
+    def _find_subtree(tree: dict, uid: str, nodes_tree: List[dict]) -> dict:
         """Find the subtree with a root node matching a specified unique ID.
 
         Parameters
@@ -1372,6 +1472,8 @@ class TcpSystemProxy(TcpNodeProxy, System):
             Dictionary with the parent structure.
         uid: str
             Unique ID of the subtree root node.
+        nodes_tree: List[dict]
+            List with tree of searched node.
 
         Returns
         -------
@@ -1379,10 +1481,13 @@ class TcpSystemProxy(TcpNodeProxy, System):
             Dictionary representing the subtree found.
         """
         for node in tree["nodes"]:
+            if len(nodes_tree) != 0:
+                break
             if node["uid"] == uid:
-                return node
+                nodes_tree.append(node)
             if node["kind"] == "system":
-                __class__._find_subtree(tree=node, uid=uid)
+                __class__._find_subtree(tree=node, uid=uid, nodes_tree=nodes_tree)
+        return nodes_tree
 
     @staticmethod
     def _get_subtypes(

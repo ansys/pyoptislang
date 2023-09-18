@@ -40,7 +40,7 @@ def optislang(scope="function", autouse=False) -> Optislang:
 # region TEST NODE
 def test_node_initialization(optislang: Optislang):
     """Test `Node` initialization."""
-    optislang.open(file_path=calculator_w_parameters)
+    optislang.application.open(file_path=calculator_w_parameters)
     project = optislang.project
     root_system = project.root_system
     node = root_system.get_nodes()[0]
@@ -50,7 +50,7 @@ def test_node_initialization(optislang: Optislang):
 
 def test_node_properties(optislang: Optislang):
     """Test properties of the instance of `Node` class."""
-    optislang.open(file_path=calculator_w_parameters)
+    optislang.application.open(file_path=calculator_w_parameters)
     project = optislang.project
     root_system = project.root_system
     node = root_system.get_nodes()[0]
@@ -64,7 +64,7 @@ def test_node_properties(optislang: Optislang):
 
 def test_node_queries(optislang: Optislang):
     """Test get methods of the instance of `Node` class."""
-    optislang.open(file_path=calculator_w_parameters)
+    optislang.application.open(file_path=calculator_w_parameters)
     project = optislang.project
     root_system = project.root_system
     node: TcpNodeProxy = root_system.find_nodes_by_name("Calculator")[0]
@@ -74,7 +74,7 @@ def test_node_queries(optislang: Optislang):
     assert isinstance(ancestors[0], TcpRootSystemProxy)
 
     connections = node.get_connections()
-    assert len(connect_nodes) == 2
+    assert len(connections) == 4
     for connection in connections:
         assert isinstance(connection, Edge)
 
@@ -115,7 +115,7 @@ def test_node_queries(optislang: Optislang):
     assert isinstance(states_ids[0], str)
 
     slots = node.get_slots()
-    assert len(slots) == 8
+    assert len(slots) == 10
     for slot in slots:
         assert isinstance(slot, TcpSlotProxy)
 
@@ -131,14 +131,14 @@ def test_node_queries(optislang: Optislang):
 
 def test_control(optislang: Optislang):
     """Test control methods of the instance of `Node` class."""
-    optislang.open(file_path=calculator_w_parameters)
+    optislang.application.open(file_path=calculator_w_parameters)
     project = optislang.project
     root_system = project.root_system
     node = root_system.find_nodes_by_name("Calculator")[0]
 
     for command in ["start", "restart", "stop_gently", "stop", "reset"]:
         output = node.control(command, wait_for_completion=False)
-        assert isinstance(output, None)
+        assert output is None
         output = node.control(command, timeout=3)
         assert isinstance(output, bool)
 
@@ -147,7 +147,7 @@ def test_control(optislang: Optislang):
 
 def test_get_ancestors(optislang: Optislang):
     """Test `get_ancestors` method on nested systems."""
-    optislang.open(file_path=nested_systems)
+    optislang.application.open(file_path=nested_systems)
     project = optislang.project
     root_system = project.root_system
     system_in_sensitivity: TcpParametricSystemProxy = root_system.find_nodes_by_name(
@@ -162,11 +162,19 @@ def test_get_ancestors(optislang: Optislang):
     assert isinstance(ancestors[1], TcpParametricSystemProxy)
     assert isinstance(ancestors[2], TcpSystemProxy)
 
+    calculator_in_parametric_system = root_system.find_nodes_by_name(
+        "Calculator_inParametricSystem", 2
+    )[0]
+    ancestors = calculator_in_parametric_system.get_ancestors()
+    assert len(ancestors) == 2
+    assert isinstance(ancestors[0], TcpRootSystemProxy)
+    assert isinstance(ancestors[1], TcpParametricSystemProxy)
+
 
 def test_set_property(optislang: Optislang, tmp_path: Path):
     """Test `set_property` method."""
-    optislang.open(calculator_w_parameters)
-    optislang.save_as(tmp_path / "test_set_property.opf")
+    optislang.application.open(calculator_w_parameters)
+    optislang.application.save_as(tmp_path / "test_set_property.opf")
     root_system = optislang.project.root_system
     node: TcpNodeProxy = root_system.find_nodes_by_name("Calculator")[0]
     # enum prop
@@ -196,7 +204,7 @@ def test_set_property(optislang: Optislang, tmp_path: Path):
 # region TEST SYSTEM
 def test_find_node_by_uid(optislang: Optislang):
     """Test `find_node_by_uid`."""
-    optislang.open(file_path=nested_systems)
+    optislang.application.open(file_path=nested_systems)
     project = optislang.project
     root_system = project.root_system
 
@@ -255,7 +263,7 @@ def test_find_node_by_uid(optislang: Optislang):
 
 def test_find_node_by_name(optislang: Optislang):
     """Test `find_node_by_name`."""
-    optislang.open(file_path=nested_systems)
+    optislang.application.open(file_path=nested_systems)
     project = optislang.project
     root_system = project.root_system
 
@@ -297,7 +305,7 @@ def test_find_node_by_name(optislang: Optislang):
 # region TEST PARAMETRIC SYSTEM
 def test_get_managers(optislang: Optislang):
     """Test initialization and __str__ methods of both `ParametricSystem` and managers."""
-    optislang.open(file_path=nested_systems)
+    optislang.application.open(file_path=nested_systems)
     project = optislang.project
     root_system = project.root_system
     parametric_system: TcpParametricSystemProxy = root_system.find_nodes_by_name(
@@ -324,9 +332,9 @@ def test_get_managers(optislang: Optislang):
 def test_get_omdb_files(tmp_path: Path):
     """Test `get_omdb_files()` method."""
     optislang = Optislang(project_path=omdb_files)
-    optislang.set_timeout(30)
-    optislang.reset()
-    optislang.start()
+    optislang.timeout = 30
+    optislang.application.project.reset()
+    optislang.application.project.start()
     project = optislang.project
     root_system = project.root_system
 
@@ -347,9 +355,9 @@ def test_get_omdb_files(tmp_path: Path):
 def test_save_designs_as(tmp_path: Path):
     """Test `save_designs_as` method."""
     optislang = Optislang(project_path=omdb_files)
-    optislang.set_timeout(30)
-    optislang.reset()
-    optislang.start()
+    optislang.timeout = 30
+    optislang.application.project.reset()
+    optislang.application.project.start()
     project = optislang.project
     root_system = project.root_system
 
