@@ -49,7 +49,7 @@ def create_osl_server_process(shutdown_on_finished=False) -> OslServerProcess:
 pytestmark = pytest.mark.local_osl
 
 
-# %% CONTEXT MANAGER
+# region CONTEXT MANAGER
 @pytest.mark.parametrize(
     "send_dispose, send_shutdown, osl_none",
     [
@@ -166,7 +166,10 @@ def test_remote_cm(send_dispose, send_shutdown, osl_none):
             osl.shutdown()
 
 
-# %% WITHOUT CM
+# endregion
+
+
+# region WITHOUT CM
 @pytest.mark.parametrize(
     "send_dispose, send_shutdown",
     [
@@ -268,3 +271,16 @@ def test_remote_wocm(send_dispose, send_shutdown):
         ):
             osl = Optislang(host="127.0.0.1", port=osl_server_process.port_range[0], ini_timeout=10)
             osl.shutdown()
+
+
+def test_local_and_remote_simultaneously():
+    """Test connection to locally started server, dispose locally started instance."""
+    osl_local = Optislang()
+    osl_remote = Optislang(port=osl_local.osl_server.port, host=osl_local.osl_server.host)
+    osl_local.dispose()
+    time.sleep(30)
+    version = osl_remote.application.get_version_string()
+    osl_remote.dispose()
+
+
+# endregion
