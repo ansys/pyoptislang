@@ -1339,6 +1339,30 @@ class TcpOslServer(OslServer):
         """
         return self.send_command(queries.actor_info(uid=uid, password=self.__password))
 
+    def get_actor_properties(self, uid: str) -> Dict:
+        """Get properties of actor defined by uid.
+
+        Parameters
+        ----------
+        uid : str
+            Actor uid.
+
+        Returns
+        -------
+        Dict
+            Properties of actor defined by uid.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        return self.send_command(queries.actor_properties(uid=uid, password=self.__password))
+
     def get_actor_states(self, uid: str) -> Dict:
         """Get available actor states for a certain actor (only the IDs of the available states).
 
@@ -1417,30 +1441,6 @@ class TcpOslServer(OslServer):
         return self.send_command(
             queries.actor_supports(uid=uid, feature_name=feature_name, password=self.__password)
         )[feature_name.lower()]
-
-    def get_actor_properties(self, uid: str) -> Dict:
-        """Get properties of actor defined by uid.
-
-        Parameters
-        ----------
-        uid : str
-            Actor uid.
-
-        Returns
-        -------
-        Dict
-            Properties of actor defined by uid.
-
-        Raises
-        ------
-        OslCommunicationError
-            Raised when an error occurs while communicating with server.
-        OslCommandError
-            Raised when the command or query fails.
-        TimeoutError
-            Raised when the timeout float value expires.
-        """
-        return self.send_command(queries.actor_properties(uid=uid, password=self.__password))
 
     def get_available_nodes(self) -> Dict[str, List[str]]:
         """Get available node types for current oSL server.
