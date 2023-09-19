@@ -117,10 +117,7 @@ down the instance gracefully.
 Optionally, you can use the :py:meth:`shutdown() <ansys.optislang.core.optislang.Optislang.shutdown>`
 method to shut down the OptiSLang server. However, you must call this method before the
 :py:meth:`dispose() <ansys.optislang.core.optislang.Optislang.dispose>`
-method. If you set the ``shutdown_on_finished`` parameter on the
-:py:meth:`dispose() <ansys.optislang.core.optislang.Optislang.dispose>` method to
-``True``, you do not need to use the :py:meth:`shutdown() <ansys.optislang.core.optislang.Optislang.shutdown>`
-method.
+method and only if the server is not set to shutdown automatically when finished.
 
 
 Differences in the termination methods mentioned earlier follow:
@@ -133,7 +130,8 @@ Differences in the termination methods mentioned earlier follow:
   
   * The server is started locally by an optiSLang instance with the
     ``shutdown_on_finished`` parameter set to ``False``.
-  * The optiSLang instance is connected to a remote optiSLang server. 
+  * The optiSLang instance is connected to a remote optiSLang server, that is not set to shutdown
+    automatically when finished (``--shutdown-on-finished`` post argument was not used).
 
 
 To specify whether to automatically shut down the optiSLang server, you can use the
