@@ -340,7 +340,7 @@ class Node:
         Returns
         -------
         str
-            Kind of the node.
+            Kind of the node. Possible values are ``"actor"`` or ``"system"``.
 
         Raises
         ------
