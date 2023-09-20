@@ -334,6 +334,26 @@ class Node:
         actor_info = self._osl_server.get_actor_info(uid=self.__uid)
         return actor_info["type"]
 
+    def get_kind(self) -> str:
+        """Get the kind of the node.
+
+        Returns
+        -------
+        str
+            Kind of the node.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        actor_info = self._osl_server.get_actor_info(uid=self.__uid)
+        return actor_info["kind"]
+
     def control(
         self,
         command: str,

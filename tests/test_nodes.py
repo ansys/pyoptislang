@@ -94,6 +94,9 @@ def test_node_queries(optislang: Optislang):
     assert isinstance(type, str)
     assert type == "CalculatorSet"
 
+    type = node.get_kind()
+    assert isinstance(type, str)
+
     with does_not_raise() as dnr:
         print(node)
     assert dnr is None
