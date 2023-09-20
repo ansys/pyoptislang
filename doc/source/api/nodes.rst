@@ -8,3 +8,4 @@ These classes are specific to the :py:mod:`ansys.optislang.core.base_nodes <ansy
    base_nodes
    nodes_connection
    base_nodes_enumerations
+   node_types

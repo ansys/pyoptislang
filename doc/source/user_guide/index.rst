@@ -13,6 +13,7 @@ This section provides an overview of how you use PyOptiSLang.
    functions
    project_content
    design_evaluation
+   create_workflow
    run_python
    osl_server_usage
    troubleshooting
