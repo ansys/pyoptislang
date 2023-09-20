@@ -5,6 +5,6 @@ NodeTypes
 .. toctree::
    :maxdepth: 2
 
-   node_types_nodes
-   node_types_systems
-   node_type_parametric_systems
+   ./node_types/nodes
+   ./node_types/systems
+   ./node_types/parametric_systems
