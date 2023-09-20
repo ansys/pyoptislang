@@ -4,7 +4,6 @@ Integration plugins
 
 .. autosummary::
     :toctree: _autosummary
-    :template: class.rst
 
     awb2_plugin
     discovery_plugin

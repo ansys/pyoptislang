@@ -4,7 +4,6 @@ Python based integration_plugins
 
 .. autosummary::
     :toctree: _autosummary
-    :template: class.rst
 
     AEDT2
     AEDT2_lsdso

@@ -4,8 +4,7 @@ Python based algorithm plugins
 
 .. autosummary::
     :toctree: _autosummary
-    :template: class.rst
-
+    
     BASS
     DXAMO
     DXASO

@@ -4,6 +4,5 @@ Python based MOP node plugins
 
 .. autosummary::
     :toctree: _autosummary
-    :template: class.rst
     
     MOP

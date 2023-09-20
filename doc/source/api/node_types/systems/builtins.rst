@@ -4,6 +4,5 @@ Built-in
 
 .. autosummary::
     :toctree: _autosummary
-    :template: class.rst
 
     While
