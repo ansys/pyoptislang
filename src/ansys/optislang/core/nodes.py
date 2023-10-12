@@ -611,10 +611,15 @@ class System(Node):
         if self.uid == project_tree["projects"][0]["system"]["uid"]:
             system_tree = project_tree["projects"][0]["system"]
         else:
-            system_tree = System._find_subtree(
+            located_tree = System._find_subtree(
                 tree=project_tree["projects"][0]["system"],
                 uid=self.uid,
             )
+            if len(located_tree) == 1:
+                system_tree = located_tree[0]
+            else:
+                raise RuntimeError(f"Current system `{self.uid}` wasn't found.")
+
         properties_dicts_list = System._find_node_with_uid(
             uid=uid,
             tree=system_tree,
@@ -665,10 +670,16 @@ class System(Node):
         if self.uid == project_tree["projects"][0]["system"]["uid"]:
             system_tree = project_tree["projects"][0]["system"]
         else:
-            system_tree = System._find_subtree(
+            located_tree = self.__class__._find_subtree(
                 tree=project_tree["projects"][0]["system"],
                 uid=self.uid,
+                nodes_tree=[],
             )
+            if len(located_tree) == 1:
+                system_tree = located_tree[0]
+            else:
+                raise RuntimeError(f"Current system `{self.uid}` wasn't found.")
+
         properties_dicts_list = System._find_nodes_with_name(
             name=name,
             tree=system_tree,
@@ -727,12 +738,15 @@ class System(Node):
         if self.uid == project_tree["projects"][0]["system"]["uid"]:
             system_tree = project_tree["projects"][0]["system"]
         else:
-            system_tree = System._find_subtree(
+            located_tree = self.__class__._find_subtree(
                 tree=project_tree["projects"][0]["system"],
                 uid=self.uid,
+                nodes_tree=[],
             )
-        if len(system_tree) == 0:
-            raise RuntimeError(f"System `{self.uid}` wasn't found.")
+            if len(located_tree) == 1:
+                system_tree = located_tree[0]
+            else:
+                raise RuntimeError(f"Current system `{self.uid}` wasn't found.")
 
         children_dicts_list = []
         for node in system_tree["nodes"]:
@@ -854,7 +868,7 @@ class System(Node):
         return properties_dicts_list
 
     @staticmethod
-    def _find_subtree(tree: dict, uid: str) -> dict:
+    def _find_subtree(tree: dict, uid: str, nodes_tree: List[dict]) -> dict:
         """Find the subtree with a root node matching a specified unique ID.
 
         Parameters
@@ -863,6 +877,8 @@ class System(Node):
             Dictionary with the parent structure.
         uid: str
             Unique ID of the subtree root node.
+        nodes_tree: List[dict]
+            List with tree of searched node.
 
         Returns
         -------
@@ -870,10 +886,13 @@ class System(Node):
             Dictionary representing the subtree found.
         """
         for node in tree["nodes"]:
+            if len(nodes_tree) != 0:
+                break
             if node["uid"] == uid:
-                return node
+                nodes_tree.append(node)
             if node["kind"] == "system":
-                System._find_subtree(tree=node, uid=uid)
+                __class__._find_subtree(tree=node, uid=uid, nodes_tree=nodes_tree)
+        return nodes_tree
 
 
 class ParametricSystem(System):
