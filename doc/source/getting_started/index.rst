@@ -1,7 +1,7 @@
 Getting started
 ===============
-To run PyOptiSLang, you must have access to a licensed copy of optiSLang. The first 
-supported version of optiSLang is 2023 R1. For more information on optiSLang, see the 
+To run PyOptiSLang, you must have access to a licensed copy of optiSLang. The first
+supported version of optiSLang is 2023 R1. For more information on optiSLang, see the
 `Ansys optiSLang <https://www.ansys.com/products/connect/ansys-optislang>`_ page
 on the Ansys website.
 
@@ -29,11 +29,11 @@ Install the latest release from `PyPi
 
 
 Alternatively, install the latest `PyOptiSLang GitHub
-<https://github.com/pyansys/pyoptislang/issues>`_ package with this command:
+<https://github.com/ansys/pyoptislang/issues>`_ package with this command:
 
 .. code::
 
-   pip install git+https://github.com/pyansys/pyoptislang.git
+   pip install git+https://github.com/ansys/pyoptislang.git
 
 
 Developer installation
@@ -43,7 +43,7 @@ clone and install PyOptiSLang with this code:
 
 .. code::
 
-   git clone https://github.com/pyansys/pyoptislang.git
+   git clone https://github.com/ansys/pyoptislang.git
    cd pyoptislang
    pip install -e .
 
@@ -55,7 +55,7 @@ after restarting the Python kernel.
 Offline installation
 ~~~~~~~~~~~~~~~~~~~~
 Using a wheelhouse can be helpful if you work for a company that restricts access to
-external networks. From the `Releases <https://github.com/pyansys/pyoptislang/releases>`_
+external networks. From the `Releases <https://github.com/ansys/pyoptislang/releases>`_
 page in the PyOptiSLang repository, you can find the wheelhouses for a particular release in its
 assets and download the wheelhouse corresponding to your setup.
 

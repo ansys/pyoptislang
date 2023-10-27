@@ -64,6 +64,7 @@ example_files = {
     "nodes_connection": (module_path / "00_run_script" / "files" / "connect_nodes.opf",),
     "nested_systems": (module_path / "00_run_script" / "files" / "nested_systems.opf",),
     "ten_bar_truss": (module_path / "00_run_script" / "files" / "ten_bar_truss.opf",),
+    "omdb_files": (module_path / "00_run_script" / "files" / "omdb_files.opf",),
 }
 
 # dictionary of scripts to be run
@@ -141,4 +142,5 @@ example_scripts = {
     "nodes_connection": None,
     "nested_systems": None,
     "ten_bar_truss": None,
+    "omdb_files": None,
 }
