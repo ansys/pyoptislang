@@ -53,6 +53,9 @@ def test_project_queries(optislang: Optislang):
     assert len(res_files) == 1
     assert isinstance(res_files[0], RegisteredFile)
 
+    project_tree = project._get_project_tree()
+    assert isinstance(project_tree, list)
+
     optislang.dispose()
 
 
