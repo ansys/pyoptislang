@@ -37,18 +37,18 @@ dependencies = [
 
 [project.optional-dependencies]
 tests = [
-    "pytest==7.3.1",
+    "pytest==7.4.0",
     "pytest-cov==4.1.0",
     "matplotlib>=3.5.3",
 ]
 doc = [
     "ansys-sphinx-theme==0.9.9",
-    "matplotlib==3.7.1",
+    "matplotlib==3.7.2",
     "numpydoc==1.5.0",
     "pypandoc==1.11",
     "Sphinx==7.2.5",
     "sphinx-copybutton==0.5.2",
-    "sphinx-gallery==0.13.0",
+    "sphinx-gallery==0.14.0",
     "sphinxcontrib-images==0.9.4",
 ]
 build = [
