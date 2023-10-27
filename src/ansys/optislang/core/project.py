@@ -228,6 +228,60 @@ class Project:
         """
         return self.__osl_server.get_project_status()
 
+    def _get_project_tree(self) -> list:
+        """Return the project tree in a list format.
+
+        Returns
+        -------
+        List
+            List with all the nodes in the project tree.
+        """
+        full_project_tree = self.__osl_server.get_full_project_tree()
+        project_tree = [
+            {
+                "uid": full_project_tree["projects"][0]["system"]["uid"],
+                "name": full_project_tree["projects"][0]["system"]["name"],
+                "is_root": True,
+                "kind": full_project_tree["projects"][0]["system"]["kind"],
+                "level": 0,
+            }
+        ]
+        return self._get_child_nodes(
+            full_project_tree["projects"][0]["system"]["nodes"], project_tree
+        )
+
+    def _get_child_nodes(self, node_properties: dict, project_tree: list) -> list:
+        """Recursively walk throughout the full project tree and collect the nodes.
+
+        Parameters
+        ----------
+        node_properties : dict
+            Properties of the node from querying the full project tree.
+        project_tree: list
+           List with nodes collected from the full project tree.
+
+        Returns
+        -------
+        List
+            Updated list with collected nodes from the full project tree.
+        """
+        level = project_tree[-1]["level"]
+        for i, child_node_properties in enumerate(node_properties):
+            if i == 0:
+                level += 1
+            project_tree.append(
+                {
+                    "uid": child_node_properties["uid"],
+                    "name": child_node_properties["name"],
+                    "is_root": False,
+                    "kind": child_node_properties["kind"],
+                    "level": level,
+                }
+            )
+            if "nodes" in child_node_properties.keys():
+                project_tree = self._get_child_nodes(child_node_properties["nodes"], project_tree)
+        return project_tree
+
     @property
     def parameter_manager(self) -> ParameterManager:
         """Instance of the ``ParameterManager`` class at the root system.

@@ -8,6 +8,7 @@ from enum import Enum
 from io import StringIO
 import json
 from pathlib import Path
+import time
 from typing import TYPE_CHECKING, Dict, Iterable, List, Tuple, Union
 
 from ansys.optislang.core.io import File, FileOutputFormat, RegisteredFile, RegisteredFileUsage
@@ -26,6 +27,25 @@ from ansys.optislang.core.utils import enum_from_str
 if TYPE_CHECKING:
     from ansys.optislang.core.osl_server import OslServer
     from ansys.optislang.core.project_parametric import Criterion
+
+from ansys.optislang.core import server_commands as commands
+
+PROJECT_COMMANDS_RETURN_STATES = {
+    "start": "PROCESSING",
+    "restart": "PROCESSING",
+    "stop": "STOPPED",
+    "stop_gently": "GENTLY_STOPPED",
+    "reset": "FINISHED",
+}
+
+
+ACTOR_COMMANDS_RETURN_STATES = {
+    "start": "Running",
+    "restart": "Running",
+    "stop": "Aborted",
+    "stop_gently": "Gently stopped",
+    "reset": "Finished",
+}
 
 
 class DesignFlow(Enum):
@@ -314,6 +334,69 @@ class Node:
         actor_info = self._osl_server.get_actor_info(uid=self.__uid)
         return actor_info["type"]
 
+    def control(
+        self,
+        command: str,
+        hid: str = None,
+        wait_for_completion: bool = True,
+        timeout: Union[float, int] = 100,
+    ) -> Union[str, None]:
+        """Control the node state.
+
+        Parameters
+        ----------
+        command: str
+            Command to execute. Options are ``"start"``, ``"restart"``, ``"stop_gently"``,
+            ``"stop"``, and ``"reset"``.
+        hid: str, optional
+            Hid entry. The default is ``None``. The actor unique ID is required.
+        wait_for_completion: bool, optional
+            Whether to wait for completion. The default is ``True``.
+        timeout: Union[float, int], optional
+            Time limit for monitoring the status of the command. The default is ``100 s``.
+
+        Returns
+        -------
+        boolean
+            ``True`` when successful, ``False`` when failed.
+        """
+        if not hid:  # Run command against all designs
+            hids = self.get_states_ids()
+            if len(hids) == 0:
+                raise RuntimeError(
+                    "There are no hids available because the node has not been started yet."
+                    f" The {command} command cannot be executed."
+                )
+        else:  # Run command against the given design
+            hids = [hid]
+
+        for hid in hids:
+            response = self._osl_server.send_command(
+                getattr(commands, command)(actor_uid=self.uid, hid=hid)
+            )
+            if response[0]["status"] != "success":
+                raise Exception(f"{command} command execution failed.")
+
+        if wait_for_completion:
+            time_stamp = time.time()
+            while True:
+                print(
+                    f"Project: {self.get_name()} | "
+                    f"State: {self.get_status()} | "
+                    f"Time: {round(time.time() - time_stamp)}s"
+                )
+                if self.get_status() == ACTOR_COMMANDS_RETURN_STATES[command]:
+                    print(f"{command} command successfully executed.")
+                    status = True
+                    break
+                if (time.time() - time_stamp) > timeout:
+                    print("Timeout limit reached. Skip monitoring of command {command}.")
+                    status = False
+                    break
+                time.sleep(3)
+
+            return status
+
     def _create_nodes_from_properties_dicts(
         self, properties_dicts_list: List[dict]
     ) -> Tuple[Node, ...]:
@@ -504,7 +587,8 @@ class System(Node):
             Unique ID of the node.
         search_depth: int, optional
             Depth of the node subtree to search. The default is ``1``, which corresponds
-            to direct children nodes of the current system.
+            to direct children nodes of the current system. Set to ``-1`` to search throughout
+            the full depth.
 
         Returns
         -------
@@ -527,10 +611,15 @@ class System(Node):
         if self.uid == project_tree["projects"][0]["system"]["uid"]:
             system_tree = project_tree["projects"][0]["system"]
         else:
-            system_tree = System._find_subtree(
+            located_tree = System._find_subtree(
                 tree=project_tree["projects"][0]["system"],
                 uid=self.uid,
             )
+            if len(located_tree) == 1:
+                system_tree = located_tree[0]
+            else:
+                raise RuntimeError(f"Current system `{self.uid}` wasn't found.")
+
         properties_dicts_list = System._find_node_with_uid(
             uid=uid,
             tree=system_tree,
@@ -558,7 +647,8 @@ class System(Node):
             Name of the node.
         search_depth: int, optional
             Depth of the node subtree to search. The default is ``1``, which corresponds
-            to direct children nodes of the current system.
+            to direct children nodes of the current system. Set to ``-1`` to search throughout
+            the full depth.
 
         Returns
         -------
@@ -580,10 +670,16 @@ class System(Node):
         if self.uid == project_tree["projects"][0]["system"]["uid"]:
             system_tree = project_tree["projects"][0]["system"]
         else:
-            system_tree = System._find_subtree(
+            located_tree = self.__class__._find_subtree(
                 tree=project_tree["projects"][0]["system"],
                 uid=self.uid,
+                nodes_tree=[],
             )
+            if len(located_tree) == 1:
+                system_tree = located_tree[0]
+            else:
+                raise RuntimeError(f"Current system `{self.uid}` wasn't found.")
+
         properties_dicts_list = System._find_nodes_with_name(
             name=name,
             tree=system_tree,
@@ -642,12 +738,15 @@ class System(Node):
         if self.uid == project_tree["projects"][0]["system"]["uid"]:
             system_tree = project_tree["projects"][0]["system"]
         else:
-            system_tree = System._find_subtree(
+            located_tree = self.__class__._find_subtree(
                 tree=project_tree["projects"][0]["system"],
                 uid=self.uid,
+                nodes_tree=[],
             )
-        if len(system_tree) == 0:
-            raise RuntimeError(f"System `{self.uid}` wasn't found.")
+            if len(located_tree) == 1:
+                system_tree = located_tree[0]
+            else:
+                raise RuntimeError(f"Current system `{self.uid}` wasn't found.")
 
         children_dicts_list = []
         for node in system_tree["nodes"]:
@@ -667,7 +766,7 @@ class System(Node):
         tree: dict,
         properties_dicts_list: List[dict],
         current_depth: int,
-        max_search_depth: int,
+        max_search_depth: int = 1,
     ) -> List[dict]:
         """Find nodes with the specified name.
 
@@ -681,8 +780,9 @@ class System(Node):
             Dictionary with properties.
         current_depth: int
             Current depth of the search.
-        max_search_depth: int
-            Maximum depth of the search.
+        max_search_depth: int, optional
+            Maximum depth of the search. The default is ``1``. Set to ``-1``
+            to search throughout the full depth.
 
         Returns
         -------
@@ -701,7 +801,9 @@ class System(Node):
                         "kind": node["kind"],
                     }
                 )
-            if node["kind"] == "system" and current_depth < max_search_depth:
+            if node["kind"] == "system" and (
+                current_depth < max_search_depth or max_search_depth == -1
+            ):
                 System._find_nodes_with_name(
                     name=name,
                     tree=node,
@@ -717,7 +819,7 @@ class System(Node):
         tree: dict,
         properties_dicts_list: List[dict],
         current_depth: int,
-        max_search_depth: int,
+        max_search_depth: int = 1,
     ) -> List[dict]:
         """Find a node with a specified unique ID.
 
@@ -731,8 +833,10 @@ class System(Node):
             Dictionary with properties.
         current_depth: int
             Current depth of the search.
-        max_search_depth: int
-            Maximum depth of the search.
+        max_search_depth: int, optional
+            Maximum depth of the search. The default is ``1``. Set to ``-1``
+            to search throughout the full depth.
+
 
         Returns
         -------
@@ -751,7 +855,9 @@ class System(Node):
                         "kind": node["kind"],
                     }
                 )
-            if node["kind"] == "system" and current_depth < max_search_depth:
+            if node["kind"] == "system" and (
+                current_depth < max_search_depth or max_search_depth == -1
+            ):
                 System._find_node_with_uid(
                     uid=uid,
                     tree=node,
@@ -762,7 +868,7 @@ class System(Node):
         return properties_dicts_list
 
     @staticmethod
-    def _find_subtree(tree: dict, uid: str) -> dict:
+    def _find_subtree(tree: dict, uid: str, nodes_tree: List[dict]) -> dict:
         """Find the subtree with a root node matching a specified unique ID.
 
         Parameters
@@ -771,6 +877,8 @@ class System(Node):
             Dictionary with the parent structure.
         uid: str
             Unique ID of the subtree root node.
+        nodes_tree: List[dict]
+            List with tree of searched node.
 
         Returns
         -------
@@ -778,10 +886,13 @@ class System(Node):
             Dictionary representing the subtree found.
         """
         for node in tree["nodes"]:
+            if len(nodes_tree) != 0:
+                break
             if node["uid"] == uid:
-                return node
+                nodes_tree.append(node)
             if node["kind"] == "system":
-                System._find_subtree(tree=node, uid=uid)
+                __class__._find_subtree(tree=node, uid=uid, nodes_tree=nodes_tree)
+        return nodes_tree
 
 
 class ParametricSystem(System):
@@ -1203,6 +1314,50 @@ class RootSystem(ParametricSystem):
             first=design.parameters_names,
             second=self.parameter_manager.get_parameters_names(),
         )
+
+    def control(
+        self, command: str, wait_for_completion: bool = True, timeout: Union[float, int] = 100
+    ) -> Union[str, None]:
+        """Control the node state.
+
+        Parameters
+        ----------
+        command: str
+            Command to execute. Options are ``"restart"``, ``"stop_gently"``, ``"stop"``
+            and ``"reset"``.
+        wait_for_completion: bool, opt
+            True/False
+        timeout: Union[float, int], opt
+            Time limit for monitoring the status of the command. Default is 100 s.
+
+        Returns
+        -------
+        boolean
+            ``True`` when successful, ``False`` when failed.
+        """
+        response = self._osl_server.send_command(getattr(commands, command)())
+        if response[0]["status"] != "success":
+            raise Exception(f"{command} command execution failed.")
+
+        if wait_for_completion:
+            time_stamp = time.time()
+            while True:
+                print(
+                    f"Project: {self.get_name()} | "
+                    f"State: {self.get_status()} | "
+                    f"Time: {round(time.time() - time_stamp)}s"
+                )
+                if self.get_status() == PROJECT_COMMANDS_RETURN_STATES[command]:
+                    print(f"{command} command successfully executed.")
+                    status = True
+                    break
+                if (time.time() - time_stamp) > timeout:
+                    print("Timeout limit reached. Skip monitoring of command {command}.")
+                    status = False
+                    break
+                time.sleep(3)
+
+            return status
 
     @staticmethod
     def __categorize_criteria(criteria: Tuple[Criterion]) -> Dict[str, List[Criterion]]:
