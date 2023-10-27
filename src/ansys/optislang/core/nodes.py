@@ -1,10 +1,17 @@
 """Contains classes for a node, system, parametric system, and root system."""
 from __future__ import annotations
 
+from collections import OrderedDict
 import copy
+import csv
 from enum import Enum
+from io import StringIO
+import json
+from pathlib import Path
+import time
 from typing import TYPE_CHECKING, Dict, Iterable, List, Tuple, Union
 
+from ansys.optislang.core.io import File, FileOutputFormat, RegisteredFile, RegisteredFileUsage
 from ansys.optislang.core.project_parametric import (
     ConstraintCriterion,
     CriteriaManager,
@@ -20,6 +27,25 @@ from ansys.optislang.core.utils import enum_from_str
 if TYPE_CHECKING:
     from ansys.optislang.core.osl_server import OslServer
     from ansys.optislang.core.project_parametric import Criterion
+
+from ansys.optislang.core import server_commands as commands
+
+PROJECT_COMMANDS_RETURN_STATES = {
+    "start": "PROCESSING",
+    "restart": "PROCESSING",
+    "stop": "STOPPED",
+    "stop_gently": "GENTLY_STOPPED",
+    "reset": "FINISHED",
+}
+
+
+ACTOR_COMMANDS_RETURN_STATES = {
+    "start": "Running",
+    "restart": "Running",
+    "stop": "Aborted",
+    "stop_gently": "Gently stopped",
+    "reset": "Finished",
+}
 
 
 class DesignFlow(Enum):
@@ -88,25 +114,6 @@ class Node:
             Unique ID of the node.
         """
         return self.__uid
-
-    def _get_info(self) -> dict:
-        """Get the raw server output with the node info.
-
-        Returns
-        -------
-        dict
-            Dictionary with the node info.
-
-        Raises
-        ------
-        OslCommunicationError
-            Raised when an error occurs while communicating with the server.
-        OslCommandError
-            Raised when a command or query fails.
-        TimeoutError
-            Raised when the timeout float value expires.
-        """
-        return self._osl_server.get_actor_info(self.uid)
 
     def get_name(self) -> str:
         """Get the name of the node.
@@ -203,6 +210,90 @@ class Node:
         """
         return self._osl_server.get_actor_properties(self.uid)
 
+    def get_registered_files(self) -> Tuple[RegisteredFile]:
+        """Get node's registered files.
+
+        Returns
+        -------
+        Tuple[RegisteredFile]
+            Tuple of registered files.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        registered_files_uids = self._get_info()["registered_files"]
+        if not registered_files_uids:
+            return ()
+        project_registered_files = self._osl_server.get_basic_project_info()["projects"][0][
+            "registered_files"
+        ]
+        return tuple(
+            [
+                RegisteredFile(
+                    path=Path(file["local_location"]["split_path"]["head"])
+                    / file["local_location"]["split_path"]["tail"],
+                    id=file["ident"],
+                    comment=file["comment"],
+                    tag=file["tag"],
+                    usage=file["usage"],
+                )
+                for file in project_registered_files
+                if file["tag"] in registered_files_uids
+            ]
+        )
+
+    def get_result_files(self) -> Tuple[RegisteredFile]:
+        """Get node's result files.
+
+        Returns
+        -------
+        Tuple[RegisteredFile]
+            Tuple of result files.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        return tuple(
+            filter(
+                lambda file: file.usage == RegisteredFileUsage.OUTPUT_FILE,
+                self.get_registered_files(),
+            )
+        )
+
+    def get_states_ids(self) -> Tuple[str]:
+        """Get available actor states ids.
+
+        Returns
+        -------
+        Tuple[str]
+            Actor states ids.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        states = self._osl_server.get_actor_states(self.uid)
+        if not states.get("states", None):
+            return tuple([])
+        return tuple([state["hid"] for state in states["states"]])
+
     def get_status(self) -> str:
         """Get the status of the node.
 
@@ -243,31 +334,68 @@ class Node:
         actor_info = self._osl_server.get_actor_info(uid=self.__uid)
         return actor_info["type"]
 
-    def _get_parent_uid(self) -> str:
-        """Get the unique ID of the parent node.
+    def control(
+        self,
+        command: str,
+        hid: str = None,
+        wait_for_completion: bool = True,
+        timeout: Union[float, int] = 100,
+    ) -> Union[str, None]:
+        """Control the node state.
 
-        Return
-        ------
-        str
-            Unique ID of the parent node.
+        Parameters
+        ----------
+        command: str
+            Command to execute. Options are ``"start"``, ``"restart"``, ``"stop_gently"``,
+            ``"stop"``, and ``"reset"``.
+        hid: str, optional
+            Hid entry. The default is ``None``. The actor unique ID is required.
+        wait_for_completion: bool, optional
+            Whether to wait for completion. The default is ``True``.
+        timeout: Union[float, int], optional
+            Time limit for monitoring the status of the command. The default is ``100 s``.
 
-        Raises
-        ------
-        OslCommunicationError
-            Raised when an error occurs while communicating with the server.
-        OslCommandError
-            Raised when a command or query fails.
-        TimeoutError
-            Raised when the timeout float value expires.
+        Returns
+        -------
+        boolean
+            ``True`` when successful, ``False`` when failed.
         """
-        project_tree = self._osl_server.get_full_project_tree_with_properties()
-        root_system_uid = project_tree["projects"][0]["system"]["uid"]
-        parent_tree = project_tree["projects"][0]["system"]
-        return Node._find_parent_node_uid(
-            tree=parent_tree,
-            parent_uid=root_system_uid,
-            node_uid=self.uid,
-        )
+        if not hid:  # Run command against all designs
+            hids = self.get_states_ids()
+            if len(hids) == 0:
+                raise RuntimeError(
+                    "There are no hids available because the node has not been started yet."
+                    f" The {command} command cannot be executed."
+                )
+        else:  # Run command against the given design
+            hids = [hid]
+
+        for hid in hids:
+            response = self._osl_server.send_command(
+                getattr(commands, command)(actor_uid=self.uid, hid=hid)
+            )
+            if response[0]["status"] != "success":
+                raise Exception(f"{command} command execution failed.")
+
+        if wait_for_completion:
+            time_stamp = time.time()
+            while True:
+                print(
+                    f"Project: {self.get_name()} | "
+                    f"State: {self.get_status()} | "
+                    f"Time: {round(time.time() - time_stamp)}s"
+                )
+                if self.get_status() == ACTOR_COMMANDS_RETURN_STATES[command]:
+                    print(f"{command} command successfully executed.")
+                    status = True
+                    break
+                if (time.time() - time_stamp) > timeout:
+                    print("Timeout limit reached. Skip monitoring of command {command}.")
+                    status = False
+                    break
+                time.sleep(3)
+
+            return status
 
     def _create_nodes_from_properties_dicts(
         self, properties_dicts_list: List[dict]
@@ -309,6 +437,71 @@ class Node:
                 )
 
         return tuple(nodes_list)
+
+    def _get_info(self) -> dict:
+        """Get the raw server output with the node info.
+
+        Returns
+        -------
+        dict
+            Dictionary with the node info.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        return self._osl_server.get_actor_info(self.uid)
+
+    def _get_parent_uid(self) -> str:
+        """Get the unique ID of the parent node.
+
+        Return
+        ------
+        str
+            Unique ID of the parent node.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        project_tree = self._osl_server.get_full_project_tree_with_properties()
+        root_system_uid = project_tree["projects"][0]["system"]["uid"]
+        parent_tree = project_tree["projects"][0]["system"]
+        return Node._find_parent_node_uid(
+            tree=parent_tree,
+            parent_uid=root_system_uid,
+            node_uid=self.uid,
+        )
+
+    def _get_status_info(self) -> Tuple[dict]:
+        """Get node's status info for each state.
+
+        Returns
+        -------
+        Tuple[dict]
+            Tuple with status info dictionary for each state.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        hids = self.get_states_ids()
+        return tuple([self._osl_server.get_actor_status_info(self.uid, hid) for hid in hids])
 
     def _is_parametric_system(self, uid: str) -> bool:
         """Check if the system is parametric.
@@ -394,7 +587,8 @@ class System(Node):
             Unique ID of the node.
         search_depth: int, optional
             Depth of the node subtree to search. The default is ``1``, which corresponds
-            to direct children nodes of the current system.
+            to direct children nodes of the current system. Set to ``-1`` to search throughout
+            the full depth.
 
         Returns
         -------
@@ -417,10 +611,15 @@ class System(Node):
         if self.uid == project_tree["projects"][0]["system"]["uid"]:
             system_tree = project_tree["projects"][0]["system"]
         else:
-            system_tree = System._find_subtree(
+            located_tree = System._find_subtree(
                 tree=project_tree["projects"][0]["system"],
                 uid=self.uid,
             )
+            if len(located_tree) == 1:
+                system_tree = located_tree[0]
+            else:
+                raise RuntimeError(f"Current system `{self.uid}` wasn't found.")
+
         properties_dicts_list = System._find_node_with_uid(
             uid=uid,
             tree=system_tree,
@@ -448,7 +647,8 @@ class System(Node):
             Name of the node.
         search_depth: int, optional
             Depth of the node subtree to search. The default is ``1``, which corresponds
-            to direct children nodes of the current system.
+            to direct children nodes of the current system. Set to ``-1`` to search throughout
+            the full depth.
 
         Returns
         -------
@@ -470,10 +670,16 @@ class System(Node):
         if self.uid == project_tree["projects"][0]["system"]["uid"]:
             system_tree = project_tree["projects"][0]["system"]
         else:
-            system_tree = System._find_subtree(
+            located_tree = self.__class__._find_subtree(
                 tree=project_tree["projects"][0]["system"],
                 uid=self.uid,
+                nodes_tree=[],
             )
+            if len(located_tree) == 1:
+                system_tree = located_tree[0]
+            else:
+                raise RuntimeError(f"Current system `{self.uid}` wasn't found.")
+
         properties_dicts_list = System._find_nodes_with_name(
             name=name,
             tree=system_tree,
@@ -532,12 +738,15 @@ class System(Node):
         if self.uid == project_tree["projects"][0]["system"]["uid"]:
             system_tree = project_tree["projects"][0]["system"]
         else:
-            system_tree = System._find_subtree(
+            located_tree = self.__class__._find_subtree(
                 tree=project_tree["projects"][0]["system"],
                 uid=self.uid,
+                nodes_tree=[],
             )
-        if len(system_tree) == 0:
-            raise RuntimeError(f"System `{self.uid}` wasn't found.")
+            if len(located_tree) == 1:
+                system_tree = located_tree[0]
+            else:
+                raise RuntimeError(f"Current system `{self.uid}` wasn't found.")
 
         children_dicts_list = []
         for node in system_tree["nodes"]:
@@ -557,7 +766,7 @@ class System(Node):
         tree: dict,
         properties_dicts_list: List[dict],
         current_depth: int,
-        max_search_depth: int,
+        max_search_depth: int = 1,
     ) -> List[dict]:
         """Find nodes with the specified name.
 
@@ -571,8 +780,9 @@ class System(Node):
             Dictionary with properties.
         current_depth: int
             Current depth of the search.
-        max_search_depth: int
-            Maximum depth of the search.
+        max_search_depth: int, optional
+            Maximum depth of the search. The default is ``1``. Set to ``-1``
+            to search throughout the full depth.
 
         Returns
         -------
@@ -591,7 +801,9 @@ class System(Node):
                         "kind": node["kind"],
                     }
                 )
-            if node["kind"] == "system" and current_depth < max_search_depth:
+            if node["kind"] == "system" and (
+                current_depth < max_search_depth or max_search_depth == -1
+            ):
                 System._find_nodes_with_name(
                     name=name,
                     tree=node,
@@ -607,7 +819,7 @@ class System(Node):
         tree: dict,
         properties_dicts_list: List[dict],
         current_depth: int,
-        max_search_depth: int,
+        max_search_depth: int = 1,
     ) -> List[dict]:
         """Find a node with a specified unique ID.
 
@@ -621,8 +833,10 @@ class System(Node):
             Dictionary with properties.
         current_depth: int
             Current depth of the search.
-        max_search_depth: int
-            Maximum depth of the search.
+        max_search_depth: int, optional
+            Maximum depth of the search. The default is ``1``. Set to ``-1``
+            to search throughout the full depth.
+
 
         Returns
         -------
@@ -641,7 +855,9 @@ class System(Node):
                         "kind": node["kind"],
                     }
                 )
-            if node["kind"] == "system" and current_depth < max_search_depth:
+            if node["kind"] == "system" and (
+                current_depth < max_search_depth or max_search_depth == -1
+            ):
                 System._find_node_with_uid(
                     uid=uid,
                     tree=node,
@@ -652,7 +868,7 @@ class System(Node):
         return properties_dicts_list
 
     @staticmethod
-    def _find_subtree(tree: dict, uid: str) -> dict:
+    def _find_subtree(tree: dict, uid: str, nodes_tree: List[dict]) -> dict:
         """Find the subtree with a root node matching a specified unique ID.
 
         Parameters
@@ -661,6 +877,8 @@ class System(Node):
             Dictionary with the parent structure.
         uid: str
             Unique ID of the subtree root node.
+        nodes_tree: List[dict]
+            List with tree of searched node.
 
         Returns
         -------
@@ -668,10 +886,13 @@ class System(Node):
             Dictionary representing the subtree found.
         """
         for node in tree["nodes"]:
+            if len(nodes_tree) != 0:
+                break
             if node["uid"] == uid:
-                return node
+                nodes_tree.append(node)
             if node["kind"] == "system":
-                System._find_subtree(tree=node, uid=uid)
+                __class__._find_subtree(tree=node, uid=uid, nodes_tree=nodes_tree)
+        return nodes_tree
 
 
 class ParametricSystem(System):
@@ -731,6 +952,187 @@ class ParametricSystem(System):
             Instance of the ``ResponseManager`` class.
         """
         return self.__response_manager
+
+    def get_omdb_files(self) -> Tuple[File]:
+        """Get paths to omdb files.
+
+        Returns
+        -------
+        Tuple[File]
+            Tuple with File objects containing path.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        statuses_info = self._get_status_info()
+        wdirs = [Path(status_info["working dir"]) for status_info in statuses_info]
+        omdb_files = []
+        for wdir in wdirs:
+            omdb_files.extend([File(path) for path in wdir.glob("*.omdb")])
+        return tuple(omdb_files)
+
+    def save_designs_as(
+        self,
+        hid: str,
+        file_name: str,
+        format: FileOutputFormat = FileOutputFormat.JSON,
+        dir: Union[Path, str] = None,
+    ) -> File:
+        """Save designs for a given state.
+
+        Parameters
+        ----------
+        hid : str
+            Actor's state.
+        file_name : str
+            Name of the file.
+        format : FileOutputFormat, optional
+            Format of the file, by default ``FileOutputFormat.JSON``.
+        dir : Union[Path, str], optional
+            Directory, where file should be saved, by default ``None``.
+            Project's working directory is used by default.
+
+        Returns
+        -------
+        File
+            Object representing saved file.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        TypeError
+            Raised when incorrect type of ``dir`` is passed.
+        ValueError
+            Raised when unsupported value of ``format`` or non-existing ``hid``
+            is passed.
+        """
+        if dir is not None and isinstance(dir, str):
+            dir = Path(dir)
+        elif dir is None:
+            dir = self._osl_server.get_working_dir()
+
+        if not isinstance(dir, Path):
+            raise TypeError(f"Unsupported type of dir: `{type(dir)}`.")
+
+        designs = self._get_designs_dicts()
+        if not designs.get(hid):
+            raise ValueError(f"Design for given hid: `{hid}` not available.")
+
+        if format == FileOutputFormat.JSON:
+            output_file = json.dumps(designs[hid])
+            newline = None
+        elif format == FileOutputFormat.CSV:
+            output_file = self.__class__.__convert_design_dict_to_csv(designs[hid])
+            newline = ""
+        else:
+            raise ValueError(f"Output type `{format}` is not supported.")
+
+        output_file_path = dir / (file_name + format.to_str())
+        with open(output_file_path, "w", newline=newline) as f:
+            f.write(output_file)
+        return File(output_file_path)
+
+    def _get_designs_dicts(self) -> OrderedDict:
+        """Get parametric system's designs.
+
+        Returns
+        -------
+        OrderedDict
+            Ordered dictionary of designs, key is hid and value
+            is list of corresponding designs.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        statuses_info = self._get_status_info()
+        if not statuses_info:
+            return {}
+        designs = {}
+        # TODO: sort by hid? -> delete / use OrderedDict
+        for status_info in statuses_info:
+            designs[status_info["hid"]] = status_info["designs"]
+            for idx, design in enumerate(designs[status_info["hid"]]["values"]):
+                self.__class__.__append_status_info_to_design(
+                    design, status_info["design_status"][idx]
+                )
+        for i in range(2, len(statuses_info[0]["designs"]["values"][0]["hid"].split("."))):
+            designs = self.__class__.__sort_dict_by_key_hid(
+                designs, max(1, len(statuses_info[0]["designs"]["values"][0]["hid"].split(".")) - i)
+            )
+        for hid, design in designs.items():
+            # sort by design number, stripped from hid prefix
+            # (0.10, 0.9 ..., 0.1) -> (0.1, ..., 0.9, 0.10)
+            design["values"] = self.__class__.__sort_list_of_dicts_by_hid(
+                design["values"], len(hid.split("."))
+            )
+        return designs
+
+    @staticmethod
+    def __append_status_info_to_design(design: dict, status_info: dict) -> None:
+        if design["hid"] != status_info["id"]:
+            raise ValueError(f'{design["hid"]} != {status_info["id"]}')
+        to_append = {
+            key: status_info[key] for key in ("feasible", "status", "pareto_design", "directory")
+        }
+        design.update(to_append)
+
+    @staticmethod
+    def __convert_design_dict_to_csv(designs: dict) -> str:
+        csv_buffer = StringIO()
+        try:
+            csv_writer = csv.writer(csv_buffer)
+            header = ["Design"]
+            header.append("Feasible")
+            header.append("Status")
+            header.append("Pareto")
+            header.extend(designs["constraint_names"])
+            header.extend(designs["limit_state_names"])
+            header.extend(designs["objective_names"])
+            header.extend(designs["parameter_names"])
+            header.extend(designs["response_names"])
+            csv_writer.writerow(header)
+            for design in designs["values"]:
+                line = [design["hid"]]
+                line.append(design["feasible"])
+                line.append(design["status"])
+                line.append(design["pareto_design"])
+                line.extend(design["constraint_values"])
+                line.extend(design["limit_state_values"])
+                line.extend(design["objective_values"])
+                line.extend(design["parameter_values"])
+                line.extend(design["response_values"])
+                csv_writer.writerow(line)
+            return csv_buffer.getvalue()
+        finally:
+            if csv_buffer is not None:
+                csv_buffer.close()
+
+    @staticmethod
+    def __sort_list_of_dicts_by_hid(unsorted_list: List[dict], sort_by_position: int) -> List[dict]:
+        sort_key = lambda x: int(x["hid"].split(".")[sort_by_position])
+        return sorted(unsorted_list, key=sort_key)
+
+    @staticmethod
+    def __sort_dict_by_key_hid(unsorted_dict: dict, sort_by_position: int) -> dict:
+        sort_key = lambda item: int(item[0].split(".")[sort_by_position])
+        return OrderedDict(sorted(unsorted_dict.items(), key=sort_key))
 
 
 class RootSystem(ParametricSystem):
@@ -912,6 +1314,50 @@ class RootSystem(ParametricSystem):
             first=design.parameters_names,
             second=self.parameter_manager.get_parameters_names(),
         )
+
+    def control(
+        self, command: str, wait_for_completion: bool = True, timeout: Union[float, int] = 100
+    ) -> Union[str, None]:
+        """Control the node state.
+
+        Parameters
+        ----------
+        command: str
+            Command to execute. Options are ``"restart"``, ``"stop_gently"``, ``"stop"``
+            and ``"reset"``.
+        wait_for_completion: bool, opt
+            True/False
+        timeout: Union[float, int], opt
+            Time limit for monitoring the status of the command. Default is 100 s.
+
+        Returns
+        -------
+        boolean
+            ``True`` when successful, ``False`` when failed.
+        """
+        response = self._osl_server.send_command(getattr(commands, command)())
+        if response[0]["status"] != "success":
+            raise Exception(f"{command} command execution failed.")
+
+        if wait_for_completion:
+            time_stamp = time.time()
+            while True:
+                print(
+                    f"Project: {self.get_name()} | "
+                    f"State: {self.get_status()} | "
+                    f"Time: {round(time.time() - time_stamp)}s"
+                )
+                if self.get_status() == PROJECT_COMMANDS_RETURN_STATES[command]:
+                    print(f"{command} command successfully executed.")
+                    status = True
+                    break
+                if (time.time() - time_stamp) > timeout:
+                    print("Timeout limit reached. Skip monitoring of command {command}.")
+                    status = False
+                    break
+                time.sleep(3)
+
+            return status
 
     @staticmethod
     def __categorize_criteria(criteria: Tuple[Criterion]) -> Dict[str, List[Criterion]]:

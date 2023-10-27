@@ -62,8 +62,8 @@ name = "ansys.optislang.core"
 [project.urls]
 Homepage = "https://optislang.docs.pyansys.com"
 Documentation = "https://optislang.docs.pyansys.com"
-Source = "https://github.com/pyansys/pyoptislang"
-Tracker = "https://github.com/pyansys/pyoptislang/issues"
+Source = "https://github.com/ansys/pyoptislang"
+Tracker = "https://github.com/ansys/pyoptislang/issues"
 
 [tool.black]
 line-length = 100

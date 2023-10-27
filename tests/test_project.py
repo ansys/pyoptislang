@@ -4,11 +4,13 @@ import time
 
 import pytest
 
-from ansys.optislang.core import Optislang
+from ansys.optislang.core import Optislang, examples
+from ansys.optislang.core.io import RegisteredFile
 from ansys.optislang.core.nodes import RootSystem
 from ansys.optislang.core.project_parametric import Design, ParameterManager
 
 pytestmark = pytest.mark.local_osl
+calculator_w_parameters = examples.get_files("calculator_with_params")[1][0]
 
 
 @pytest.fixture()
@@ -25,48 +27,36 @@ def optislang(scope="function", autouse=True) -> Optislang:
     return osl
 
 
-def test_get_description(optislang: Optislang):
-    """Test `get_description`."""
+def test_project_queries(optislang: Optislang):
+    """Test project queries."""
     project = optislang.project
+
     description = project.get_description()
     assert isinstance(description, str)
-    with does_not_raise() as dnr:
-        optislang.dispose()
-        time.sleep(3)
-    assert dnr is None
 
-
-def test_get_location(optislang: Optislang):
-    """Test ``get_location``."""
-    project = optislang.project
     location = project.get_location()
     assert isinstance(location, Path)
-    with does_not_raise() as dnr:
-        optislang.dispose()
-        time.sleep(3)
-    assert dnr is None
 
-
-def test_get_name(optislang: Optislang):
-    """Test ``get_name``."""
-    project = optislang.project
     name = project.get_name()
     assert isinstance(name, str)
-    with does_not_raise() as dnr:
-        optislang.dispose()
-        time.sleep(3)
-    assert dnr is None
 
-
-def test_get_status(optislang: Optislang):
-    """Test ``get_status``."""
-    project = optislang.project
     status = project.get_status()
     assert isinstance(status, str)
-    with does_not_raise() as dnr:
-        optislang.dispose()
-        time.sleep(3)
-    assert dnr is None
+
+    optislang.open(file_path=calculator_w_parameters)
+
+    reg_files = project.get_registered_files()
+    assert len(reg_files) == 3
+    assert isinstance(reg_files[0], RegisteredFile)
+
+    res_files = project.get_result_files()
+    assert len(res_files) == 1
+    assert isinstance(res_files[0], RegisteredFile)
+
+    project_tree = project._get_project_tree()
+    assert isinstance(project_tree, list)
+
+    optislang.dispose()
 
 
 def test_project_properties(optislang: Optislang):
