@@ -9,16 +9,14 @@ from ansys.optislang.core import utils
 pytestmark = pytest.mark.local_osl
 
 
-def test_get_environ_vars():
+def test_get_awp_root_dirs():
     "Test that function returns dictionary of matching environment variables."
-    environ_vars = utils._get_environ_vars(pattern="^AWP_ROOT.*")
-    assert isinstance(environ_vars, dict)
-    # linux doesn't have "AWP_ROOT environment variables"
+    environ_vars = list(utils.iter_awp_roots())
     if os.name == "nt":
         assert len(environ_vars) > 0
-    environ_vars = utils._get_environ_vars(pattern="RANDOM_NONEXISTING_VARIABLE")
-    assert isinstance(environ_vars, dict)
-    assert len(environ_vars) == 0
+    else:
+        # linux doesn't have "AWP_ROOT environment variables"
+        assert len(environ_vars) == 0
 
 
 def test_get_osl_executable():

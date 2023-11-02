@@ -6,7 +6,7 @@ from enum import Enum, EnumMeta
 import os
 from pathlib import Path
 import re
-from typing import DefaultDict, Dict, Iterable, List, Optional, OrderedDict, Tuple, Union
+from typing import DefaultDict, Dict, Iterable, Iterator, List, Optional, OrderedDict, Tuple, Union
 
 from ansys.optislang.core import FIRST_SUPPORTED_VERSION
 
@@ -207,16 +207,10 @@ def _find_ansys_osl_execs_in_windows_envars() -> VersionMapping:
         The dictionary value is a path to the corresponding optiSLang executable file.
     """
     osl_execs = {}
-    awp_root_envars = _get_environ_vars(pattern=f"^AWP_ROOT.*")
-    for awp_root_key, awp_root_value in awp_root_envars.items():
-        osl_exec_path = Path(awp_root_value) / "optiSLang" / "optislang.com"
-        if osl_exec_path.is_file():
-            try:
-                ansys_version = int(awp_root_key[-3:])
-            except ValueError:
-                continue
-            if ansys_version >= FIRST_SUPPORTED_VERSION:
-                osl_execs[ansys_version] = osl_exec_path
+    for version, awp_root_value in iter_awp_roots():
+        osl_exec_path = awp_root_value / "optiSLang" / "optislang.com"
+        if osl_exec_path.is_file() and version >= FIRST_SUPPORTED_VERSION:
+            osl_execs[version] = osl_exec_path
     return osl_execs
 
 
@@ -390,23 +384,15 @@ def _get_program_files_path() -> Path:
     return Path(os.environ.get("ProgramFiles", "C:\\Program Files"))
 
 
-def _get_environ_vars(pattern: str = ".*") -> Dict:
-    """Get a dictionary of matching environment variables.
+def iter_awp_roots() -> Iterator[Tuple[int, Path]]:
+    """Iterate AWP_ROOTXXX environment variables.
 
-    Parameters
-    ----------
-    pattern: str, optional
-        Regular expression pattern to use for searching environment variables.
-
-    Returns
+    Yields
     -------
-    dict
-        Dictionary of matching environment variables.
+    tuple
+        Ansys version and the respective root directory.
     """
-    sys_vars = os.environ.copy()
-    dictionary = {}
-    for varname, value in sys_vars.items():
-        varname_match = re.search(pattern, varname)
+    for varname, value in os.environ.copy().items():
+        varname_match = re.fullmatch(f"AWP_ROOT(\d\d\d)", varname)
         if varname_match:
-            dictionary[varname] = value
-    return dictionary
+            yield int(varname_match.group(1)), Path(value)
