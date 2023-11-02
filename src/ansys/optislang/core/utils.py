@@ -49,10 +49,9 @@ def enum_from_str(
     if replace is not None:
         string = string.replace(replace[0], replace[1])
     try:
-        enum_type = enum_class[string]
-        return enum_type
+        return enum_class[string]
     except:
-        raise ValueError(f"``{string}`` not available in ``{enum_class.__name__}``.")
+        raise ValueError(f"{string} is not a member of {enum_class.__name__}.")
 
 
 def get_osl_exec(osl_version: Union[int, str, None] = None) -> Optional[Tuple[int, Path]]:

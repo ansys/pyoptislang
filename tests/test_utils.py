@@ -14,6 +14,9 @@ def test_enum_from_str():
         utils.enum_from_str(123, MyEnum)
         utils.enum_from_str("ONE", list)
 
+    with pytest.raises(ValueError):
+        utils.enum_from_str("THREE", MyEnum)
+
     assert utils.enum_from_str("one", MyEnum) == MyEnum.ONE
     assert utils.enum_from_str("ONE", MyEnum) == MyEnum.ONE
     assert utils.enum_from_str("ONX", MyEnum, ["X", "E"]) == MyEnum.ONE
