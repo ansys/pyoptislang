@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 import collections
-from enum import Enum
+from enum import Enum, EnumMeta
 import os
 from pathlib import Path
 import re
@@ -14,7 +14,7 @@ VersionMapping = Dict[int, Path]
 
 
 def enum_from_str(
-    string: str, enum_class: Enum, replace: Union[Tuple[str, str], None] = None
+    string: str, enum_class: EnumMeta, replace: Optional[Tuple[str, str]] = None
 ) -> Enum:
     """Convert string to enumeration.
 
@@ -24,7 +24,7 @@ def enum_from_str(
         String to be converted.
     enum_class: Enum
         Enumeration type, upper case enumeration items are expected.
-    replace: Union[Tuple[str, str], None], optional
+    replace: Tuple[str, str], optional
         Characters to be replaced in given ``string``.
             Tuple[0]: Replace from.
             Tuple[1]: Replace to.
