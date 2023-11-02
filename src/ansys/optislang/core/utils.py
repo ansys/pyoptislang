@@ -393,6 +393,6 @@ def iter_awp_roots() -> Iterator[Tuple[int, Path]]:
         Ansys version and the respective root directory.
     """
     for varname, value in os.environ.copy().items():
-        varname_match = re.fullmatch(f"AWP_ROOT(\d\d\d)", varname)
+        varname_match = re.fullmatch(r"AWP_ROOT([0-9]{3})", varname)
         if varname_match:
             yield int(varname_match.group(1)), Path(value)
