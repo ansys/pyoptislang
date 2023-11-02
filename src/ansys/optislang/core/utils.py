@@ -6,7 +6,7 @@ from enum import Enum, EnumMeta
 import os
 from pathlib import Path
 import re
-from typing import Dict, Iterable, Optional, OrderedDict, Tuple, Union
+from typing import DefaultDict, Dict, Iterable, List, Optional, OrderedDict, Tuple, Union
 
 from ansys.optislang.core import FIRST_SUPPORTED_VERSION
 
@@ -351,14 +351,12 @@ def _merge_osl_exec_dicts(osl_execs_dicts: Iterable[VersionMapping]) -> Dict[int
         Merged dictionary in which the key is an optiSLang version and the value is
         a tuple of paths to the corresponding optiSLang executable files.
     """
-    osl_execs_merged = {}
+    osl_execs_merged: DefaultDict[int, List[Path]] = collections.defaultdict(list)
+
     for osl_execs in osl_execs_dicts:
         for osl_version, exec_path in osl_execs.items():
-            if osl_version not in osl_execs_merged:
-                osl_execs_merged[osl_version] = [exec_path]
-            else:
-                if exec_path not in osl_execs_merged[osl_version]:
-                    osl_execs_merged[osl_version].append(exec_path)
+            if exec_path not in osl_execs_merged[osl_version]:
+                osl_execs_merged[osl_version].append(exec_path)
 
     return {version: tuple(execs_paths) for version, execs_paths in osl_execs_merged.items()}
 
