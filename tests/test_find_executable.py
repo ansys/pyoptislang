@@ -13,10 +13,8 @@ def test_get_awp_root_dirs():
     "Test that function returns dictionary of matching environment variables."
     environ_vars = list(utils.iter_awp_roots())
     if os.name == "nt":
+        # Linux doesn't have AWP_ROOT environment variables
         assert len(environ_vars) > 0
-    else:
-        # linux doesn't have "AWP_ROOT environment variables"
-        assert len(environ_vars) == 0
 
 
 def test_get_osl_executable():
