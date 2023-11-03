@@ -54,7 +54,7 @@ def enum_from_str(
         raise ValueError(f"{string} is not a member of {enum_class.__name__}.")
 
 
-def get_osl_exec(osl_version: Union[int, str, None] = None) -> Optional[Tuple[int, Path]]:
+def get_osl_exec(osl_version: Optional[Union[int, str]] = None) -> Optional[Tuple[int, Path]]:
     """Get the path to the optiSLang executable file.
 
     Parameters
