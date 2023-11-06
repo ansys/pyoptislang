@@ -120,7 +120,7 @@ def find_all_osl_exec() -> OrderedDict[int, Tuple[Path, ...]]:
         raise NotImplementedError(f"Unsupported OS {os.name}.")
 
 
-def get_osl_opx_import_script(osl_executable: Union[str, Path] = None) -> Optional[Path]:
+def get_osl_opx_import_script(osl_executable: Optional[Union[str, Path]] = None) -> Optional[Path]:
     """Get the path to the optiSLang OPX import script file.
 
     Parameters
