@@ -210,13 +210,13 @@ class Node:
         """
         return self._osl_server.get_actor_properties(self.uid)
 
-    def get_registered_files(self) -> Tuple[RegisteredFile]:
+    def get_registered_files(self) -> List[RegisteredFile]:
         """Get node's registered files.
 
         Returns
         -------
-        Tuple[RegisteredFile]
-            Tuple of registered files.
+        List[RegisteredFile]
+            List of registered files.
 
         Raises
         ------
@@ -229,32 +229,30 @@ class Node:
         """
         registered_files_uids = self._get_info()["registered_files"]
         if not registered_files_uids:
-            return ()
+            return []
         project_registered_files = self._osl_server.get_basic_project_info()["projects"][0][
             "registered_files"
         ]
-        return tuple(
-            [
-                RegisteredFile(
-                    path=Path(file["local_location"]["split_path"]["head"])
-                    / file["local_location"]["split_path"]["tail"],
-                    id=file["ident"],
-                    comment=file["comment"],
-                    tag=file["tag"],
-                    usage=file["usage"],
-                )
-                for file in project_registered_files
-                if file["tag"] in registered_files_uids
-            ]
-        )
+        return [
+            RegisteredFile(
+                path=Path(file["local_location"]["split_path"]["head"])
+                / file["local_location"]["split_path"]["tail"],
+                id=file["ident"],
+                comment=file["comment"],
+                tag=file["tag"],
+                usage=file["usage"],
+            )
+            for file in project_registered_files
+            if file["tag"] in registered_files_uids
+        ]
 
-    def get_result_files(self) -> Tuple[RegisteredFile]:
+    def get_result_files(self) -> List[RegisteredFile]:
         """Get node's result files.
 
         Returns
         -------
-        Tuple[RegisteredFile]
-            Tuple of result files.
+        List[RegisteredFile]
+            List of result files.
 
         Raises
         ------
@@ -265,7 +263,7 @@ class Node:
         TimeoutError
             Raised when the timeout float value expires.
         """
-        return tuple(
+        return list(
             filter(
                 lambda file: file.usage == RegisteredFileUsage.OUTPUT_FILE,
                 self.get_registered_files(),
