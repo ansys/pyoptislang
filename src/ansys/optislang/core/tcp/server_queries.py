@@ -1,6 +1,6 @@
 """Module for generation of all server queries."""
 import json
-from typing import Dict
+from typing import Dict, Optional
 
 _ACTOR_INFO = "ACTOR_INFO"
 _ACTOR_PROPERTIES = "ACTOR_PROPERTIES"
@@ -22,15 +22,15 @@ _SERVER_IS_ALIVE = "SERVER_IS_ALIVE"
 _SYSTEMS_STATUS_INFO = "SYSTEMS_STATUS_INFO"
 
 
-def actor_info(uid: str, password: str = None) -> str:
+def actor_info(uid: str, password: Optional[str] = None) -> str:
     """Generate JSON string of actor_info query.
 
     Parameters
     ----------
     uid: str
         Uid entry.
-    password : str, opt
-        Password.
+    password : Optional[str], optional
+        Password, by default ``None``.
 
     Returns
     -------
@@ -40,15 +40,15 @@ def actor_info(uid: str, password: str = None) -> str:
     return _to_json(_gen_query(what=_ACTOR_INFO, uid=uid, password=password))
 
 
-def actor_properties(uid: str, password: str = None) -> str:
+def actor_properties(uid: str, password: Optional[str] = None) -> str:
     """Generate JSON string of actor_properties query.
 
     Parameters
     ----------
     uid: str
         Uid entry.
-    password : str, opt
-        Password.
+    password : Optional[str], optional
+        Password, by default ``None``.
 
     Returns
     -------
@@ -58,15 +58,15 @@ def actor_properties(uid: str, password: str = None) -> str:
     return _to_json(_gen_query(what=_ACTOR_PROPERTIES, uid=uid, password=password))
 
 
-def actor_states(uid: str, password: str = None) -> str:
+def actor_states(uid: str, password: Optional[str] = None) -> str:
     """Generate JSON string of actor_states query.
 
     Parameters
     ----------
     uid: str
         Uid entry.
-    password : str, opt
-        Password.
+    password : Optional[str], optional
+        Password, by default ``None``.
 
     Returns
     -------
@@ -76,7 +76,7 @@ def actor_states(uid: str, password: str = None) -> str:
     return _to_json(_gen_query(what=_ACTOR_STATES, uid=uid, password=password))
 
 
-def actor_status_info(uid: str, hid: str, password: str = None) -> str:
+def actor_status_info(uid: str, hid: str, password: Optional[str] = None) -> str:
     """Generate JSON string of actor_status_info query.
 
     Parameters
@@ -85,8 +85,8 @@ def actor_status_info(uid: str, hid: str, password: str = None) -> str:
         Uid entry.
     hid: str
         Hid entry.
-    password : str, opt
-        Password.
+    password : Optional[str], optional
+        Password, by default ``None``.
 
     Returns
     -------
@@ -96,7 +96,7 @@ def actor_status_info(uid: str, hid: str, password: str = None) -> str:
     return _to_json(_gen_query(what=_ACTOR_STATUS_INFO, uid=uid, hid=hid, password=password))
 
 
-def actor_supports(uid: str, feature_name: str, password=None) -> str:
+def actor_supports(uid: str, feature_name: str, password: Optional[str] = None) -> str:
     """Generate JSON string of actor_supports query.
 
     Parameters
@@ -105,8 +105,8 @@ def actor_supports(uid: str, feature_name: str, password=None) -> str:
         Uid entry.
     feature_name: str
         Name of requested feature.
-    password : str, opt
-        Password.
+    password : Optional[str], optional
+        Password, by default ``None``.
 
     Returns
     -------
@@ -118,13 +118,13 @@ def actor_supports(uid: str, feature_name: str, password=None) -> str:
     return _to_json(_gen_query(what=_ACTOR_SUPPORTS, uid=uid, args=args, password=password))
 
 
-def available_nodes(password=None) -> str:
+def available_nodes(password: Optional[str] = None) -> str:
     """Generate JSON string of available nodes query.
 
     Parameters
     ----------
-    password : str, opt
-        Password.
+    password : Optional[str], optional
+        Password, by default ``None``.
 
     Returns
     -------
@@ -134,13 +134,29 @@ def available_nodes(password=None) -> str:
     return _to_json(_gen_query(what=_AVAILABLE_NODES, password=password))
 
 
-def basic_project_info(password: str = None) -> str:
+def basic_project_info(password: Optional[str] = None) -> str:
     """Generate JSON string of basic_project_info query.
 
     Parameters
     ----------
-    password : str, opt
-        Password.
+    password : Optional[str], optional
+        Password, by default ``None``.
+
+    Returns
+    -------
+    str
+        JSON string of available nodes query.
+    """
+    return _to_json(_gen_query(what=_AVAILABLE_NODES, password=password))
+
+
+def basic_project_info(password: Optional[str] = None) -> str:
+    """Generate JSON string of basic_project_info query.
+
+    Parameters
+    ----------
+    password : Optional[str], optional
+        Password, by default ``None``.
 
     Returns
     -------
@@ -150,13 +166,13 @@ def basic_project_info(password: str = None) -> str:
     return _to_json(_gen_query(what=_BASIC_PROJECT_INFO, password=password))
 
 
-def full_project_status_info(password: str = None) -> str:
+def full_project_status_info(password: Optional[str] = None) -> str:
     """Generate JSON string of full_project_status_info query.
 
     Parameters
     ----------
-    password : str, opt
-        Password.
+    password : Optional[str], optional
+        Password, by default ``None``.
 
     Returns
     -------
@@ -166,13 +182,13 @@ def full_project_status_info(password: str = None) -> str:
     return _to_json(_gen_query(what=_FULL_PROJECT_STATUS_INFO, password=password))
 
 
-def full_project_tree(password: str = None) -> str:
+def full_project_tree(password: Optional[str] = None) -> str:
     """Generate JSON string of full_project_tree query.
 
     Parameters
     ----------
-    password : str, opt
-        Password.
+    password : Optional[str], optional
+        Password, by default ``None``.
 
     Returns
     -------
@@ -182,13 +198,13 @@ def full_project_tree(password: str = None) -> str:
     return _to_json(_gen_query(what=_FULL_PROJECT_TREE, password=password))
 
 
-def full_project_tree_with_properties(password: str = None) -> str:
+def full_project_tree_with_properties(password: Optional[str] = None) -> str:
     """Generate JSON string of full_project_tree_with_properties query.
 
     Parameters
     ----------
-    password : str, opt
-        Password.
+    password : Optional[str], optional
+        Password, by default ``None``.
 
     Returns
     -------
@@ -198,19 +214,15 @@ def full_project_tree_with_properties(password: str = None) -> str:
     return _to_json(_gen_query(what=_FULL_PROJECT_TREE_WITH_PROPERTIES, password=password))
 
 
-def hpc_licensing_forwarded_environment(uid: str, password: str = None) -> str:
+def hpc_licensing_forwarded_environment(uid: str, password: Optional[str] = None) -> str:
     """Generate JSON string of hpc_licensing_forwarded_environment query.
 
     Parameters
     ----------
     uid: str
         Uid entry.
-    hid: str
-        Hid entry.
-    slot_name: str
-        Slot name entry.
-    password : str, opt
-        Password.
+    password : Optional[str], optional
+        Password, by default ``None``.
 
     Returns
     -------
@@ -222,7 +234,7 @@ def hpc_licensing_forwarded_environment(uid: str, password: str = None) -> str:
     )
 
 
-def input_slot_value(uid: str, hid: str, slot_name: str, password: str = None) -> str:
+def input_slot_value(uid: str, hid: str, slot_name: str, password: Optional[str] = None) -> str:
     """Generate JSON string of input_slot_value query.
 
     Parameters
@@ -233,8 +245,8 @@ def input_slot_value(uid: str, hid: str, slot_name: str, password: str = None) -
         Hid entry.
     slot_name: str
         Slot name entry.
-    password : str, opt
-        Password.
+    password : Optional[str], optional
+        Password, by default ``None``.
 
     Returns
     -------
@@ -246,7 +258,7 @@ def input_slot_value(uid: str, hid: str, slot_name: str, password: str = None) -
     )
 
 
-def output_slot_value(uid: str, hid: str, slot_name: str, password: str = None) -> str:
+def output_slot_value(uid: str, hid: str, slot_name: str, password: Optional[str] = None) -> str:
     """Generate JSON string of output_slot_value query.
 
     Parameters
@@ -257,8 +269,8 @@ def output_slot_value(uid: str, hid: str, slot_name: str, password: str = None) 
         Hid entry.
     slot_name: str
         Slot name entry.
-    password : str, opt
-        Password.
+    password : Optional[str], optional
+        Password, by default ``None``.
 
     Returns
     -------
@@ -272,13 +284,13 @@ def output_slot_value(uid: str, hid: str, slot_name: str, password: str = None) 
     )
 
 
-def project_tree_systems(password: str = None) -> str:
+def project_tree_systems(password: Optional[str] = None) -> str:
     """Generate JSON string of project_tree_systems query.
 
     Parameters
     ----------
-    password : str, opt
-        Password.
+    password : Optional[str], optional
+        Password, by default ``None``.
 
     Returns
     -------
@@ -288,13 +300,13 @@ def project_tree_systems(password: str = None) -> str:
     return _to_json(_gen_query(what=_PROJECT_TREE_SYSTEMS, password=password))
 
 
-def project_tree_systems_with_properties(password: str = None) -> str:
+def project_tree_systems_with_properties(password: Optional[str] = None) -> str:
     """Generate JSON string of project_tree_with_properties query.
 
     Parameters
     ----------
-    password : str, opt
-        Password.
+    password : Optional[str], optional
+        Password, by default ``None``.
 
     Returns
     -------
@@ -304,13 +316,13 @@ def project_tree_systems_with_properties(password: str = None) -> str:
     return _to_json(_gen_query(what=_PROJECT_TREE_SYSTEMS_WITH_PROPERTIES, password=password))
 
 
-def server_info(password: str = None) -> str:
+def server_info(password: Optional[str] = None) -> str:
     """Generate JSON string of server_info query.
 
     Parameters
     ----------
-    password : str, opt
-        Password.
+    password : Optional[str], optional
+        Password, by default ``None``.
 
     Returns
     -------
@@ -320,13 +332,13 @@ def server_info(password: str = None) -> str:
     return _to_json(_gen_query(what=_SERVER_INFO, password=password))
 
 
-def server_is_alive(password: str = None) -> str:
+def server_is_alive(password: Optional[str] = None) -> str:
     """Generate JSON string of server_is_alive query.
 
     Parameters
     ----------
-    password : str, opt
-        Password.
+    password : Optional[str], optional
+        Password, by default ``None``.
 
     Returns
     -------
@@ -336,13 +348,13 @@ def server_is_alive(password: str = None) -> str:
     return _to_json(_gen_query(what=_SERVER_IS_ALIVE, password=password))
 
 
-def systems_status_info(password: str = None) -> str:
+def systems_status_info(password: Optional[str] = None) -> str:
     """Generate JSON string of systems_status_info query.
 
     Parameters
     ----------
-    password : str, opt
-        Password.
+    password : Optional[str], optional
+        Password, by default ``None``.
 
     Returns
     -------
@@ -355,10 +367,10 @@ def systems_status_info(password: str = None) -> str:
 def _gen_query(
     what: str,
     password: str,
-    uid: str = None,
-    hid: str = None,
-    args: Dict = None,
-    slot_name: str = None,
+    uid: Optional[str] = None,
+    hid: Optional[str] = None,
+    args: Optional[Dict] = None,
+    slot_name: Optional[str] = None,
 ) -> Dict:
     """Generate query in desired format.
 
@@ -368,12 +380,14 @@ def _gen_query(
         Command type.
     password: str
         Password.
-    uid : str, optional
-        Uid entry.
-    hid: str, optional
-        Hid entry.
-    args: Dict, optional
-        Dictionary of features, e.g. "feature": "FEATURE_NAME".
+    uid : Optional[str], optional
+        Uid entry, by default ``None``.
+    hid: Optional[str], optional
+        Hid entry, by default ``None``.
+    args: Optional[Dict], optional
+        Dictionary of features, e.g. "feature": "FEATURE_NAME", by default ``None``.
+    slot_name: Optional[str], optional
+        Slot name, by default ``None``.
     Returns
     -------
     Dict

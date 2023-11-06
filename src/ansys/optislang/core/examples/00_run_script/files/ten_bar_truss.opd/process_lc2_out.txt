@@ -1,0 +1,42 @@
+
+SLang file: "V:/DEV22-pyOptiSLang/src/op/pyoptislang/src/ansys/optislang/core/examples/00_run_script/files/ten_bar_truss.opd/ten_bar_truss2.s"
+
+
+MASS
+     1: 4196.5 
+
+
+MAX_DISP
+     1: 5.7976 
+
+
+MAX_STRESS
+     1: 30121 
+
+
+GLOBAL_DISP
+     1:  1.4734 
+     2: -5.7976 
+     3: -1.4066 
+     4: -5.4753 
+     5:  1.0756 
+     6: -2.0815 
+     7: -1.0844 
+     8: -2.1149 
+     9:       0 
+    10:       0 
+    11:       0 
+    12:       0 
+
+
+ELEMENT_STRESSES
+     1:   29879 
+     2:   11048 
+     3:  -30121 
+     4: -8951.9 
+     5:     927 
+     6: -8951.9 
+     7:   14313 
+     8:  -13971 
+     9:   12660 
+    10:  -15624 

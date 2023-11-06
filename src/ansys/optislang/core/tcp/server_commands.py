@@ -1,6 +1,6 @@
 """Module for generation of all server commands."""
 import json
-from typing import Dict, Iterable, Sequence, Union
+from typing import Dict, Iterable, Optional, Sequence, Union
 
 _APPLY_WIZARD = "APPLY_WIZARD"
 _CLOSE = "CLOSE"
@@ -60,10 +60,10 @@ _builtin = "builtin"
 def apply_wizard(
     actor_uid: str,
     type_: str,
-    use_existing_system: bool = None,
-    usage_mode: str = None,
-    parent_hwnd: str = None,
-    password: str = None,
+    use_existing_system: Optional[bool] = None,
+    usage_mode: Optional[str] = None,
+    parent_hwnd: Optional[str] = None,
+    password: Optional[str] = None,
 ) -> str:
     """Generate JSON string of apply_wizzard command.
 
@@ -80,8 +80,8 @@ def apply_wizard(
         Usage mode, e.g. "EXPERT".
     parent_hwnd: str, opt
         Parent hwnd.
-    password : str, opt
-        Password.
+    password : Optional[str], optional
+        Password, by default ``None``.
 
     Returns
     -------
@@ -113,13 +113,13 @@ def apply_wizard(
     )
 
 
-def close(password: str = None) -> str:
+def close(password: Optional[str] = None) -> str:
     """Generate JSON string of close command.
 
     Parameters
     ----------
-    password : str, opt
-        Password.
+    password : Optional[str], optional
+        Password, by default ``None``.
 
     Returns
     -------
@@ -130,7 +130,11 @@ def close(password: str = None) -> str:
 
 
 def connect_nodes(
-    from_actor_uid: str, from_slot: str, to_actor_uid: str, to_slot: str, password: str = None
+    from_actor_uid: str,
+    from_slot: str,
+    to_actor_uid: str,
+    to_slot: str,
+    password: Optional[str] = None,
 ) -> str:
     """Generate JSON string of connect_nodes command.
 
@@ -144,8 +148,8 @@ def connect_nodes(
         Uid of connection target.
     to_slot: str
         Slot of connection target.
-    password : str, opt
-        Password.
+    password : Optional[str], optional
+        Password, by default ``None``.
 
     Returns
     -------
@@ -162,7 +166,7 @@ def connect_nodes(
 
 
 def create_input_slot(
-    actor_uid: str, slot_name: str, type_hint: str = None, password: str = None
+    actor_uid: str, slot_name: str, type_hint: Optional[str] = None, password: Optional[str] = None
 ) -> str:
     """Generate JSON string of create_input_slot command.
 
@@ -174,8 +178,8 @@ def create_input_slot(
         Name of slot.
     type_hint: str, opt
         Type of hint.
-    password : str, opt
-        Password.
+    password : Optional[str], optional
+        Password, by default ``None``.
 
     Returns
     -------
@@ -196,14 +200,14 @@ def create_input_slot(
 
 def create_node(
     type_: str,
-    name: str,
-    algorithm_type: str = None,
-    integration_type: str = None,
-    mop_node_type: str = None,
-    node_type: str = None,
-    parent_uid: str = None,
-    design_flow: str = None,
-    password: str = None,
+    name: Optional[str] = None,
+    algorithm_type: Optional[str] = None,
+    integration_type: Optional[str] = None,
+    mop_node_type: Optional[str] = None,
+    node_type: Optional[str] = None,
+    parent_uid: Optional[str] = None,
+    design_flow: Optional[str] = None,
+    password: Optional[str] = None,
 ) -> str:
     """Generate JSON string of create_node command.
 
@@ -211,22 +215,22 @@ def create_node(
     ----------
     type_: str
         Type.
-    name: str
-        Name.
-    algorithm_type : str, optional
-        Algorithm type, e. g. 'algorithm_plugin', by default None.
-    integration_type : str, optional
-        Integration type, e. g. 'integration_plugin', by default None.
-    mop_node_type : str, optional
-        MOP node type, e. g. 'python_based_mop_node_plugin', by default None.
-    node_type: str, optional
-        Node type, e. g. 'python_based_node_plugin`, by default None.
-    parent_uid: str, optional
-        Parent uid entry.
-    design_flow: str, optional
-        Design flow, optional values are ["RECEIVE", "SEND", "RECEIVE_SEND"].
-    password : str, optional
-        Password.
+    name: Optional[str], optional
+        Name, by default ``None``.
+    algorithm_type : Optional[str], optional
+        Algorithm type, e. g. 'algorithm_plugin', by default ``None``.
+    integration_type : Optional[str], optional
+        Integration type, e. g. 'integration_plugin', by default ``None``.
+    mop_node_type : Optional[str], optional
+        MOP node type, e. g. 'python_based_mop_node_plugin', by default ``None``.
+    node_type: Optional[str], optional
+        Node type, e. g. 'python_based_node_plugin`, by default ``None``.
+    parent_uid: Optional[str], optional
+        Parent uid entry, by default ``None``.
+    design_flow: Optional[str], optional
+        Design flow, optional values are ["RECEIVE", "SEND", "RECEIVE_SEND"], by default ``None``.
+    password : Optional[str], optional
+        Password, by default ``None``.
 
     Returns
     -------
@@ -235,7 +239,8 @@ def create_node(
     """
     args = {}
     args["type"] = type_
-    args["name"] = name
+    if name:
+        args["name"] = name
     if algorithm_type:
         args["algorithm_type"] = algorithm_type
     if integration_type:
@@ -253,7 +258,7 @@ def create_node(
 
 
 def create_output_slot(
-    actor_uid: str, slot_name: str, type_hint: str = None, password: str = None
+    actor_uid: str, slot_name: str, type_hint: Optional[str] = None, password: Optional[str] = None
 ) -> str:
     """Generate JSON string of create_output_slot command.
 
@@ -263,10 +268,10 @@ def create_output_slot(
         Actor uid entry.
     slot_name: str
         Name of the slot.
-    type_hint: str
-        Type of the hint.
-    password : str, opt
-        Password.
+    type_hint: Optional[str], optional
+        Type of the hint, by default ``None``.
+    password : Optional[str], optional
+        Password, by default ``None``.
 
     Returns
     -------
@@ -287,9 +292,9 @@ def create_output_slot(
 def create_start_designs(
     actor_uid: str,
     sampling_type: str,
-    number_of_levels: int = None,
-    number_of_samples: int = None,
-    password: str = None,
+    number_of_levels: Optional[int] = None,
+    number_of_samples: Optional[int] = None,
+    password: Optional[str] = None,
 ) -> str:
     """Generate JSON string of create_start_design command.
 
@@ -299,12 +304,12 @@ def create_start_designs(
         Actor uid entry.
     sampling_type: str
         Sampling type, e.g. "fullfactorial".
-    number_of_levels: int, opt
-        Number of levels.
-    number_of_samples: int, opt
-        Number of samples.
-    password : str, opt
-        Password.
+    number_of_levels: Optional[int], optional
+        Number of levels, by default ``None``.
+    number_of_samples: Optional[int], optional
+        Number of samples, by default ``None``.
+    password : Optional[str], optional
+        Password, by default ``None``.
 
     Returns
     -------
@@ -327,7 +332,9 @@ def create_start_designs(
     )
 
 
-def disconnect_slot(actor_uid: str, slot_name: str, direction: str, password: str = None) -> str:
+def disconnect_slot(
+    actor_uid: str, slot_name: str, direction: str, password: Optional[str] = None
+) -> str:
     """Generate JSON string of disconnect_slot command.
 
     Parameters
@@ -338,8 +345,8 @@ def disconnect_slot(actor_uid: str, slot_name: str, direction: str, password: st
         Name of the slot.
     direction: str
         Direction.
-    password : str, opt
-        Password.
+    password : Optional[str], optional
+        Password, by default ``None``.
 
     Returns
     -------
@@ -356,15 +363,15 @@ def disconnect_slot(actor_uid: str, slot_name: str, direction: str, password: st
     )
 
 
-def evaluate_design(parameters: Dict, password: str = None) -> str:
+def evaluate_design(parameters: Dict, password: Optional[str] = None) -> str:
     """Generate JSON string of evaluate_design command.
 
     Parameters
     ----------
     parameters: Dict
         Dictionary of parameters.
-    password : str, opt
-        Password.
+    password : Optional[str], optional
+        Password, by default ``None``.
 
     Returns
     -------
@@ -377,7 +384,11 @@ def evaluate_design(parameters: Dict, password: str = None) -> str:
 
 
 def export_designs(
-    actor_uid: str, path: str, format: str = None, csv_separator: str = None, password: str = None
+    actor_uid: str,
+    path: str,
+    format: Optional[str] = None,
+    csv_separator: Optional[str] = None,
+    password: Optional[str] = None,
 ) -> str:
     """Generate JSON string of export_designs command.
 
@@ -387,12 +398,12 @@ def export_designs(
         Actor uid entry.
     path: str
        Path.
-    format: str, opt
-        Type_hint format.
-    csv_separator: str, opt
-        CSV separator.
-    password : str, opt
-        Password.
+    format: Optional[str], optional
+        Type_hint format, by default ``None``.
+    csv_separator: Optional[str], optional
+        CSV separator, by default ``None``.
+    password : Optional[str], optional
+        Password, by default ``None``.
 
     Returns
     -------
@@ -413,15 +424,15 @@ def export_designs(
     )
 
 
-def finalize(actor_uid: str, password: str = None) -> str:
+def finalize(actor_uid: str, password: Optional[str] = None) -> str:
     """Generate JSON string of finalize command.
 
     Parameters
     ----------
     actor_uid: str
         Actor uid entry.
-    password : str, opt
-        Password.
+    password : Optional[str], optional
+        Password, by default ``None``.
 
     Returns
     -------
@@ -431,7 +442,7 @@ def finalize(actor_uid: str, password: str = None) -> str:
     return _to_json(_gen_server_command(command=_FINALIZE, actor_uid=actor_uid, password=password))
 
 
-def link_registered_file(actor_uid: str, uid: str, password: str = None) -> str:
+def link_registered_file(actor_uid: str, uid: str, password: Optional[str] = None) -> str:
     """Generate JSON string of link_registered_file command.
 
     Parameters
@@ -440,8 +451,8 @@ def link_registered_file(actor_uid: str, uid: str, password: str = None) -> str:
         Actor uid entry.
     uid: str
         Uid entry.
-    password : str, opt
-        Password.
+    password : Optional[str], optional
+        Password, by default ``None``.
 
     Returns
     -------
@@ -457,13 +468,13 @@ def link_registered_file(actor_uid: str, uid: str, password: str = None) -> str:
     )
 
 
-def new(password: str = None) -> str:
+def new(password: Optional[str] = None) -> str:
     """Generate JSON string of ``new`` command.
 
     Parameters
     ----------
-    password : str, opt
-        Password.
+    password : Optional[str], optional
+        Password, by default ``None``.
 
     Returns
     -------
@@ -473,7 +484,9 @@ def new(password: str = None) -> str:
     return _to_json(_gen_server_command(command=_NEW, password=password))
 
 
-def open(path: str, do_force: bool, do_restore: bool, do_reset: bool, password: str = None) -> str:
+def open(
+    path: str, do_force: bool, do_restore: bool, do_reset: bool, password: Optional[str] = None
+) -> str:
     """Generate JSON string of ``open`` command.
 
     Parameters
@@ -486,8 +499,8 @@ def open(path: str, do_force: bool, do_restore: bool, do_reset: bool, password: 
         True/False.
     do_reset: bool
         True/False.
-    password : str, opt
-        Password.
+    password : Optional[str], optional
+        Password, by default ``None``.
 
     Returns
     -------
@@ -503,13 +516,13 @@ def open(path: str, do_force: bool, do_restore: bool, do_reset: bool, password: 
     return _to_json(_gen_server_command(command=_OPEN, args=args, password=password))
 
 
-def pause(password: str = None) -> str:
+def pause(password: Optional[str] = None) -> str:
     """Generate JSON string of pause command.
 
     Parameters
     ----------
-    password : str, opt
-        Password.
+    password : Optional[str], optional
+        Password, by default ``None``.
 
     Returns
     -------
@@ -519,17 +532,19 @@ def pause(password: str = None) -> str:
     return _to_json(_gen_server_command(command=_PAUSE, password=password))
 
 
-def reevaluate_state(actor_uid: str, hid: str = None, password: str = None) -> str:
+def reevaluate_state(
+    actor_uid: str, hid: Optional[str] = None, password: Optional[str] = None
+) -> str:
     """Generate JSON string of reevaluate_state command.
 
     Parameters
     ----------
     actor_uid: str
         Actor uid entry.
-    hid: str
-        Hid entry.
-    password : str, opt
-        Password.
+    hid: Optional[str]
+        Hid entry. by default ``None``.
+    password : Optional[str], optional
+        Password, by default ``None``.
 
     Returns
     -------
@@ -543,15 +558,15 @@ def reevaluate_state(actor_uid: str, hid: str = None, password: str = None) -> s
     )
 
 
-def refresh_listener_registration(uid: str, password: str = None) -> str:
+def refresh_listener_registration(uid: str, password: Optional[str] = None) -> str:
     """Generate JSON string of refresh_listener_registration command.
 
     Parameters
     ----------
     uid: str
         Uid entry.
-    password : str, opt
-        Password.
+    password : Optional[str], optional
+        Password, by default ``None``.
 
     Returns
     -------
@@ -566,28 +581,28 @@ def refresh_listener_registration(uid: str, password: str = None) -> str:
 
 
 def register_file(
-    uid: str = None,
-    ident: str = None,
-    local_location: Dict = None,
-    action: str = None,
-    password: str = None,
+    uid: Optional[str] = None,
+    ident: Optional[str] = None,
+    local_location: Optional[Dict] = None,
+    action: Optional[str] = None,
+    password: Optional[str] = None,
 ) -> str:
     """Generate JSON string of register_file command.
 
     Parameters
     ----------
-    uid: str, opt
-        Uid entry.
-    ident: str, opt
-        Ident.
-    local_location: Dict, opt
+    uid: Optional[str], optional
+        Uid entry, by default ``None``.
+    ident: Optional[str], optional
+        Ident, by default ``None``.
+    local_location: Optional[Dict], optional
         Dictionary specifying location, e. g. { "split_path": {"head": "",
         "tail": "C:/samples_path/result.txt" }, "base_path": "",
-        "base_path_mode": "ABSOLUTE_PATH" }.
-    action: str, opt
-        Action, e. g. "Send"
-    password : str, opt
-        Password.
+        "base_path_mode": "ABSOLUTE_PATH" }, by default ``None``.
+    action: Optional[str], optional
+        Action, e. g. "Send", by default ``None``.
+    password : Optional[str], optional
+        Password, by default ``None``.
 
     Returns
     -------
@@ -609,32 +624,32 @@ def register_file(
 
 
 def register_listener(
-    id: str = None,
-    host: str = None,
-    port: int = None,
-    timeout: int = None,
-    notifications: Iterable[str] = None,
-    password: str = None,
-    listener_uid: str = None,
+    id: Optional[str] = None,
+    host: Optional[str] = None,
+    port: Optional[int] = None,
+    timeout: Optional[int] = None,
+    notifications: Optional[Iterable[str]] = None,
+    password: Optional[str] = None,
+    listener_uid: Optional[str] = None,
 ) -> str:
     """Generate JSON string of register_listener command.
 
     Parameters
     ----------
-    id: str, opt
-        Id of the local listener.
-    host: str, opt
-        IP of the TCP listener
-    port: int, opt
-        Port of the TCP listener.
-    time_out: int, opt
-        Unregister policy timeout in ms, default 60000 ms.
-    notifications: Sequence, opt
-        Notifications.
-    password : str, opt
-        Password.
-    listener_uid : str, opt
-        Listener UID.
+    id: Optional[str], optional
+        Id of the local listener, by default ``None``.
+    host: Optional[str], optional
+        IP of the TCP listener, by default ``None``.
+    port: Optional[int], optional
+        Port of the TCP listener, by default ``None``.
+    time_out: Optional[int], optional
+        Unregister policy timeout in ms, default 60000 ms, by default ``None``.
+    notifications: Optional[Sequence], optional
+        Notifications, by default ``None``.
+    password : Optional[str], optional
+        Password, by default ``None``.
+    listener_uid : Optional[str], optional
+        Listener UID, by default ``None``.
 
     Returns
     -------
@@ -662,15 +677,15 @@ def register_listener(
     return _to_json(_gen_server_command(command=_REGISTER_LISTENER, args=args, password=password))
 
 
-def register_locations_as_parameter(actor_uid: str, password: str = None) -> str:
+def register_locations_as_parameter(actor_uid: str, password: Optional[str] = None) -> str:
     """Generate JSON string of ``register_location_as_parameter`` command.
 
     Parameters
     ----------
     actor_uid: str
         Actor uid entry.
-    password : str, opt
-        Password.
+    password : Optional[str], optional
+        Password, by default ``None``.
 
     Returns
     -------
@@ -684,15 +699,15 @@ def register_locations_as_parameter(actor_uid: str, password: str = None) -> str
     )
 
 
-def register_locations_as_response(actor_uid: str, password: str = None) -> str:
+def register_locations_as_response(actor_uid: str, password: Optional[str] = None) -> str:
     """Generate JSON string of ``register_location_as_response`` command.
 
     Parameters
     ----------
     actor_uid: str
         Actor uid entry.
-    password : str, opt
-        Password.
+    password : Optional[str], optional
+        Password, by default ``None``.
 
     Returns
     -------
@@ -706,15 +721,15 @@ def register_locations_as_response(actor_uid: str, password: str = None) -> str:
     )
 
 
-def remove_node(actor_uid: str, password: str = None) -> str:
+def remove_node(actor_uid: str, password: Optional[str] = None) -> str:
     """Generate JSON string of ``remove node`` command.
 
     Parameters
     ----------
     actor_uid: str
         Actor uid entry.
-    password : str, opt
-        Password.
+    password : Optional[str], optional
+        Password, by default ``None``.
 
     Returns
     -------
@@ -726,15 +741,15 @@ def remove_node(actor_uid: str, password: str = None) -> str:
     )
 
 
-def re_register_locations_as_parameter(actor_uid: str, password: str = None) -> str:
+def re_register_locations_as_parameter(actor_uid: str, password: Optional[str] = None) -> str:
     """Generate JSON string of ``re_register_locations_as_parameter`` command.
 
     Parameters
     ----------
     actor_uid: str
         Actor uid entry.
-    password : str, opt
-        Password.
+    password : Optional[str], optional
+        Password, by default ``None``.
 
     Returns
     -------
@@ -748,15 +763,15 @@ def re_register_locations_as_parameter(actor_uid: str, password: str = None) -> 
     )
 
 
-def re_register_locations_as_response(actor_uid: str, password: str = None) -> str:
+def re_register_locations_as_response(actor_uid: str, password: Optional[str] = None) -> str:
     """Generate JSON string of ``re_register_locations_as_response`` command.
 
     Parameters
     ----------
     actor_uid: str
         Actor uid entry.
-    password : str, opt
-        Password.
+    password : Optional[str], optional
+        Password, by default ``None``.
 
     Returns
     -------
@@ -770,17 +785,19 @@ def re_register_locations_as_response(actor_uid: str, password: str = None) -> s
     )
 
 
-def reset(actor_uid: str = None, hid: str = None, password: str = None) -> str:
+def reset(
+    actor_uid: Optional[str] = None, hid: Optional[str] = None, password: Optional[str] = None
+) -> str:
     """Generate JSON string of ``reset`` command.
 
     Parameters
     ----------
-    actor_uid: str, opt
-        Actor uid entry. A Hirearchical ID (hid) is required.
-    hid: str, opt
-        Hid entry. The actor uid is required.
-    password : str, opt
-        Password.
+    actor_uid: Optional[str], optional
+        Actor uid entry. A Hirearchical ID (hid) is required. By default ``None``.
+    hid: Optional[str], optional
+        Hid entry. The actor uid is required. By default ``None``.
+    password : Optional[str], optional
+        Password, by default ``None``.
 
     Returns
     -------
@@ -796,17 +813,19 @@ def reset(actor_uid: str = None, hid: str = None, password: str = None) -> str:
     )
 
 
-def restart(actor_uid: str = None, hid: str = None, password: str = None) -> str:
+def restart(
+    actor_uid: Optional[str] = None, hid: Optional[str] = None, password: Optional[str] = None
+) -> str:
     """Generate JSON string of ``restart`` command.
 
     Parameters
     ----------
-    actor_uid: str, opt
-        Actor uid entry. A Hirearchical ID (hid) is required.
-    hid: str, opt
-        Hid entry. The actor uid is required.
-    password : str, opt
-        Password.
+    actor_uid: Optional[str], optional
+        Actor uid entry. A Hirearchical ID (hid) is required. By default ``None``.
+    hid: Optional[str], optional
+        Hid entry. The actor uid is required. By default ``None``.
+    password : Optional[str], optional
+        Password, by default ``None``.
 
     Returns
     -------
@@ -822,13 +841,13 @@ def restart(actor_uid: str = None, hid: str = None, password: str = None) -> str
     )
 
 
-def resume(password: str = None) -> str:
+def resume(password: Optional[str] = None) -> str:
     """Generate JSON string of ``resume`` command.
 
     Parameters
     ----------
-    password : str, opt
-        Password.
+    password : Optional[str], optional
+        Password, by default ``None``.
 
     Returns
     -------
@@ -840,8 +859,8 @@ def resume(password: str = None) -> str:
 
 def run_python_script(
     script: str,
-    args_: list = None,
-    password: str = None,
+    args_: Optional[list] = None,
+    password: Optional[str] = None,
 ) -> str:
     """Generate JSON string of register_listener command.
 
@@ -849,10 +868,10 @@ def run_python_script(
     ----------
     script: str
         Path of the script.
-    args: list, opt
-        IP of the TCP listener.
-    password : str, opt
-        Password.
+    args: Optional[list], optional
+        Script arguments, by default ``None``.
+    password : Optional[str], optional
+        Password, by default ``None``.
 
     Returns
     -------
@@ -868,17 +887,17 @@ def run_python_script(
 
 
 def run_registered_files_actions(
-    uid: str = None,
-    password: str = None,
+    uid: Optional[str] = None,
+    password: Optional[str] = None,
 ) -> str:
     """Generate JSON string of ``run registered files actions`` command.
 
     Parameters
     ----------
-    uid: str, opt
-        Uid entry.
-    password : str, opt
-        Password.
+    uid: Optional[str], optional
+        Uid entry, by default ``None``.
+    password : Optional[str], optional
+        Password, by default ``None``.
 
     Returns
     -------
@@ -895,13 +914,13 @@ def run_registered_files_actions(
     )
 
 
-def save(password: str = None) -> str:
+def save(password: Optional[str] = None) -> str:
     """Generate JSON string of ``save`` command.
 
     Parameters
     ----------
-    password : str, opt
-        Password.
+    password : Optional[str], optional
+        Password, by default ``None``.
 
     Returns
     -------
@@ -912,7 +931,7 @@ def save(password: str = None) -> str:
 
 
 def save_as(
-    path: str, do_force: bool, do_restore: bool, do_reset: bool, password: str = None
+    path: str, do_force: bool, do_restore: bool, do_reset: bool, password: Optional[str] = None
 ) -> str:
     """Generate JSON string of ``save_as`` command.
 
@@ -921,13 +940,16 @@ def save_as(
     path: str
         path.
     do_force: bool
-        True/False.
+        Whether to force opening of project even if (non-critical) errors occur.
+            Non-critical errors include:
+            - Timestamp of (auto) save point newer than project timestamp
+            - Project (file) incomplete
     do_restore: bool
-        True/False.
+        Whether to restore project from last (auto) save point (if present).
     do_reset: bool
-        True/False.
-    password : str, opt
-        Password.
+        Whether to reset project after load.
+    password : Optional[str], optional
+        Password, by default ``None``.
 
     Returns
     -------
@@ -943,15 +965,15 @@ def save_as(
     return _to_json(_gen_server_command(command=_SAVE_AS, args=args, password=password))
 
 
-def save_copy(path: str, password: str = None) -> str:
+def save_copy(path: str, password: Optional[str] = None) -> str:
     """Generate JSON string of ``save_copy`` command.
 
     Parameters
     ----------
     path: str
         path.
-    password : str, opt
-        Password.
+    password : Optional[str], optional
+        Password, by default ``None``.
 
     Returns
     -------
@@ -964,7 +986,9 @@ def save_copy(path: str, password: str = None) -> str:
     return _to_json(_gen_server_command(command=_SAVE_COPY, args=args, password=password))
 
 
-def set_actor_property(actor_uid: str, name: str, value: str, password: str = None) -> str:
+def set_actor_property(
+    actor_uid: str, name: str, value: str, password: Optional[str] = None
+) -> str:
     """Generate JSON string of ``set_actor_property`` command.
 
     Parameters
@@ -975,8 +999,8 @@ def set_actor_property(actor_uid: str, name: str, value: str, password: str = No
         Property name.
     value: str
         Value.
-    password : str, opt
-        Password.
+    password : Optional[str], optional
+        Password, by default ``None``.
 
     Returns
     -------
@@ -994,7 +1018,7 @@ def set_actor_property(actor_uid: str, name: str, value: str, password: str = No
     )
 
 
-def set_actor_setting(actor_uid: str, name: str, value: str, password: str = None) -> str:
+def set_actor_setting(actor_uid: str, name: str, value: str, password: Optional[str] = None) -> str:
     """Generate JSON string of ``set actor setting`` command.
 
     Parameters
@@ -1005,8 +1029,8 @@ def set_actor_setting(actor_uid: str, name: str, value: str, password: str = Non
         Property name.
     value: str
         Value.
-    password : str, opt
-        Password.
+    password : Optional[str], optional
+        Password, by default ``None``.
 
     Returns
     -------
@@ -1024,7 +1048,9 @@ def set_actor_setting(actor_uid: str, name: str, value: str, password: str = Non
     )
 
 
-def set_actor_state_property(actor_uid: str, name: str, value: str, password: str = None) -> str:
+def set_actor_state_property(
+    actor_uid: str, name: str, value: str, password: Optional[str] = None
+) -> str:
     """Generate JSON string of ``set actor state property`` command.
 
     Parameters
@@ -1035,8 +1061,8 @@ def set_actor_state_property(actor_uid: str, name: str, value: str, password: st
         Property name.
     value: str
         Value.
-    password : str, opt
-        Password.
+    password : Optional[str], optional
+        Password, by default ``None``.
 
     Returns
     -------
@@ -1054,7 +1080,7 @@ def set_actor_state_property(actor_uid: str, name: str, value: str, password: st
     )
 
 
-def set_placeholder_value(name: str, value: str, password: str = None) -> str:
+def set_placeholder_value(name: str, value: str, password: Optional[str] = None) -> str:
     """Generate JSON string of ``set placeholder value`` command.
 
     Parameters
@@ -1063,8 +1089,8 @@ def set_placeholder_value(name: str, value: str, password: str = None) -> str:
         Property name.
     value: str
         Value.
-    password : str, opt
-        Password.
+    password : Optional[str], optional
+        Password, by default ``None``.
 
     Returns
     -------
@@ -1080,7 +1106,7 @@ def set_placeholder_value(name: str, value: str, password: str = None) -> str:
     )
 
 
-def set_project_setting(name: str, value: str, password: str = None) -> str:
+def set_project_setting(name: str, value: str, password: Optional[str] = None) -> str:
     """Generate JSON string of ``set project settings`` command.
 
     Parameters
@@ -1089,8 +1115,8 @@ def set_project_setting(name: str, value: str, password: str = None) -> str:
         Property name.
     value: str
         Value.
-    password : str, opt
-        Password.
+    password : Optional[str], optional
+        Password, by default ``None``.
 
     Returns
     -------
@@ -1105,7 +1131,7 @@ def set_project_setting(name: str, value: str, password: str = None) -> str:
 
 
 def set_registered_file_value(
-    uid: str, name: str, value: Union[str, Dict], password: str = None
+    uid: str, name: str, value: Union[str, Dict], password: Optional[str] = None
 ) -> str:
     """Generate JSON string of ``set registered file value`` command.
 
@@ -1117,8 +1143,8 @@ def set_registered_file_value(
         Property name.
     value: Union[str, Dict]
         Value.
-    password : str, opt
-        Password.
+    password : Optional[str], optional
+        Password, by default ``None``.
 
     Returns
     -------
@@ -1135,7 +1161,7 @@ def set_registered_file_value(
     )
 
 
-def set_start_designs(actor_uid: str, start_designs: Dict, password: str = None) -> str:
+def set_start_designs(actor_uid: str, start_designs: Dict, password: Optional[str] = None) -> str:
     """Generate JSON string of ``set start designs`` command.
 
     Parameters
@@ -1144,8 +1170,8 @@ def set_start_designs(actor_uid: str, start_designs: Dict, password: str = None)
         Actor uid entry.
     start_designs: Dict
         Dictionary of settings.
-    password : str, opt
-        Password.
+    password : Optional[str], optional
+        Password, by default ``None``.
 
     Returns
     -------
@@ -1163,17 +1189,19 @@ def set_start_designs(actor_uid: str, start_designs: Dict, password: str = None)
     )
 
 
-def set_succeeded_state(actor_uid: str, hid: str = None, password: str = None) -> str:
+def set_succeeded_state(
+    actor_uid: str, hid: Optional[str] = None, password: Optional[str] = None
+) -> str:
     """Generate JSON string of ``set succeeded state`` command.
 
     Parameters
     ----------
     actor_uid: str
         Actor uid entry.
-    hid: str, opt
-        Hid entry.
-    password : str, opt
-        Password.
+    hid: Optional[str], optional
+        Hid entry, by default ``None``.
+    password : Optional[str], optional
+        Password, by default ``None``.
 
     Returns
     -------
@@ -1188,7 +1216,10 @@ def set_succeeded_state(actor_uid: str, hid: str = None, password: str = None) -
 
 
 def show_dialog(
-    type_: str, usage_mode: str = None, parent_hwnd: str = None, password: str = None
+    type_: str,
+    usage_mode: Optional[str] = None,
+    parent_hwnd: Optional[str] = None,
+    password: Optional[str] = None,
 ) -> str:
     """Generate JSON string of ``show dialog`` command.
 
@@ -1199,12 +1230,12 @@ def show_dialog(
         for application dialogs: [ "about", "help", "settings", "plugin" ]
         for project dialogs: [ "project_settings", "project_overview", "license_management",
         "registered_files", "purge", "load_from", "save_to" ].
-    usage_mode: str, opt
-        Usage mode. e.g. "EXPERT".
-    parent_hwnd: str, opt
-        Parent hwnd.
-    password : str, opt
-        Password.
+    usage_mode: Optional[str], optional
+        Usage mode. e.g. "EXPERT", by default ``None``.
+    parent_hwnd: Optional[str], optional
+        Parent hwnd, by default ``None``.
+    password : Optional[str], optional
+        Password, by default ``None``.
 
     Returns
     -------
@@ -1239,11 +1270,11 @@ def show_dialog(
 
 def show_node_dialog(
     actor_uid: str,
-    blocking: bool = None,
-    type_: str = None,
-    usage_mode: str = None,
-    parent_hwnd: str = None,
-    password: str = None,
+    blocking: Optional[bool] = None,
+    type_: Optional[str] = None,
+    usage_mode: Optional[str] = None,
+    parent_hwnd: Optional[str] = None,
+    password: Optional[str] = None,
 ) -> str:
     """Generate JSON string of ``show node dialog`` command.
 
@@ -1251,16 +1282,16 @@ def show_node_dialog(
     ----------
     actor_uid: str
         Actor uid entry.
-    blocking: bool, opt
-        True/False.
-    type_: str, opt
-        Type, e.g. "help".
-    usage_mode: str, opt
-        Usage mode. e.g. "EXPERT".
-    parent_hwnd: str, opt
-        Parent hwnd.
-    password : str, opt
-        Password.
+    blocking: Optional[bool], optional
+        True/False, by default ``None``.
+    type_: Optional[str], optional
+        Type, e.g. "help", by default ``None``.
+    usage_mode: Optional[str], optional
+        Usage mode. e.g. "EXPERT", by default ``None``.
+    parent_hwnd: Optional[str], optional
+        Parent hwnd, by default ``None``.
+    password : Optional[str], optional
+        Password, by default ``None``.
 
     Returns
     -------
@@ -1288,13 +1319,13 @@ def show_node_dialog(
     )
 
 
-def shutdown(password: str = None) -> str:
+def shutdown(password: Optional[str] = None) -> str:
     """Generate JSON string of ``shutdown`` command.
 
     Parameters
     ----------
-    password : str, opt
-        Password.
+    password : Optional[str], optional
+        Password, by default ``None``.
 
     Returns
     -------
@@ -1304,13 +1335,13 @@ def shutdown(password: str = None) -> str:
     return _to_json(_gen_server_command(command=_SHUTDOWN, password=password))
 
 
-def shutdown_when_finished(password: str = None) -> str:
+def shutdown_when_finished(password: Optional[str] = None) -> str:
     """Generate JSON string of ``shutdown_when_finished`` command.
 
     Parameters
     ----------
-    password : str, opt
-        Password.
+    password : Optional[str], optional
+        Password, by default ``None``.
 
     Returns
     -------
@@ -1320,17 +1351,19 @@ def shutdown_when_finished(password: str = None) -> str:
     return _to_json(_gen_server_command(command=_SHUTDOWN_WHEN_FINISHED, password=password))
 
 
-def start(actor_uid: str = None, hid: str = None, password: str = None) -> str:
+def start(
+    actor_uid: Optional[str] = None, hid: Optional[str] = None, password: Optional[str] = None
+) -> str:
     """Generate JSON string of ``start`` command.
 
     Parameters
     ----------
-    actor_uid: str, opt
-        Actor uid entry. A Hirearchical ID (hid) is required.
-    hid: str, opt
-        Hid entry. The actor uid is required.
-    password : str, opt
-        Password.
+    actor_uid: Optional[str], optional
+        Actor uid entry. A Hirearchical ID (hid) is required. By default ``None``.
+    hid: Optional[str], optional
+        Hid entry. The actor uid is required. By default ``None``.
+    password : Optional[str], optional
+        Password, by default ``None``.
 
     Returns
     -------
@@ -1347,17 +1380,19 @@ def start(actor_uid: str = None, hid: str = None, password: str = None) -> str:
     )
 
 
-def stop(actor_uid: str = None, hid: str = None, password: str = None) -> str:
+def stop(
+    actor_uid: Optional[str] = None, hid: Optional[str] = None, password: Optional[str] = None
+) -> str:
     """Generate JSON string of ``stop`` command.
 
     Parameters
     ----------
-    actor_uid: str, opt
-        Actor uid entry. A Hirearchical ID (hid) is required.
-    hid: str, opt
-        Hid entry. The actor uid is required.
-    password : str, opt
-        Password.
+    actor_uid: Optional[str], optional
+        Actor uid entry. A Hirearchical ID (hid) is required. By default ``None``.
+    hid: Optional[str], optional
+        Hid entry. The actor uid is required. By default ``None``.
+    password : Optional[str], optional
+        Password, by default ``None``.
 
     Returns
     -------
@@ -1374,17 +1409,19 @@ def stop(actor_uid: str = None, hid: str = None, password: str = None) -> str:
     )
 
 
-def stop_gently(actor_uid: str = None, hid: str = None, password: str = None) -> str:
+def stop_gently(
+    actor_uid: Optional[str] = None, hid: Optional[str] = None, password: Optional[str] = None
+) -> str:
     """Generate JSON string of ``stop_gently`` command.
 
     Parameters
     ----------
-    actor_uid: str, opt
-        Actor uid entry. A Hirearchical ID (hid) is required.
-    hid: str, opt
-        Hid entry. The actor uid is required.
-    password : str, opt
-        Password.
+    actor_uid: Optional[str], optional
+        Actor uid entry. A Hirearchical ID (hid) is required. By default ``None``.
+    hid: Optional[str], optional
+        Hid entry. The actor uid is required. By default ``None``.
+    password : Optional[str], optional
+        Password, by default ``None``.
 
     Returns
     -------
@@ -1401,7 +1438,10 @@ def stop_gently(actor_uid: str = None, hid: str = None, password: str = None) ->
 
 
 def subscribe_for_push_notifications(
-    uid: str, notifications: Sequence, node_types: Sequence = None, password: str = None
+    uid: str,
+    notifications: Sequence,
+    node_types: Optional[Sequence] = None,
+    password: Optional[str] = None,
 ) -> str:
     """Generate JSON string of ``subscribe_for_push_notifications`` command.
 
@@ -1417,10 +1457,10 @@ def subscribe_for_push_notifications(
             "NOTHING_PROCESSED", "CHECK_FAILED", "EXEC_FAILED" ].
             Nodes: [ "ACTOR_STATE_CHANGED", "ACTOR_ACTIVE_CHANGED", "ACTOR_NAME_CHANGED",
             ACTOR_CONTENTS_CHANGED", "ACTOR_DATA_CHANGED" ].
-    node_types: Sequence, opt
-       Node types, e.g. ["Sensitivity", "AnsysWorkbench"].
-    password : str, opt
-        Password.
+    node_types: Optional[Sequence], optional
+       Node types, e.g. ["Sensitivity", "AnsysWorkbench"]. By default ``None``.
+    password : Optional[str], optional
+        Password, by default ``None``.
 
     Returns
     -------
@@ -1472,7 +1512,7 @@ def subscribe_for_push_notifications(
     )
 
 
-def unlink_registered_file(actor_uid: str, uid: str, password: str = None) -> str:
+def unlink_registered_file(actor_uid: str, uid: str, password: Optional[str] = None) -> str:
     """Generate JSON string of ``unlink registered file`` command.
 
     Parameters
@@ -1481,8 +1521,8 @@ def unlink_registered_file(actor_uid: str, uid: str, password: str = None) -> st
         Actor uid entry.
     uid: str
         Uid entry.
-    password : str, opt
-        Password.
+    password : Optional[str], optional
+        Password, by default ``None``.
 
     Returns
     -------
@@ -1499,15 +1539,15 @@ def unlink_registered_file(actor_uid: str, uid: str, password: str = None) -> st
     )
 
 
-def unregister_file(uid: str, password: str = None) -> str:
+def unregister_file(uid: str, password: Optional[str] = None) -> str:
     """Generate JSON string of ``unregister file`` command.
 
     Parameters
     ----------
     uid: str
         Uid entry.
-    password : str, opt
-        Password.
+    password : Optional[str], optional
+        Password, by default ``None``.
 
     Returns
     -------
@@ -1520,15 +1560,15 @@ def unregister_file(uid: str, password: str = None) -> str:
     return _to_json(_gen_server_command(command=_UNREGISTER_FILE, args=args, password=password))
 
 
-def unregister_listener(uid: str, password: str = None) -> str:
+def unregister_listener(uid: str, password: Optional[str] = None) -> str:
     """Generate JSON string of ``unregister listener`` command.
 
     Parameters
     ----------
     uid: str
         Uid entry.
-    password : str, opt
-        Password.
+    password : Optional[str], optional
+        Password, by default ``None``.
 
     Returns
     -------
@@ -1542,7 +1582,10 @@ def unregister_listener(uid: str, password: str = None) -> str:
 
 
 def write_monitoring_database(
-    actor_uid: str, path: str = None, hid: str = None, password: str = None
+    actor_uid: str,
+    path: Optional[str] = None,
+    hid: Optional[str] = None,
+    password: Optional[str] = None,
 ) -> str:
     """Generate JSON string of ``write monitoring database`` command.
 
@@ -1550,12 +1593,12 @@ def write_monitoring_database(
     ----------
     actor_uid: str
         Actor uid entry.
-    path: str, opt
-        Path.
-    hid: str, opt
-        Hid entry.
-    password : str, opt
-        Password.
+    path: Optional[str], optional
+        Path, by default ``None``.
+    hid: Optional[str], optional
+        Hid entry, by default ``None``.
+    password : Optional[str], optional
+        Password, by default ``None``.
 
     Returns
     -------
@@ -1577,18 +1620,27 @@ def write_monitoring_database(
     )
 
 
-def _gen_server_command(command, password, args=None, actor_uid=None, hid=None) -> Dict:
+def _gen_server_command(
+    command: str,
+    password: str,
+    args: Optional[dict] = None,
+    actor_uid: Optional[str] = None,
+    hid: Optional[str] = None,
+) -> Dict:
     """Generate server command.
 
     Parameters
     ----------
     command : str
         Command type.
-    password : str, opt
+    password : str
         Password.
-    args : Dict, opt
+    args : Optional[dict], optional
         Dictionary with specified arguments.
-    actor_uid : str, opt
+    actor_uid : Optional[str], optional
+        Actor uid, by default ``None``.
+    hid: Optional[str], optional
+        Hid, by default ``None``.
 
     Returns
     -------
@@ -1609,21 +1661,24 @@ def _gen_server_command(command, password, args=None, actor_uid=None, hid=None) 
     return scmd
 
 
-def _gen_command(command: str, args: Dict = None, actor_uid: str = None, hid: str = None) -> Dict:
+def _gen_command(
+    command: str,
+    args: Optional[Dict] = None,
+    actor_uid: Optional[str] = None,
+    hid: Optional[str] = None,
+) -> Dict:
     """Generate "commands" for method server command.
 
     Parameters
     ----------
-    type : str
-        Command type.
     command : str
         Command name.
-    args: dict, optional
-        Arguments.
-    actor_uid: str, optional
-        Actor uid.
-    hid: str, optional
-        Actor hid.
+    args: Optional[dict], optional
+        Arguments, by default ``None``.
+    actor_uid: Optional[str], optional
+        Actor uid, by default ``None``.
+    hid: Optional[str], optional
+        Actor hid, by default ``None``.
 
     Returns
     -------

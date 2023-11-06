@@ -111,7 +111,7 @@ class TcpNodeProxy(Node):
     def control(
         self,
         command: str,
-        hid: str = None,
+        hid: Optional[str] = None,
         wait_for_completion: bool = True,
         timeout: Union[float, int] = 100,
     ) -> Union[str, None]:
@@ -122,7 +122,7 @@ class TcpNodeProxy(Node):
         command: str
             Command to execute. Options are ``"start"``, ``"restart"``, ``"stop_gently"``,
             ``"stop"``, and ``"reset"``.
-        hid: str, optional
+        hid: Optional[str], optional
             Hid entry. The default is ``None``. The actor unique ID is required.
         wait_for_completion: bool, optional
             Whether to wait for completion. The default is ``True``.
@@ -1728,7 +1728,7 @@ class TcpParametricSystemProxy(TcpSystemProxy, ParametricSystem):
         hid: str,
         file_name: str,
         format: FileOutputFormat = FileOutputFormat.JSON,
-        dir: Union[Path, str] = None,
+        dir: Optional[Union[Path, str]] = None,
     ) -> File:
         """Save designs for a given state.
 
@@ -1740,7 +1740,7 @@ class TcpParametricSystemProxy(TcpSystemProxy, ParametricSystem):
             Name of the file.
         format : FileOutputFormat, optional
             Format of the file, by default ``FileOutputFormat.JSON``.
-        dir : Union[Path, str], optional
+        dir : Optional[Union[Path, str]], optional
             Directory, where file should be saved, by default ``None``.
             Project's working directory is used by default.
 

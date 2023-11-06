@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import copy
 from enum import Enum
-from typing import Any, Iterable, List, Mapping, Sequence, Tuple, Union
+from typing import Any, Iterable, List, Mapping, Optional, Sequence, Tuple, Union
 import uuid
 
 from ansys.optislang.core.utils import enum_from_str
@@ -372,32 +372,36 @@ class Criterion:
         name: str = "",
         type_: Union[CriterionType, str] = CriterionType.VARIABLE,
         expression: str = "0",
-        expression_value: Union[tuple, bool, float, complex, list, dict, None] = None,
-        expression_value_type: Union[CriterionValueType, None] = None,
+        expression_value: Optional[Union[tuple, bool, float, complex, list, dict]] = None,
+        expression_value_type: Optional[CriterionValueType] = None,
         criterion: Union[ComparisonType, str] = ComparisonType.IGNORE,
-        value: Union[Tuple[CriterionValueType, str], bool, float, complex, list, dict, None] = None,
-        value_type: Union[CriterionValueType, None] = None,
+        value: Optional[
+            Union[Tuple[CriterionValueType, str], bool, float, complex, list, dict]
+        ] = None,
+        value_type: Optional[CriterionValueType] = None,
     ) -> None:
         """Create a new instance of ``Criterion``.
 
         Parameters
         ----------
-        name: str
-            Criterion name.
-        type_: Union[CriterionKind, str]
-            Type of criterion, e. g. 'objective'.
-        expression: str
-            Criterion expression.
-        expression_value: Union[tuple, bool, float, complex, list, dict, None], opt
-            Expression value.
-        expression_value_type: Union[CriterionValueType, None], opt
-            Expression value type.
-        criterion: Union[CriterionType, str]
-            Type of comparison symbol, e. g. 'min'.
-        value: Union[tuple, bool, float, complex, list, dict, None], optional
-            Value of the criterion.
-        value_type: Union[CriterionValueType, None], opt
-            Type of the criterion value.
+        name: str, optional
+            Criterion name, by default ``""``.
+        type_: Union[CriterionKind, str], optional
+            Type of criterion, e. g. 'objective', by default ``CriterionType.VARIABLE``.
+        expression: str, optional
+            Criterion expression, by default ``"0"``.
+        expression_value: Optional[Union[tuple, bool, float, complex, list, dict]], optional
+            Expression value, by default ``None``.
+        expression_value_type: Optional[CriterionValueType], optional
+            Expression value type, by default ``None``.
+        criterion: Union[CriterionType, str], optional
+            Type of comparison symbol, e. g. 'min', by default ``ComparisonType.IGNORE``.
+        value: Optional[
+            Union[Tuple[CriterionValueType, str], bool, float, complex, list, dict]
+        ], optional
+            Value of the criterion, by default ``None``.
+        value_type: Optional[CriterionValueType], optional
+            Type of the criterion value, by default ``None``.
         """
         self.name = name
         self.expression = expression
@@ -1086,7 +1090,7 @@ class LimitStateCriterion(Criterion):
         expression_value_type: Union[CriterionValueType, None] = None,
         criterion: Union[ComparisonType, str] = ComparisonType.LESSLIMITSTATE,
         limit_expression: str = "0",
-        limit_expression_value: Union[tuple, bool, float, complex, list, dict] = None,
+        limit_expression_value: Optional[Union[tuple, bool, float, complex, list, dict]] = None,
         limit_expression_value_type: Union[CriterionValueType, None] = None,
         value: Union[tuple, bool, float, complex, list, dict, None] = None,
         value_type: Union[CriterionValueType, None] = None,
@@ -1348,7 +1352,7 @@ class ObjectiveCriterion(Criterion):
         name: str = "",
         expression: str = "0",
         expression_value: Union[tuple, bool, float, complex, list, dict, None] = None,
-        expression_value_type: CriterionValueType = None,
+        expression_value_type: Optional[CriterionValueType] = None,
         criterion: Union[ComparisonType, str] = ComparisonType.MIN,
         value: Union[tuple, bool, float, complex, list, dict, None] = None,
         value_type: Union[CriterionValueType, None] = None,
@@ -1507,9 +1511,9 @@ class VariableCriterion(Criterion):
         name: str = "",
         expression: str = "0",
         expression_value: Union[tuple, bool, float, complex, list, dict, None] = None,
-        expression_value_type: CriterionValueType = None,
+        expression_value_type: Optional[CriterionValueType] = None,
         value: Union[tuple, bool, float, complex, list, dict, None] = None,
-        value_type: CriterionValueType = None,
+        value_type: Optional[CriterionValueType] = None,
     ) -> None:
         """Create a new instance of ``VariableCriterion`` class.
 
@@ -3129,7 +3133,7 @@ class Response:
         reference_value: Union[
             Tuple[ResponseValueType, str], bool, float, complex, list, dict, None
         ] = None,
-        reference_value_type: ResponseValueType = None,
+        reference_value_type: Optional[ResponseValueType] = None,
     ) -> None:
         """Create a new instance of ``Response``.
 

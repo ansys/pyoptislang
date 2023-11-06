@@ -1,0 +1,12 @@
+Design,Feasible,Status,Pareto,constr,Parameter_0,output
+0.1,True,Needs reevaluation,False,0.0,1.0,2.0
+0.2,True,Needs reevaluation,False,0.6000000000000001,0.7,1.4
+0.3,True,Needs reevaluation,False,3.8,-0.9,-1.8
+0.4,True,Needs reevaluation,False,1.0,0.5,1.0
+0.5,True,Needs reevaluation,False,0.20000000000000018,0.8999999999999999,1.7999999999999998
+0.6,True,Needs reevaluation,False,2.6,-0.30000000000000004,-0.6000000000000001
+0.7,True,Needs reevaluation,False,3.0,-0.5,-1.0
+0.8,True,Needs reevaluation,False,3.4,-0.7,-1.4
+0.9,True,Needs reevaluation,False,1.4,0.30000000000000004,0.6000000000000001
+0.10,True,Needs reevaluation,False,1.7999999999999998,0.10000000000000009,0.20000000000000018
+0.11,True,Needs reevaluation,False,2.2,-0.1,-0.2
