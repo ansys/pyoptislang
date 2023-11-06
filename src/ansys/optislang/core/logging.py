@@ -4,7 +4,7 @@ from __future__ import annotations
 from copy import copy
 from datetime import datetime
 import logging
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional
 import weakref
 
 if TYPE_CHECKING:
@@ -171,7 +171,7 @@ class OslLogger:
         std_out_handler.stream.write(NEW_SESSION_HEADER)
         std_out_handler.stream.write(DEFAULT_STDOUT_HEADER)
 
-    def create_logger(self, new_logger_name: str, level: str = None) -> logging.Logger:
+    def create_logger(self, new_logger_name: str, level: Optional[str] = None) -> logging.Logger:
         """Create a logger for the Optislang instance.
 
         Parameters
@@ -227,7 +227,7 @@ class OslLogger:
         self.instances[child_logger] = self.create_logger(child_logger)
 
     def add_instance_logger(
-        self, instance_name: str, osl_instance: Optislang, level: str = None
+        self, instance_name: str, osl_instance: Optislang, level: Optional[str] = None
     ) -> OslCustomAdapter:
         """Add a logger for an Optislang instance.
 

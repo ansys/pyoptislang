@@ -9,7 +9,7 @@ from io import StringIO
 import json
 from pathlib import Path
 import time
-from typing import TYPE_CHECKING, Dict, Iterable, List, Tuple, Union
+from typing import TYPE_CHECKING, Dict, Iterable, List, Optional, Tuple, Union
 
 from ansys.optislang.core.io import File, FileOutputFormat, RegisteredFile, RegisteredFileUsage
 from ansys.optislang.core.project_parametric import (
@@ -335,7 +335,7 @@ class Node:
     def control(
         self,
         command: str,
-        hid: str = None,
+        hid: Optional[str] = None,
         wait_for_completion: bool = True,
         timeout: Union[float, int] = 100,
     ) -> Union[str, None]:
@@ -980,7 +980,7 @@ class ParametricSystem(System):
         hid: str,
         file_name: str,
         format: FileOutputFormat = FileOutputFormat.JSON,
-        dir: Union[Path, str] = None,
+        dir: Optional[Union[Path, str]] = None,
     ) -> File:
         """Save designs for a given state.
 
