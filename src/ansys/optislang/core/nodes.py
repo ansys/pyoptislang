@@ -210,7 +210,7 @@ class Node:
         """
         return self._osl_server.get_actor_properties(self.uid)
 
-    def get_registered_files(self) -> Tuple[RegisteredFile]:
+    def get_registered_files(self) -> Tuple[RegisteredFile, ...]:
         """Get node's registered files.
 
         Returns
@@ -248,7 +248,7 @@ class Node:
             ]
         )
 
-    def get_result_files(self) -> Tuple[RegisteredFile]:
+    def get_result_files(self) -> Tuple[RegisteredFile, ...]:
         """Get node's result files.
 
         Returns
@@ -272,7 +272,7 @@ class Node:
             )
         )
 
-    def get_states_ids(self) -> Tuple[str]:
+    def get_states_ids(self) -> Tuple[str, ...]:
         """Get available actor states ids.
 
         Returns
@@ -360,7 +360,7 @@ class Node:
         boolean or None
             ``True`` when successful, ``False`` when failed.
         """
-        if not hid:  # Run command against all designs
+        if hid is None:  # Run command against all designs
             hids = self.get_states_ids()
             if len(hids) == 0:
                 raise RuntimeError(
@@ -368,7 +368,7 @@ class Node:
                     f" The {command} command cannot be executed."
                 )
         else:  # Run command against the given design
-            hids = [hid]
+            hids = (hid,)
 
         for hid in hids:
             response = self._osl_server.send_command(
@@ -485,7 +485,7 @@ class Node:
             node_uid=self.uid,
         )
 
-    def _get_status_info(self) -> Tuple[dict]:
+    def _get_status_info(self) -> Tuple[dict, ...]:
         """Get node's status info for each state.
 
         Returns
