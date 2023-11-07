@@ -338,7 +338,7 @@ class Node:
         hid: Optional[str] = None,
         wait_for_completion: bool = True,
         timeout: Union[float, int] = 100,
-    ) -> Union[str, None]:
+    ) -> Optional[bool]:
         """Control the node state.
 
         Parameters
@@ -355,7 +355,7 @@ class Node:
 
         Returns
         -------
-        boolean
+        boolean or None
             ``True`` when successful, ``False`` when failed.
         """
         if not hid:  # Run command against all designs
@@ -394,6 +394,8 @@ class Node:
                 time.sleep(3)
 
             return status
+        else:
+            return None
 
     def _create_nodes_from_properties_dicts(
         self, properties_dicts_list: List[dict]
@@ -1315,7 +1317,7 @@ class RootSystem(ParametricSystem):
 
     def control(
         self, command: str, wait_for_completion: bool = True, timeout: Union[float, int] = 100
-    ) -> Union[str, None]:
+    ) -> Optional[bool]:
         """Control the node state.
 
         Parameters
@@ -1330,7 +1332,7 @@ class RootSystem(ParametricSystem):
 
         Returns
         -------
-        boolean
+        boolean or None
             ``True`` when successful, ``False`` when failed.
         """
         response = self._osl_server.send_command(getattr(commands, command)())
@@ -1356,6 +1358,8 @@ class RootSystem(ParametricSystem):
                 time.sleep(3)
 
             return status
+        else:
+            return None
 
     @staticmethod
     def __categorize_criteria(criteria: Tuple[Criterion]) -> Dict[str, List[Criterion]]:
