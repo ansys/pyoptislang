@@ -39,16 +39,15 @@ class File:
         bool
             ``True`` if all properties match, ``False`` otherwise.
         """
-        if isinstance(other, File):
-            return (
-                self.exists == other.exists
-                and self.filename == other.filename
-                and self.last_modified_seconds == other.last_modified_seconds
-                and self.last_modified_str == other.last_modified_str
-                and self.path == other.path
-                and self.size == other.size
-            )
-        return False
+        return (
+            type(self) == type(other)
+            and self.exists == other.exists
+            and self.filename == other.filename
+            and self.last_modified_seconds == other.last_modified_seconds
+            and self.last_modified_str == other.last_modified_str
+            and self.path == other.path
+            and self.size == other.size
+        )
 
     @property
     def exists(self) -> bool:
@@ -173,20 +172,14 @@ class RegisteredFile(File):
         bool
             ``True`` if all properties match, ``False`` otherwise.
         """
-        if isinstance(other, RegisteredFile):
-            return (
-                self.exists == other.exists
-                and self.filename == other.filename
-                and self.last_modified_seconds == other.last_modified_seconds
-                and self.last_modified_str == other.last_modified_str
-                and self.path == other.path
-                and self.size == other.size
-                and self.comment == other.comment
-                and self.id == other.id
-                and self.tag == other.tag
-                and self.usage == other.usage
-            )
-        return False
+        return (
+            type(self) == type(other)
+            and self.comment == other.comment
+            and self.id == other.id
+            and self.tag == other.tag
+            and self.usage == other.usage
+            and super().__eq__(other)
+        )
 
     @property
     def comment(self) -> str:
