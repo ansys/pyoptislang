@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import TYPE_CHECKING, List
+from typing import TYPE_CHECKING, Tuple
 
 from ansys.optislang.core.io import RegisteredFile, RegisteredFileUsage
 from ansys.optislang.core.nodes import RootSystem
@@ -153,13 +153,13 @@ class Project:
         """
         return self.root_system.get_reference_design()
 
-    def get_registered_files(self) -> List[RegisteredFile]:
+    def get_registered_files(self) -> Tuple[RegisteredFile]:
         """Get all registered files in the current project.
 
         Returns
         -------
-        List[RegisteredFile]
-            List of registered files.
+        Tuple[RegisteredFile]
+            Tuple with registered files.
 
         Raises
         ------
@@ -173,24 +173,26 @@ class Project:
         project_registered_files_dicts = self.__osl_server.get_basic_project_info()["projects"][0][
             "registered_files"
         ]
-        return [
-            RegisteredFile(
-                path=Path(file["local_location"]["split_path"]["head"]),
-                id=file["ident"],
-                comment=file["comment"],
-                tag=file["tag"],
-                usage=file["usage"],
-            )
-            for file in project_registered_files_dicts
-        ]
+        return tuple(
+            [
+                RegisteredFile(
+                    path=Path(file["local_location"]["split_path"]["head"]),
+                    id=file["ident"],
+                    comment=file["comment"],
+                    tag=file["tag"],
+                    usage=file["usage"],
+                )
+                for file in project_registered_files_dicts
+            ]
+        )
 
-    def get_result_files(self) -> List[RegisteredFile]:
+    def get_result_files(self) -> Tuple[RegisteredFile]:
         """Get result files.
 
         Returns
         -------
-        List[RegisteredFile]
-            List of result files
+        Tuple[RegisteredFile]
+            Tuple with result files
 
         Raises
         ------
@@ -202,7 +204,9 @@ class Project:
             Raised when the timeout float value expires.
         """
         registered_files = self.get_registered_files()
-        return [file for file in registered_files if file.usage == RegisteredFileUsage.OUTPUT_FILE]
+        return tuple(
+            [file for file in registered_files if file.usage == RegisteredFileUsage.OUTPUT_FILE]
+        )
 
     def get_status(self) -> str:
         """Get the status of the optiSLang project.
