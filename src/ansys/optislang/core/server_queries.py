@@ -1,8 +1,8 @@
 """Module for generation of all server queries."""
 import json
-from typing import Any, Dict, Optional, TypeAlias
+from typing import Any, Dict, Optional
 
-QueryArgs: TypeAlias = Dict[str, Any]
+QueryArgs = Dict[str, Any]
 
 _ACTOR_INFO = "ACTOR_INFO"
 _ACTOR_PROPERTIES = "ACTOR_PROPERTIES"

@@ -1,8 +1,8 @@
 """Module for generation of all server commands."""
 import json
-from typing import Any, Dict, Iterable, Optional, Sequence, TypeAlias, Union
+from typing import Any, Dict, Iterable, Optional, Sequence, Union
 
-CommandArgs: TypeAlias = Dict[str, Any]
+CommandArgs = Dict[str, Any]
 
 _APPLY_WIZARD = "APPLY_WIZARD"
 _CLOSE = "CLOSE"
