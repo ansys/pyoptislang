@@ -2,17 +2,19 @@
 from __future__ import annotations
 
 import collections
-from enum import Enum
+from enum import Enum, EnumMeta
 import os
 from pathlib import Path
 import re
-from typing import Dict, Iterable, Optional, OrderedDict, Tuple, Union
+from typing import DefaultDict, Dict, Iterable, Iterator, List, Optional, OrderedDict, Tuple, Union
 
 from ansys.optislang.core import FIRST_SUPPORTED_VERSION
 
+VersionMapping = Dict[int, Path]
+
 
 def enum_from_str(
-    string: str, enum_class: Enum, replace: Union[Tuple[str, str], None] = None
+    string: str, enum_class: EnumMeta, replace: Optional[Tuple[str, str]] = None
 ) -> Enum:
     """Convert string to enumeration.
 
@@ -22,7 +24,7 @@ def enum_from_str(
         String to be converted.
     enum_class: Enum
         Enumeration type, upper case enumeration items are expected.
-    replace: Union[Tuple[str, str], None], optional
+    replace: Tuple[str, str], optional
         Characters to be replaced in given ``string``.
             Tuple[0]: Replace from.
             Tuple[1]: Replace to.
@@ -47,13 +49,12 @@ def enum_from_str(
     if replace is not None:
         string = string.replace(replace[0], replace[1])
     try:
-        enum_type = enum_class[string]
-        return enum_type
+        return enum_class[string]
     except:
-        raise ValueError(f"``{string}`` not available in ``{enum_class.__name__}``.")
+        raise ValueError(f"{string} is not a member of {enum_class.__name__}.")
 
 
-def get_osl_exec(osl_version: Union[int, str, None] = None) -> Union[Tuple[int, Path], None]:
+def get_osl_exec(osl_version: Optional[Union[int, str]] = None) -> Optional[Tuple[int, Path]]:
     """Get the path to the optiSLang executable file.
 
     Parameters
@@ -64,7 +65,7 @@ def get_osl_exec(osl_version: Union[int, str, None] = None) -> Union[Tuple[int, 
 
     Returns
     -------
-    Tuple[int, pathlib.Path], None
+    Tuple[int, pathlib.Path] or None
         optiSLang version and path to the corresponding executable file, if it exists.
         If both Ansys and standalone installations are present, the latest Ansys
         installation is returned. If no executable file is found for a specified
@@ -120,7 +121,7 @@ def find_all_osl_exec() -> OrderedDict[int, Tuple[Path, ...]]:
         raise NotImplementedError(f"Unsupported OS {os.name}.")
 
 
-def get_osl_opx_import_script(osl_executable: Union[str, Path] = None) -> Optional[Path]:
+def get_osl_opx_import_script(osl_executable: Optional[Union[str, Path]] = None) -> Optional[Path]:
     """Get the path to the optiSLang OPX import script file.
 
     Parameters
@@ -131,7 +132,7 @@ def get_osl_opx_import_script(osl_executable: Union[str, Path] = None) -> Option
 
     Returns
     -------
-    Tuple[int, pathlib.Path], None
+    Path or None
         Path to the optiSLang OPX import script file, if location succeeded,
         ``None`` is returned otherwise.
 
@@ -141,11 +142,13 @@ def get_osl_opx_import_script(osl_executable: Union[str, Path] = None) -> Option
         Raised when the operating system is not supported.
     """
     if osl_executable is None:
-        osl_executable = get_osl_exec()[1]
+        installed_version = get_osl_exec()
+        if installed_version is not None:
+            osl_executable = installed_version[1]
 
     if osl_executable is not None:
         osl_opx_import_script_path = (
-            osl_executable.parent / "tools" / "import" / "opx" / "convert_opx_to_opf.py"
+            Path(osl_executable).parent / "tools" / "import" / "opx" / "convert_opx_to_opf.py"
         )
         if osl_opx_import_script_path.is_file():
             return osl_opx_import_script_path
@@ -191,7 +194,7 @@ def _find_all_osl_exec_in_posix() -> OrderedDict[int, Tuple[Path, ...]]:
     return _sort_osl_execs(all_osl_execs)
 
 
-def _find_ansys_osl_execs_in_windows_envars() -> Dict[int, Path]:
+def _find_ansys_osl_execs_in_windows_envars() -> VersionMapping:
     """Find optiSLang executable files based on environmental variables on Windows.
 
     The Ansys ``AWP_ROOT`` environment variable is used to determine the root directory of the Ansys
@@ -204,20 +207,14 @@ def _find_ansys_osl_execs_in_windows_envars() -> Dict[int, Path]:
         The dictionary value is a path to the corresponding optiSLang executable file.
     """
     osl_execs = {}
-    awp_root_envars = _get_environ_vars(pattern=f"^AWP_ROOT.*")
-    for awp_root_key, awp_root_value in awp_root_envars.items():
-        osl_exec_path = Path(awp_root_value) / "optiSLang" / "optislang.com"
-        if osl_exec_path.is_file():
-            try:
-                ansys_version = int(awp_root_key[-3:])
-            except ValueError:
-                continue
-            if ansys_version >= FIRST_SUPPORTED_VERSION:
-                osl_execs[ansys_version] = osl_exec_path
+    for version, awp_root_value in iter_awp_roots():
+        osl_exec_path = awp_root_value / "optiSLang" / "optislang.com"
+        if osl_exec_path.is_file() and version >= FIRST_SUPPORTED_VERSION:
+            osl_execs[version] = osl_exec_path
     return osl_execs
 
 
-def _find_ansys_osl_execs_in_windows_program_files() -> Dict[int, Path]:
+def _find_ansys_osl_execs_in_windows_program_files() -> VersionMapping:
     """Find optiSLang executable files in the ``Program Files`` directory on Windows.
 
     This search is performed in the standard installation directory of Ansys products.
@@ -242,7 +239,7 @@ def _find_ansys_osl_execs_in_windows_program_files() -> Dict[int, Path]:
     return osl_execs
 
 
-def _find_standalone_osl_execs_in_windows() -> Dict[int, Path]:
+def _find_standalone_osl_execs_in_windows() -> VersionMapping:
     """Find executable files of standalone optiSLang installations on Windows.
 
     Returns
@@ -275,7 +272,7 @@ def _find_standalone_osl_execs_in_windows() -> Dict[int, Path]:
     return osl_execs
 
 
-def _find_ansys_osl_execs_in_posix() -> Dict[int, Path]:
+def _find_ansys_osl_execs_in_posix() -> VersionMapping:
     """Find optiSLang executable files in default Ansys paths on POSIX-compliant systems.
 
     This search is performed in standard installation paths of Ansys products.
@@ -304,7 +301,7 @@ def _find_ansys_osl_execs_in_posix() -> Dict[int, Path]:
     return osl_execs
 
 
-def _find_standalone_osl_execs_in_posix() -> Dict[int, Path]:
+def _find_standalone_osl_execs_in_posix() -> VersionMapping:
     """Find the executable files of standalone optiSLang installations on POSIX-compliant systems.
 
     Returns
@@ -332,9 +329,7 @@ def _find_standalone_osl_execs_in_posix() -> Dict[int, Path]:
     return osl_execs
 
 
-def _merge_osl_exec_dicts(
-    osl_execs_dicts: Iterable[Dict[int, Path]]
-) -> Dict[int, Tuple[Path, ...]]:
+def _merge_osl_exec_dicts(osl_execs_dicts: Iterable[VersionMapping]) -> Dict[int, Tuple[Path, ...]]:
     """Merge dictionaries of optiSLang executable files into one dictionary.
 
     Parameters
@@ -350,23 +345,17 @@ def _merge_osl_exec_dicts(
         Merged dictionary in which the key is an optiSLang version and the value is
         a tuple of paths to the corresponding optiSLang executable files.
     """
-    osl_execs_merged = {}
+    osl_execs_merged: DefaultDict[int, List[Path]] = collections.defaultdict(list)
+
     for osl_execs in osl_execs_dicts:
         for osl_version, exec_path in osl_execs.items():
-            if osl_version not in osl_execs_merged:
-                osl_execs_merged[osl_version] = [exec_path]
-            else:
-                if exec_path not in osl_execs_merged[osl_version]:
-                    osl_execs_merged[osl_version].append(exec_path)
+            if exec_path not in osl_execs_merged[osl_version]:
+                osl_execs_merged[osl_version].append(exec_path)
 
-    # convert list of version to tuple
-    for osl_version, execs_paths in osl_execs_merged.items():
-        osl_execs_merged[osl_version] = tuple(execs_paths)
-
-    return osl_execs_merged
+    return {version: tuple(execs_paths) for version, execs_paths in osl_execs_merged.items()}
 
 
-def _sort_osl_execs(osl_execs: Dict[int, Tuple[str, ...]]) -> OrderedDict[int, Tuple[str, ...]]:
+def _sort_osl_execs(osl_execs: Dict[int, Tuple[Path, ...]]) -> OrderedDict[int, Tuple[Path, ...]]:
     """Sort the dictionary of optiSLang executable files according to version in descending order.
 
     Parameters
@@ -395,23 +384,15 @@ def _get_program_files_path() -> Path:
     return Path(os.environ.get("ProgramFiles", "C:\\Program Files"))
 
 
-def _get_environ_vars(pattern: str = ".*") -> Dict:
-    """Get a dictionary of matching environment variables.
+def iter_awp_roots() -> Iterator[Tuple[int, Path]]:
+    """Iterate AWP_ROOTXXX environment variables.
 
-    Parameters
-    ----------
-    pattern: str, optional
-        Regular expression pattern to use for searching environment variables.
-
-    Returns
+    Yields
     -------
-    dict
-        Dictionary of matching environment variables.
+    tuple
+        Ansys version and the respective root directory.
     """
-    sys_vars = os.environ.copy()
-    dictionary = {}
-    for varname, value in sys_vars.items():
-        varname_match = re.search(pattern, varname)
+    for varname, value in os.environ.copy().items():
+        varname_match = re.fullmatch(r"AWP_ROOT([0-9]{3})", varname)
         if varname_match:
-            dictionary[varname] = value
-    return dictionary
+            yield int(varname_match.group(1)), Path(value)

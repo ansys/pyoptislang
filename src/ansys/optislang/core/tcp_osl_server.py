@@ -561,8 +561,8 @@ class TcpOslListener:
         port_range: Tuple,
         timeout: float,
         name: str,
-        host: str = None,
-        uid: str = None,
+        host: Optional[str] = None,
+        uid: Optional[str] = None,
         logger=None,
     ):
         """Initialize a new instance of the ``TcpOslListener`` class."""
@@ -961,32 +961,32 @@ class TcpOslServer(OslServer):
 
     def __init__(
         self,
-        host: str = None,
-        port: int = None,
-        executable: Union[str, Path] = None,
-        project_path: Union[str, Path] = None,
+        host: Optional[str] = None,
+        port: Optional[int] = None,
+        executable: Optional[Union[str, Path]] = None,
+        project_path: Optional[Union[str, Path]] = None,
         batch: bool = True,
-        port_range: Tuple[int, int] = None,
-        no_run: bool = None,
+        port_range: Optional[Tuple[int, int]] = None,
+        no_run: Optional[bool] = None,
         no_save: bool = False,
         force: bool = True,
         reset: bool = False,
         auto_relocate: bool = False,
-        listener_id: str = None,
-        multi_listener: Iterable[Tuple[str, int, Optional[str]]] = None,
+        listener_id: Optional[str] = None,
+        multi_listener: Optional[Iterable[Tuple[str, int, Optional[str]]]] = None,
         ini_timeout: float = 20,
-        password: str = None,
+        password: Optional[str] = None,
         logger=None,
         shutdown_on_finished=True,
-        env_vars: Mapping[str, str] = None,
-        import_project_properties_file: Union[str, Path] = None,
-        export_project_properties_file: Union[str, Path] = None,
-        import_placeholders_file: Union[str, Path] = None,
-        export_placeholders_file: Union[str, Path] = None,
-        output_file: Union[str, Path] = None,
-        dump_project_state: Union[str, Path] = None,
-        opx_project_definition_file: Union[str, Path] = None,
-        additional_args: Iterable[str] = None,
+        env_vars: Optional[Mapping[str, str]] = None,
+        import_project_properties_file: Optional[Union[str, Path]] = None,
+        export_project_properties_file: Optional[Union[str, Path]] = None,
+        import_placeholders_file: Optional[Union[str, Path]] = None,
+        export_placeholders_file: Optional[Union[str, Path]] = None,
+        output_file: Optional[Union[str, Path]] = None,
+        dump_project_state: Optional[Union[str, Path]] = None,
+        opx_project_definition_file: Optional[Union[str, Path]] = None,
+        additional_args: Optional[Iterable[str]] = None,
     ) -> None:
         """Initialize a new instance of the ``TcpOslServer`` class."""
         self.__host = host
@@ -2352,7 +2352,9 @@ class TcpOslServer(OslServer):
         self.dispose()
         raise KeyboardInterrupt
 
-    def __create_listener(self, timeout: float, name: str, uid: str = None) -> TcpOslListener:
+    def __create_listener(
+        self, timeout: float, name: str, uid: Optional[str] = None
+    ) -> TcpOslListener:
         """Create new listener.
 
         Parameters
@@ -2501,7 +2503,7 @@ class TcpOslServer(OslServer):
         host: str,
         port: int,
         timeout: int = 60000,
-        notifications: List[ServerNotification] = None,
+        notifications: Optional[List[ServerNotification]] = None,
     ) -> str:
         """Register a client, returning a reference ID.
 

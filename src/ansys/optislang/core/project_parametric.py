@@ -3,7 +3,18 @@ from __future__ import annotations
 
 import copy
 from enum import Enum
-from typing import TYPE_CHECKING, Any, Dict, Iterable, List, Mapping, Sequence, Tuple, Union
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Dict,
+    Iterable,
+    List,
+    Mapping,
+    Optional,
+    Sequence,
+    Tuple,
+    Union,
+)
 import uuid
 
 from ansys.optislang.core.utils import enum_from_str
@@ -1087,7 +1098,7 @@ class LimitStateCriterion(Criterion):
         expression_value_type: Union[CriterionValueType, None] = None,
         criterion: Union[ComparisonType, str] = ComparisonType.LESSLIMITSTATE,
         limit_expression: str = "0",
-        limit_expression_value: Union[tuple, bool, float, complex, list, dict] = None,
+        limit_expression_value: Optional[Union[tuple, bool, float, complex, list, dict]] = None,
         limit_expression_value_type: Union[CriterionValueType, None] = None,
         value: Union[tuple, bool, float, complex, list, dict, None] = None,
         value_type: Union[CriterionValueType, None] = None,
@@ -1349,7 +1360,7 @@ class ObjectiveCriterion(Criterion):
         name: str = "",
         expression: str = "0",
         expression_value: Union[tuple, bool, float, complex, list, dict, None] = None,
-        expression_value_type: CriterionValueType = None,
+        expression_value_type: Optional[CriterionValueType] = None,
         criterion: Union[ComparisonType, str] = ComparisonType.MIN,
         value: Union[tuple, bool, float, complex, list, dict, None] = None,
         value_type: Union[CriterionValueType, None] = None,
@@ -1508,9 +1519,9 @@ class VariableCriterion(Criterion):
         name: str = "",
         expression: str = "0",
         expression_value: Union[tuple, bool, float, complex, list, dict, None] = None,
-        expression_value_type: CriterionValueType = None,
+        expression_value_type: Optional[CriterionValueType] = None,
         value: Union[tuple, bool, float, complex, list, dict, None] = None,
-        value_type: CriterionValueType = None,
+        value_type: Optional[CriterionValueType] = None,
     ) -> None:
         """Create a new instance of ``VariableCriterion`` class.
 
@@ -3124,7 +3135,7 @@ class Response:
         reference_value: Union[
             Tuple[ResponseValueType, str], bool, float, complex, list, dict, None
         ] = None,
-        reference_value_type: ResponseValueType = None,
+        reference_value_type: Optional[ResponseValueType] = None,
     ) -> None:
         """Create a new instance of ``Response``.
 
