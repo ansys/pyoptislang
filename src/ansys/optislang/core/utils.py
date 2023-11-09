@@ -168,7 +168,7 @@ def _find_all_osl_exec_in_windows() -> OrderedDict[int, Tuple[Path, ...]]:
     """
     all_osl_execs = _merge_osl_exec_dicts(
         [
-            _find_ansys_osl_execs_in_windows_envars(),
+            _find_ansys_osl_execs_in_envars("optislang.com"),
             _find_ansys_osl_execs_in_windows_program_files(),
             _find_standalone_osl_execs_in_windows(),
         ]
@@ -188,17 +188,26 @@ def _find_all_osl_exec_in_posix() -> OrderedDict[int, Tuple[Path, ...]]:
         The dictionary is sorted by the version number in descending order.
     """
     all_osl_execs = _merge_osl_exec_dicts(
-        [_find_ansys_osl_execs_in_posix(), _find_standalone_osl_execs_in_posix()]
+        [
+            _find_ansys_osl_execs_in_envars("optislang"),
+            _find_ansys_osl_execs_in_posix(),
+            _find_standalone_osl_execs_in_posix(),
+        ]
     )
 
     return _sort_osl_execs(all_osl_execs)
 
 
-def _find_ansys_osl_execs_in_windows_envars() -> VersionMapping:
-    """Find optiSLang executable files based on environmental variables on Windows.
+def _find_ansys_osl_execs_in_envars(exec_name: str) -> VersionMapping:
+    """Find optiSLang executable files based on environmental variables.
 
     The Ansys ``AWP_ROOT`` environment variable is used to determine the root directory of the Ansys
     installation.
+
+    Parameters
+    ----------
+    exec_name : str
+        optiSLang executable name.
 
     Returns
     -------
@@ -208,7 +217,7 @@ def _find_ansys_osl_execs_in_windows_envars() -> VersionMapping:
     """
     osl_execs = {}
     for version, awp_root_value in iter_awp_roots():
-        osl_exec_path = awp_root_value / "optiSLang" / "optislang.com"
+        osl_exec_path = awp_root_value / "optiSLang" / exec_name
         if osl_exec_path.is_file() and version >= FIRST_SUPPORTED_VERSION:
             osl_execs[version] = osl_exec_path
     return osl_execs
