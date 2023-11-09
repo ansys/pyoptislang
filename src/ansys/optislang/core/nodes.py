@@ -1318,7 +1318,11 @@ class RootSystem(ParametricSystem):
         )
 
     def control(
-        self, command: str, wait_for_completion: bool = True, timeout: Union[float, int] = 100
+        self,
+        command: str,
+        hid: Optional[str] = None,
+        wait_for_completion: bool = True,
+        timeout: Union[float, int] = 100,
     ) -> Optional[bool]:
         """Control the node state.
 
