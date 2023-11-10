@@ -12,8 +12,8 @@ pytestmark = pytest.mark.local_osl
 def test_get_awp_root_dirs():
     "Test that function returns dictionary of matching environment variables."
     environ_vars = list(utils.iter_awp_roots())
-    if os.name == "nt":
-        # Linux doesn't have AWP_ROOT environment variables
+    # Unified installer doesn't set AWP_ROOT by default on Linux
+    if os.name != "posix":
         assert len(environ_vars) > 0
 
 
