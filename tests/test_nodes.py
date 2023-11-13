@@ -110,7 +110,7 @@ def test_control(optislang: Optislang):
 
     for command in ["start", "restart", "stop_gently", "stop", "reset"]:
         output = node.control(command, wait_for_completion=False)
-        assert isinstance(output, None)
+        assert output is None
         output = node.control(command, timeout=3)
         assert isinstance(output, bool)
 
