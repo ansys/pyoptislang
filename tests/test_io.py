@@ -102,4 +102,33 @@ def test_registered_file():
     assert not registered_file == non_existing_registered_file
 
 
+def test_file_equality():
+    file_1 = File(CURRENT_FILE)
+    file_2 = File(NON_EXISTING_FILE)
+
+    assert file_1 == file_1
+    assert file_1 != file_2
+
+    reg_file_1 = RegisteredFile(
+        CURRENT_FILE, "id1", "comment", "uid1", RegisteredFileUsage.UNDETERMINED
+    )
+
+    reg_file_2 = RegisteredFile(
+        CURRENT_FILE, "id2", "comment", "uid2", RegisteredFileUsage.UNDETERMINED
+    )
+
+    assert reg_file_1 == reg_file_1
+    assert reg_file_1 != reg_file_2
+
+    assert file_1 != reg_file_1
+    assert reg_file_1 != file_1
+
+    reg_file_3 = RegisteredFile(
+        NON_EXISTING_FILE, "id3", "comment", "uid3", RegisteredFileUsage.UNDETERMINED
+    )
+
+    assert file_1 != reg_file_3
+    assert reg_file_3 != file_1
+
+
 # endregion

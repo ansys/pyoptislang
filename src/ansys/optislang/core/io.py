@@ -26,7 +26,7 @@ class File:
         """
         self.__path = Path(path)
 
-    def __eq__(self, other: File) -> bool:
+    def __eq__(self, other) -> bool:
         r"""Compare properties of two instances of the ``File`` class.
 
         Parameters
@@ -39,19 +39,15 @@ class File:
         bool
             ``True`` if all properties match, ``False`` otherwise.
         """
-        if type(self) == type(other):
-            checks = {}
-            checks["exists"] = self.exists == other.exists
-            checks["filename"] = self.filename == other.filename
-            checks["last_modified_seconds"] = (
-                self.last_modified_seconds == other.last_modified_seconds
-            )
-            checks["last_modified_str"] = self.last_modified_str == other.last_modified_str
-            checks["path"] = self.path == other.path
-            checks["size"] = self.size == other.size
-            return False not in checks.values()
-        else:
-            return False
+        return (
+            type(self) == type(other)
+            and self.exists == other.exists
+            and self.filename == other.filename
+            and self.last_modified_seconds == other.last_modified_seconds
+            and self.last_modified_str == other.last_modified_str
+            and self.path == other.path
+            and self.size == other.size
+        )
 
     @property
     def exists(self) -> bool:
@@ -163,7 +159,7 @@ class RegisteredFile(File):
             usage = RegisteredFileUsage.from_str(usage)
         self.__usage = usage
 
-    def __eq__(self, other: File) -> bool:
+    def __eq__(self, other) -> bool:
         r"""Compare properties of two instances of the ``RegisteredFile`` class.
 
         Parameters
@@ -176,23 +172,14 @@ class RegisteredFile(File):
         bool
             ``True`` if all properties match, ``False`` otherwise.
         """
-        if type(self) == type(other):
-            checks = {}
-            checks["exists"] = self.exists == other.exists
-            checks["filename"] = self.filename == other.filename
-            checks["last_modified_seconds"] = (
-                self.last_modified_seconds == other.last_modified_seconds
-            )
-            checks["last_modified_str"] = self.last_modified_str == other.last_modified_str
-            checks["path"] = self.path == other.path
-            checks["size"] = self.size == other.size
-            checks["comment"] = self.comment == other.comment
-            checks["id"] = self.id == other.id
-            checks["tag"] = self.tag == other.tag
-            checks["usage"] = self.usage == other.usage
-            return False not in checks.values()
-        else:
-            return False
+        return (
+            type(self) == type(other)
+            and self.comment == other.comment
+            and self.id == other.id
+            and self.tag == other.tag
+            and self.usage == other.usage
+            and super().__eq__(other)
+        )
 
     @property
     def comment(self) -> str:

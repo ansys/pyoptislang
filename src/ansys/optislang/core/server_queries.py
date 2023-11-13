@@ -267,9 +267,9 @@ def actor_supports(uid: str, feature_name: str, password=None) -> str:
     str
         JSON string of actor_supports query.
     """
-    args = {}
-    args["feature"] = feature_name
-    return _to_json(_gen_query(what=_ACTOR_SUPPORTS, uid=uid, args=args, password=password))
+    return _to_json(
+        _gen_query(what=_ACTOR_SUPPORTS, uid=uid, args={"feature": feature_name}, password=password)
+    )
 
 
 def available_input_locations(uid: str, password: Optional[str] = None) -> str:
@@ -612,7 +612,7 @@ def systems_status_info(password: Optional[str] = None) -> str:
 
 def _gen_query(
     what: str,
-    password: str,
+    password: Optional[str],
     **kwargs: Any,
 ) -> Dict:
     """Generate query in desired format.
@@ -621,7 +621,7 @@ def _gen_query(
     ----------
     what : str
         Command type.
-    password: str
+    password: str, optional
         Password.
     **kwargs: Any
         Keyword arguments specific for individual queries (e. g. uid, hid, slot_name...).
@@ -631,7 +631,7 @@ def _gen_query(
     Dict
         Dictionary with specified query inputs.
     """
-    query = {}
+    query: Dict[str, Any] = {}
     query["What"] = what
     query.update(kwargs)
     if password is not None:
