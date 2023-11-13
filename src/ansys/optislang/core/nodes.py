@@ -210,7 +210,7 @@ class Node:
         """
         return self._osl_server.get_actor_properties(self.uid)
 
-    def get_registered_files(self) -> Tuple[RegisteredFile]:
+    def get_registered_files(self) -> Tuple[RegisteredFile, ...]:
         """Get node's registered files.
 
         Returns
@@ -248,7 +248,7 @@ class Node:
             ]
         )
 
-    def get_result_files(self) -> Tuple[RegisteredFile]:
+    def get_result_files(self) -> Tuple[RegisteredFile, ...]:
         """Get node's result files.
 
         Returns
@@ -272,7 +272,7 @@ class Node:
             )
         )
 
-    def get_states_ids(self) -> Tuple[str]:
+    def get_states_ids(self) -> Tuple[str, ...]:
         """Get available actor states ids.
 
         Returns
@@ -340,7 +340,7 @@ class Node:
         hid: Optional[str] = None,
         wait_for_completion: bool = True,
         timeout: Union[float, int] = 100,
-    ) -> Union[str, None]:
+    ) -> Optional[bool]:
         """Control the node state.
 
         Parameters
@@ -357,10 +357,10 @@ class Node:
 
         Returns
         -------
-        boolean
+        boolean or None
             ``True`` when successful, ``False`` when failed.
         """
-        if not hid:  # Run command against all designs
+        if hid is None:  # Run command against all designs
             hids = self.get_states_ids()
             if len(hids) == 0:
                 raise RuntimeError(
@@ -368,7 +368,7 @@ class Node:
                     f" The {command} command cannot be executed."
                 )
         else:  # Run command against the given design
-            hids = [hid]
+            hids = (hid,)
 
         for hid in hids:
             response = self._osl_server.send_command(
@@ -396,6 +396,8 @@ class Node:
                 time.sleep(3)
 
             return status
+        else:
+            return None
 
     def _create_nodes_from_properties_dicts(
         self, properties_dicts_list: List[dict]
@@ -483,7 +485,7 @@ class Node:
             node_uid=self.uid,
         )
 
-    def _get_status_info(self) -> Tuple[dict]:
+    def _get_status_info(self) -> Tuple[dict, ...]:
         """Get node's status info for each state.
 
         Returns
@@ -1316,8 +1318,12 @@ class RootSystem(ParametricSystem):
         )
 
     def control(
-        self, command: str, wait_for_completion: bool = True, timeout: Union[float, int] = 100
-    ) -> Union[str, None]:
+        self,
+        command: str,
+        hid: Optional[str] = None,
+        wait_for_completion: bool = True,
+        timeout: Union[float, int] = 100,
+    ) -> Optional[bool]:
         """Control the node state.
 
         Parameters
@@ -1332,7 +1338,7 @@ class RootSystem(ParametricSystem):
 
         Returns
         -------
-        boolean
+        boolean or None
             ``True`` when successful, ``False`` when failed.
         """
         response = self._osl_server.send_command(getattr(commands, command)())
@@ -1358,6 +1364,8 @@ class RootSystem(ParametricSystem):
                 time.sleep(3)
 
             return status
+        else:
+            return None
 
     @staticmethod
     def __categorize_criteria(criteria: Tuple[Criterion]) -> Dict[str, List[Criterion]]:
