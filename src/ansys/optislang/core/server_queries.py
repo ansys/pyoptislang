@@ -1,16 +1,26 @@
 """Module for generation of all server queries."""
 import json
-from typing import Dict, Optional
+from typing import Any, Dict, Optional
 
 _ACTOR_INFO = "ACTOR_INFO"
+_ACTOR_INTERNAL_VARIABLES = "ACTOR_INTERNAL_VARIABLES"
 _ACTOR_PROPERTIES = "ACTOR_PROPERTIES"
+_ACTOR_REGISTERED_INPUT_SLOTS = "ACTOR_REGISTERED_INPUT_SLOTS"
+_ACTOR_REGISTERED_OUTPUT_SLOTS = "ACTOR_REGISTERED_OUTPUT_SLOTS"
+_ACTOR_REGISTERED_PARAMETERS = "ACTOR_REGISTERED_PARAMETERS"
+_ACTOR_REGISTERED_RESPONSES = "ACTOR_REGISTERED_RESPONSES"
 _ACTOR_STATES = "ACTOR_STATES"
 _ACTOR_STATUS_INFO = "ACTOR_STATUS_INFO"
 _ACTOR_SUPPORTS = "ACTOR_SUPPORTS"
+_AVAILABLE_INPUT_LOCATIONS = "AVAILABLE_INPUT_LOCATIONS"
+_AVAILABLE_OUTPUT_LOCATIONS = "AVAILABLE_OUTPUT_LOCATIONS"
 _BASIC_PROJECT_INFO = "BASIC_PROJECT_INFO"
+_DOE_SIZE = "DOE_SIZE"
 _FULL_PROJECT_STATUS_INFO = "FULL_PROJECT_STATUS_INFO"
 _FULL_PROJECT_TREE = "FULL_PROJECT_TREE"
 _FULL_PROJECT_TREE_WITH_PROPERTIES = "FULL_PROJECT_TREE_WITH_PROPERTIES"
+_GET_CRITERIA = "GET_CRITERIA"
+_GET_CRITERION = "GET_CRITERION"
 _HPC_LICENSING_FORWARDED_ENVIRONMENT = "HPC_LICENSING_FORWARDED_ENVIRONMENT"
 _INPUT_SLOT_VALUE = "INPUT_SLOT_VALUE"
 _OUTPUT_SLOT_VALUE = "OUTPUT_SLOT_VALUE"
@@ -39,6 +49,35 @@ def actor_info(uid: str, password: Optional[str] = None) -> str:
     return _to_json(_gen_query(what=_ACTOR_INFO, uid=uid, password=password))
 
 
+def actor_internal_variables(
+    uid: str, include_reference_values: bool = True, password: Optional[str] = None
+) -> str:
+    """Generate JSON string of actor_internal_variables query.
+
+    Parameters
+    ----------
+    uid: str
+        Uid entry.
+    include_reference_values: bool, optional
+        Whether reference values are to be included.
+    password : str, opt
+        Password.
+
+    Returns
+    -------
+    str
+        JSON string of actor_internal_variables query.
+    """
+    return _to_json(
+        _gen_query(
+            what=_ACTOR_INTERNAL_VARIABLES,
+            uid=uid,
+            args={"include_reference_values": include_reference_values},
+            password=password,
+        )
+    )
+
+
 def actor_properties(uid: str, password: Optional[str] = None) -> str:
     """Generate JSON string of actor_properties query.
 
@@ -55,6 +94,122 @@ def actor_properties(uid: str, password: Optional[str] = None) -> str:
         JSON string of actor_properties query.
     """
     return _to_json(_gen_query(what=_ACTOR_PROPERTIES, uid=uid, password=password))
+
+
+def actor_registered_input_slots(
+    uid: str, include_reference_values: bool = True, password: Optional[str] = None
+) -> str:
+    """Generate JSON string of actor_registered_input_slots query.
+
+    Parameters
+    ----------
+    uid: str
+        Uid entry.
+    include_reference_values: bool, optional
+        Whether reference values are to be included.
+    password : str, opt
+        Password.
+
+    Returns
+    -------
+    str
+        JSON string of actor_registered_input_slots query.
+    """
+    return _to_json(
+        _gen_query(
+            what=_ACTOR_REGISTERED_INPUT_SLOTS,
+            uid=uid,
+            args={"include_reference_values": include_reference_values},
+            password=password,
+        )
+    )
+
+
+def actor_registered_output_slots(
+    uid: str, include_reference_values: bool = True, password: Optional[str] = None
+) -> str:
+    """Generate JSON string of actor_registered_output_slots query.
+
+    Parameters
+    ----------
+    uid: str
+        Uid entry.
+    include_reference_values: bool, optional
+        Whether reference values are to be included.
+    password : str, opt
+        Password.
+
+    Returns
+    -------
+    str
+        JSON string of actor_registered_output_slots query.
+    """
+    return _to_json(
+        _gen_query(
+            what=_ACTOR_REGISTERED_OUTPUT_SLOTS,
+            uid=uid,
+            args={"include_reference_values": include_reference_values},
+            password=password,
+        )
+    )
+
+
+def actor_registered_parameters(
+    uid: str, include_reference_values: bool = True, password: Optional[str] = None
+) -> str:
+    """Generate JSON string of actor_registered_parameters query.
+
+    Parameters
+    ----------
+    uid: str
+        Uid entry.
+    include_reference_values: bool, optional
+        Whether reference values are to be included.
+    password : str, opt
+        Password.
+
+    Returns
+    -------
+    str
+        JSON string of actor_registered_parameters query.
+    """
+    return _to_json(
+        _gen_query(
+            what=_ACTOR_REGISTERED_PARAMETERS,
+            uid=uid,
+            args={"include_reference_values": include_reference_values},
+            password=password,
+        )
+    )
+
+
+def actor_registered_responses(
+    uid: str, include_reference_values: bool = True, password: Optional[str] = None
+) -> str:
+    """Generate JSON string of actor_registered_responses query.
+
+    Parameters
+    ----------
+    uid: str
+        Uid entry.
+    include_reference_values: bool, optional
+        Whether reference values are to be included.
+    password : str, opt
+        Password.
+
+    Returns
+    -------
+    str
+        JSON string of actor_registered_responses query.
+    """
+    return _to_json(
+        _gen_query(
+            what=_ACTOR_REGISTERED_RESPONSES,
+            uid=uid,
+            args={"include_reference_values": include_reference_values},
+            password=password,
+        )
+    )
 
 
 def actor_states(uid: str, password: Optional[str] = None) -> str:
@@ -117,6 +272,54 @@ def actor_supports(uid: str, feature_name: str, password=None) -> str:
     return _to_json(_gen_query(what=_ACTOR_SUPPORTS, uid=uid, args=args, password=password))
 
 
+def available_input_locations(uid: str, password: Optional[str] = None) -> str:
+    """Generate JSON string of available_input_locations query.
+
+    Parameters
+    ----------
+    uid: str
+        Uid entry.
+    password : str, opt
+        Password.
+
+    Returns
+    -------
+    str
+        JSON string of available_input_locations query.
+    """
+    return _to_json(
+        _gen_query(
+            what=_AVAILABLE_INPUT_LOCATIONS,
+            uid=uid,
+            password=password,
+        )
+    )
+
+
+def available_output_locations(uid: str, password: Optional[str] = None) -> str:
+    """Generate JSON string of available_output_locations query.
+
+    Parameters
+    ----------
+    uid: str
+        Uid entry.
+    password : str, opt
+        Password.
+
+    Returns
+    -------
+    str
+        JSON string of available_output_locations query.
+    """
+    return _to_json(
+        _gen_query(
+            what=_AVAILABLE_OUTPUT_LOCATIONS,
+            uid=uid,
+            password=password,
+        )
+    )
+
+
 def basic_project_info(password: Optional[str] = None) -> str:
     """Generate JSON string of basic_project_info query.
 
@@ -131,6 +334,38 @@ def basic_project_info(password: Optional[str] = None) -> str:
         JSON string of basic_project_info query.
     """
     return _to_json(_gen_query(what=_BASIC_PROJECT_INFO, password=password))
+
+
+def doe_size(
+    uid: str, sampling_type: str, num_discrete_levels: int, password: Optional[str] = None
+) -> str:
+    """Generate JSON string of doe_size query.
+
+    Parameters
+    ----------
+    uid: str
+        Uid entry.
+    sampling_type: str
+        Sampling type.
+    num_discrete_levels: int
+        Number of discrete levels.
+    password : str, opt
+        Password.
+
+    Returns
+    -------
+    str
+        JSON string of doe_size query.
+    """
+    return _to_json(
+        _gen_query(
+            what=_DOE_SIZE,
+            uid=uid,
+            sampling_type=sampling_type,
+            num_discrete_levels=num_discrete_levels,
+            password=password,
+        )
+    )
 
 
 def full_project_status_info(password: Optional[str] = None) -> str:
@@ -179,6 +414,46 @@ def full_project_tree_with_properties(password: Optional[str] = None) -> str:
         JSON string of full_project_tree_with_properties query.
     """
     return _to_json(_gen_query(what=_FULL_PROJECT_TREE_WITH_PROPERTIES, password=password))
+
+
+def get_criteria(uid: str, password: Optional[str] = None) -> str:
+    """Generate JSON string of get_criteria query.
+
+    Parameters
+    ----------
+    uid: str
+        Uid entry.
+    password : str, opt
+        Password.
+
+    Returns
+    -------
+    str
+        JSON string of get_criteria query.
+    """
+    return _to_json(_gen_query(what=_GET_CRITERIA, uid=uid, password=password))
+
+
+def get_criterion(uid: str, name: str, password: Optional[str] = None) -> str:
+    """Generate JSON string of get_criterion query.
+
+    Parameters
+    ----------
+    uid: str
+        Uid entry.
+    name: str
+        Criterion name.
+    password : str, opt
+        Password.
+
+    Returns
+    -------
+    str
+        JSON string of get_criterion query.
+    """
+    return _to_json(
+        _gen_query(what=_GET_CRITERION, uid=uid, args={"name": name}, password=password)
+    )
 
 
 def hpc_licensing_forwarded_environment(uid: str, password: Optional[str] = None) -> str:
@@ -338,10 +613,7 @@ def systems_status_info(password: Optional[str] = None) -> str:
 def _gen_query(
     what: str,
     password: str,
-    uid: Optional[str] = None,
-    hid: Optional[str] = None,
-    args: Optional[Dict] = None,
-    slot_name: Optional[str] = None,
+    **kwargs: Any,
 ) -> Dict:
     """Generate query in desired format.
 
@@ -351,12 +623,9 @@ def _gen_query(
         Command type.
     password: str
         Password.
-    uid : str, optional
-        Uid entry.
-    hid: str, optional
-        Hid entry.
-    args: Dict, optional
-        Dictionary of features, e.g. "feature": "FEATURE_NAME".
+    **kwargs: Any
+        Keyword arguments specific for individual queries (e. g. uid, hid, slot_name...).
+
     Returns
     -------
     Dict
@@ -364,16 +633,7 @@ def _gen_query(
     """
     query = {}
     query["What"] = what
-    if uid is not None:
-        query["uid"] = uid
-    if hid is not None:
-        query["hid"] = hid
-    if args is not None:
-        query["args"] = {}
-        for feature, feature_name in args.items():
-            query["args"][feature] = feature_name
-    if slot_name is not None:
-        query["slot_name"] = slot_name
+    query.update(kwargs)
     if password is not None:
         query["Password"] = password
     return query
