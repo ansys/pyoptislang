@@ -249,12 +249,12 @@ class TcpProjectProxy(Project):
         """
         return self.root_system.get_reference_design()
 
-    def get_registered_files(self) -> Tuple[RegisteredFile]:
+    def get_registered_files(self) -> Tuple[RegisteredFile, ...]:
         """Get all registered files in the current project.
 
         Returns
         -------
-        Tuple[RegisteredFile]
+        Tuple[RegisteredFile, ...]
             Tuple with registered files.
 
         Raises
@@ -282,12 +282,12 @@ class TcpProjectProxy(Project):
             ]
         )
 
-    def get_result_files(self) -> Tuple[RegisteredFile]:
+    def get_result_files(self) -> Tuple[RegisteredFile, ...]:
         """Get result files.
 
         Returns
         -------
-        Tuple[RegisteredFile]
+        Tuple[RegisteredFile, ...]
             Tuple with result files
 
         Raises

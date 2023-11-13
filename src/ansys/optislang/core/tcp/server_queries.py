@@ -1,6 +1,8 @@
 """Module for generation of all server queries."""
 import json
-from typing import Dict, Optional
+from typing import Any, Dict, Optional
+
+QueryArgs = Dict[str, Any]
 
 _ACTOR_INFO = "ACTOR_INFO"
 _ACTOR_PROPERTIES = "ACTOR_PROPERTIES"
@@ -113,7 +115,7 @@ def actor_supports(uid: str, feature_name: str, password: Optional[str] = None) 
     str
         JSON string of actor_supports query.
     """
-    args = {}
+    args: QueryArgs = {}
     args["feature"] = feature_name
     return _to_json(_gen_query(what=_ACTOR_SUPPORTS, uid=uid, args=args, password=password))
 
@@ -366,10 +368,10 @@ def systems_status_info(password: Optional[str] = None) -> str:
 
 def _gen_query(
     what: str,
-    password: str,
+    password: Optional[str] = None,
     uid: Optional[str] = None,
     hid: Optional[str] = None,
-    args: Optional[Dict] = None,
+    args: Optional[QueryArgs] = None,
     slot_name: Optional[str] = None,
 ) -> Dict:
     """Generate query in desired format.
@@ -393,7 +395,7 @@ def _gen_query(
     Dict
         Dictionary with specified query inputs.
     """
-    query = {}
+    query: Dict[str, Any] = {}
     query["What"] = what
     if uid is not None:
         query["uid"] = uid

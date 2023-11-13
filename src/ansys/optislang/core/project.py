@@ -164,12 +164,12 @@ class Project(ABC):
         pass
 
     @abstractmethod
-    def get_registered_files(self) -> Tuple[RegisteredFile]:  # pragma: no cover
+    def get_registered_files(self) -> Tuple[RegisteredFile, ...]:  # pragma: no cover
         """Get all registered files in the current project.
 
         Returns
         -------
-        Tuple[RegisteredFile]
+        Tuple[RegisteredFile, ...]
             Tuple with registered files.
 
         Raises
@@ -184,12 +184,12 @@ class Project(ABC):
         pass
 
     @abstractmethod
-    def get_result_files(self) -> Tuple[RegisteredFile]:  # pragma: no cover
+    def get_result_files(self) -> Tuple[RegisteredFile, ...]:  # pragma: no cover
         """Get result files.
 
         Returns
         -------
-        Tuple[RegisteredFile]
+        Tuple[RegisteredFile, ...]
             Tuple with result files
 
         Raises

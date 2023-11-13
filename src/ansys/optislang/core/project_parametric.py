@@ -427,7 +427,7 @@ class Criterion:
         else:
             self.value = value
 
-    def __eq__(self, other: Criterion) -> bool:
+    def __eq__(self, other) -> bool:
         """Compare properties of two instances of the ``Criterion`` class.
 
         Parameters
@@ -440,21 +440,17 @@ class Criterion:
         bool
             ``True`` if all properties match; ``False`` otherwise.
         """
-        if type(self) == type(other):
-            checks = {}
-            checks["name"] = self.name == other.name
-            checks["type"] = self.type == other.type
-            checks["expression"] = self.expression == other.expression
-            checks["expression_value"] = self.expression_value == other.expression_value
-            checks["expression_value_type"] = (
-                self.expression_value_type == other.expression_value_type
-            )
-            checks["criterion"] = self.criterion == other.criterion
-            checks["value"] = self.value == other.value
-            checks["value_type"] = self.value_type == other.value_type
-            return False not in checks.values()
-        else:
-            return False
+        return (
+            type(self) == type(other)
+            and self.name == other.name
+            and self.type == other.type
+            and self.expression == other.expression
+            and self.expression_value == other.expression_value
+            and self.expression_value_type == other.expression_value_type
+            and self.criterion == other.criterion
+            and self.value == other.value
+            and self.value_type == other.value_type
+        )
 
     def __deepcopy__(self, memo) -> Criterion:
         """Return deep copy of given criterion."""
@@ -879,7 +875,7 @@ class ConstraintCriterion(Criterion):
         else:
             self.limit_expression_value = limit_expression_value
 
-    def __eq__(self, other: ConstraintCriterion) -> bool:
+    def __eq__(self, other) -> bool:
         """Compare properties of two instances of the ``ConstraintCriterion`` class.
 
         Parameters
@@ -892,28 +888,20 @@ class ConstraintCriterion(Criterion):
         bool
             ``True`` if all properties match; ``False`` otherwise.
         """
-        if type(self) == type(other):
-            checks = {}
-            checks["name"] = self.name == other.name
-            checks["type"] = self.type == other.type
-            checks["expression"] = self.expression == other.expression
-            checks["expression_value"] = self.expression_value == other.expression_value
-            checks["expression_value_type"] = (
-                self.expression_value_type == other.expression_value_type
-            )
-            checks["criterion"] = self.criterion == other.criterion
-            checks["value"] = self.value == other.value
-            checks["value_type"] = self.value_type == other.value_type
-            checks["limit_expression"] = self.limit_expression == other.limit_expression
-            checks["limit_expression_value"] = (
-                self.limit_expression_value == other.limit_expression_value
-            )
-            checks["limit_expression_value_type"] = (
-                self.limit_expression_value_type == other.limit_expression_value_type
-            )
-            return False not in checks.values()
-        else:
-            return False
+        return (
+            type(self) == type(other)
+            and self.name == other.name
+            and self.type == other.type
+            and self.expression == other.expression
+            and self.expression_value == other.expression_value
+            and self.expression_value_type == other.expression_value_type
+            and self.criterion == other.criterion
+            and self.value == other.value
+            and self.value_type == other.value_type
+            and self.limit_expression == other.limit_expression
+            and self.limit_expression_value == other.limit_expression_value
+            and self.limit_expression_value_type == other.limit_expression_value_type
+        )
 
     def __deepcopy__(self, memo) -> ConstraintCriterion:
         """Return deep copy of given constraint criterion."""
@@ -1144,7 +1132,7 @@ class LimitStateCriterion(Criterion):
         else:
             self.limit_expression_value = limit_expression_value
 
-    def __eq__(self, other: LimitStateCriterion) -> bool:
+    def __eq__(self, other) -> bool:
         """Compare properties of two instances of the ``LimitStateCriterion`` class.
 
         Parameters
@@ -1157,28 +1145,20 @@ class LimitStateCriterion(Criterion):
         bool
             ``True`` if all properties match; ``False`` otherwise.
         """
-        if type(self) == type(other):
-            checks = {}
-            checks["name"] = self.name == other.name
-            checks["type"] = self.type == other.type
-            checks["expression"] = self.expression == other.expression
-            checks["expression_value"] = self.expression_value == other.expression_value
-            checks["expression_value_type"] = (
-                self.expression_value_type == other.expression_value_type
-            )
-            checks["criterion"] = self.criterion == other.criterion
-            checks["value"] = self.value == other.value
-            checks["value_type"] = self.value_type == other.value_type
-            checks["limit_expression"] = self.limit_expression == other.limit_expression
-            checks["limit_expression_value"] = (
-                self.limit_expression_value == other.limit_expression_value
-            )
-            checks["limit_expression_value_type"] = (
-                self.limit_expression_value_type == other.limit_expression_value_type
-            )
-            return False not in checks.values()
-        else:
-            return False
+        return (
+            type(self) == type(other)
+            and self.name == other.name
+            and self.type == other.type
+            and self.expression == other.expression
+            and self.expression_value == other.expression_value
+            and self.expression_value_type == other.expression_value_type
+            and self.criterion == other.criterion
+            and self.value == other.value
+            and self.value_type == other.value_type
+            and self.limit_expression == other.limit_expression
+            and self.limit_expression_value == other.limit_expression_value
+            and self.limit_expression_value_type == other.limit_expression_value_type
+        )
 
     def __deepcopy__(self, memo) -> LimitStateCriterion:
         """Return deep copy of given limit state criterion."""
@@ -1387,7 +1367,7 @@ class ObjectiveCriterion(Criterion):
             value_type=value_type,
         )
 
-    def __eq__(self, other: ObjectiveCriterion) -> bool:
+    def __eq__(self, other) -> bool:
         """Compare properties of two instances of the ``ObjectiveCriterion`` class.
 
         Parameters
@@ -1400,21 +1380,17 @@ class ObjectiveCriterion(Criterion):
         bool
             ``True`` if all properties match; ``False`` otherwise.
         """
-        if type(self) == type(other):
-            checks = {}
-            checks["name"] = self.name == other.name
-            checks["type"] = self.type == other.type
-            checks["expression"] = self.expression == other.expression
-            checks["expression_value"] = self.expression_value == other.expression_value
-            checks["expression_value_type"] = (
-                self.expression_value_type == other.expression_value_type
-            )
-            checks["criterion"] = self.criterion == other.criterion
-            checks["value"] = self.value == other.value
-            checks["value_type"] = self.value_type == other.value_type
-            return False not in checks.values()
-        else:
-            return False
+        return (
+            type(self) == type(other)
+            and self.name == other.name
+            and self.type == other.type
+            and self.expression == other.expression
+            and self.expression_value == other.expression_value
+            and self.expression_value_type == other.expression_value_type
+            and self.criterion == other.criterion
+            and self.value == other.value
+            and self.value_type == other.value_type
+        )
 
     def __deepcopy__(self, memo) -> ObjectiveCriterion:
         """Return deep copy of given objective criterion."""
@@ -1543,7 +1519,7 @@ class VariableCriterion(Criterion):
             value_type=value_type,
         )
 
-    def __eq__(self, other: VariableCriterion) -> bool:
+    def __eq__(self, other) -> bool:
         """Compare properties of two instances of the ``VariableCriterion`` class.
 
         Parameters
@@ -1556,21 +1532,17 @@ class VariableCriterion(Criterion):
         bool
             ``True`` if all properties match; ``False`` otherwise.
         """
-        if type(self) == type(other):
-            checks = {}
-            checks["name"] = self.name == other.name
-            checks["type"] = self.type == other.type
-            checks["expression"] = self.expression == other.expression
-            checks["expression_value"] = self.expression_value == other.expression_value
-            checks["expression_value_type"] = (
-                self.expression_value_type == other.expression_value_type
-            )
-            checks["criterion"] = self.criterion == other.criterion
-            checks["value"] = self.value == other.value
-            checks["value_type"] = self.value_type == other.value_type
-            return False not in checks.values()
-        else:
-            return False
+        return (
+            type(self) == type(other)
+            and self.name == other.name
+            and self.type == other.type
+            and self.expression == other.expression
+            and self.expression_value == other.expression_value
+            and self.expression_value_type == other.expression_value_type
+            and self.criterion == other.criterion
+            and self.value == other.value
+            and self.value_type == other.value_type
+        )
 
     def __deepcopy__(self, memo) -> VariableCriterion:
         """Return deep copy of given variable criterion."""
@@ -1684,7 +1656,7 @@ class DesignVariable:
         """Return deep copy of an instance of the ``DesignVariable`` class."""
         return DesignVariable(self.name, copy.deepcopy(self.value))
 
-    def __eq__(self, other: DesignVariable) -> bool:
+    def __eq__(self, other) -> bool:
         """Compare properties of two instances of the ``DesignVariable`` class.
 
         Parameters
@@ -1697,13 +1669,7 @@ class DesignVariable:
         bool
             ``True`` if all properties match; ``False`` otherwise.
         """
-        if type(self) == type(other):
-            checks = {}
-            checks["name"] = self.name == other.name
-            checks["value"] = self.value == other.value
-            return False not in checks.values()
-        else:
-            return False
+        return type(self) == type(other) and self.name == other.name and self.value == other.value
 
     @property
     def name(self) -> str:
@@ -1787,7 +1753,7 @@ class Parameter:
                 f"``{type(type_)}`` was given."
             )
 
-    def __eq__(self, other: Parameter) -> bool:
+    def __eq__(self, other) -> bool:
         """Compare properties of two instances of the ``Parameter`` class.
 
         Parameters
@@ -1800,16 +1766,14 @@ class Parameter:
         bool
             ``True`` if all properties match; ``False`` otherwise.
         """
-        if type(self) == type(other):
-            checks = {}
-            checks["name"] = self.name == other.name
-            checks["reference_value"] = self.reference_value == other.reference_value
-            checks["id"] = self.id == other.id
-            checks["const"] = self.const == other.const
-            checks["type"] = self.type == other.type
-            return False not in checks.values()
-        else:
-            return False
+        return (
+            type(self) == type(other)
+            and self.name == other.name
+            and self.reference_value == other.reference_value
+            and self.id == other.id
+            and self.const == other.const
+            and self.type == other.type
+        )
 
     def __deepcopy__(self, memo) -> Parameter:
         """Return deep copy of given parameter."""
@@ -2004,7 +1968,7 @@ class DependentParameter(Parameter):
         else:
             self.__operation = operation
 
-    def __eq__(self, other: DependentParameter) -> bool:
+    def __eq__(self, other) -> bool:
         r"""Compare properties of two instances of the ``DependentParameter`` class.
 
         Parameters
@@ -2017,17 +1981,15 @@ class DependentParameter(Parameter):
         bool
             ``True`` if all properties match, ``False`` otherwise.
         """
-        if type(self) == type(other):
-            checks = {}
-            checks["name"] = self.name == other.name
-            checks["reference_value"] = self.reference_value == other.reference_value
-            checks["id"] = self.id == other.id
-            checks["const"] = self.const == other.const
-            checks["type"] = self.type == other.type
-            checks["operation"] = self.operation == other.operation
-            return False not in checks.values()
-        else:
-            return False
+        return (
+            type(self) == type(other)
+            and self.name == other.name
+            and self.reference_value == other.reference_value
+            and self.id == other.id
+            and self.const == other.const
+            and self.type == other.type
+            and self.operation == other.operation
+        )
 
     def __deepcopy__(self, memo) -> DependentParameter:
         """Return a deep copy of a instance of the ``DependentParameter`` class."""
@@ -2185,7 +2147,7 @@ class MixedParameter(Parameter):
         )
         self.cov = cov
 
-    def __eq__(self, other: MixedParameter) -> bool:
+    def __eq__(self, other) -> bool:
         """Compare properties of two instances of the ``MixedParameter`` class.
 
         Parameters
@@ -2198,30 +2160,22 @@ class MixedParameter(Parameter):
         bool
             ``True`` if all properties match; ``False`` otherwise.
         """
-        if type(self) == type(other):
-            checks = {}
-            checks["name"] = self.name == other.name
-            checks["reference_value"] = self.reference_value == other.reference_value
-            checks["reference_value_type"] = self.reference_value_type == other.reference_value_type
-            checks["id"] = self.id == other.id
-            checks["const"] = self.const == other.const
-            checks["type"] = self.type == other.type
-            checks["deterministic_resolution"] = (
-                self.deterministic_resolution == other.deterministic_resolution
-            )
-            checks["range"] = self.range == other.range
-            checks["stochastic_resolution"] = (
-                self.stochastic_resolution == other.stochastic_resolution
-            )
-            checks["distribution_type"] = self.distribution_type == other.distribution_type
-            checks["distribution_parameters"] = (
-                self.distribution_parameters == other.distribution_parameters
-            )
-            checks["statistical_moments"] = self.statistical_moments == other.statistical_moments
-            checks["cov"] = self.cov == other.cov
-            return False not in checks.values()
-        else:
-            return False
+        return (
+            type(self) == type(other)
+            and self.name == other.name
+            and self.reference_value == other.reference_value
+            and self.reference_value_type == other.reference_value_type
+            and self.id == other.id
+            and self.const == other.const
+            and self.type == other.type
+            and self.deterministic_resolution == other.deterministic_resolution
+            and self.range == other.range
+            and self.stochastic_resolution == other.stochastic_resolution
+            and self.distribution_type == other.distribution_type
+            and self.distribution_parameters == other.distribution_parameters
+            and self.statistical_moments == other.statistical_moments
+            and self.cov == other.cov
+        )
 
     def __deepcopy__(self, memo) -> MixedParameter:
         """Return deep copy of the instance of ``MixedParameter`` class."""
@@ -2588,7 +2542,7 @@ class OptimizationParameter(Parameter):
         else:
             self.range = tuple(range)
 
-    def __eq__(self, other: OptimizationParameter) -> bool:
+    def __eq__(self, other) -> bool:
         r"""Compare properties of two instances of the ``OptimizationParameter`` class.
 
         Parameters
@@ -2601,21 +2555,17 @@ class OptimizationParameter(Parameter):
         bool
             ``True`` if all properties match; ``False`` otherwise.
         """
-        if type(self) == type(other):
-            checks = {}
-            checks["name"] = self.name == other.name
-            checks["reference_value"] = self.reference_value == other.reference_value
-            checks["reference_value_type"] = self.reference_value_type == other.reference_value_type
-            checks["id"] = self.id == other.id
-            checks["const"] = self.const == other.const
-            checks["type"] = self.type == other.type
-            checks["deterministic_resolution"] = (
-                self.deterministic_resolution == other.deterministic_resolution
-            )
-            checks["range"] = self.range == other.range
-            return False not in checks.values()
-        else:
-            return False
+        return (
+            type(self) == type(other)
+            and self.name == other.name
+            and self.reference_value == other.reference_value
+            and self.reference_value_type == other.reference_value_type
+            and self.id == other.id
+            and self.const == other.const
+            and self.type == other.type
+            and self.deterministic_resolution == other.deterministic_resolution
+            and self.range == other.range
+        )
 
     def __deepcopy__(self, memo) -> OptimizationParameter:
         """Return deep copy of the optimization parameter."""
@@ -2856,7 +2806,7 @@ class StochasticParameter(Parameter):
         )
         self.cov = cov
 
-    def __eq__(self, other: StochasticParameter) -> bool:
+    def __eq__(self, other) -> bool:
         r"""Compare properties of two instances of the ``StochasticParameter`` class.
 
         Parameters
@@ -2869,26 +2819,20 @@ class StochasticParameter(Parameter):
         bool
             ``True`` if all properties match; ``False`` otherwise.
         """
-        if type(self) == type(other):
-            checks = {}
-            checks["name"] = self.name == other.name
-            checks["reference_value"] = self.reference_value == other.reference_value
-            checks["reference_value_type"] = self.reference_value_type == other.reference_value_type
-            checks["id"] = self.id == other.id
-            checks["const"] = self.const == other.const
-            checks["type"] = self.type == other.type
-            checks["stochastic_resolution"] = (
-                self.stochastic_resolution == other.stochastic_resolution
-            )
-            checks["distribution_type"] = self.distribution_type == other.distribution_type
-            checks["distribution_parameters"] = (
-                self.distribution_parameters == other.distribution_parameters
-            )
-            checks["statistical_moments"] = self.statistical_moments == other.statistical_moments
-            checks["cov"] = self.cov == other.cov
-            return False not in checks.values()
-        else:
-            return False
+        return (
+            type(self) == type(other)
+            and self.name == other.name
+            and self.reference_value == other.reference_value
+            and self.reference_value_type == other.reference_value_type
+            and self.id == other.id
+            and self.const == other.const
+            and self.type == other.type
+            and self.stochastic_resolution == other.stochastic_resolution
+            and self.distribution_type == other.distribution_type
+            and self.distribution_parameters == other.distribution_parameters
+            and self.statistical_moments == other.statistical_moments
+            and self.cov == other.cov
+        )
 
     def __deepcopy__(self, memo) -> StochasticParameter:
         """Return deep copy of the stochastic parameter."""
@@ -3152,7 +3096,7 @@ class Response:
         else:
             self.reference_value = reference_value
 
-    def __eq__(self, other: Response) -> bool:
+    def __eq__(self, other) -> bool:
         """Compare properties of two instances of the ``Response`` class.
 
         Parameters
@@ -3165,14 +3109,12 @@ class Response:
         bool
             ``True`` if all properties match; ``False`` otherwise.
         """
-        if type(self) == type(other):
-            checks = {}
-            checks["name"] = self.name == other.name
-            checks["reference_value"] = self.reference_value == other.reference_value
-            checks["reference_value_type"] = self.reference_value_type == other.reference_value_type
-            return False not in checks.values()
-        else:
-            return False
+        return (
+            type(self) == type(other)
+            and self.name == other.name
+            and self.reference_value == other.reference_value
+            and self.reference_value_type == other.reference_value_type
+        )
 
     def __deepcopy__(self, memo) -> Response:
         """Return deep copy of given response."""

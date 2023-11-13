@@ -165,7 +165,7 @@ class Node(ABC):
         hid: Optional[str] = None,
         wait_for_completion: bool = True,
         timeout: Union[float, int] = 100,
-    ) -> Union[str, None]:  # pragma: no cover
+    ) -> Optional[bool]:  # pragma: no cover
         """Control the node state.
 
         Parameters
@@ -182,7 +182,7 @@ class Node(ABC):
 
         Returns
         -------
-        boolean
+        Optional[bool]
             ``True`` when successful, ``False`` when failed.
         """
         pass
@@ -447,12 +447,12 @@ class Node(ABC):
         pass
 
     @abstractmethod
-    def get_states_ids(self) -> Tuple[str]:  # pragma: no cover
+    def get_states_ids(self) -> Tuple[str, ...]:  # pragma: no cover
         """Get available actor states ids.
 
         Returns
         -------
-        Tuple[str]
+        Tuple[str, ...]
             Actor states ids.
 
         Raises
@@ -823,8 +823,12 @@ class RootSystem(ParametricSystem):
 
     @abstractmethod
     def control(
-        self, command: str, wait_for_completion: bool = True, timeout: Union[float, int] = 100
-    ) -> Union[str, None]:  # pragma: no cover
+        self,
+        command: str,
+        hid: Optional[str],
+        wait_for_completion: bool = True,
+        timeout: Union[float, int] = 100,
+    ) -> Optional[bool]:  # pragma: no cover
         """Control the node state.
 
         Parameters
@@ -832,6 +836,8 @@ class RootSystem(ParametricSystem):
         command: str
             Command to execute. Options are ``"start"``, ``"restart"``, ``"stop_gently"``,
             ``"stop"``, and ``"reset"``.
+        hid: Optional[str], optional
+            Hid, by default ``None``.
         wait_for_completion: bool, optional
             Whether to wait for completion. The default is ``True``.
         timeout: Union[float, int], optional
@@ -839,7 +845,7 @@ class RootSystem(ParametricSystem):
 
         Returns
         -------
-        boolean
+        Optional[bool]
             ``True`` when successful, ``False`` when failed.
         """
         pass

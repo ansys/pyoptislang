@@ -1,6 +1,8 @@
 """Module for generation of all server commands."""
 import json
-from typing import Dict, Iterable, Optional, Sequence, Union
+from typing import Any, Dict, Iterable, Optional, Sequence, Union
+
+CommandArgs = Dict[str, Any]
 
 _APPLY_WIZARD = "APPLY_WIZARD"
 _CLOSE = "CLOSE"
@@ -88,7 +90,7 @@ def apply_wizard(
     str
         JSON string of apply_wizzard command.
     """
-    args = {}
+    args: CommandArgs = {}
     supported_values = ["solver", "sensitivity", "optimization", "robustness", "reevaluation"]
     if type_ in supported_values:
         args["type"] = type_
@@ -156,7 +158,7 @@ def connect_nodes(
     str
         JSON string of connect_nodes command.
     """
-    args = {}
+    args: CommandArgs = {}
     args["from_actor_uid"] = from_actor_uid
     args["from_slot"] = from_slot
     args["to_actor_uid"] = to_actor_uid
@@ -186,7 +188,7 @@ def create_input_slot(
     str
         JSON string of create_input_slot command.
     """
-    args = {}
+    args: CommandArgs = {}
     args["slot_name"] = slot_name
     if type_hint is not None:
         args["type_hint"] = type_hint
@@ -237,7 +239,7 @@ def create_node(
     str
         JSON string of create_node command.
     """
-    args = {}
+    args: CommandArgs = {}
     args["type"] = type_
     if name:
         args["name"] = name
@@ -278,7 +280,7 @@ def create_output_slot(
     str
         JSON string of create_output_slot command.
     """
-    args = {}
+    args: CommandArgs = {}
     args["slot_name"] = slot_name
     if type_hint is not None:
         args["type_hint"] = type_hint
@@ -316,7 +318,7 @@ def create_start_designs(
     str
         JSON string of create_start_design command.
     """
-    args = {}
+    args: CommandArgs = {}
     args["sampling_type"] = sampling_type
     if (number_of_levels is not None) and (number_of_samples is not None):
         raise TypeError(f"Please specify either ``number_of_levels`` or ``number of samples``.")
@@ -353,7 +355,7 @@ def disconnect_slot(
     str
         JSON string of disconnect_slot command.
     """
-    args = {}
+    args: CommandArgs = {}
     args["slot_name"] = slot_name
     args["direction"] = direction
     return _to_json(
@@ -378,7 +380,7 @@ def evaluate_design(parameters: Dict, password: Optional[str] = None) -> str:
     str
         JSON string of evaluate_design command.
     """
-    args = {}
+    args: CommandArgs = {}
     args["parameters"] = parameters
     return _to_json(_gen_server_command(command=_EVALUATE_DESIGN, args=args, password=password))
 
@@ -410,7 +412,7 @@ def export_designs(
     str
         JSON string of export_designs command.
     """
-    args = {}
+    args: CommandArgs = {}
     args["path"] = path
     if format is not None:
         args["format"] = format
@@ -459,7 +461,7 @@ def link_registered_file(actor_uid: str, uid: str, password: Optional[str] = Non
     str
         JSON string of link_registered_file command.
     """
-    args = {}
+    args: CommandArgs = {}
     args["uid"] = uid
     return _to_json(
         _gen_server_command(
@@ -507,7 +509,7 @@ def open(
     str
         JSON string of ``open`` command.
     """
-    args = {}
+    args: CommandArgs = {}
     args["path"] = path
     args["do_force"] = do_force
     args["do_restore"] = do_restore
@@ -573,7 +575,7 @@ def refresh_listener_registration(uid: str, password: Optional[str] = None) -> s
     str
         JSON string of refresh_listener_registration command.
     """
-    args = {}
+    args: CommandArgs = {}
     args["uid"] = uid
     return _to_json(
         _gen_server_command(command=_REFRESH_LISTENER_REGISTRATION, args=args, password=password)
@@ -610,7 +612,7 @@ def register_file(
         JSON string of register_file command.
     """
     # TODO: "and so on: specify all possibilities"
-    args = {}
+    args: CommandArgs = {}
     if uid is not None:
         args["uid"] = uid
     if ident is not None:
@@ -656,7 +658,7 @@ def register_listener(
     str
         JSON string of register_listener command.
     """
-    args = {}
+    args: CommandArgs = {}
     if (id is not None) and ((host is not None) or (port is not None)):
         raise TypeError(f"Please specify either ``id`` or (``host`` and ``port``).")
     elif (id is None) and ((host is None) or (port is None)):
@@ -878,7 +880,7 @@ def run_python_script(
     str
         JSON string of register_listener command.
     """
-    args = {}
+    args: CommandArgs = {}
     args["script"] = script
     if args_ is not None:
         args["args"] = args_
@@ -904,7 +906,7 @@ def run_registered_files_actions(
     str
         JSON string of ``run registered files actions`` command.
     """
-    args = None
+    args: Optional[CommandArgs] = None
     if uid is not None:
         args = {}
         args["uid"] = uid
@@ -956,7 +958,7 @@ def save_as(
     str
         JSON string of ``save_as`` command.
     """
-    args = {}
+    args: CommandArgs = {}
     args["path"] = path
     args["do_force"] = do_force
     args["do_restore"] = do_restore
@@ -980,7 +982,7 @@ def save_copy(path: str, password: Optional[str] = None) -> str:
     str
         JSON string of ``save_copy`` command.
     """
-    args = {}
+    args: CommandArgs = {}
     args["path"] = path
 
     return _to_json(_gen_server_command(command=_SAVE_COPY, args=args, password=password))
@@ -1007,7 +1009,7 @@ def set_actor_property(
     str
         JSON string of ``set_actor_property`` command.
     """
-    args = {}
+    args: CommandArgs = {}
     args["name"] = name
     args["value"] = value
 
@@ -1037,7 +1039,7 @@ def set_actor_setting(actor_uid: str, name: str, value: str, password: Optional[
     str
         JSON string of ``set actor setting`` command.
     """
-    args = {}
+    args: CommandArgs = {}
     args["name"] = name
     args["value"] = value
 
@@ -1069,7 +1071,7 @@ def set_actor_state_property(
     str
         JSON string of ``set actor state property`` command.
     """
-    args = {}
+    args: CommandArgs = {}
     args["name"] = name
     args["value"] = value
 
@@ -1097,7 +1099,7 @@ def set_placeholder_value(name: str, value: str, password: Optional[str] = None)
     str
         JSON string of ``set placeholder value`` command.
     """
-    args = {}
+    args: CommandArgs = {}
     args["name"] = name
     args["value"] = value
 
@@ -1123,7 +1125,7 @@ def set_project_setting(name: str, value: str, password: Optional[str] = None) -
     str
         JSON string of ``set project settings`` command.
     """
-    args = {}
+    args: CommandArgs = {}
     args["name"] = name
     args["value"] = value
 
@@ -1151,7 +1153,7 @@ def set_registered_file_value(
     str
         JSON string of ``set registered file value`` command.
     """
-    args = {}
+    args: CommandArgs = {}
     args["uid"] = uid
     args["name"] = name
     args["value"] = value
@@ -1179,7 +1181,7 @@ def set_start_designs(actor_uid: str, start_designs: Dict, password: Optional[st
         JSON string of ``set start designs`` command.
     """
     # TODO: function to create start_settings?
-    args = {}
+    args: CommandArgs = {}
     args["start_designs"] = start_designs
 
     return _to_json(
@@ -1258,7 +1260,7 @@ def show_dialog(
             f"Unsuppored value of ``type_``: {type_}, supported values for application dialogs: "
             "{application_dialogs} and for project dialogs: {project_dialogs}"
         )
-    args = {}
+    args: CommandArgs = {}
     args["type"] = type_
     if usage_mode is not None:
         args["usage_mode"] = usage_mode
@@ -1298,7 +1300,7 @@ def show_node_dialog(
     str
         JSON string of ``show node dialog`` command.
     """
-    args = None
+    args: Optional[CommandArgs] = None
     if not (
         (blocking is None) and (type_ is None) and (usage_mode is None) and (parent_hwnd is None)
     ):
@@ -1486,7 +1488,7 @@ def subscribe_for_push_notifications(
     ]
     all_opts = set(server + logging + project + nodes)
 
-    args = {}
+    args: CommandArgs = {}
     args["uid"] = uid
 
     if notifications == ["ALL"]:
@@ -1529,7 +1531,7 @@ def unlink_registered_file(actor_uid: str, uid: str, password: Optional[str] = N
     str
         JSON string of ``unlink registered file`` command.
     """
-    args = {}
+    args: CommandArgs = {}
     args["uid"] = uid
 
     return _to_json(
@@ -1554,7 +1556,7 @@ def unregister_file(uid: str, password: Optional[str] = None) -> str:
     str
         JSON string of ``unregister file`` command.
     """
-    args = {}
+    args: CommandArgs = {}
     args["uid"] = uid
 
     return _to_json(_gen_server_command(command=_UNREGISTER_FILE, args=args, password=password))
@@ -1575,7 +1577,7 @@ def unregister_listener(uid: str, password: Optional[str] = None) -> str:
     str
         JSON string of ``unregister listener`` command.
     """
-    args = {}
+    args: CommandArgs = {}
     args["uid"] = uid
 
     return _to_json(_gen_server_command(command=_UNREGISTER_LISTENER, args=args, password=password))
@@ -1605,7 +1607,7 @@ def write_monitoring_database(
     str
         JSON string of ``write monitoring database`` command.
     """
-    args = None
+    args: Optional[CommandArgs] = None
     if (path is not None) or (hid is not None):
         args = {}
         if path is not None:
@@ -1623,7 +1625,7 @@ def write_monitoring_database(
 def _gen_server_command(
     command: str,
     password: str,
-    args: Optional[dict] = None,
+    args: Optional[CommandArgs] = None,
     actor_uid: Optional[str] = None,
     hid: Optional[str] = None,
 ) -> Dict:
@@ -1635,7 +1637,7 @@ def _gen_server_command(
         Command type.
     password : str
         Password.
-    args : Optional[dict], optional
+    args : Optional[CommandArgs], optional
         Dictionary with specified arguments.
     actor_uid : Optional[str], optional
         Actor uid, by default ``None``.
@@ -1648,14 +1650,12 @@ def _gen_server_command(
         Dictionary of server command.
 
     """
-    scmd = {}
-    scmd["projects"] = []
-    commands = {}
-    commands["commands"] = []
-    commands["commands"].append(
-        _gen_command(command=command, args=args, actor_uid=actor_uid, hid=hid)
-    )
-    scmd["projects"].append(commands)
+    scmd = {
+        "projects": [
+            {"commands": [_gen_command(command=command, args=args, actor_uid=actor_uid, hid=hid)]}
+        ]
+    }
+
     if password:
         scmd["Password"] = password
     return scmd
@@ -1663,7 +1663,7 @@ def _gen_server_command(
 
 def _gen_command(
     command: str,
-    args: Optional[Dict] = None,
+    args: Optional[CommandArgs] = None,
     actor_uid: Optional[str] = None,
     hid: Optional[str] = None,
 ) -> Dict:
@@ -1685,7 +1685,7 @@ def _gen_command(
     dictionary: dict
         Specified dictionary.
     """
-    cmd = {}
+    cmd: Dict[str, Any] = {}
     cmd["type"] = _builtin
     cmd["command"] = command
     if args:

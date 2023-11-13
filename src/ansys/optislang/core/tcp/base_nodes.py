@@ -114,7 +114,7 @@ class TcpNodeProxy(Node):
         hid: Optional[str] = None,
         wait_for_completion: bool = True,
         timeout: Union[float, int] = 100,
-    ) -> Union[str, None]:
+    ) -> Optional[bool]:
         """Control the node state.
 
         Parameters
@@ -131,10 +131,10 @@ class TcpNodeProxy(Node):
 
         Returns
         -------
-        boolean
+        Optional[bool]
             ``True`` when successful, ``False`` when failed.
         """
-        if not hid:  # Run command against all designs
+        if hid is None:  # Run command against all designs
             hids = self.get_states_ids()
             if len(hids) == 0:
                 raise RuntimeError(
@@ -142,7 +142,7 @@ class TcpNodeProxy(Node):
                     f" The {command} command cannot be executed."
                 )
         else:  # Run command against the given design
-            hids = [hid]
+            hids = (hid,)
 
         for hid in hids:
             response = self._osl_server.send_command(
@@ -168,8 +168,9 @@ class TcpNodeProxy(Node):
                     status = False
                     break
                 time.sleep(3)
-
             return status
+        else:
+            return None
 
     def delete(self) -> None:
         """Delete current node and it's children from active project.
@@ -452,12 +453,12 @@ class TcpNodeProxy(Node):
         """
         return self.get_properties().get(name, None)
 
-    def get_registered_files(self) -> Tuple[RegisteredFile]:
+    def get_registered_files(self) -> Tuple[RegisteredFile, ...]:
         """Get node's registered files.
 
         Returns
         -------
-        Tuple[RegisteredFile]
+        Tuple[RegisteredFile, ...]
             Tuple of registered files.
 
         Raises
@@ -490,12 +491,12 @@ class TcpNodeProxy(Node):
             ]
         )
 
-    def get_result_files(self) -> Tuple[RegisteredFile]:
+    def get_result_files(self) -> Tuple[RegisteredFile, ...]:
         """Get node's result files.
 
         Returns
         -------
-        Tuple[RegisteredFile]
+        Tuple[RegisteredFile, ...]
             Tuple of result files.
 
         Raises
@@ -514,12 +515,12 @@ class TcpNodeProxy(Node):
             )
         )
 
-    def get_states_ids(self) -> Tuple[str]:
+    def get_states_ids(self) -> Tuple[str, ...]:
         """Get available actor states ids.
 
         Returns
         -------
-        Tuple[str]
+        Tuple[str, ...]
             Actor states ids.
 
         Raises
@@ -920,12 +921,12 @@ class TcpNodeProxy(Node):
                 )
         return tuple(slots_list)
 
-    def _get_status_info(self) -> Tuple[dict]:
+    def _get_status_info(self) -> Tuple[dict, ...]:
         """Get node's status info for each state.
 
         Returns
         -------
-        Tuple[dict]
+        Tuple[dict, ...]
             Tuple with status info dictionary for each state.
 
         Raises
@@ -1909,15 +1910,21 @@ class TcpRootSystemProxy(TcpParametricSystemProxy, RootSystem):
         )
 
     def control(
-        self, command: str, wait_for_completion: bool = True, timeout: Union[float, int] = 100
-    ) -> Union[str, None]:
-        """Control the node state.
+        self,
+        command: str,
+        hid: Optional[str],
+        wait_for_completion: bool = True,
+        timeout: Union[float, int] = 100,
+    ) -> Optional[bool]:
+        """Control the root system state.
 
         Parameters
         ----------
         command: str
             Command to execute. Options are ``"start"``, ``"restart"``, ``"stop_gently"``,
             ``"stop"``, and ``"reset"``.
+        hid: Optional[str], optional
+            Hid, by default ``None``.
         wait_for_completion: bool, optional
             Whether to wait for completion. The default is ``True``.
         timeout: Union[float, int], optional
@@ -1925,7 +1932,7 @@ class TcpRootSystemProxy(TcpParametricSystemProxy, RootSystem):
 
         Returns
         -------
-        boolean
+        Optional[bool]
             ``True`` when successful, ``False`` when failed.
         """
         response = self._osl_server.send_command(getattr(commands, command)())
@@ -1949,8 +1956,9 @@ class TcpRootSystemProxy(TcpParametricSystemProxy, RootSystem):
                     status = False
                     break
                 time.sleep(3)
-
             return status
+        else:
+            return None
 
     def delete(self) -> None:
         """Delete current node and it's children from active project.
