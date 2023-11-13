@@ -42,8 +42,8 @@ tests = [
     "matplotlib>=3.5.3",
 ]
 doc = [
-    "ansys-sphinx-theme==0.10.6",
-    "matplotlib==3.7.2",
+    "ansys-sphinx-theme==0.12.4",
+    "matplotlib==3.8.1",
     "numpydoc==1.6.0",
     "pypandoc==1.12",
     "Sphinx==7.2.6",
