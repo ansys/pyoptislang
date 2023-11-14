@@ -240,7 +240,7 @@ def test_doe_size():
     dictionary = json.loads(json_string)
     requiered_string = json.loads(
         '{ "What": "DOE_SIZE", "uid": "5cdfb20b-bef6-4412-9985-89f5ded5ee95", \
-        "sampling_type": "fullfactorial", "num_discrete_levels":2}'
+        "args": {"num_discrete_levels": 2, "sampling_type": "fullfactorial"}}'
     )
     assert type(json_string) == str
     assert sorted(dictionary.items()) == sorted(requiered_string.items())

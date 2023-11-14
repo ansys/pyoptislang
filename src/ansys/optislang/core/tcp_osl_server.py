@@ -1132,7 +1132,9 @@ class TcpOslServer(OslServer):
         """
         return self.send_command(queries.actor_info(uid=uid, password=self.__password))
 
-    def get_actor_internal_variables(self, uid: str, include_reference_values: bool = True) -> Dict:
+    def get_actor_internal_variables(
+        self, uid: str, include_reference_values: bool = True
+    ) -> List[dict]:
         """Get currently registered internal variables for a certain (integration) actor.
 
         Parameters
@@ -1144,7 +1146,7 @@ class TcpOslServer(OslServer):
 
         Returns
         -------
-        Dict
+        List[dict]
             Actor's internal variables.
 
         Raises
@@ -1160,7 +1162,7 @@ class TcpOslServer(OslServer):
             queries.actor_internal_variables(
                 uid=uid, include_reference_values=include_reference_values, password=self.__password
             )
-        )
+        )["internal_variables"]
 
     def get_actor_properties(self, uid: str) -> Dict:
         """Get properties of actor defined by uid.
@@ -1188,7 +1190,7 @@ class TcpOslServer(OslServer):
 
     def get_actor_registered_input_slots(
         self, uid: str, include_reference_values: bool = True
-    ) -> Dict:
+    ) -> List[dict]:
         """Get currently registered input slots for a certain (integration) actor.
 
         Parameters
@@ -1200,7 +1202,7 @@ class TcpOslServer(OslServer):
 
         Returns
         -------
-        Dict
+        List[dict]
             Actor's registered input slots.
 
         Raises
@@ -1216,11 +1218,11 @@ class TcpOslServer(OslServer):
             queries.actor_registered_input_slots(
                 uid=uid, include_reference_values=include_reference_values, password=self.__password
             )
-        )
+        )["registered_input_slots"]
 
     def get_actor_registered_output_slots(
         self, uid: str, include_reference_values: bool = True
-    ) -> Dict:
+    ) -> List[dict]:
         """Get currently registered output slots for a certain (integration) actor.
 
         Parameters
@@ -1232,7 +1234,7 @@ class TcpOslServer(OslServer):
 
         Returns
         -------
-        Dict
+        List[dict]
             Actor's registered output slots.
 
         Raises
@@ -1248,11 +1250,11 @@ class TcpOslServer(OslServer):
             queries.actor_registered_output_slots(
                 uid=uid, include_reference_values=include_reference_values, password=self.__password
             )
-        )
+        )["registered_output_slots"]
 
     def get_actor_registered_parameters(
         self, uid: str, include_reference_values: bool = True
-    ) -> Dict:
+    ) -> List[dict]:
         """Get currently registered parameters for a certain (integration) actor.
 
         Parameters
@@ -1264,7 +1266,7 @@ class TcpOslServer(OslServer):
 
         Returns
         -------
-        Dict
+        List[dict]
             Actor's registered parameters.
 
         Raises
@@ -1280,11 +1282,11 @@ class TcpOslServer(OslServer):
             queries.actor_registered_parameters(
                 uid=uid, include_reference_values=include_reference_values, password=self.__password
             )
-        )
+        )["registered_parameters"]
 
     def get_actor_registered_responses(
         self, uid: str, include_reference_values: bool = True
-    ) -> Dict:
+    ) -> List[dict]:
         """Get currently registered responses for a certain (integration) actor.
 
         Parameters
@@ -1296,7 +1298,7 @@ class TcpOslServer(OslServer):
 
         Returns
         -------
-        Dict
+        List[dict]
             Actor's registered responses.
 
         Raises
@@ -1312,7 +1314,7 @@ class TcpOslServer(OslServer):
             queries.actor_registered_responses(
                 uid=uid, include_reference_values=include_reference_values, password=self.__password
             )
-        )
+        )["registered_responses"]
 
     def get_actor_states(self, uid: str) -> Dict:
         """Get available actor states for a certain actor (only the IDs of the available states).
@@ -1393,7 +1395,7 @@ class TcpOslServer(OslServer):
             queries.actor_supports(uid=uid, feature_name=feature_name, password=self.__password)
         )[feature_name.lower()]
 
-    def get_available_input_locations(self, uid: str) -> Dict:
+    def get_available_input_locations(self, uid: str) -> List[dict]:
         """Get available input locations for a certain (integration) actor, if supported.
 
         Parameters
@@ -1403,7 +1405,7 @@ class TcpOslServer(OslServer):
 
         Returns
         -------
-        Dict
+        List[dict]
             Actor's available input locations.
 
         Raises
@@ -1417,9 +1419,9 @@ class TcpOslServer(OslServer):
         """
         return self.send_command(
             queries.available_input_locations(uid=uid, password=self.__password)
-        )
+        )["available_input_locations"]
 
-    def get_available_output_locations(self, uid: str) -> Dict:
+    def get_available_output_locations(self, uid: str) -> List[dict]:
         """Get available output locations for a certain (integration) actor, if supported.
 
         Parameters
@@ -1429,7 +1431,7 @@ class TcpOslServer(OslServer):
 
         Returns
         -------
-        Dict
+        List[dict]
             Actor's available output locations.
 
         Raises
@@ -1443,7 +1445,7 @@ class TcpOslServer(OslServer):
         """
         return self.send_command(
             queries.available_output_locations(uid=uid, password=self.__password)
-        )
+        )["available_output_locations"]
 
     def get_basic_project_info(self) -> Dict:
         """Get basic project info, like name, location, global settings and status.
@@ -1464,7 +1466,7 @@ class TcpOslServer(OslServer):
         """
         return self.send_command(queries.basic_project_info(self.__password))
 
-    def get_criteria(self, uid: str) -> Dict:
+    def get_criteria(self, uid: str) -> List[Dict]:
         """Get information about all existing criterion from the system.
 
         Parameters
@@ -1486,9 +1488,11 @@ class TcpOslServer(OslServer):
         TimeoutError
             Raised when the timeout float value expires.
         """
-        return self.send_command(queries.get_criteria(uid=uid, password=self.__password))
+        return self.send_command(queries.get_criteria(uid=uid, password=self.__password))[
+            "criteria"
+        ]
 
-    def get_criterion(self, uid: str, name: str) -> Dict:
+    def get_criterion(self, uid: str, name: str) -> dict:
         """Get existing criterion from the system.
 
         Parameters
@@ -1514,7 +1518,7 @@ class TcpOslServer(OslServer):
         """
         return self.send_command(
             queries.get_criterion(uid=uid, name=name, password=self.__password)
-        )
+        )["criteria"]
 
     def get_doe_size(self, uid: str, sampling_type: str, num_discrete_levels: int) -> int:
         """Get the DOE size for given sampling type and number of levels for a specific actor.
@@ -1549,7 +1553,7 @@ class TcpOslServer(OslServer):
                 num_discrete_levels=num_discrete_levels,
                 password=self.__password,
             )
-        )
+        )["number_of_samples"]
 
     def get_full_project_status_info(self) -> Dict:
         """Get full project status info.

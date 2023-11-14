@@ -13,46 +13,6 @@ class OslServer(ABC):
     def __init__(self):
         """``OslServer`` class is an abstract base class and cannot be instantiated."""
 
-    @abstractmethod
-    def get_server_info(self) -> Dict:  # pragma: no cover
-        """Get information about the application, the server configuration and the open projects.
-
-        Returns
-        -------
-        Dict
-            Information data as dictionary.
-
-        Raises
-        ------
-        OslCommunicationError
-            Raised when an error occurs while communicating with server.
-        OslCommandError
-            Raised when the command or query fails.
-        TimeoutError
-            Raised when the timeout float value expires.
-        """
-        pass
-
-    @abstractmethod
-    def get_basic_project_info(self) -> Dict:  # pragma: no cover
-        """Get basic project info, like name, location, global settings and status.
-
-        Returns
-        -------
-        Dict
-            Information data as dictionary.
-
-        Raises
-        ------
-        OslCommunicationError
-            Raised when an error occurs while communicating with server.
-        OslCommandError
-            Raised when the command or query fails.
-        TimeoutError
-            Raised when the timeout float value expires.
-        """
-        pass
-
     # @abstractmethod
     # def close(self) -> None:
     #     """Close the current project.
@@ -121,6 +81,35 @@ class OslServer(ABC):
         -------
         Dict
             Info about actor defined by uid.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        pass
+
+    @abstractmethod
+    def get_actor_internal_variables(
+        self, uid: str, include_reference_values: bool = True
+    ) -> List[dict]:  # pragma: no cover
+        """Get currently registered internal variables for a certain (integration) actor.
+
+        Parameters
+        ----------
+        uid : str
+            Actor uid.
+        include_reference_values: bool, optional
+            Whether reference values are to be included.
+
+        Returns
+        -------
+        List[dict]
+            Actor's internal variables.
 
         Raises
         ------
@@ -224,6 +213,275 @@ class OslServer(ABC):
         -------
         Dict
             Properties of actor defined by uid.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        pass
+
+    @abstractmethod
+    def get_actor_registered_input_slots(
+        self, uid: str, include_reference_values: bool = True
+    ) -> List[dict]:  # pragma: no cover
+        """Get currently registered input slots for a certain (integration) actor.
+
+        Parameters
+        ----------
+        uid : str
+            Actor uid.
+        include_reference_values: bool, optional
+            Whether reference values are to be included.
+
+        Returns
+        -------
+        List[dict]
+            Actor's registered input slots.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        pass
+
+    @abstractmethod
+    def get_actor_registered_output_slots(
+        self, uid: str, include_reference_values: bool = True
+    ) -> List[dict]:  # pragma: no cover
+        """Get currently registered output slots for a certain (integration) actor.
+
+        Parameters
+        ----------
+        uid : str
+            Actor uid.
+        include_reference_values: bool, optional
+            Whether reference values are to be included.
+
+        Returns
+        -------
+        List[dict]
+            Actor's registered output slots.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        pass
+
+    @abstractmethod
+    def get_actor_registered_parameters(
+        self, uid: str, include_reference_values: bool = True
+    ) -> List[dict]:  # pragma: no cover
+        """Get currently registered parameters for a certain (integration) actor.
+
+        Parameters
+        ----------
+        uid : str
+            Actor uid.
+        include_reference_values: bool, optional
+            Whether reference values are to be included.
+
+        Returns
+        -------
+        List[dict]
+            Actor's registered parameters.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        pass
+
+    @abstractmethod
+    def get_actor_registered_responses(
+        self, uid: str, include_reference_values: bool = True
+    ) -> List[dict]:  # pragma: no cover
+        """Get currently registered responses for a certain (integration) actor.
+
+        Parameters
+        ----------
+        uid : str
+            Actor uid.
+        include_reference_values: bool, optional
+            Whether reference values are to be included.
+
+        Returns
+        -------
+        List[dict]
+            Actor's registered responses.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        pass
+
+    @abstractmethod
+    def get_available_input_locations(self, uid: str) -> List[dict]:  # pragma: no cover
+        """Get available input locations for a certain (integration) actor, if supported.
+
+        Parameters
+        ----------
+        uid : str
+            Actor uid.
+
+        Returns
+        -------
+        List[dict]
+            Actor's available input locations.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        pass
+
+    @abstractmethod
+    def get_available_output_locations(self, uid: str) -> List[dict]:  # pragma: no cover
+        """Get available output locations for a certain (integration) actor, if supported.
+
+        Parameters
+        ----------
+        uid : str
+            Actor uid.
+
+        Returns
+        -------
+        List[dict]
+            Actor's available output locations.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        pass
+
+    @abstractmethod
+    def get_basic_project_info(self) -> Dict:  # pragma: no cover
+        """Get basic project info, like name, location, global settings and status.
+
+        Returns
+        -------
+        Dict
+            Information data as dictionary.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        pass
+
+    @abstractmethod
+    def get_criteria(self, uid: str) -> Dict:  # pragma: no cover
+        """Get information about all existing criterion from the system.
+
+        Parameters
+        ----------
+        uid : str
+            Actor uid.
+
+        Returns
+        -------
+        Dict
+            Criteria information.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        pass
+
+    @abstractmethod
+    def get_criterion(self, uid: str, name: str) -> Dict:  # pragma: no cover
+        """Get existing criterion from the system.
+
+        Parameters
+        ----------
+        uid : str
+            Actor uid.
+        name: str
+            Criterion name.
+
+        Returns
+        -------
+        Dict
+            Criterion information.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        pass
+
+    @abstractmethod
+    def get_doe_size(
+        self, uid: str, sampling_type: str, num_discrete_levels: int
+    ) -> int:  # pragma: no cover
+        """Get the DOE size for given sampling type and number of levels for a specific actor.
+
+        Parameters
+        ----------
+        uid : str
+            Actor uid.
+        sampling_type: str
+            Sampling type.
+        num_discrete_levels: int
+            Number of discrete levels.
+
+        Returns
+        -------
+        int
+            DOE size.
 
         Raises
         ------
@@ -552,6 +810,26 @@ class OslServer(ABC):
         -------
         Dict
             Dictionary of project tree systems with properties.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        pass
+
+    @abstractmethod
+    def get_server_info(self) -> Dict:  # pragma: no cover
+        """Get information about the application, the server configuration and the open projects.
+
+        Returns
+        -------
+        Dict
+            Information data as dictionary.
 
         Raises
         ------

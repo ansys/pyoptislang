@@ -2,6 +2,8 @@
 import json
 from typing import Any, Dict, Optional
 
+QueryArgs = Dict[str, Any]
+
 _ACTOR_INFO = "ACTOR_INFO"
 _ACTOR_INTERNAL_VARIABLES = "ACTOR_INTERNAL_VARIABLES"
 _ACTOR_PROPERTIES = "ACTOR_PROPERTIES"
@@ -357,12 +359,14 @@ def doe_size(
     str
         JSON string of doe_size query.
     """
+    args: QueryArgs = {}
+    args["sampling_type"] = sampling_type
+    args["num_discrete_levels"] = num_discrete_levels
     return _to_json(
         _gen_query(
             what=_DOE_SIZE,
             uid=uid,
-            sampling_type=sampling_type,
-            num_discrete_levels=num_discrete_levels,
+            args=args,
             password=password,
         )
     )
