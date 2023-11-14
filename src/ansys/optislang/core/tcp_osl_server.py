@@ -67,8 +67,8 @@ class TcpClient:
 
     Parameters
     ----------
-    socket: socket.SocketType, None, optional
-        Client socket.
+    socket: Optional[socket.SocketType], optional
+        Client socket. Defaults to ``None``.
     logger: Any, optional
         Object for logging. If ``None``, standard logging object is used. Defaults to ``None``.
 
@@ -88,7 +88,7 @@ class TcpClient:
     # Response size in bytes. Value is assumed to be binary 64Bit unsigned integer.
     _RESPONSE_SIZE_BYTES = 8
 
-    def __init__(self, socket: Union[socket.SocketType, None] = None, logger=None) -> None:
+    def __init__(self, socket: Optional[socket.SocketType] = None, logger=None) -> None:
         """Initialize a new instance of the ``TcpClient`` class."""
         self.__socket = socket
 
@@ -524,11 +524,11 @@ class TcpOslListener:
             is given, the blocking mode is used.
         name: str
             Name of listener.
-        host: str
-            Local IPv6 address.
-        uid: str, optional
+        host: Optional[str], optional
+            Local IPv6 address. Defaults to ``None``.
+        uid: Optional[str], optional
             Unique ID of listener, should be used only if listener is used for optiSLangs port
-            when started locally.
+            when started locally. Defaults to ``None``.
         logger: OslLogger, optional
             Preferably OslLogger should be given. If not given, default logging.Logger is used.
 
@@ -808,15 +808,15 @@ class TcpOslServer(OslServer):
 
     Parameters
     ----------
-    host : str, optional
+    host : Optional[str], optional
         A string representation of an IPv4/v6 address or domain name of running optiSLang server.
         Defaults to ``None``.
-    port : int, optional
+    port : Optional[int], optional
         A numeric port number of running optiSLang server. Defaults to ``None``.
-    executable : Union[str, pathlib.Path], optional
+    executable : Optional[Union[str, pathlib.Path]], optional
         Path to the optiSLang executable file which supposed to be executed on localhost.
         It is ignored when the host and port parameters are specified. Defaults to ``None``.
-    project_path : Union[str, pathlib.Path], optional
+    project_path : Optional[Union[str, pathlib.Path]], optional
         Path to the optiSLang project file which is supposed to be used by new local optiSLang
         server. It is ignored when the host and port parameters are specified.
         - If the project file exists, it is opened.
@@ -825,9 +825,9 @@ class TcpOslServer(OslServer):
         Defaults to ``None``.
     batch : bool, optional
         Determines whether to start optiSLang server in batch mode. Defaults to ``True``.
-    port_range : Tuple[int, int], optional
+    port_range : Optional[Tuple[int, int]], optional
         Defines the port range for optiSLang server. Defaults to ``None``.
-    no_run : bool, optional
+    no_run : Optional[bool], optional
         Determines whether not to run the specified project when started in batch mode.
         Defaults to ``None``.
 
@@ -858,7 +858,7 @@ class TcpOslServer(OslServer):
 
         .. note:: Only supported in batch mode.
 
-    listener_id : str, optional
+    listener_id : Optional[str], optional
         Specific unique ID for the TCP listener. Defaults to ``None``.
     multi_listener : Iterable[Tuple[str, int, Optional[str]]], optional
         Multiple remote listeners (plain TCP/IP based) to be registered at optiSLang server.
@@ -868,7 +868,7 @@ class TcpOslServer(OslServer):
         Time in seconds to listen to the optiSLang server port. If the port is not listened
         for specified time, the optiSLang server is not started and RuntimeError is raised.
         It is ignored when the host and port parameters are specified. Defaults to 20 s.
-    password : str, optional
+    password : Optional[str], optional
         The server password. Use when communication with the server requires the request
         to contain a password entry. Defaults to ``None``.
     logger : Any, optional
@@ -879,40 +879,40 @@ class TcpOslServer(OslServer):
 
         .. note:: Only supported in batch mode.
 
-    env_vars : Mapping[str, str], optional
+    env_vars : Optional[Mapping[str, str]], optional
         Additional environmental variables (key and value) for the optiSLang server process.
         Defaults to ``None``.
-    import_project_properties_file : Union[str, pathlib.Path], optional
+    import_project_properties_file : Optional[Union[str, pathlib.Path]], optional
         Optional path to a project properties file to import. Defaults to ``None``.
-    export_project_properties_file : Union[str, pathlib.Path], optional
+    export_project_properties_file : Optional[Union[str, pathlib.Path]], optional
         Optional path to a project properties file to export. Defaults to ``None``.
 
         .. note:: Only supported in batch mode.
 
-    import_placeholders_file : Union[str, pathlib.Path], optional
+    import_placeholders_file : Optional[Union[str, pathlib.Path]], optional
         Optional path to a placeholders file to import. Defaults to ``None``.
-    export_placeholders_file : Union[str, pathlib.Path], optional
+    export_placeholders_file : Optional[Union[str, pathlib.Path]], optional
         Optional path to a placeholders file to export. Defaults to ``None``.
 
         .. note:: Only supported in batch mode.
 
-    output_file : Union[str, pathlib.Path], optional
+    output_file : Optional[Union[str, pathlib.Path]], optional
         Optional path to an output file for writing project run results to. Defaults to ``None``.
 
         .. note:: Only supported in batch mode.
 
-    dump_project_state : Union[str, pathlib.Path], optional
+    dump_project_state : Optional[Union[str, pathlib.Path]], optional
         Optional path to a project state dump file to export. If a relative path is provided,
         it is considered to be relative to the project working directory. Defaults to ``None``.
 
         .. note:: Only supported in batch mode.
 
-    opx_project_definition_file : Union[str, pathlib.Path], optional
+    opx_project_definition_file : Optional[Union[str, pathlib.Path]], optional
         Optional path to an OPX project definition file. Defaults to ``None``.
 
         .. note:: Only supported in batch mode.
 
-    additional_args : Iterable[str], optional
+    additional_args : Optional[Iterable[str]], optional
         Additional command line arguments used for execution of the optiSLang server process.
         Defaults to ``None``.
 
@@ -2662,8 +2662,8 @@ class TcpOslServer(OslServer):
         ----------
         timeout: float
             Timeout.
-        Uid: str
-            Listener uid.
+        Uid: Optional[str], optional
+            Listener uid. Defaults to ``None``.
 
         Returns
         -------
@@ -2817,7 +2817,7 @@ class TcpOslServer(OslServer):
         timeout: float
             Listener will remain active for ``timeout`` ms unless refreshed.
 
-        notifications: Iterable[ServerNotification], optional
+        notifications: Optional[Iterable[ServerNotification]], optional
             Either ["ALL"] or Sequence picked from below options:
             Server: [ "SERVER_UP", "SERVER_DOWN" ] (always be sent by default).
             Logging: [ "LOG_INFO", "LOG_WARNING", "LOG_ERROR", "LOG_DEBUG" ].
@@ -2825,6 +2825,7 @@ class TcpOslServer(OslServer):
                 "NOTHING_PROCESSED", "CHECK_FAILED", "EXEC_FAILED" ].
             Nodes: [ "ACTOR_STATE_CHANGED", "ACTOR_ACTIVE_CHANGED", "ACTOR_NAME_CHANGED",
                 "ACTOR_CONTENTS_CHANGED", "ACTOR_DATA_CHANGED" ].
+            Defaults to ``None``.
 
         Returns
         -------

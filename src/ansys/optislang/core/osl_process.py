@@ -44,9 +44,9 @@ class OslServerProcess:
 
     Parameters
     ----------
-    executable : Union[str, pathlib.Path]
-        Path to the optiSLang executable file.
-    project_path : Union[str, pathlib.Path], optional
+    executable : Optional[Union[str, pathlib.Path]], optional
+        Path to the optiSLang executable file. Defaults to ``None``.
+    project_path : Optional[Union[str, pathlib.Path]], optional
         Path to the optiSLang project file.
         - If the project file exists, it is opened.
         - If the project file does not exist, a new project is created on the specified path.
@@ -54,12 +54,12 @@ class OslServerProcess:
         Defaults to ``None``.
     batch : bool, optional
         Determines whether to start optiSLang server in batch mode. Defaults to ``True``.
-    port_range : Tuple[int, int], optional
+    port_range : Optional[Tuple[int, int]], optional
         Defines the port range for optiSLang server. Defaults to ``None``.
-    password : str, optional
+    password : Optional[str], optional
         The server password. Use when communication with the server requires the request
         to contain a password entry. Defaults to ``None``.
-    no_run : bool, optional
+    no_run : Optional[bool], optional
         Determines whether not to run the specified project when started in batch mode.
         Defaults to ``None``.
 
@@ -93,29 +93,29 @@ class OslServerProcess:
     enable_tcp_server : bool, optional
         Determines whether to enable optiSLang TCP server.
         Defaults to ``True``.
-    server_info : Union[str, pathlib.Path], optional
+    server_info : Optional[Union[str, pathlib.Path]], optional
         Path to the server information file. If a relative path is provided, it is considered
         to be relative to the project working directory. If ``None``, no server information file
         will be written. Defaults to ``None``.
     log_commands : bool, optional
         Determines whether to display server events in the Message log pane. Defaults to ``False``.
-    listener : Tuple[str, int], optional
+    listener : Optional[Tuple[str, int]], optional
         Host and port of the remote listener (plain TCP/IP based) to be registered at optiSLang
         server. Defaults to ``None``.
-    listener_id : str, optional
+    listener_id : Optional[str], optional
         Specific unique ID for the TCP listener. Defaults to ``None``.
     multi_listener : Iterable[Tuple[str, int, Optional[str]]], optional
         Multiple remote listeners (plain TCP/IP based) to be registered at optiSLang server.
         Each listener is a combination of host, port and (optionally) listener ID.
         Defaults to ``None``.
-    notifications : Iterable[ServerNotification], optional
+    notifications : Optional[Iterable[ServerNotification]], optional
         Notifications to be sent to the listener. Defaults to ``None``.
     shutdown_on_finished: bool, optional
         Shut down when execution is finished. Defaults to ``True``.
 
         .. note:: Only supported in batch mode.
 
-    env_vars : Mapping[str, str], optional
+    env_vars : Optional[Mapping[str, str]], optional
         Additional environmental variables (key and value) for the optiSLang server process.
         Defaults to ``None``.
     logger : Any, optional
@@ -124,37 +124,37 @@ class OslServerProcess:
         Determines whether the process STDOUT is supposed to be logged. Defaults to ``True``.
     log_process_stderr : bool, optional
         Determines whether the process STDERR is supposed to be logged. Defaults to ``True``.
-    import_project_properties_file : Union[str, pathlib.Path], optional
+    import_project_properties_file : Optional[Union[str, pathlib.Path]], optional
         Optional path to a project properties file to import. Defaults to ``None``.
-    export_project_properties_file : Union[str, pathlib.Path], optional
+    export_project_properties_file : Optional[Union[str, pathlib.Path]], optional
         Optional path to a project properties file to export. Defaults to ``None``.
 
         .. note:: Only supported in batch mode.
 
-    import_placeholders_file : Union[str, pathlib.Path], optional
+    import_placeholders_file : Optional[Union[str, pathlib.Path]], optional
         Optional path to a placeholders file to import. Defaults to ``None``.
-    export_placeholders_file : Union[str, pathlib.Path], optional
+    export_placeholders_file : Optional[[str, pathlib.Path]], optional
         Optional path to a placeholders file to export. Defaults to ``None``.
 
         .. note:: Only supported in batch mode.
 
-    output_file : Union[str, pathlib.Path], optional
+    output_file : Optional[Union[str, pathlib.Path]], optional
         Optional path to an output file for writing project run results to. Defaults to ``None``.
 
         .. note:: Only supported in batch mode.
 
-    dump_project_state : Union[str, pathlib.Path], optional
+    dump_project_state : Optional[Union[str, pathlib.Path]], optional
         Optional path to a project state dump file to export. If a relative path is provided,
         it is considered to be relative to the project working directory. Defaults to ``None``.
 
         .. note:: Only supported in batch mode.
 
-    opx_project_definition_file : Union[str, pathlib.Path], optional
+    opx_project_definition_file : Optional[Union[str, pathlib.Path]], optional
         Optional path to an OPX project definition file. Defaults to ``None``.
 
         .. note:: Only supported in batch mode.
 
-    additional_args : Iterable[str], optional
+    additional_args : Optional[Iterable[str]], optional
         Additional command line arguments used for execution of the optiSLang server process.
         Defaults to ``None``.
 

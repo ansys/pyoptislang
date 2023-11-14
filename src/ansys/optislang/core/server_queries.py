@@ -40,8 +40,8 @@ def actor_info(uid: str, password: Optional[str] = None) -> str:
     ----------
     uid: str
         Uid entry.
-    password : str, opt
-        Password.
+    password : Optional[str], optional
+        Password. Defaults to ``None``.
 
     Returns
     -------
@@ -62,8 +62,8 @@ def actor_internal_variables(
         Uid entry.
     include_reference_values: bool, optional
         Whether reference values are to be included.
-    password : str, opt
-        Password.
+    password : Optional[str], optional
+        Password. Defaults to ``None``.
 
     Returns
     -------
@@ -87,8 +87,8 @@ def actor_properties(uid: str, password: Optional[str] = None) -> str:
     ----------
     uid: str
         Uid entry.
-    password : str, opt
-        Password.
+    password : Optional[str], optional
+        Password. Defaults to ``None``.
 
     Returns
     -------
@@ -109,8 +109,8 @@ def actor_registered_input_slots(
         Uid entry.
     include_reference_values: bool, optional
         Whether reference values are to be included.
-    password : str, opt
-        Password.
+    password : Optional[str], optional
+        Password. Defaults to ``None``.
 
     Returns
     -------
@@ -138,8 +138,8 @@ def actor_registered_output_slots(
         Uid entry.
     include_reference_values: bool, optional
         Whether reference values are to be included.
-    password : str, opt
-        Password.
+    password : Optional[str], optional
+        Password. Defaults to ``None``.
 
     Returns
     -------
@@ -167,8 +167,8 @@ def actor_registered_parameters(
         Uid entry.
     include_reference_values: bool, optional
         Whether reference values are to be included.
-    password : str, opt
-        Password.
+    password : Optional[str], optional
+        Password. Defaults to ``None``.
 
     Returns
     -------
@@ -196,8 +196,8 @@ def actor_registered_responses(
         Uid entry.
     include_reference_values: bool, optional
         Whether reference values are to be included.
-    password : str, opt
-        Password.
+    password : Optional[str], optional
+        Password. Defaults to ``None``.
 
     Returns
     -------
@@ -221,8 +221,8 @@ def actor_states(uid: str, password: Optional[str] = None) -> str:
     ----------
     uid: str
         Uid entry.
-    password : str, opt
-        Password.
+    password : Optional[str], optional
+        Password. Defaults to ``None``.
 
     Returns
     -------
@@ -241,8 +241,8 @@ def actor_status_info(uid: str, hid: str, password: Optional[str] = None) -> str
         Uid entry.
     hid: str
         Hid entry.
-    password : str, opt
-        Password.
+    password : Optional[str], optional
+        Password. Defaults to ``None``.
 
     Returns
     -------
@@ -252,7 +252,7 @@ def actor_status_info(uid: str, hid: str, password: Optional[str] = None) -> str
     return _to_json(_gen_query(what=_ACTOR_STATUS_INFO, uid=uid, hid=hid, password=password))
 
 
-def actor_supports(uid: str, feature_name: str, password=None) -> str:
+def actor_supports(uid: str, feature_name: str, password: Optional[str] = None) -> str:
     """Generate JSON string of actor_supports query.
 
     Parameters
@@ -261,8 +261,8 @@ def actor_supports(uid: str, feature_name: str, password=None) -> str:
         Uid entry.
     feature_name: str
         Name of requested feature.
-    password : str, opt
-        Password.
+    password : Optional[str], optional
+        Password. Defaults to ``None``.
 
     Returns
     -------
@@ -281,8 +281,8 @@ def available_input_locations(uid: str, password: Optional[str] = None) -> str:
     ----------
     uid: str
         Uid entry.
-    password : str, opt
-        Password.
+    password : Optional[str], optional
+        Password. Defaults to ``None``.
 
     Returns
     -------
@@ -305,8 +305,8 @@ def available_output_locations(uid: str, password: Optional[str] = None) -> str:
     ----------
     uid: str
         Uid entry.
-    password : str, opt
-        Password.
+    password : Optional[str], optional
+        Password. Defaults to ``None``.
 
     Returns
     -------
@@ -327,8 +327,8 @@ def basic_project_info(password: Optional[str] = None) -> str:
 
     Parameters
     ----------
-    password : str, opt
-        Password.
+    password : Optional[str], optional
+        Password. Defaults to ``None``.
 
     Returns
     -------
@@ -351,8 +351,8 @@ def doe_size(
         Sampling type.
     num_discrete_levels: int
         Number of discrete levels.
-    password : str, opt
-        Password.
+    password : Optional[str], optional
+        Password. Defaults to ``None``.
 
     Returns
     -------
@@ -377,8 +377,8 @@ def full_project_status_info(password: Optional[str] = None) -> str:
 
     Parameters
     ----------
-    password : str, opt
-        Password.
+    password : Optional[str], optional
+        Password. Defaults to ``None``.
 
     Returns
     -------
@@ -393,8 +393,8 @@ def full_project_tree(password: Optional[str] = None) -> str:
 
     Parameters
     ----------
-    password : str, opt
-        Password.
+    password : Optional[str], optional
+        Password. Defaults to ``None``.
 
     Returns
     -------
@@ -409,8 +409,8 @@ def full_project_tree_with_properties(password: Optional[str] = None) -> str:
 
     Parameters
     ----------
-    password : str, opt
-        Password.
+    password : Optional[str], optional
+        Password. Defaults to ``None``.
 
     Returns
     -------
@@ -427,8 +427,8 @@ def get_criteria(uid: str, password: Optional[str] = None) -> str:
     ----------
     uid: str
         Uid entry.
-    password : str, opt
-        Password.
+    password : Optional[str], optional
+        Password. Defaults to ``None``.
 
     Returns
     -------
@@ -447,8 +447,8 @@ def get_criterion(uid: str, name: str, password: Optional[str] = None) -> str:
         Uid entry.
     name: str
         Criterion name.
-    password : str, opt
-        Password.
+    password : Optional[str], optional
+        Password. Defaults to ``None``.
 
     Returns
     -------
@@ -471,8 +471,8 @@ def hpc_licensing_forwarded_environment(uid: str, password: Optional[str] = None
         Hid entry.
     slot_name: str
         Slot name entry.
-    password : str, opt
-        Password.
+    password : Optional[str], optional
+        Password. Defaults to ``None``.
 
     Returns
     -------
@@ -495,8 +495,8 @@ def input_slot_value(uid: str, hid: str, slot_name: str, password: Optional[str]
         Hid entry.
     slot_name: str
         Slot name entry.
-    password : str, opt
-        Password.
+    password : Optional[str], optional
+        Password. Defaults to ``None``.
 
     Returns
     -------
@@ -519,8 +519,8 @@ def output_slot_value(uid: str, hid: str, slot_name: str, password: Optional[str
         Hid entry.
     slot_name: str
         Slot name entry.
-    password : str, opt
-        Password.
+    password : Optional[str], optional
+        Password. Defaults to ``None``.
 
     Returns
     -------
@@ -539,8 +539,8 @@ def project_tree_systems(password: Optional[str] = None) -> str:
 
     Parameters
     ----------
-    password : str, opt
-        Password.
+    password : Optional[str], optional
+        Password. Defaults to ``None``.
 
     Returns
     -------
@@ -555,8 +555,8 @@ def project_tree_systems_with_properties(password: Optional[str] = None) -> str:
 
     Parameters
     ----------
-    password : str, opt
-        Password.
+    password : Optional[str], optional
+        Password. Defaults to ``None``.
 
     Returns
     -------
@@ -571,8 +571,8 @@ def server_info(password: Optional[str] = None) -> str:
 
     Parameters
     ----------
-    password : str, opt
-        Password.
+    password : Optional[str], optional
+        Password. Defaults to ``None``.
 
     Returns
     -------
@@ -587,8 +587,8 @@ def server_is_alive(password: Optional[str] = None) -> str:
 
     Parameters
     ----------
-    password : str, opt
-        Password.
+    password : Optional[str], optional
+        Password. Defaults to ``None``.
 
     Returns
     -------
@@ -603,8 +603,8 @@ def systems_status_info(password: Optional[str] = None) -> str:
 
     Parameters
     ----------
-    password : str, opt
-        Password.
+    password : Optional[str], optional
+        Password. Defaults to ``None``.
 
     Returns
     -------
@@ -628,16 +628,16 @@ def _gen_query(
     ----------
     what : str
         Command type.
-    password: Optional[str]
-        Password.
-    uid : Optional[str]
-        Uid entry.
-    hid: Optional[str]
-        Hid entry.
-    args: Optional[QueryArgs]
+    password: Optional[str], optional
+        Password. Defaults to ``None``.
+    uid : Optional[str], optional
+        Uid entry. Defaults to ``None``.
+    hid: Optional[str], optional
+        Hid entry. Defaults to ``None``.
+    args: Optional[QueryArgs], optional
         Dictionary of features, e.g. "feature": "FEATURE_NAME".
-    slot_name: Optional[str]
-        Slot name.
+    slot_name: Optional[str], optional
+        Slot name. Defaults to ``None``.
 
     Returns
     -------

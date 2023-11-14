@@ -76,14 +76,14 @@ def apply_wizard(
     type_: str
         Node or system type, supported values are:
         ["solver", "sensitivity", "optimization", "robustness", "reevaluation"].
-    use_existing_system: bool, opt
-        True or false.
-    usage_mode: str, opt
-        Usage mode, e.g. "EXPERT".
-    parent_hwnd: str, opt
-        Parent hwnd.
-    password : str, opt
-        Password.
+    use_existing_system: Optional[bool], optional
+        True or false. Defaults to ``None``.
+    usage_mode: Optional[str], optional
+        Usage mode, e.g. "EXPERT". Defaults to ``None``.
+    parent_hwnd: Optional[str], optional
+        Parent hwnd. Defaults to ``None``.
+    password : Optional[str], optional
+        Password. Defaults to ``None``.
 
     Returns
     -------
@@ -120,8 +120,8 @@ def close(password: Optional[str] = None) -> str:
 
     Parameters
     ----------
-    password : str, opt
-        Password.
+    password : Optional[str], optional
+        Password. Defaults to ``None``.
 
     Returns
     -------
@@ -150,8 +150,8 @@ def connect_nodes(
         Uid of connection target.
     to_slot: str
         Slot of connection target.
-    password : str, opt
-        Password.
+    password : Optional[str], optional
+        Password. Defaults to ``None``.
 
     Returns
     -------
@@ -178,10 +178,10 @@ def create_input_slot(
         Actor uid entry.
     slot_name: str
         Name of slot.
-    type_hint: str, opt
-        Type of hint.
-    password : str, opt
-        Password.
+    type_hint: Optional[str], optional
+        Type of hint. Defaults to ``None``.
+    password : Optional[str], optional
+        Password. Defaults to ``None``.
 
     Returns
     -------
@@ -215,12 +215,12 @@ def create_node(
         Type.
     name: str
         Name.
-    parent_uid: str, opt
-        Parent uid entry.
-    design_flow: str, opt
-        Design flow, optional values are ["RECEIVE", "SEND", "RECEIVE_SEND"].
-    password : str, opt
-        Password.
+    parent_uid: Optional[str], optional
+        Parent uid entry. Defaults to ``None``.
+    design_flow: Optional[str], optional
+        Design flow, optional values are ["RECEIVE", "SEND", "RECEIVE_SEND"]. Defaults to ``None``.
+    password : Optional[str], optional
+        Password. Defaults to ``None``.
 
     Returns
     -------
@@ -249,10 +249,10 @@ def create_output_slot(
         Actor uid entry.
     slot_name: str
         Name of the slot.
-    type_hint: str
-        Type of the hint.
-    password : str, opt
-        Password.
+    type_hint: Optional[str]
+        Type of the hint. Defaults to ``None``.
+    password : Optional[str], optional
+        Password. Defaults to ``None``.
 
     Returns
     -------
@@ -285,12 +285,12 @@ def create_start_designs(
         Actor uid entry.
     sampling_type: str
         Sampling type, e.g. "fullfactorial".
-    number_of_levels: int, opt
-        Number of levels.
-    number_of_samples: int, opt
-        Number of samples.
-    password : str, opt
-        Password.
+    number_of_levels: Optional[int], optional
+        Number of levels. Defaults to ``None``.
+    number_of_samples: Optional[int], optional
+        Number of samples. Defaults to ``None``.
+    password : Optional[str], optional
+        Password. Defaults to ``None``.
 
     Returns
     -------
@@ -326,8 +326,8 @@ def disconnect_slot(
         Name of the slot.
     direction: str
         Direction.
-    password : str, opt
-        Password.
+    password : Optional[str], optional
+        Password. Defaults to ``None``.
 
     Returns
     -------
@@ -351,8 +351,8 @@ def evaluate_design(parameters: Dict, password: Optional[str] = None) -> str:
     ----------
     parameters: Dict
         Dictionary of parameters.
-    password : str, opt
-        Password.
+    password : Optional[str], optional
+        Password. Defaults to ``None``.
 
     Returns
     -------
@@ -379,12 +379,12 @@ def export_designs(
         Actor uid entry.
     path: str
        Path.
-    format: str, opt
+    format: Optional[str], optional
         Type_hint format.
-    csv_separator: str, opt
+    csv_separator: Optional[str], optional
         CSV separator.
-    password : str, opt
-        Password.
+    password : Optional[str], optional
+        Password. Defaults to ``None``.
 
     Returns
     -------
@@ -412,8 +412,8 @@ def finalize(actor_uid: str, password: Optional[str] = None) -> str:
     ----------
     actor_uid: str
         Actor uid entry.
-    password : str, opt
-        Password.
+    password : Optional[str], optional
+        Password. Defaults to ``None``.
 
     Returns
     -------
@@ -432,8 +432,8 @@ def link_registered_file(actor_uid: str, uid: str, password: Optional[str] = Non
         Actor uid entry.
     uid: str
         Uid entry.
-    password : str, opt
-        Password.
+    password : Optional[str], optional
+        Password. Defaults to ``None``.
 
     Returns
     -------
@@ -454,8 +454,8 @@ def new(password: Optional[str] = None) -> str:
 
     Parameters
     ----------
-    password : str, opt
-        Password.
+    password : Optional[str], optional
+        Password. Defaults to ``None``.
 
     Returns
     -------
@@ -480,8 +480,8 @@ def open(
         True/False.
     do_reset: bool
         True/False.
-    password : str, opt
-        Password.
+    password : Optional[str], optional
+        Password. Defaults to ``None``.
 
     Returns
     -------
@@ -502,8 +502,8 @@ def pause(password: Optional[str] = None) -> str:
 
     Parameters
     ----------
-    password : str, opt
-        Password.
+    password : Optional[str], optional
+        Password. Defaults to ``None``.
 
     Returns
     -------
@@ -522,10 +522,10 @@ def reevaluate_state(
     ----------
     actor_uid: str
         Actor uid entry.
-    hid: str
-        Hid entry.
-    password : str, opt
-        Password.
+    hid: Optional[str], optional
+        Hid entry. Defaults to ``None``.
+    password : Optional[str], optional
+        Password. Defaults to ``None``.
 
     Returns
     -------
@@ -546,8 +546,8 @@ def refresh_listener_registration(uid: str, password: Optional[str] = None) -> s
     ----------
     uid: str
         Uid entry.
-    password : str, opt
-        Password.
+    password : Optional[str], optional
+        Password. Defaults to ``None``.
 
     Returns
     -------
@@ -572,18 +572,18 @@ def register_file(
 
     Parameters
     ----------
-    uid: str, opt
-        Uid entry.
-    ident: str, opt
-        Ident.
-    local_location: Dict, opt
+    uid: Optional[str], optional
+        Uid entry. Defaults to ``None``.
+    ident: Optional[str], optional
+        Ident. Defaults to ``None``.
+    local_location: Optional[Dict], optional
         Dictionary specifying location, e. g. { "split_path": {"head": "",
         "tail": "C:/samples_path/result.txt" }, "base_path": "",
-        "base_path_mode": "ABSOLUTE_PATH" }.
-    action: str, opt
-        Action, e. g. "Send"
-    password : str, opt
-        Password.
+        "base_path_mode": "ABSOLUTE_PATH" }. Defaults to ``None``.
+    action: Optional[str], optional
+        Action, e. g. "Send". Defaults to ``None``.
+    password : Optional[str], optional
+        Password. Defaults to ``None``.
 
     Returns
     -------
@@ -617,19 +617,19 @@ def register_listener(
 
     Parameters
     ----------
-    id: str, opt
+    id: Optional[str], optional
         Id of the local listener.
-    host: str, opt
+    host: Optional[str], optional
         IP of the TCP listener
-    port: int, opt
+    port: Optional[int], optional
         Port of the TCP listener.
-    time_out: int, opt
-        Unregister policy timeout in ms, default 60000 ms.
-    notifications: Sequence, opt
+    time_out: Optional[int], optional
+        Unregister policy timeout in ms. Defaults to ``None``.
+    notifications: Optional[Iterable[str]], optional
         Notifications.
-    password : str, opt
-        Password.
-    listener_uid : str, opt
+    password : Optional[str], optional
+        Password. Defaults to ``None``.
+    listener_uid : Optional[str], optional
         Listener UID.
 
     Returns
@@ -665,8 +665,8 @@ def register_locations_as_parameter(actor_uid: str, password: Optional[str] = No
     ----------
     actor_uid: str
         Actor uid entry.
-    password : str, opt
-        Password.
+    password : Optional[str], optional
+        Password. Defaults to ``None``.
 
     Returns
     -------
@@ -687,8 +687,8 @@ def register_locations_as_response(actor_uid: str, password: Optional[str] = Non
     ----------
     actor_uid: str
         Actor uid entry.
-    password : str, opt
-        Password.
+    password : Optional[str], optional
+        Password. Defaults to ``None``.
 
     Returns
     -------
@@ -709,8 +709,8 @@ def remove_node(actor_uid: str, password: Optional[str] = None) -> str:
     ----------
     actor_uid: str
         Actor uid entry.
-    password : str, opt
-        Password.
+    password : Optional[str], optional
+        Password. Defaults to ``None``.
 
     Returns
     -------
@@ -729,8 +729,8 @@ def re_register_locations_as_parameter(actor_uid: str, password: Optional[str] =
     ----------
     actor_uid: str
         Actor uid entry.
-    password : str, opt
-        Password.
+    password : Optional[str], optional
+        Password. Defaults to ``None``.
 
     Returns
     -------
@@ -751,8 +751,8 @@ def re_register_locations_as_response(actor_uid: str, password: Optional[str] = 
     ----------
     actor_uid: str
         Actor uid entry.
-    password : str, opt
-        Password.
+    password : Optional[str], optional
+        Password. Defaults to ``None``.
 
     Returns
     -------
@@ -773,12 +773,12 @@ def reset(
 
     Parameters
     ----------
-    actor_uid: str, opt
-        Actor uid entry. A Hirearchical ID (hid) is required.
-    hid: str, opt
-        Hid entry. The actor uid is required.
-    password : str, opt
-        Password.
+    actor_uid: Optional[str], optional
+        Actor uid entry. A Hirearchical ID (hid) is required. Defaults to ``None``.
+    hid: Optional[str], optional
+        Hid entry. The actor uid is required. Defaults to ``None``.
+    password : Optional[str], optional
+        Password. Defaults to ``None``.
 
     Returns
     -------
@@ -801,12 +801,12 @@ def restart(
 
     Parameters
     ----------
-    actor_uid: str, opt
-        Actor uid entry. A Hirearchical ID (hid) is required.
-    hid: str, opt
-        Hid entry. The actor uid is required.
-    password : str, opt
-        Password.
+    actor_uid: Optional[str], optional
+        Actor uid entry. A Hirearchical ID (hid) is required. Defaults to ``None``.
+    hid: Optional[str], optional
+        Hid entry. The actor uid is required. Defaults to ``None``.
+    password : Optional[str], optional
+        Password. Defaults to ``None``.
 
     Returns
     -------
@@ -827,8 +827,8 @@ def resume(password: Optional[str] = None) -> str:
 
     Parameters
     ----------
-    password : str, opt
-        Password.
+    password : Optional[str], optional
+        Password. Defaults to ``None``.
 
     Returns
     -------
@@ -849,10 +849,10 @@ def run_python_script(
     ----------
     script: str
         Path of the script.
-    args: list, opt
-        IP of the TCP listener.
-    password : str, opt
-        Password.
+    args: Optional[list], optional
+        IP of the TCP listener. Defaults to ``None``.
+    password : Optional[str], optional
+        Password. Defaults to ``None``.
 
     Returns
     -------
@@ -875,10 +875,10 @@ def run_registered_files_actions(
 
     Parameters
     ----------
-    uid: str, opt
-        Uid entry.
-    password : str, opt
-        Password.
+    uid: Optional[str], optional
+        Uid entry. Defaults to ``None``.
+    password : Optional[str], optional
+        Password. Defaults to ``None``.
 
     Returns
     -------
@@ -900,8 +900,8 @@ def save(password: Optional[str] = None) -> str:
 
     Parameters
     ----------
-    password : str, opt
-        Password.
+    password : Optional[str], optional
+        Password. Defaults to ``None``.
 
     Returns
     -------
@@ -926,8 +926,8 @@ def save_as(
         True/False.
     do_reset: bool
         True/False.
-    password : str, opt
-        Password.
+    password : Optional[str], optional
+        Password. Defaults to ``None``.
 
     Returns
     -------
@@ -950,8 +950,8 @@ def save_copy(path: str, password: Optional[str] = None) -> str:
     ----------
     path: str
         path.
-    password : str, opt
-        Password.
+    password : Optional[str], optional
+        Password. Defaults to ``None``.
 
     Returns
     -------
@@ -977,8 +977,8 @@ def set_actor_property(
         Property name.
     value: str
         Value.
-    password : str, opt
-        Password.
+    password : Optional[str], optional
+        Password. Defaults to ``None``.
 
     Returns
     -------
@@ -1007,8 +1007,8 @@ def set_actor_setting(actor_uid: str, name: str, value: str, password: Optional[
         Property name.
     value: str
         Value.
-    password : str, opt
-        Password.
+    password : Optional[str], optional
+        Password. Defaults to ``None``.
 
     Returns
     -------
@@ -1039,8 +1039,8 @@ def set_actor_state_property(
         Property name.
     value: str
         Value.
-    password : str, opt
-        Password.
+    password : Optional[str], optional
+        Password. Defaults to ``None``.
 
     Returns
     -------
@@ -1067,8 +1067,8 @@ def set_placeholder_value(name: str, value: str, password: Optional[str] = None)
         Property name.
     value: str
         Value.
-    password : str, opt
-        Password.
+    password : Optional[str], optional
+        Password. Defaults to ``None``.
 
     Returns
     -------
@@ -1093,8 +1093,8 @@ def set_project_setting(name: str, value: str, password: Optional[str] = None) -
         Property name.
     value: str
         Value.
-    password : str, opt
-        Password.
+    password : Optional[str], optional
+        Password. Defaults to ``None``.
 
     Returns
     -------
@@ -1121,8 +1121,8 @@ def set_registered_file_value(
         Property name.
     value: Union[str, Dict]
         Value.
-    password : str, opt
-        Password.
+    password : Optional[str], optional
+        Password. Defaults to ``None``.
 
     Returns
     -------
@@ -1148,8 +1148,8 @@ def set_start_designs(actor_uid: str, start_designs: Dict, password: Optional[st
         Actor uid entry.
     start_designs: Dict
         Dictionary of settings.
-    password : str, opt
-        Password.
+    password : Optional[str], optional
+        Password. Defaults to ``None``.
 
     Returns
     -------
@@ -1176,10 +1176,10 @@ def set_succeeded_state(
     ----------
     actor_uid: str
         Actor uid entry.
-    hid: str, opt
-        Hid entry.
-    password : str, opt
-        Password.
+    hid: Optional[str], optional
+        Hid entry. Defaults to ``None``.
+    password : Optional[str], optional
+        Password. Defaults to ``None``.
 
     Returns
     -------
@@ -1208,12 +1208,12 @@ def show_dialog(
         for application dialogs: [ "about", "help", "settings", "plugin" ]
         for project dialogs: [ "project_settings", "project_overview", "license_management",
         "registered_files", "purge", "load_from", "save_to" ].
-    usage_mode: str, opt
-        Usage mode. e.g. "EXPERT".
-    parent_hwnd: str, opt
-        Parent hwnd.
-    password : str, opt
-        Password.
+    usage_mode: Optional[str], optional
+        Usage mode. e.g. "EXPERT". Defaults to ``None``.
+    parent_hwnd: Optional[str], optional
+        Parent hwnd. Defaults to ``None``.
+    password : Optional[str], optional
+        Password. Defaults to ``None``.
 
     Returns
     -------
@@ -1260,16 +1260,16 @@ def show_node_dialog(
     ----------
     actor_uid: str
         Actor uid entry.
-    blocking: bool, opt
+    blocking: Optional[bool], optional
         True/False.
-    type_: str, opt
+    type_: Optional[str], optional
         Type, e.g. "help".
-    usage_mode: str, opt
+    usage_mode: Optional[str], optional
         Usage mode. e.g. "EXPERT".
-    parent_hwnd: str, opt
+    parent_hwnd: Optional[str], optional
         Parent hwnd.
-    password : str, opt
-        Password.
+    password : Optional[str], optional
+        Password. Defaults to ``None``.
 
     Returns
     -------
@@ -1302,8 +1302,8 @@ def shutdown(password: Optional[str] = None) -> str:
 
     Parameters
     ----------
-    password : str, opt
-        Password.
+    password : Optional[str], optional
+        Password. Defaults to ``None``.
 
     Returns
     -------
@@ -1318,8 +1318,8 @@ def shutdown_when_finished(password: Optional[str] = None) -> str:
 
     Parameters
     ----------
-    password : str, opt
-        Password.
+    password : Optional[str], optional
+        Password. Defaults to ``None``.
 
     Returns
     -------
@@ -1336,12 +1336,12 @@ def start(
 
     Parameters
     ----------
-    actor_uid: str, opt
-        Actor uid entry. A Hirearchical ID (hid) is required.
-    hid: str, opt
-        Hid entry. The actor uid is required.
-    password : str, opt
-        Password.
+    actor_uid: Optional[str], optional
+        Actor uid entry. A Hirearchical ID (hid) is required. Defaults to ``None``.
+    hid: Optional[str], optional
+        Hid entry. The actor uid is required. Defaults to ``None``.
+    password : Optional[str], optional
+        Password. Defaults to ``None``.
 
     Returns
     -------
@@ -1365,12 +1365,12 @@ def stop(
 
     Parameters
     ----------
-    actor_uid: str, opt
-        Actor uid entry. A Hirearchical ID (hid) is required.
-    hid: str, opt
-        Hid entry. The actor uid is required.
-    password : str, opt
-        Password.
+    actor_uid: Optional[str], optional
+        Actor uid entry. A Hirearchical ID (hid) is required. Defaults to ``None``.
+    hid: Optional[str], optional
+        Hid entry. The actor uid is required. Defaults to ``None``.
+    password : Optional[str], optional
+        Password. Defaults to ``None``.
 
     Returns
     -------
@@ -1394,12 +1394,12 @@ def stop_gently(
 
     Parameters
     ----------
-    actor_uid: str, opt
-        Actor uid entry. A Hirearchical ID (hid) is required.
-    hid: str, opt
-        Hid entry. The actor uid is required.
-    password : str, opt
-        Password.
+    actor_uid: Optional[str], optional
+        Actor uid entry. A Hirearchical ID (hid) is required. Defaults to ``None``.
+    hid: Optional[str], optional
+        Hid entry. The actor uid is required. Defaults to ``None``.
+    password : Optional[str], optional
+        Password. Defaults to ``None``.
 
     Returns
     -------
@@ -1435,10 +1435,10 @@ def subscribe_for_push_notifications(
             "NOTHING_PROCESSED", "CHECK_FAILED", "EXEC_FAILED" ].
             Nodes: [ "ACTOR_STATE_CHANGED", "ACTOR_ACTIVE_CHANGED", "ACTOR_NAME_CHANGED",
             ACTOR_CONTENTS_CHANGED", "ACTOR_DATA_CHANGED" ].
-    node_types: Sequence, opt
-       Node types, e.g. ["Sensitivity", "AnsysWorkbench"].
-    password : str, opt
-        Password.
+    node_types: Optional[Sequence], optional
+       Node types, e.g. ["Sensitivity", "AnsysWorkbench"]. Defaults to ``None``.
+    password : Optional[str], optional
+        Password. Defaults to ``None``.
 
     Returns
     -------
@@ -1499,8 +1499,8 @@ def unlink_registered_file(actor_uid: str, uid: str, password: Optional[str] = N
         Actor uid entry.
     uid: str
         Uid entry.
-    password : str, opt
-        Password.
+    password : Optional[str], optional
+        Password. Defaults to ``None``.
 
     Returns
     -------
@@ -1524,8 +1524,8 @@ def unregister_file(uid: str, password: Optional[str] = None) -> str:
     ----------
     uid: str
         Uid entry.
-    password : str, opt
-        Password.
+    password : Optional[str], optional
+        Password. Defaults to ``None``.
 
     Returns
     -------
@@ -1545,8 +1545,8 @@ def unregister_listener(uid: str, password: Optional[str] = None) -> str:
     ----------
     uid: str
         Uid entry.
-    password : str, opt
-        Password.
+    password : Optional[str], optional
+        Password. Defaults to ``None``.
 
     Returns
     -------
@@ -1571,12 +1571,12 @@ def write_monitoring_database(
     ----------
     actor_uid: str
         Actor uid entry.
-    path: str, opt
-        Path.
-    hid: str, opt
-        Hid entry.
-    password : str, opt
-        Password.
+    path: Optional[str], optional
+        Path. Defaults to ``None``.
+    hid: Optional[str], optional
+        Hid entry. Defaults to ``None``.
+    password : Optional[str], optional
+        Password. Defaults to ``None``.
 
     Returns
     -------
@@ -1607,11 +1607,14 @@ def _gen_server_command(
     ----------
     command : str
         Command type.
-    password : str, opt
-        Password.
-    args : Dict, opt
-        Dictionary with specified arguments.
-    actor_uid : str, opt
+    password : Optional[str], optional
+        Password. Defaults to ``None``.
+    args : Optional[CommandArgs], optional
+        Dictionary with specified arguments. Defaults to ``None``.
+    actor_uid : Optional[str], optional
+        Actor uid. Defaults to ``None``.
+    hid: Optional[str], optional
+        Actor hid. Defaults to ``None``.
 
     Returns
     -------
@@ -1644,11 +1647,11 @@ def _gen_command(
         Command type.
     command : str
         Command name.
-    args: dict, optional
+    args: Optional[dict], optional
         Arguments.
-    actor_uid: str, optional
+    actor_uid: Optional[str], optional
         Actor uid.
-    hid: str, optional
+    hid: Optional[str], optional
         Actor hid.
 
     Returns
