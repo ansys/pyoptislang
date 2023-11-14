@@ -617,7 +617,10 @@ def systems_status_info(password: Optional[str] = None) -> str:
 def _gen_query(
     what: str,
     password: Optional[str],
-    **kwargs: Any,
+    uid: Optional[str] = None,
+    hid: Optional[str] = None,
+    args: Optional[QueryArgs] = None,
+    slot_name: Optional[str] = None,
 ) -> Dict:
     """Generate query in desired format.
 
@@ -625,10 +628,16 @@ def _gen_query(
     ----------
     what : str
         Command type.
-    password: str, optional
+    password: Optional[str]
         Password.
-    **kwargs: Any
-        Keyword arguments specific for individual queries (e. g. uid, hid, slot_name...).
+    uid : Optional[str]
+        Uid entry.
+    hid: Optional[str]
+        Hid entry.
+    args: Optional[QueryArgs]
+        Dictionary of features, e.g. "feature": "FEATURE_NAME".
+    slot_name: Optional[str]
+        Slot name.
 
     Returns
     -------
@@ -637,7 +646,14 @@ def _gen_query(
     """
     query: Dict[str, Any] = {}
     query["What"] = what
-    query.update(kwargs)
+    if uid is not None:
+        query["uid"] = uid
+    if hid is not None:
+        query["hid"] = hid
+    if args is not None:
+        query["args"] = args
+    if slot_name is not None:
+        query["slot_name"] = slot_name
     if password is not None:
         query["Password"] = password
     return query
