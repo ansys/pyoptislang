@@ -362,7 +362,7 @@ class Optislang:
         return self.__osl_server.get_project_uid() is not None
 
     @property
-    def project(self) -> Project:
+    def project(self) -> Optional[Project]:
         """Instance of the ``Project`` class.
 
         Returns

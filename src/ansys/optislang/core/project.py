@@ -153,7 +153,7 @@ class Project:
         """
         return self.root_system.get_reference_design()
 
-    def get_registered_files(self) -> Tuple[RegisteredFile]:
+    def get_registered_files(self) -> Tuple[RegisteredFile, ...]:
         """Get all registered files in the current project.
 
         Returns
@@ -186,7 +186,7 @@ class Project:
             ]
         )
 
-    def get_result_files(self) -> Tuple[RegisteredFile]:
+    def get_result_files(self) -> Tuple[RegisteredFile, ...]:
         """Get result files.
 
         Returns
