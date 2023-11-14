@@ -1466,7 +1466,7 @@ class TcpOslServer(OslServer):
         """
         return self.send_command(queries.basic_project_info(self.__password))
 
-    def get_criteria(self, uid: str) -> List[Dict]:
+    def get_criteria(self, uid: str) -> List[dict]:
         """Get information about all existing criterion from the system.
 
         Parameters
@@ -1476,7 +1476,7 @@ class TcpOslServer(OslServer):
 
         Returns
         -------
-        Dict
+        List[dict]
             Criteria information.
 
         Raises
@@ -1492,7 +1492,7 @@ class TcpOslServer(OslServer):
             "criteria"
         ]
 
-    def get_criterion(self, uid: str, name: str) -> dict:
+    def get_criterion(self, uid: str, name: str) -> Dict:
         """Get existing criterion from the system.
 
         Parameters
