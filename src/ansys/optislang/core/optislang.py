@@ -53,6 +53,15 @@ class Optislang:
 
     batch : bool, optional
         Determines whether to start optiSLang server in batch mode. Defaults to ``True``.
+
+        ..note:: Cannot be used in combination with service mode.
+
+    service: bool, optional
+        Determines whether to start optiSLang server in service mode. If ``True``,
+        ``batch`` argument is set to ``False``. Defaults to ``False``.
+
+        ..note:: Cannot be used in combination with batch mode.
+
     port_range : Tuple[int, int], optional
         Defines the port range for optiSLang server. Defaults to ``None``.
     no_run : bool, optional
@@ -178,6 +187,7 @@ class Optislang:
         executable: Optional[Union[str, Path]] = None,
         project_path: Optional[Union[str, Path]] = None,
         batch: bool = True,
+        service: bool = False,
         port_range: Optional[Tuple[int, int]] = None,
         no_run: Optional[bool] = None,
         no_save: bool = False,
@@ -207,6 +217,7 @@ class Optislang:
         self.__executable = Path(executable) if executable is not None else None
         self.__project_path = Path(project_path) if project_path is not None else None
         self.__batch = batch
+        self.__service = service
         self.__port_range = port_range
         self.__no_run = no_run
         self.__no_save = no_save
@@ -263,6 +274,7 @@ class Optislang:
                 logger=self.log,
                 shutdown_on_finished=self.__shutdown_on_finished,
                 batch=self.__batch,
+                service=self.__service,
                 port_range=self.__port_range,
                 no_run=self.__no_run,
                 force=self.__force,
