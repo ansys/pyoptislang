@@ -5,6 +5,7 @@ from typing import Any, Dict, Iterable, Optional, Sequence, Union
 CommandArgs = Dict[str, Any]
 
 _APPLY_WIZARD = "APPLY_WIZARD"
+_ADD_CRITERION = "ADD_CRITERION"
 _CLOSE = "CLOSE"
 _CONNECT_NODES = "CONNECT_NODES"
 _CREATE_INPUT_SLOT = "CREATE_INPUT_SLOT"
@@ -25,6 +26,8 @@ _REGISTER_FILE = "REGISTER_FILE"
 _REGISTER_LISTENER = "REGISTER_LISTENER"
 _REGISTER_LOCATIONS_AS_PARAMETER = "REGISTER_LOCATIONS_AS_PARAMETER"
 _REGISTER_LOCATIONS_AS_RESPONSE = "REGISTER_LOCATIONS_AS_RESPONSE"
+_REMOVE_CRITERIA = "REMOVE_CRITERIA"
+_REMOVE_CRITERION = "REMOVE_CRITERION"
 _REMOVE_NODE = "REMOVE_NODE"
 _RE_REGISTER_LOCATIONS_AS_PARAMETER = "RE_REGISTER_LOCATIONS_AS_PARAMETER"
 _RE_REGISTER_LOCATIONS_AS_RESPONSE = "RE_REGISTER_LOCATIONS_AS_RESPONSE"
@@ -39,6 +42,7 @@ _SAVE_COPY = "SAVE_COPY"
 _SET_ACTOR_PROPERTY = "SET_ACTOR_PROPERTY"
 _SET_ACTOR_SETTING = "SET_ACTOR_SETTING"
 _SET_ACTOR_STATE_PROPERTY = "SET_ACTOR_STATE_PROPERTY"
+_SET_CRITERION_PROPERTY = "SET_CRITERION_PROPERTY"
 _SET_PLACEHOLDER_VALUE = "SET_PLACEHOLDER_VALUE"
 _SET_PROJECT_SETTING = "SET_PROJECT_SETTING"
 _SET_REGISTERED_FILE_VALUE = "SET_REGISTERED_FILE_VALUE"
@@ -57,6 +61,53 @@ _UNREGISTER_FILE = "UNREGISTER_FILE"
 _UNREGISTER_LISTENER = "UNREGISTER_LISTENER"
 _WRITE_MONITORING_DATABASE = "WRITE_MONITORING_DATABASE"
 _builtin = "builtin"
+
+
+def add_criterion(
+    actor_uid: str,
+    criterion_type: str,
+    expression: str,
+    name: str,
+    limit: str = "",
+    password: Optional[str] = None,
+) -> str:
+    """Generate JSON string of add_criterion command.
+
+    Parameters
+    ----------
+    actor_uid: str
+        Unique identifying actor of the object.
+    criterion_type: str
+        Type of the criterion. Supported values are:
+        [
+            'ignore', 'min', 'max', 'lessequal', 'equal',
+            'greaterequal', 'lesslimitstate', 'greaterlimitstate',
+        ]
+    expression: str
+        Expression to be evaluated.
+    name: str
+        Criterion name.
+    limit: str, optional
+        Limit expression. By default `""`.
+    password : Optional[str], optional
+        Password. Defaults to ``None``.
+
+    Returns
+    -------
+    str
+        JSON string of add_criterion command.
+    """
+    args: CommandArgs = {}
+    args["criterion_type"] = criterion_type
+    args["expression"] = expression
+    args["name"] = name
+    args["limit"] = limit if limit is not None else ""
+
+    return _to_json(
+        _gen_server_command(
+            command=_ADD_CRITERION, actor_uid=actor_uid, args=args, password=password
+        )
+    )
 
 
 def apply_wizard(
@@ -702,6 +753,50 @@ def register_locations_as_response(actor_uid: str, password: Optional[str] = Non
     )
 
 
+def remove_criteria(actor_uid: str, password: Optional[str] = None) -> str:
+    """Generate JSON string of ``remove_criteria`` command.
+
+    Parameters
+    ----------
+    actor_uid: str
+        Actor uid entry.
+    password : Optional[str], optional
+        Password. Defaults to ``None``.
+
+    Returns
+    -------
+    str
+        JSON string of ``remove_criteria`` command.
+    """
+    return _to_json(
+        _gen_server_command(command=_REMOVE_CRITERIA, actor_uid=actor_uid, password=password)
+    )
+
+
+def remove_criterion(actor_uid: str, name: str, password: Optional[str] = None) -> str:
+    """Generate JSON string of ``remove_criterion`` command.
+
+    Parameters
+    ----------
+    actor_uid: str
+        Actor uid entry.
+    name: str
+        Criterion name.
+    password : Optional[str], optional
+        Password. Defaults to ``None``.
+
+    Returns
+    -------
+    str
+        JSON string of ``remove_criterion`` command.
+    """
+    return _to_json(
+        _gen_server_command(
+            command=_REMOVE_CRITERION, args={"name": name}, actor_uid=actor_uid, password=password
+        )
+    )
+
+
 def remove_node(actor_uid: str, password: Optional[str] = None) -> str:
     """Generate JSON string of ``remove node`` command.
 
@@ -1054,6 +1149,41 @@ def set_actor_state_property(
     return _to_json(
         _gen_server_command(
             command=_SET_ACTOR_STATE_PROPERTY, actor_uid=actor_uid, args=args, password=password
+        )
+    )
+
+
+def set_criterion_property(
+    actor_uid: str, criterion_name: str, name: str, value: Any, password: Optional[str] = None
+) -> str:
+    """Generate JSON string of ``set_criterion_property`` command.
+
+    Parameters
+    ----------
+    actor_uid: str
+        Actor uid entry.
+    criterion_name: str
+        Name of the criterion.
+    name: str
+        Name of the property.
+    value: Any
+        Value of the property.
+    password : Optional[str], optional
+        Password. Defaults to ``None``.
+
+    Returns
+    -------
+    str
+        JSON string of ``set_criterion_property`` command.
+    """
+    args: CommandArgs = {}
+    args["criterion_name"] = criterion_name
+    args["name"] = name
+    args["value"] = value
+
+    return _to_json(
+        _gen_server_command(
+            command=_SET_CRITERION_PROPERTY, actor_uid=actor_uid, args=args, password=password
         )
     )
 
@@ -1643,8 +1773,6 @@ def _gen_command(
 
     Parameters
     ----------
-    type : str
-        Command type.
     command : str
         Command name.
     args: Optional[dict], optional
@@ -1663,9 +1791,7 @@ def _gen_command(
     cmd["type"] = _builtin
     cmd["command"] = command
     if args:
-        cmd["args"] = {}
-        for feature, feature_name in args.items():
-            cmd["args"][feature] = feature_name
+        cmd["args"] = args
     if actor_uid:
         cmd["actor_uid"] = actor_uid
     if hid:

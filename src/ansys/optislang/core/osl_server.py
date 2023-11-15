@@ -29,6 +29,36 @@ class OslServer(ABC):
     #     pass
 
     @abstractmethod
+    def add_criterion(
+        self, uid: str, criterion_type: str, expression: str, name: str, limit: Optional[str] = None
+    ) -> None:  # pragma: no cover
+        """Set the properties of existing criterion for the system.
+
+        Parameters
+        ----------
+        uid : str
+            Actor uid.
+        criterion_type: str
+            Type of the criterion.
+        expression: str
+            Expression to be evaluated.
+        name: str
+            Criterion name.
+        limit: Optional[str], optional
+            Limit expression to be evaluated.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        pass
+
+    @abstractmethod
     def dispose(self) -> None:  # pragma: no cover
         """Terminate all local threads and unregister listeners.
 
@@ -978,6 +1008,48 @@ class OslServer(ABC):
         pass
 
     @abstractmethod
+    def remove_criteria(self, uid: str) -> None:  # pragma: no cover
+        """Remove all criteria from the system.
+
+        Parameters
+        ----------
+        uid : str
+            Actor uid.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        pass
+
+    @abstractmethod
+    def remove_criterion(self, uid: str, name: str) -> None:  # pragma: no cover
+        """Remove existing criterion from the system.
+
+        Parameters
+        ----------
+        uid : str
+            Actor uid.
+        name: str
+            Name of the criterion.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        pass
+
+    @abstractmethod
     def reset(self):  # pragma: no cover
         """Reset complete project.
 
@@ -1114,6 +1186,38 @@ class OslServer(ABC):
         ----------
         file_path : Union[str, pathlib.Path]
             Path where to save the project copy.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        pass
+
+    @abstractmethod
+    def set_criterion_property(
+        self,
+        uid: str,
+        criterion_name: str,
+        name: str,
+        value: Any,
+    ) -> None:  # pragma: no cover
+        """Set the properties of existing criterion for the system.
+
+        Parameters
+        ----------
+        uid : str
+            Actor uid.
+        criterion_name: str
+            Name of the criterion.
+        name: str
+            Property name.
+        value: Any
+            Property value.
 
         Raises
         ------

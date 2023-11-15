@@ -12,7 +12,7 @@ import socket
 import struct
 import threading
 import time
-from typing import Callable, Dict, Iterable, List, Mapping, Optional, Sequence, Tuple, Union
+from typing import Any, Callable, Dict, Iterable, List, Mapping, Optional, Sequence, Tuple, Union
 import uuid
 
 from ansys.optislang.core import server_commands as commands
@@ -1062,6 +1062,44 @@ class TcpOslServer(OslServer):
                     " is not fully supported. Please use at least version 23.1."
                 )
 
+    def add_criterion(
+        self, uid: str, criterion_type: str, expression: str, name: str, limit: Optional[str] = None
+    ) -> None:
+        """Set the properties of existing criterion for the system.
+
+        Parameters
+        ----------
+        uid : str
+            Actor uid.
+        criterion_type: str
+            Type of the criterion.
+        expression: str
+            Expression to be evaluated.
+        name: str
+            Criterion name.
+        limit: Optional[str], optional
+            Limit expression to be evaluated.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        self.send_command(
+            commands.add_criterion(
+                actor_uid=uid,
+                criterion_type=criterion_type,
+                expression=expression,
+                name=name,
+                limit=limit,
+                password=self.__password,
+            )
+        )
+
     def dispose(self) -> None:
         """Terminate all local threads and unregister listeners.
 
@@ -2091,6 +2129,48 @@ class TcpOslServer(OslServer):
             )
         )
 
+    def remove_criteria(self, uid: str) -> None:
+        """Remove all criteria from the system.
+
+        Parameters
+        ----------
+        uid : str
+            Actor uid.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        self.send_command(commands.remove_criteria(actor_uid=uid, password=self.__password))
+
+    def remove_criterion(self, uid: str, name: str) -> None:
+        """Remove existing criterion from the system.
+
+        Parameters
+        ----------
+        uid : str
+            Actor uid.
+        name: str
+            Name of the criterion.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        self.send_command(
+            commands.remove_criterion(actor_uid=uid, name=name, password=self.__password)
+        )
+
     def reset(self):
         """Reset complete project.
 
@@ -2259,6 +2339,46 @@ class TcpOslServer(OslServer):
         file_path = self.__cast_to_path(file_path=file_path)
         self.__validate_path(file_path=file_path)
         self.send_command(commands.save_copy(str(file_path.as_posix()), self.__password))
+
+    def set_criterion_property(
+        self,
+        uid: str,
+        criterion_name: str,
+        name: str,
+        value: Any,
+    ) -> None:
+        """Set the properties of existing criterion for the system.
+
+        Parameters
+        ----------
+        uid : str
+            Actor uid.
+        criterion_name: str
+            Name of the criterion.
+        name: str
+            Property name.
+        value: Any
+            Property value.
+
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        self.send_command(
+            commands.set_criterion_property(
+                actor_uid=uid,
+                criterion_name=criterion_name,
+                name=name,
+                value=value,
+                password=self.__password,
+            )
+        )
 
     def set_timeout(self, timeout: Union[float, None] = None) -> None:
         """Set timeout value for execution of commands.
