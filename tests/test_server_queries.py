@@ -204,6 +204,19 @@ def test_available_input_locations():
     assert dictionary["Password"] == example_password
 
 
+def test_available_nodes():
+    "Test available_nodes."
+    json_string = sq.available_nodes()
+    dictionary = json.loads(json_string)
+    requiered_string = json.loads('{ "What": "AVAILABLE_NODES" }')
+    assert isinstance(json_string, str)
+    assert sorted(dictionary.items()) == sorted(requiered_string.items())
+    # with password
+    json_string = sq.available_nodes(password=example_password)
+    dictionary = json.loads(json_string)
+    assert dictionary["Password"] == example_password
+
+
 def test_available_output_locations():
     "Test available_output_locations."
     json_string = sq.available_output_locations(uid=example_uid)

@@ -15,6 +15,7 @@ _ACTOR_STATES = "ACTOR_STATES"
 _ACTOR_STATUS_INFO = "ACTOR_STATUS_INFO"
 _ACTOR_SUPPORTS = "ACTOR_SUPPORTS"
 _AVAILABLE_INPUT_LOCATIONS = "AVAILABLE_INPUT_LOCATIONS"
+_AVAILABLE_NODES = "AVAILABLE_NODES"
 _AVAILABLE_OUTPUT_LOCATIONS = "AVAILABLE_OUTPUT_LOCATIONS"
 _BASIC_PROJECT_INFO = "BASIC_PROJECT_INFO"
 _DOE_SIZE = "DOE_SIZE"
@@ -296,6 +297,22 @@ def available_input_locations(uid: str, password: Optional[str] = None) -> str:
             password=password,
         )
     )
+
+
+def available_nodes(password=None) -> str:
+    """Generate JSON string of available nodes query.
+
+    Parameters
+    ----------
+    password : str, opt
+        Password.
+
+    Returns
+    -------
+    str
+        JSON string of available nodes query.
+    """
+    return _to_json(_gen_query(what=_AVAILABLE_NODES, password=password))
 
 
 def available_output_locations(uid: str, password: Optional[str] = None) -> str:

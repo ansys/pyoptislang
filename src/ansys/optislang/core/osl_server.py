@@ -397,6 +397,26 @@ class OslServer(ABC):
         pass
 
     @abstractmethod
+    def get_available_nodes(self) -> Dict[str, List[str]]:  # pragma: no cover
+        """Get available node types for current oSL server.
+
+        Returns
+        -------
+        Dict[str, List[str]]
+            Dictionary of available nodes types
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        pass
+
+    @abstractmethod
     def get_available_output_locations(self, uid: str) -> List[dict]:  # pragma: no cover
         """Get available output locations for a certain (integration) actor, if supported.
 

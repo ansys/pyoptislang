@@ -1482,6 +1482,29 @@ class TcpOslServer(OslServer):
             queries.available_input_locations(uid=uid, password=self.__password)
         )["available_input_locations"]
 
+    def get_available_nodes(self) -> Dict[str, List[str]]:
+        """Get available node types for current oSL server.
+
+        Returns
+        -------
+        Dict[str, List[str]]
+            Dictionary of available nodes types
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        # TODO: create unit test
+        available_nodes = self.send_command(queries.available_nodes(self.__password))
+        available_nodes.pop("message")
+        available_nodes.pop("status")
+        return available_nodes
+
     def get_available_output_locations(self, uid: str) -> List[dict]:
         """Get available output locations for a certain (integration) actor, if supported.
 
