@@ -47,7 +47,7 @@ def get_files(scriptname: str) -> Tuple[Optional[Path], Optional[ExampleFiles]]:
 
     Returns
     -------
-    Tuple[Path, Tuple[Path, ...]]
+    Tuple[Optional[Path], Optional[Tuple[Path, ...]]]
         Tuple[0]: path to script
         Tuple[1]: tuple of paths to files necessary for running script
     """
