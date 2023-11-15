@@ -31,7 +31,7 @@ from ansys.optislang.core.osl_process import OslServerProcess, ServerNotificatio
 from ansys.optislang.core.osl_server import OslServer
 
 
-def _get_current_timeout(initial_timeout: Union[float, None], start_time: float) -> None:
+def _get_current_timeout(initial_timeout: Union[float, None], start_time: float) -> Optional[float]:
     """Get actual timeout value.
 
     The function will raise a timeout exception if the timeout has expired.
@@ -46,6 +46,11 @@ def _get_current_timeout(initial_timeout: Union[float, None], start_time: float)
     start_time : float
         The time when the initial time out starts to count down. It is defined in seconds
         since the epoch as a floating point number.
+
+    Returns
+    -------
+    Optional[float]
+        Remaining timeout.
 
     Raises
     ------
@@ -1089,6 +1094,7 @@ class TcpOslServer(OslServer):
         TimeoutError
             Raised when the timeout float value expires.
         """
+        # TODO: create unit test
         self.send_command(
             commands.add_criterion(
                 actor_uid=uid,
@@ -1196,6 +1202,7 @@ class TcpOslServer(OslServer):
         TimeoutError
             Raised when the timeout float value expires.
         """
+        # TODO: create unit test
         return self.send_command(
             queries.actor_internal_variables(
                 uid=uid, include_reference_values=include_reference_values, password=self.__password
@@ -1252,6 +1259,7 @@ class TcpOslServer(OslServer):
         TimeoutError
             Raised when the timeout float value expires.
         """
+        # TODO: create unit test
         return self.send_command(
             queries.actor_registered_input_slots(
                 uid=uid, include_reference_values=include_reference_values, password=self.__password
@@ -1284,6 +1292,7 @@ class TcpOslServer(OslServer):
         TimeoutError
             Raised when the timeout float value expires.
         """
+        # TODO: create unit test
         return self.send_command(
             queries.actor_registered_output_slots(
                 uid=uid, include_reference_values=include_reference_values, password=self.__password
@@ -1316,6 +1325,7 @@ class TcpOslServer(OslServer):
         TimeoutError
             Raised when the timeout float value expires.
         """
+        # TODO: create unit test
         return self.send_command(
             queries.actor_registered_parameters(
                 uid=uid, include_reference_values=include_reference_values, password=self.__password
@@ -1348,6 +1358,7 @@ class TcpOslServer(OslServer):
         TimeoutError
             Raised when the timeout float value expires.
         """
+        # TODO: create unit test
         return self.send_command(
             queries.actor_registered_responses(
                 uid=uid, include_reference_values=include_reference_values, password=self.__password
@@ -1455,6 +1466,7 @@ class TcpOslServer(OslServer):
         TimeoutError
             Raised when the timeout float value expires.
         """
+        # TODO: create unit test
         return self.send_command(
             queries.available_input_locations(uid=uid, password=self.__password)
         )["available_input_locations"]
@@ -1481,6 +1493,7 @@ class TcpOslServer(OslServer):
         TimeoutError
             Raised when the timeout float value expires.
         """
+        # TODO: create unit test
         return self.send_command(
             queries.available_output_locations(uid=uid, password=self.__password)
         )["available_output_locations"]
@@ -1526,6 +1539,7 @@ class TcpOslServer(OslServer):
         TimeoutError
             Raised when the timeout float value expires.
         """
+        # TODO: create unit test
         return self.send_command(queries.get_criteria(uid=uid, password=self.__password))[
             "criteria"
         ]
@@ -1554,6 +1568,7 @@ class TcpOslServer(OslServer):
         TimeoutError
             Raised when the timeout float value expires.
         """
+        # TODO: create unit test
         return self.send_command(
             queries.get_criterion(uid=uid, name=name, password=self.__password)
         )["criteria"]
@@ -1584,6 +1599,7 @@ class TcpOslServer(OslServer):
         TimeoutError
             Raised when the timeout float value expires.
         """
+        # TODO: create unit test
         return self.send_command(
             queries.doe_size(
                 uid=uid,
@@ -2146,6 +2162,7 @@ class TcpOslServer(OslServer):
         TimeoutError
             Raised when the timeout float value expires.
         """
+        # TODO: create unit test
         self.send_command(commands.remove_criteria(actor_uid=uid, password=self.__password))
 
     def remove_criterion(self, uid: str, name: str) -> None:
@@ -2167,6 +2184,7 @@ class TcpOslServer(OslServer):
         TimeoutError
             Raised when the timeout float value expires.
         """
+        # TODO: create unit test
         self.send_command(
             commands.remove_criterion(actor_uid=uid, name=name, password=self.__password)
         )
@@ -2370,6 +2388,7 @@ class TcpOslServer(OslServer):
         TimeoutError
             Raised when the timeout float value expires.
         """
+        # TODO: create unit test
         self.send_command(
             commands.set_criterion_property(
                 actor_uid=uid,
