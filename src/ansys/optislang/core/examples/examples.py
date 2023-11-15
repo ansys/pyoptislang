@@ -2,11 +2,14 @@
 
 import os
 from pathlib import Path
+from typing import Dict, Optional, Tuple
+
+ExampleFiles = Tuple[Path, ...]
 
 module_path = Path(__file__).parent.absolute()
 
 # dictionary of files, that must be available to run scripts
-example_files = {
+example_files: Dict[str, Optional[ExampleFiles]] = {
     "ansys_workbench_portscan": None,
     "arsm_ten_bar_truss": (
         module_path / "00_run_script" / "ten_bar_truss" / "files" / "ten_bar_truss.s",
@@ -67,7 +70,7 @@ example_files = {
 }
 
 # dictionary of scripts to be run
-example_scripts = {
+example_scripts: Dict[str, Optional[Path]] = {
     "ansys_workbench_portscan": module_path
     / "00_run_script"
     / "scripts"

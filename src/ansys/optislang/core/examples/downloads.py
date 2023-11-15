@@ -2,15 +2,18 @@
 
 import os
 from pathlib import Path
-from typing import Optional, Sequence, Tuple
+from typing import TYPE_CHECKING, Optional, Tuple
 
 import ansys.optislang.core.examples as examples
+
+if TYPE_CHECKING:
+    from ansys.optislang.core.examples import ExampleFiles
 
 # TODO: implement automatic download from online repository
 # EXAMPLE_REPO = "https://github.com/ansys/pyoptislang/tree/main/examples/files"
 
 
-def _download_files(scriptname: str) -> Optional[Sequence[Path]]:
+def _download_files(scriptname: str) -> Optional[ExampleFiles]:
     """Check if files exists, otherwise download them. Return path to files then."""
     # check if file was downloaded
     file_paths = examples.example_files[scriptname]
@@ -34,7 +37,7 @@ def _download_script(scriptname: str) -> Optional[Path]:
     return script_path
 
 
-def get_files(scriptname: str) -> Tuple[Optional[Path], Optional[Sequence[Path]]]:
+def get_files(scriptname: str) -> Tuple[Optional[Path], Optional[ExampleFiles]]:
     """Get tuple of files necessary for running example.
 
     Parameters
@@ -44,7 +47,7 @@ def get_files(scriptname: str) -> Tuple[Optional[Path], Optional[Sequence[Path]]
 
     Returns
     -------
-    Tuple[Path, Sequence[Path]]
+    Tuple[Path, Tuple[Path, ...]]
         Tuple[0]: path to script
         Tuple[1]: tuple of paths to files necessary for running script
     """
