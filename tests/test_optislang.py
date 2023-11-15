@@ -53,9 +53,9 @@ def test_has_active_project(optislang: Optislang):
     assert dnr is None
 
 
-def test_get_osl_version_string(optislang: Optislang):
-    """Test ``get_osl_version_string``."""
-    version = optislang.get_osl_version_string()
+def test_osl_version_string(optislang: Optislang):
+    """Test ``osl_version_string``."""
+    version = optislang.osl_version_string
     assert isinstance(version, str)
     with does_not_raise() as dnr:
         optislang.dispose()
@@ -63,9 +63,9 @@ def test_get_osl_version_string(optislang: Optislang):
     assert dnr is None
 
 
-def test_get_osl_version(optislang: Optislang):
-    """Test ``get_osl_version``."""
-    major_version, minor_version, maintenance_version, revision = optislang.get_osl_version()
+def test_osl_version(optislang: Optislang):
+    """Test ``osl_version``."""
+    major_version, minor_version, maintenance_version, revision = optislang.osl_version
     assert isinstance(major_version, int)
     assert isinstance(minor_version, int)
     assert isinstance(maintenance_version, int) or maintenance_version == None

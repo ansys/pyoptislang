@@ -4,6 +4,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import TYPE_CHECKING, Iterable, Mapping, Optional, Sequence, Tuple, Union
 
+from deprecated.sphinx import deprecated
 from importlib_metadata import version
 
 from ansys.optislang.core import LOG
@@ -362,6 +363,29 @@ class Optislang:
         return self.__osl_server.get_project_uid() is not None
 
     @property
+    def osl_version(self) -> Tuple[Optional[int], Optional[int], Optional[int], Optional[int]]:
+        """Version of used optiSLang.
+
+        Returns
+        -------
+        Tuple[Optional[int], Optional[int], Optional[int], Optional[int]]
+            optiSLang version as tuple containing
+            major version, minor version, maintenance version and revision.
+        """
+        return self.__osl_server.osl_version
+
+    @property
+    def osl_version_string(self) -> str:
+        """Version of used optiSLang.
+
+        Returns
+        -------
+        str
+            optiSLang version.
+        """
+        return self.__osl_server.osl_version_string
+
+    @property
     def project(self) -> Optional[Project]:
         """Instance of the ``Project`` class.
 
@@ -402,6 +426,7 @@ class Optislang:
         """
         self.__osl_server.dispose()
 
+    @deprecated(version="0.5.0", reason="Use :py:attr:`Optislang.osl_version_string` instead.")
     def get_osl_version_string(self) -> str:
         """Get the optiSLang version in use as a string.
 
@@ -421,12 +446,13 @@ class Optislang:
         """
         return self.__osl_server.get_osl_version_string()
 
-    def get_osl_version(self) -> Tuple[Union[int, None], ...]:
+    @deprecated(version="0.5.0", reason="Use :py:attr:`Optislang.osl_version_string` instead.")
+    def get_osl_version(self) -> Tuple[Optional[int], Optional[int], Optional[int], Optional[int]]:
         """Get the optiSLang version in use as a tuple.
 
         Returns
         -------
-        tuple
+        Tuple[Optional[int], Optional[int], Optional[int], Optional[int]]
             optiSLang version as tuple contains the
             major version, minor version, maintenance version, and revision.
 

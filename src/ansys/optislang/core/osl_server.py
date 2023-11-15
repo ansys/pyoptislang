@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import Dict, List, Sequence, Tuple, Union
+from typing import Dict, List, Optional, Sequence, Tuple, Union
 
 
 class OslServer(ABC):
@@ -12,6 +12,33 @@ class OslServer(ABC):
     @abstractmethod
     def __init__(self):
         """``OslServer`` class is an abstract base class and cannot be instantiated."""
+
+    @property
+    @abstractmethod
+    def osl_version(
+        self,
+    ) -> Tuple[Optional[int], Optional[int], Optional[int], Optional[int]]:  # pragma: no cover
+        """Version of used optiSLang.
+
+        Returns
+        -------
+        Tuple[Optional[int], Optional[int], Optional[int], Optional[int]]
+            optiSLang version as tuple containing
+            major version, minor version, maintenance version and revision.
+        """
+        pass
+
+    @property
+    @abstractmethod
+    def osl_version_string(self) -> str:  # pragma: no cover
+        """Version of used optiSLang.
+
+        Returns
+        -------
+        str
+            optiSLang version.
+        """
+        pass
 
     @abstractmethod
     def get_server_info(self) -> Dict:  # pragma: no cover
@@ -420,12 +447,14 @@ class OslServer(ABC):
         pass
 
     @abstractmethod
-    def get_osl_version(self) -> Tuple[Union[int, None], ...]:  # pragma: no cover
+    def get_osl_version(
+        self,
+    ) -> Tuple[Optional[int], Optional[int], Optional[int], Optional[int]]:  # pragma: no cover
         """Get version of used optiSLang.
 
         Returns
         -------
-        tuple
+        Tuple[Optional[int], Optional[int], Optional[int], Optional[int]]
             optiSLang version as tuple containing
             major version, minor version, maintenance version and revision.
 

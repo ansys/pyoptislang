@@ -1076,12 +1076,12 @@ class TcpOslServer(OslServer):
                 )
 
     @property
-    def osl_version(self) -> Tuple[Optional[int], ...]:
+    def osl_version(self) -> Tuple[Optional[int], Optional[int], Optional[int], Optional[int]]:
         """Version of used optiSLang.
 
         Returns
         -------
-        Tuple[Optional[int], ...]
+        Tuple[Optional[int], Optional[int], Optional[int], Optional[int]]
             optiSLang version as tuple containing
             major version, minor version, maintenance version and revision.
         """
@@ -2249,12 +2249,12 @@ class TcpOslServer(OslServer):
         """
         return self.__port
 
-    def _get_osl_version(self) -> Tuple[Optional[int], ...]:
+    def _get_osl_version(self) -> Tuple[Optional[int], Optional[int], Optional[int], Optional[int]]:
         """Get version of used optiSLang.
 
         Returns
         -------
-        Tuple[Optional[int], ...]
+        Tuple[Optional[int], Optional[int], Optional[int], Optional[int]]
             optiSLang version as tuple containing
             major version, minor version, maintenance version and revision.
 
