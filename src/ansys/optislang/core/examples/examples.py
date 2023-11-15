@@ -1,10 +1,9 @@
 """Module that returns paths to examples."""
 
-import inspect
 import os
 from pathlib import Path
 
-module_path = Path(inspect.getfile(inspect.currentframe())).parent
+module_path = Path(__file__).parent.absolute()
 
 # dictionary of files, that must be available to run scripts
 example_files = {
