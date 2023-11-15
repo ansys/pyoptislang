@@ -4,10 +4,7 @@ import os
 from pathlib import Path
 from typing import TYPE_CHECKING, Optional, Tuple
 
-import ansys.optislang.core.examples as examples
-
-if TYPE_CHECKING:
-    from ansys.optislang.core.examples import ExampleFiles
+from ansys.optislang.core.examples.examples import ExampleFiles, example_files, example_scripts
 
 # TODO: implement automatic download from online repository
 # EXAMPLE_REPO = "https://github.com/ansys/pyoptislang/tree/main/examples/files"
@@ -16,7 +13,7 @@ if TYPE_CHECKING:
 def _download_files(scriptname: str) -> Optional[ExampleFiles]:
     """Check if files exists, otherwise download them. Return path to files then."""
     # check if file was downloaded
-    file_paths = examples.example_files[scriptname]
+    file_paths = example_files[scriptname]
 
     if file_paths is not None:
         for file_path in file_paths:
@@ -29,7 +26,7 @@ def _download_files(scriptname: str) -> Optional[ExampleFiles]:
 def _download_script(scriptname: str) -> Optional[Path]:
     """Check if file exists, otherwise download it. Return path to file then."""
     # check if script was downloaded, download it if not
-    script_path = examples.example_scripts[scriptname]
+    script_path = example_scripts[scriptname]
 
     if script_path is not None and not script_path.is_file():
         NotImplementedError("Automatic download not implemented.")
@@ -51,12 +48,12 @@ def get_files(scriptname: str) -> Tuple[Optional[Path], Optional[ExampleFiles]]:
         Tuple[0]: path to script
         Tuple[1]: tuple of paths to files necessary for running script
     """
-    if examples.example_files[scriptname] is not None:
+    if example_files[scriptname] is not None:
         file_paths = _download_files(scriptname)
     else:
         file_paths = None
 
-    if examples.example_scripts[scriptname] is not None:
+    if example_scripts[scriptname] is not None:
         script_path = _download_script(scriptname)
     else:
         script_path = None
