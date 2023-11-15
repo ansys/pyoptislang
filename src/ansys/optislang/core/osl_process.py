@@ -54,7 +54,16 @@ class OslServerProcess:
         Defaults to ``None``.
     batch : bool, optional
         Determines whether to start optiSLang server in batch mode. Defaults to ``True``.
-    port_range : Optional[Tuple[int, int]], optional
+
+        ..note:: Cannot be used in combination with service mode.
+
+    service: bool, optional
+        Determines whether to start optiSLang server in service mode. If ``True``,
+        ``batch`` argument is set to ``False``. Defaults to ``False``.
+
+        ..note:: Cannot be used in combination with batch mode.
+
+    port_range : Tuple[int, int], optional
         Defines the port range for optiSLang server. Defaults to ``None``.
     password : Optional[str], optional
         The server password. Use when communication with the server requires the request
@@ -186,6 +195,7 @@ class OslServerProcess:
         executable: Optional[Union[str, Path]] = None,
         project_path: Optional[Union[str, Path]] = None,
         batch: bool = True,
+        service: bool = False,
         port_range: Optional[Tuple[int, int]] = None,
         password: Optional[str] = None,
         no_run: Optional[bool] = None,
@@ -215,6 +225,8 @@ class OslServerProcess:
         additional_args: Optional[Iterable[str]] = None,
     ) -> None:
         """Initialize a new instance of the ``OslServerProcess`` class."""
+        self.__batch = batch if not service else False
+        self.__service = service
         self._logger = logging.getLogger(__name__) if logger is None else logger
         self.__process = None
         self.__handle_process_output_thread = None
@@ -236,7 +248,7 @@ class OslServerProcess:
             raise FileNotFoundError(f"optiSLang executable cannot be found: {executable}")
         else:
             self.__executable = Path(executable)
-        if batch:
+        if self.__batch:
             if project_path is None:
                 self.__tempdir = tempfile.TemporaryDirectory()
                 project_path = Path(self.__tempdir.name) / self.__class__.DEFAULT_PROJECT_FILE
@@ -267,7 +279,6 @@ class OslServerProcess:
             opx_project_definition_file, "opx_project_definition_file"
         )
 
-        self.__batch = batch
         self.__port_range = port_range
         self.__password = password
         self.__no_run = no_run
@@ -650,6 +661,9 @@ class OslServerProcess:
 
         if self.__batch:
             args.append("-b")  # Start batch mode
+
+        if self.__service:
+            args.append("--svc")  # Start service mode
 
         if self.__project_path:
             if not self.__project_path.is_file():

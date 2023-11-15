@@ -830,7 +830,16 @@ class TcpOslServer(OslServer):
         Defaults to ``None``.
     batch : bool, optional
         Determines whether to start optiSLang server in batch mode. Defaults to ``True``.
-    port_range : Optional[Tuple[int, int]], optional
+
+        ..note:: Cannot be used in combination with service mode.
+
+    service: bool, optional
+        Determines whether to start optiSLang server in service mode. If ``True``,
+        ``batch`` argument is set to ``False``. Defaults to ``False``.
+
+        ..note:: Cannot be used in combination with batch mode.
+
+    port_range : Tuple[int, int], optional
         Defines the port range for optiSLang server. Defaults to ``None``.
     no_run : Optional[bool], optional
         Determines whether not to run the specified project when started in batch mode.
@@ -971,6 +980,7 @@ class TcpOslServer(OslServer):
         executable: Optional[Union[str, Path]] = None,
         project_path: Optional[Union[str, Path]] = None,
         batch: bool = True,
+        service: bool = False,
         port_range: Optional[Tuple[int, int]] = None,
         no_run: Optional[bool] = None,
         no_save: bool = False,
@@ -982,7 +992,7 @@ class TcpOslServer(OslServer):
         ini_timeout: float = 20,
         password: Optional[str] = None,
         logger=None,
-        shutdown_on_finished=True,
+        shutdown_on_finished: bool = True,
         env_vars: Optional[Mapping[str, str]] = None,
         import_project_properties_file: Optional[Union[str, Path]] = None,
         export_project_properties_file: Optional[Union[str, Path]] = None,
@@ -1006,6 +1016,7 @@ class TcpOslServer(OslServer):
         self.__executable = Path(executable) if executable is not None else None
         self.__project_path = Path(project_path) if project_path is not None else None
         self.__batch = batch
+        self.__service = service
         self.__port_range = port_range
         self.__no_run = no_run
         self.__no_save = no_save
@@ -2751,6 +2762,7 @@ class TcpOslServer(OslServer):
                 shutdown_on_finished=shutdown_on_finished,
                 logger=self._logger,
                 batch=self.__batch,
+                service=self.__service,
                 port_range=self.__port_range,
                 no_run=self.__no_run,
                 force=self.__force,
