@@ -5,11 +5,10 @@ import time
 
 import pytest
 
-from ansys.optislang.core import Optislang, examples
+from ansys.optislang.core import Optislang
 from ansys.optislang.core.project import Project
 
 pytestmark = pytest.mark.local_osl
-parametric_project = examples.get_files("calculator_with_params")[1][0]
 
 
 @pytest.fixture()
@@ -119,9 +118,9 @@ def test_new(optislang: Optislang, tmp_path: Path):
 
 
 @pytest.mark.parametrize("path_type", [str, Path])
-def test_open(optislang: Optislang, path_type):
+def test_open(optislang: Optislang, tmp_example_project, path_type):
     "Test ``open``."
-    project = examples.get_files("simple_calculator")[1][0]
+    project = tmp_example_project("simple_calculator")
     if path_type == str:
         project = str(project)
 
