@@ -4,6 +4,8 @@ import pathlib
 import matplotlib.pyplot as plt
 import pytest
 
+from ansys.optislang.core import examples
+
 pytestmark = pytest.mark.local_osl
 
 run_python_script_examples_dir = (
@@ -35,11 +37,15 @@ def test_run_python_script_example(example_script):
     assert dnr is None
 
 
-@pytest.mark.skip(reason="Execution modifies working tree")
-def test_01_ten_bar_truss_evaluate_design(monkeypatch):
+def test_01_ten_bar_truss_evaluate_design(monkeypatch, tmp_example_project):
     """Test 01_ten_bar_truss_evaluate_design.py."""
     with does_not_raise() as dnr:
+        # Suppress plotting
         monkeypatch.setattr(plt, "show", lambda: None)
+
+        # Ensure temporary project file within the example script
+        project_file = (None, (tmp_example_project("ten_bar_truss"),))
+        monkeypatch.setattr(examples, "get_files", lambda _: project_file)
 
         file = (
             pathlib.Path(__file__).parents[1]
