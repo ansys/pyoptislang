@@ -13,7 +13,7 @@ from ansys.optislang.core.tcp_osl_server import TcpOslServer
 
 if TYPE_CHECKING:
     from ansys.optislang.core.logging import OslCustomAdapter
-    from ansys.optislang.core.osl_server import OslServer
+    from ansys.optislang.core.osl_server import OslServer, OslVersion
 
 
 class Optislang:
@@ -173,7 +173,7 @@ class Optislang:
 
     >>> from ansys.optislang.core import Optislang
     >>> osl = Optislang()
-    >>> osl_version = osl.get_osl_version_string()
+    >>> osl_version = osl.osl_version_string
     >>> print(osl_version)
     >>> osl.dispose()
     """
@@ -363,14 +363,14 @@ class Optislang:
         return self.__osl_server.get_project_uid() is not None
 
     @property
-    def osl_version(self) -> Tuple[Optional[int], Optional[int], Optional[int], Optional[int]]:
+    def osl_version(self) -> OslVersion:
         """Version of used optiSLang.
 
         Returns
         -------
-        Tuple[Optional[int], Optional[int], Optional[int], Optional[int]]
-            optiSLang version as tuple containing
-            major version, minor version, maintenance version and revision.
+        OslVersion
+            optiSLang version as typing.NamedTuple containing
+            major, minor, maintenance and revision versions.
         """
         return self.__osl_server.osl_version
 
@@ -446,15 +446,15 @@ class Optislang:
         """
         return self.__osl_server.get_osl_version_string()
 
-    @deprecated(version="0.5.0", reason="Use :py:attr:`Optislang.osl_version_string` instead.")
-    def get_osl_version(self) -> Tuple[Optional[int], Optional[int], Optional[int], Optional[int]]:
+    @deprecated(version="0.5.0", reason="Use :py:attr:`Optislang.osl_version` instead.")
+    def get_osl_version(self) -> OslVersion:
         """Get the optiSLang version in use as a tuple.
 
         Returns
         -------
-        Tuple[Optional[int], Optional[int], Optional[int], Optional[int]]
-            optiSLang version as tuple contains the
-            major version, minor version, maintenance version, and revision.
+        OslVersion
+            optiSLang version as typing.NamedTuple containing
+            major, minor, maintenance and revision versions.
 
         Raises
         ------
@@ -462,6 +462,8 @@ class Optislang:
             Raised when an error occurs while communicating with the server.
         OslCommandError
             Raised when a command or query fails.
+        RuntimeError
+            Raised when parsing version numbers from string fails.
         TimeoutError
             Raised when the timeout float value expires.
         """

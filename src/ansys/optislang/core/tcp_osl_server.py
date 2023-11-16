@@ -30,7 +30,7 @@ from ansys.optislang.core.errors import (
     ResponseFormatError,
 )
 from ansys.optislang.core.osl_process import OslServerProcess, ServerNotification
-from ansys.optislang.core.osl_server import OslServer
+from ansys.optislang.core.osl_server import OslServer, OslVersion
 
 
 def _get_current_timeout(initial_timeout: Union[float, None], start_time: float) -> None:
@@ -940,7 +940,7 @@ class TcpOslServer(OslServer):
 
     >>> from ansys.optislang.core.tcp_osl_server import TcpOslServer
     >>> osl_server = TcpOslServer()
-    >>> osl_version = osl_server.get_osl_version_string()
+    >>> osl_version = osl_server.osl_version_string
     >>> print(osl_version)
     >>> osl_server.shutdown()
 
@@ -950,7 +950,7 @@ class TcpOslServer(OslServer):
     >>> host = "192.168.101.1"  # IP address of the remote host
     >>> port = 49200            # Port of the remote optiSLang server
     >>> osl_server = TcpOslServer(host, port)
-    >>> osl_version = osl_server.get_osl_version_string()
+    >>> osl_version = osl_server.osl_version_string
     >>> print(osl_version)
     >>> osl_server.shutdown()
     """
@@ -1076,14 +1076,14 @@ class TcpOslServer(OslServer):
                 )
 
     @property
-    def osl_version(self) -> Tuple[Optional[int], Optional[int], Optional[int], Optional[int]]:
+    def osl_version(self) -> OslVersion:
         """Version of used optiSLang.
 
         Returns
         -------
-        Tuple[Optional[int], Optional[int], Optional[int], Optional[int]]
-            optiSLang version as tuple containing
-            major version, minor version, maintenance version and revision.
+        OslVersion
+            optiSLang version as typing.NamedTuple containing
+            major, minor, maintenance and revision versions.
         """
         return self.__osl_version
 
@@ -1459,14 +1459,14 @@ class TcpOslServer(OslServer):
         )
 
     @deprecated(version="0.5.0", reason="Use :py:attr:`TcpOslServer.osl_version` instead.")
-    def get_osl_version(self) -> Tuple[Optional[int], ...]:
+    def get_osl_version(self) -> OslVersion:
         """Get version of used optiSLang.
 
         Returns
         -------
-        Tuple[Optional[int], ...]
-            optiSLang version as tuple containing
-            major version, minor version, maintenance version and revision.
+        OslVersion
+            optiSLang version as typing.NamedTuple containing
+            major, minor, maintenance and revision versions.
 
         Raises
         ------
@@ -1474,6 +1474,8 @@ class TcpOslServer(OslServer):
             Raised when an error occurs while communicating with server.
         OslCommandError
             Raised when the command or query fails.
+        RuntimeError
+            Raised when parsing version numbers from string fails.
         TimeoutError
             Raised when the timeout float value expires.
         """
@@ -2249,14 +2251,14 @@ class TcpOslServer(OslServer):
         """
         return self.__port
 
-    def _get_osl_version(self) -> Tuple[Optional[int], Optional[int], Optional[int], Optional[int]]:
+    def _get_osl_version(self) -> OslVersion:
         """Get version of used optiSLang.
 
         Returns
         -------
-        Tuple[Optional[int], Optional[int], Optional[int], Optional[int]]
-            optiSLang version as tuple containing
-            major version, minor version, maintenance version and revision.
+        OslVersion
+            optiSLang version as typing.NamedTuple containing
+            major, minor, maintenance and revision versions.
 
         Raises
         ------
@@ -2264,40 +2266,24 @@ class TcpOslServer(OslServer):
             Raised when an error occurs while communicating with server.
         OslCommandError
             Raised when the command or query fails.
+        RuntimeError
+            Raised when parsing version numbers from string fails.
         TimeoutError
             Raised when the timeout float value expires.
         """
         osl_version_str = self._get_osl_version_string()
 
-        osl_version_entries = re.findall(r"[\w']+", osl_version_str)
+        pattern = r"(\d+)\.(\d+)(?:\.(\d+))? *(?:dev)? *\((M?\d+)\)"
+        osl_version_entries = re.search(pattern, osl_version_str)
 
-        major_version = None
-        minor_version = None
-        maint_version = None
-        revision = None
-
-        if len(osl_version_entries) > 0:
-            try:
-                major_version = int(osl_version_entries[0])
-            except:
-                pass
-        if len(osl_version_entries) > 1:
-            try:
-                minor_version = int(osl_version_entries[1])
-            except:
-                pass
-        if len(osl_version_entries) > 2:
-            try:
-                maint_version = int(osl_version_entries[2])
-            except:
-                pass
-        if len(osl_version_entries) > 3:
-            try:
-                revision = int(osl_version_entries[3])
-            except:
-                pass
-
-        return major_version, minor_version, maint_version, revision
+        if osl_version_entries:
+            major, minor, maintenance, revision = osl_version_entries.groups()
+            major, minor = int(major), int(minor)
+            maintenance = int(maintenance) if maintenance.isdigit() else None
+            revision = int(revision) if revision.isdigit() else None
+            return OslVersion(major, minor, maintenance, revision)
+        else:
+            raise RuntimeError("Invalid provided optiSLang version string.")
 
     def _get_osl_version_string(self) -> str:
         """Get version of used optiSLang.
