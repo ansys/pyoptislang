@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from enum import Enum
-from typing import TYPE_CHECKING, Any, Tuple, Union
+from typing import TYPE_CHECKING, Any, Optional, Tuple, Union
 
 from ansys.optislang.core.io import File, FileOutputFormat, RegisteredFile
 from ansys.optislang.core.utils import enum_from_str
@@ -244,20 +244,20 @@ class Node(ABC):
 
     @abstractmethod
     def get_connections(
-        self, slot_type: Union[SlotType, None] = None, slot_name: Union[str, None] = None
-    ) -> Tuple[Edge]:  # pragma: no cover
+        self, slot_type: Optional[SlotType] = None, slot_name: Optional[str] = None
+    ) -> Tuple[Edge, ...]:  # pragma: no cover
         """Get connections of a given direction and slot.
 
         Parameters
         ----------
-        slot_type: Union[SlotType, None], optional
-            Slot type, by default ``None``
-        slot_name : Union[str, None], optional
+        slot_type: Optional[SlotType], optional
+            Slot type, by default ``None``.
+        slot_name : Optional[str], optional
             Slot name, by default ``None``.
 
         Returns
         -------
-        Tuple[Edge]
+        Tuple[Edge, ...]
             Tuple of connections of given direction and slot.
 
         Raises
@@ -272,6 +272,31 @@ class Node(ABC):
         pass
 
     @abstractmethod
+    def get_input_slots(self, name: Optional[str] = None) -> Tuple[InputSlot, ...]:
+        """Get current node's input slots.
+
+        Parameters
+        ----------
+        name : Optional[str], optional
+            Slot name, by default ``None``.
+
+        Returns
+        -------
+        Tuple[InputSlot, ...]
+            Tuple of current node's input slots optionally filtered by name.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        pass
+
+    @abstractmethod
     def get_name(self) -> str:  # pragma: no cover
         """Get the name of the node.
 
@@ -279,6 +304,31 @@ class Node(ABC):
         -------
         str
             Name of the node.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        pass
+
+    @abstractmethod
+    def get_output_slots(self, name: Optional[str] = None) -> Tuple[OutputSlot, ...]:
+        """Get current node's output slots.
+
+        Parameters
+        ----------
+        name : Optional[str], optional
+            Slot name, by default ``None``.
+
+        Returns
+        -------
+        Tuple[OutputSlot, ...]
+            Tuple of current node's output slots optionally filtered by name.
 
         Raises
         ------
@@ -357,12 +407,12 @@ class Node(ABC):
         pass
 
     @abstractmethod
-    def get_registered_files(self) -> Tuple[RegisteredFile]:  # pragma: no cover
+    def get_registered_files(self) -> Tuple[RegisteredFile, ...]:  # pragma: no cover
         """Get node's registered files.
 
         Returns
         -------
-        Tuple[RegisteredFile]
+        Tuple[RegisteredFile, ...]
             Tuple of registered files.
 
         Raises
@@ -377,42 +427,13 @@ class Node(ABC):
         pass
 
     @abstractmethod
-    def get_result_files(self) -> Tuple[RegisteredFile]:  # pragma: no cover
+    def get_result_files(self) -> Tuple[RegisteredFile, ...]:  # pragma: no cover
         """Get node's result files.
 
         Returns
         -------
-        Tuple[RegisteredFile]
+        Tuple[RegisteredFile, ...]
             Tuple of result files.
-
-        Raises
-        ------
-        OslCommunicationError
-            Raised when an error occurs while communicating with the server.
-        OslCommandError
-            Raised when a command or query fails.
-        TimeoutError
-            Raised when the timeout float value expires.
-        """
-        pass
-
-    @abstractmethod
-    def get_slots(
-        self, type_: Union[SlotType, None] = None, name: Union[str, None] = None
-    ) -> Tuple[Slot, ...]:  # pragma: no cover
-        """Get current node's slots of given type and name.
-
-        Parameters
-        ----------
-        type_: Union[SlotType, None], optional
-            Type of slots to be returned, by default ``None``.
-        name : Union[str, None], optional
-            Slot name, by default ``None``.
-
-        Returns
-        -------
-        Tuple[Slot, ...]
-            Tuple of current node's slots of given type.
 
         Raises
         ------
@@ -676,6 +697,55 @@ class ParametricSystem(System):
         -------
         ResponseManager
             Instance of the ``ResponseManager`` class.
+        """
+        pass
+
+    @abstractmethod
+    def get_inner_input_slots(self, name: Optional[str] = None) -> Tuple[InnerInputSlot, ...]:
+        """Get current node's inner input slots.
+
+        Parameters
+        ----------
+        name : Optional[str], optional
+            Slot name, by default ``None``.
+
+        Returns
+        -------
+        Tuple[InnerInputSlot, ...]
+            Tuple of current node's inner input slots optionally filtered by name.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        pass
+
+    def get_inner_output_slots(self, name: Optional[str] = None) -> Tuple[InnerOutputSlot, ...]:
+        """Get current node's inner output slots.
+
+        Parameters
+        ----------
+        name : Optional[str], optional
+            Slot name, by default ``None``.
+
+        Returns
+        -------
+        Tuple[InnerOutpuSlot, ...]
+            Tuple of current node's inner output slots optionally filtered by name.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
         """
         pass
 

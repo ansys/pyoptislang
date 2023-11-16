@@ -8,7 +8,7 @@ import json
 import logging
 from pathlib import Path
 import time
-from typing import TYPE_CHECKING, Any, Dict, Iterable, List, Tuple, Union
+from typing import TYPE_CHECKING, Any, Dict, Iterable, List, Optional, Tuple, Union
 
 from deprecated.sphinx import deprecated
 
@@ -259,20 +259,20 @@ class TcpNodeProxy(Node):
         return self._create_nodes_from_properties_dicts(properties_dicts_list=ancestors_line_dicts)
 
     def get_connections(
-        self, slot_type: Union[SlotType, None] = None, slot_name: Union[str, None] = None
-    ) -> Tuple[Edge]:
+        self, slot_type: Optional[SlotType] = None, slot_name: Optional[str] = None
+    ) -> Tuple[Edge, ...]:
         """Get connections of a given direction and slot.
 
         Parameters
         ----------
-        slot_type: Union[SlotType, None], optional
+        slot_type: Optional[SlotType], optional
             Slot type, by default ``None``
-        slot_name : Union[str, None], optional
+        slot_name : Optional[str], optional
             Slot name, by default ``None``.
 
         Returns
         -------
-        Tuple[Edge]
+        Tuple[Edge, ...]
             Tuple of connections of given direction and slot.
 
         Raises
@@ -301,6 +301,31 @@ class TcpNodeProxy(Node):
             )
         return tuple(edges)
 
+    def get_input_slots(self, name: Optional[str] = None) -> Tuple[TcpInputSlotProxy, ...]:
+        """Get current node's input slots.
+
+        Parameters
+        ----------
+        name : Optional[str], optional
+            Slot name, by default ``None``.
+
+        Returns
+        -------
+        Tuple[TcpInputSlotProxy, ...]
+            Tuple of current node's input slots optionally filtered by name.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        # TODO: create unit test
+        return self._get_slots(type_=SlotType.INPUT, name=name)
+
     def get_name(self) -> str:
         """Get the name of the node.
 
@@ -320,6 +345,31 @@ class TcpNodeProxy(Node):
         """
         actor_info = self._osl_server.get_actor_info(uid=self.__uid)
         return actor_info["name"]
+
+    def get_output_slots(self, name: Optional[str] = None) -> Tuple[TcpOutputSlotProxy, ...]:
+        """Get current node's output slots.
+
+        Parameters
+        ----------
+        name : Optional[str], optional
+            Slot name, by default ``None``.
+
+        Returns
+        -------
+        Tuple[TcpInputSlotProxy, ...]
+            Tuple of current node's output slots optionally filtered by name.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        # TODO: create unit test
+        return self._get_slots(type_=SlotType.OUTPUT, name=name)
 
     def get_parent(self) -> TcpNodeProxy:
         """Get the instance of the parent node.
@@ -463,56 +513,6 @@ class TcpNodeProxy(Node):
                 self.get_registered_files(),
             )
         )
-
-    def get_slots(
-        self, type_: Union[SlotType, None] = None, name: Union[str, None] = None
-    ) -> Tuple[TcpSlotProxy, ...]:
-        """Get current node's slots of given type and name.
-
-        Parameters
-        ----------
-        type_: Union[SlotType, None], optional
-            Type of slots to be returned, by default ``None``.
-        name : Union[str, None], optional
-            Slot name, by default ``None``.
-
-        Returns
-        -------
-        Tuple[TcpSlotProxy, ...]
-            Tuple of current node's slots of given type.
-
-        Raises
-        ------
-        OslCommunicationError
-            Raised when an error occurs while communicating with the server.
-        OslCommandError
-            Raised when a command or query fails.
-        TimeoutError
-            Raised when the timeout float value expires.
-        """
-        info = self._get_info()
-        if isinstance(type_, SlotType):
-            keys = [type_.name.lower() + "_slots"]
-        else:
-            keys = [slot_type.name.lower() + "_slots" for slot_type in SlotType]
-        slots_dicts_mapping = {}
-        for key in keys:
-            slots_dicts_mapping[key] = info.get(key, [])
-        slots_list = []
-        for slot_type, slots_dicts in slots_dicts_mapping.items():
-            for slot_dict in slots_dicts:
-                if name is not None and name != slot_dict["name"]:
-                    continue
-                slots_list.append(
-                    TcpSlotProxy.create_slot(
-                        osl_server=self._osl_server,
-                        node=self,
-                        name=slot_dict["name"],
-                        type_=SlotType.from_str(string=slot_type[0:-6]),
-                        type_hint=slot_dict["type"],
-                    )
-                )
-        return tuple(slots_list)
 
     def get_states_ids(self) -> Tuple[str]:
         """Get available actor states ids.
@@ -869,6 +869,56 @@ class TcpNodeProxy(Node):
             parent_uid=root_system_uid,
             node_uid=self.uid,
         )
+
+    def _get_slots(
+        self, type_: Union[SlotType, None] = None, name: Union[str, None] = None
+    ) -> Tuple[TcpSlotProxy, ...]:
+        """Get current node's slots of given type and name.
+
+        Parameters
+        ----------
+        type_: Union[SlotType, None], optional
+            Type of slots to be returned, by default ``None``.
+        name : Union[str, None], optional
+            Slot name, by default ``None``.
+
+        Returns
+        -------
+        Tuple[TcpSlotProxy, ...]
+            Tuple of current node's slots of given type.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        info = self._get_info()
+        if isinstance(type_, SlotType):
+            keys = [type_.name.lower() + "_slots"]
+        else:
+            keys = [slot_type.name.lower() + "_slots" for slot_type in SlotType]
+        slots_dicts_mapping = {}
+        for key in keys:
+            slots_dicts_mapping[key] = info.get(key, [])
+        slots_list = []
+        for slot_type, slots_dicts in slots_dicts_mapping.items():
+            for slot_dict in slots_dicts:
+                if name is not None and name != slot_dict["name"]:
+                    continue
+                slots_list.append(
+                    TcpSlotProxy.create_slot(
+                        osl_server=self._osl_server,
+                        node=self,
+                        name=slot_dict["name"],
+                        type_=SlotType.from_str(string=slot_type[0:-6]),
+                        type_hint=slot_dict["type"],
+                    )
+                )
+        return tuple(slots_list)
 
     def _get_status_info(self) -> Tuple[dict]:
         """Get node's status info for each state.
@@ -1594,6 +1644,60 @@ class TcpParametricSystemProxy(TcpSystemProxy, ParametricSystem):
             Instance of the ``TcpResponseManagerProxy`` class.
         """
         return self.__response_manager
+
+    def get_inner_input_slots(
+        self, name: Optional[str] = None
+    ) -> Tuple[TcpInnerInputSlotProxy, ...]:
+        """Get current node's inner input slots.
+
+        Parameters
+        ----------
+        name : Optional[str], optional
+            Slot name, by default ``None``.
+
+        Returns
+        -------
+        Tuple[TcpInnerInputSlotProxy, ...]
+            Tuple of current node's inner input slots optionally filtered by name.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        # TODO: create unit test
+        return self._get_slots(type_=SlotType.INNER_INPUT, name=name)
+
+    def get_inner_output_slots(
+        self, name: Optional[str] = None
+    ) -> Tuple[TcpInnerOutputSlotProxy, ...]:
+        """Get current node's inner output slots.
+
+        Parameters
+        ----------
+        name : Optional[str], optional
+            Slot name, by default ``None``.
+
+        Returns
+        -------
+        Tuple[TcpInnerOutputSlotProxy, ...]
+            Tuple of current node's inner output slots optionally filtered by name.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        # TODO: create unit test
+        return self._get_slots(type_=SlotType.INNER_OUTPUT, name=name)
 
     def get_omdb_files(self) -> Tuple[File]:
         """Get paths to omdb files.
@@ -2484,6 +2588,7 @@ class TcpInputSlotProxy(TcpSlotProxy, InputSlot):
         TimeoutError
             Raised when the timeout float value expires.
         """
+        # TODO: add version check, use command also if > 24.1
         if not isinstance(from_slot, InnerOutputSlot):
             self._osl_server.connect_nodes(
                 from_actor_uid=from_slot.node.uid,
@@ -2515,7 +2620,7 @@ class TcpInputSlotProxy(TcpSlotProxy, InputSlot):
         )
 
 
-class OutputSlot(TcpSlotProxy, OutputSlot):
+class TcpOutputSlotProxy(TcpSlotProxy, OutputSlot):
     """Provides for creating and operating on output slots."""
 
     def __init__(
@@ -2571,6 +2676,7 @@ class OutputSlot(TcpSlotProxy, OutputSlot):
         TimeoutError
             Raised when the timeout float value expires.
         """
+        # TODO: add version check, use command also if > 24.1
         if not isinstance(to_slot, InnerInputSlot):
             self._osl_server.connect_nodes(
                 from_actor_uid=self.node.uid,
@@ -2602,7 +2708,7 @@ class OutputSlot(TcpSlotProxy, OutputSlot):
         )
 
 
-class InnerInputSlot(TcpSlotProxy, InnerInputSlot):
+class TcpInnerInputSlotProxy(TcpSlotProxy, InnerInputSlot):
     """Provides for creating and operating on inner input slots."""
 
     def __init__(
@@ -2658,12 +2764,13 @@ class InnerInputSlot(TcpSlotProxy, InnerInputSlot):
         TimeoutError
             Raised when the timeout float value expires.
         """
+        # TODO: add version check, use command instead if > 24.1
         python_script = self.__class__._create_connection_script(from_slot=from_slot, to_slot=self)
         self._osl_server.run_python_script(script=python_script)
         return Edge(from_slot=from_slot, to_slot=self)
 
 
-class InnerOutputSlot(TcpSlotProxy, InnerOutputSlot):
+class TcpInnerOutputSlotProxy(TcpSlotProxy, InnerOutputSlot):
     """Provides for creating and operating on inner output slots."""
 
     def __init__(
@@ -2719,6 +2826,7 @@ class InnerOutputSlot(TcpSlotProxy, InnerOutputSlot):
         TimeoutError
             Raised when the timeout float value expires.
         """
+        # TODO: add version check, use command instead if > 24.1
         python_script = self.__class__._create_connection_script(from_slot=self, to_slot=to_slot)
         self._osl_server.run_python_script(script=python_script)
         return Edge(from_slot=self, to_slot=to_slot)

@@ -8,10 +8,11 @@ from ansys.optislang.core.io import File, FileOutputFormat, RegisteredFile
 from ansys.optislang.core.node_types import AddinType, NodeType
 from ansys.optislang.core.tcp.base_nodes import (
     Edge,
+    TcpInputSlotProxy,
     TcpNodeProxy,
+    TcpOutputSlotProxy,
     TcpParametricSystemProxy,
     TcpRootSystemProxy,
-    TcpSlotProxy,
     TcpSystemProxy,
 )
 from ansys.optislang.core.tcp.managers import CriteriaManager, ParameterManager, ResponseManager
@@ -85,9 +86,19 @@ def test_node_queries(optislang: Optislang):
     info = node._get_info()
     assert isinstance(info, dict)
 
+    input_slots = node.get_input_slots()
+    assert len(input_slots) == 5
+    for slot in input_slots:
+        assert isinstance(slot, TcpInputSlotProxy)
+
     name = node.get_name()
     assert isinstance(name, str)
     assert name == "Calculator"
+
+    output_slots = node.get_output_slots()
+    assert len(output_slots) == 5
+    for slot in output_slots:
+        assert isinstance(slot, TcpOutputSlotProxy)
 
     parent_name = node.get_parent_name()
     assert isinstance(name, str)
@@ -113,11 +124,6 @@ def test_node_queries(optislang: Optislang):
     states_ids = node.get_states_ids()
     assert len(states_ids) == 1
     assert isinstance(states_ids[0], str)
-
-    slots = node.get_slots()
-    assert len(slots) == 10
-    for slot in slots:
-        assert isinstance(slot, TcpSlotProxy)
 
     status = node.get_status()
     assert isinstance(status, str)
