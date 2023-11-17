@@ -3,14 +3,13 @@ import time
 
 import pytest
 
-from ansys.optislang.core import Optislang, examples
+from ansys.optislang.core import Optislang
 from ansys.optislang.core.application import Application
 from ansys.optislang.core.logging import OslCustomAdapter
 from ansys.optislang.core.osl_server import OslServer
 from ansys.optislang.core.project import Project
 
 pytestmark = pytest.mark.local_osl
-parametric_project = examples.get_files("calculator_with_params")[1][0]
 
 
 @pytest.fixture()
