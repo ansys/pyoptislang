@@ -1,7 +1,5 @@
-from contextlib import nullcontext as does_not_raise
 import os
 from pathlib import Path
-import time
 
 import pytest
 
@@ -22,7 +20,8 @@ def optislang(scope="function", autouse=False) -> Optislang:
     """
     osl = Optislang()
     osl.set_timeout(20)
-    return osl
+    yield osl
+    osl.dispose()
 
 
 # # def test_close(optislang: Optislang):
@@ -34,32 +33,24 @@ def optislang(scope="function", autouse=False) -> Optislang:
 #     assert dnr is None
 
 
-def test_dispose(optislang: Optislang):
-    "Test ``dispose``."
-    with does_not_raise() as dnr:
-        optislang.dispose()
-        time.sleep(3)
-    assert dnr is None
+# def test_dispose(optislang: Optislang):
+# "Test ``dispose``."
+# with does_not_raise() as dnr:
+# optislang.dispose()
+# time.sleep(3)
+# assert dnr is None
 
 
 def test_has_active_project(optislang: Optislang):
     """Test `has_active_project`"""
-    print(optislang)
+    # print(optislang)
     assert optislang.has_active_project
-    with does_not_raise() as dnr:
-        optislang.dispose()
-        time.sleep(3)
-    assert dnr is None
 
 
 def test_get_osl_version_string(optislang: Optislang):
     """Test ``get_osl_version_string``."""
     version = optislang.get_osl_version_string()
     assert isinstance(version, str)
-    with does_not_raise() as dnr:
-        optislang.dispose()
-        time.sleep(3)
-    assert dnr is None
 
 
 def test_get_osl_version(optislang: Optislang):
@@ -69,17 +60,11 @@ def test_get_osl_version(optislang: Optislang):
     assert isinstance(minor_version, int)
     assert isinstance(maintenance_version, int) or maintenance_version == None
     assert isinstance(revision, int) or revision == None
-    with does_not_raise() as dnr:
-        optislang.dispose()
-    assert dnr is None
 
 
 def test_get_project(optislang: Optislang):
     """Test `get_project`."""
-    with does_not_raise() as dnr:
-        project = optislang.project
-    optislang.dispose()
-    assert dnr is None
+    project = optislang.project
     assert isinstance(project, Project)
 
 
@@ -90,31 +75,20 @@ def test_get_set_timeout(optislang: Optislang):
     timeout = optislang.get_timeout()
     assert isinstance(timeout, (float, int))
     assert timeout == 20
-    with does_not_raise() as dnr:
-        optislang.dispose()
-        time.sleep(3)
-    assert dnr is None
 
 
 def test_get_working_dir(optislang: Optislang):
     "Test ``get_working_dir``."
     working_dir = optislang.get_working_dir()
     assert isinstance(working_dir, Path)
-    with does_not_raise() as dnr:
-        optislang.dispose()
-        time.sleep(3)
-    assert dnr is None
 
 
 def test_new(optislang: Optislang, tmp_path: Path):
     "Test ``new``."
     optislang.new()
+    assert optislang.project is not None
     assert optislang.project.get_name() == "Unnamed project"
-    with does_not_raise() as dnr:
-        optislang.save_as(file_path=tmp_path / "newProject.opf")
-        optislang.dispose()
-        time.sleep(3)
-    assert dnr is None
+    optislang.save_as(file_path=tmp_path / "newProject.opf")
 
 
 @pytest.mark.parametrize("path_type", [str, Path])
@@ -125,23 +99,14 @@ def test_open(optislang: Optislang, tmp_example_project, path_type):
         project = str(project)
 
     optislang.open(file_path=project)
+    assert optislang.project is not None
     project_name = optislang.project.get_name()
     assert project_name == "calculator"
-    with does_not_raise() as dnr:
-        optislang.dispose()
-        time.sleep(3)
-    assert dnr is None
 
 
 def test_reset(optislang: Optislang):
     "Test ``reset``."
-    with does_not_raise() as dnr:
-        optislang.reset()
-    assert dnr is None
-    with does_not_raise() as dnr:
-        optislang.dispose()
-        time.sleep(3)
-    assert dnr is None
+    optislang.reset()
 
 
 def test_run_python_script(optislang: Optislang):
@@ -156,10 +121,6 @@ print(result)
     )
     assert isinstance(run_script, tuple)
     assert run_script[0][0:2] == "15"
-    with does_not_raise() as dnr:
-        optislang.dispose()
-        time.sleep(3)
-    assert dnr is None
 
 
 def test_run_python_file(optislang: Optislang, tmp_path: Path):
@@ -175,22 +136,19 @@ print(result)
         f.write(cmd)
     run_file = optislang.run_python_file(file_path=cmd_path)
     assert isinstance(run_file, tuple)
-    with does_not_raise() as dnr:
-        optislang.dispose()
-        time.sleep(3)
-    assert dnr is None
 
 
 def test_save(optislang: Optislang):
     "Test save."
     project = optislang.project
+    # XXX Property might not need to be an optional
+    assert project is not None
     file_path = project.get_location()
     assert file_path.is_file()
     mod_time = os.path.getmtime(str(file_path))
     optislang.save()
     save_time = os.path.getmtime(str(file_path))
     assert mod_time != save_time
-    optislang.dispose()
 
 
 @pytest.mark.parametrize("path_type", [str, Path])
@@ -198,11 +156,9 @@ def test_save_as(optislang: Optislang, tmp_path: Path, path_type):
     "Test save_as."
     file_path = tmp_path / "test_save.opf"
     if path_type == str:
-        arg_path = str(file_path)
+        optislang.save_as(file_path=str(file_path))
     else:
-        arg_path = file_path
-    optislang.save_as(file_path=arg_path)
-    optislang.dispose()
+        optislang.save_as(file_path=file_path)
     assert file_path.is_file()
 
 
@@ -211,33 +167,21 @@ def test_save_copy(optislang: Optislang, tmp_path: Path, path_type):
     "Test ``save_copy``."
     copy_path = tmp_path / "test_save_copy.opf"
     if path_type == str:
-        arg_path = str(copy_path)
+        optislang.save_copy(file_path=str(copy_path))
     else:
-        arg_path = copy_path
-    optislang.save_copy(file_path=arg_path)
+        optislang.save_copy(file_path=copy_path)
     assert copy_path.is_file()
-    with does_not_raise() as dnr:
-        optislang.dispose()
-        time.sleep(3)
-    assert dnr is None
 
 
 def test_start(optislang: Optislang):
     "Test ``start``."
-    with does_not_raise() as dnr:
-        optislang.start()
-    assert dnr is None
-    with does_not_raise() as dnr:
-        optislang.dispose()
-        time.sleep(3)
-    assert dnr is None
+    optislang.start()
 
 
 def test_stop(optislang: Optislang):
     "Test ``stop``."
-    with does_not_raise() as dnr:
-        optislang.run_python_script(
-            r"""
+    optislang.run_python_script(
+        r"""
 from py_os_design import *
 sens = actors.SensitivityActor("Sensitivity")
 add_actor(sens)
@@ -249,14 +193,9 @@ python.add_response(("output_value", PyOSDesignEntry(10)))
 connect(sens, "IODesign", python, "IDesign")
 connect(python, "ODesign", sens, "IIDesign")
 """
-        )
-        optislang.start(wait_for_finished=False)
-        optislang.stop()
-    assert dnr is None
-    with does_not_raise() as dnr:
-        optislang.dispose()
-        time.sleep(3)
-    assert dnr is None
+    )
+    optislang.start(wait_for_finished=False)
+    optislang.stop()
 
 
 # def test_stop_gently(optislang):
