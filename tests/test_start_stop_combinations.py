@@ -1,6 +1,4 @@
 """Test different start/stop/stop_gently combinations with Optislang class."""
-from contextlib import nullcontext as does_not_raise
-
 import pytest
 
 from ansys.optislang.core import Optislang
@@ -17,7 +15,9 @@ def optislang() -> Optislang:
     Optislang:
         Connects to the optiSLang application and provides an API to control it.
     """
-    return Optislang()
+    osl = Optislang()
+    yield osl
+    osl.dispose()
 
 
 @pytest.mark.parametrize(
@@ -36,11 +36,8 @@ def optislang() -> Optislang:
 )
 def test_combinations(optislang: Optislang, input, expected):
     "Test combinations."
-    with does_not_raise() as dnr:
-        for method in input:
-            if method[0] == "start":
-                optislang.start(method[1], method[2])
-            if method[0] == "stop":
-                optislang.stop(method[1])
-        optislang.dispose()
-    assert dnr is expected
+    for method in input:
+        if method[0] == "start":
+            optislang.start(method[1], method[2])
+        if method[0] == "stop":
+            optislang.stop(method[1])
