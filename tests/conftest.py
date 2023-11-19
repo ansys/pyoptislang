@@ -1,9 +1,10 @@
 import os
 import pathlib
+import shutil
 
 import pytest
 
-from ansys.optislang.core import utils
+from ansys.optislang.core import examples, utils
 
 
 def pytest_addoption(parser):
@@ -91,3 +92,25 @@ def server_info_file(project_file):
     """
     info_file_name = "server_info.ini"
     return get_server_info_file_path(project_file, info_file_name)
+
+
+@pytest.fixture
+def tmp_example_project(tmp_path: pathlib.Path):
+    """Access a temporary copy of an optiSLang project from the examples.
+
+    Assumes the first example file to be an optiSLang project.
+    """
+
+    def _tmp_project(example: str):
+        _, example_files = examples.get_files(example)
+        if example_files is None:
+            raise ValueError(f"No examples files for {example}")
+
+        opf = example_files[0]
+        if opf.suffix != ".opf":
+            raise ValueError(f"Non-existing project file for example {example}")
+
+        shutil.copy(opf, tmp_path)
+        return tmp_path / opf.name
+
+    return _tmp_project

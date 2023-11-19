@@ -1,14 +1,13 @@
 import pytest
 
-from ansys.optislang.core import Optislang, examples
+from ansys.optislang.core import Optislang
 from ansys.optislang.core.project_parametric import MixedParameter, ObjectiveCriterion, Response
 
 pytestmark = pytest.mark.local_osl
-parametric_project = examples.get_files("calculator_with_params")[1][0]
 
 
 @pytest.fixture()
-def optislang(scope="function", autouse=False) -> Optislang:
+def optislang(tmp_example_project, scope="function", autouse=False) -> Optislang:
     """Create Optislang class.
 
     Returns
@@ -16,7 +15,7 @@ def optislang(scope="function", autouse=False) -> Optislang:
     Optislang:
         Connects to the optiSLang application and provides an API to control it.
     """
-    osl = Optislang(project_path=parametric_project)
+    osl = Optislang(project_path=tmp_example_project("calculator_with_params"))
     osl.set_timeout(20)
     return osl
 

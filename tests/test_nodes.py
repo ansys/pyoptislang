@@ -3,16 +3,12 @@ from pathlib import Path
 
 import pytest
 
-from ansys.optislang.core import Optislang, examples
+from ansys.optislang.core import Optislang
 from ansys.optislang.core.io import File, FileOutputFormat, RegisteredFile
 from ansys.optislang.core.nodes import Node, ParametricSystem, RootSystem, System
 from ansys.optislang.core.project_parametric import ParameterManager
 
 pytestmark = pytest.mark.local_osl
-calculator_w_parameters = examples.get_files("calculator_with_params")[1][0]
-nested_systems = examples.get_files("nested_systems")[1][0]
-connect_nodes = examples.get_files("nodes_connection")[1][0]
-omdb_files = examples.get_files("omdb_files")[1][0]
 
 
 @pytest.fixture()
@@ -30,9 +26,9 @@ def optislang(scope="function", autouse=False) -> Optislang:
 
 
 # TEST NODE
-def test_node_initialization(optislang: Optislang):
+def test_node_initialization(optislang: Optislang, tmp_example_project):
     """Test `Node` initialization."""
-    optislang.open(file_path=calculator_w_parameters)
+    optislang.open(file_path=tmp_example_project("calculator_with_params"))
     project = optislang.project
     root_system = project.root_system
     node = root_system.get_nodes()[0]
@@ -40,9 +36,9 @@ def test_node_initialization(optislang: Optislang):
     optislang.dispose()
 
 
-def test_node_properties(optislang: Optislang):
+def test_node_properties(optislang: Optislang, tmp_example_project):
     """Test properties of the instance of `Node` class."""
-    optislang.open(file_path=calculator_w_parameters)
+    optislang.open(file_path=tmp_example_project("calculator_with_params"))
     project = optislang.project
     root_system = project.root_system
     node = root_system.get_nodes()[0]
@@ -51,9 +47,9 @@ def test_node_properties(optislang: Optislang):
     optislang.dispose()
 
 
-def test_node_queries(optislang: Optislang):
+def test_node_queries(optislang: Optislang, tmp_example_project):
     """Test get methods of the instance of `Node` class."""
-    optislang.open(file_path=calculator_w_parameters)
+    optislang.open(file_path=tmp_example_project("calculator_with_params"))
     project = optislang.project
     root_system = project.root_system
     node = root_system.find_nodes_by_name("Calculator")[0]
@@ -101,9 +97,9 @@ def test_node_queries(optislang: Optislang):
     optislang.dispose()
 
 
-def test_control(optislang: Optislang):
+def test_control(optislang: Optislang, tmp_example_project):
     """Test control methods of the instance of `Node` class."""
-    optislang.open(file_path=calculator_w_parameters)
+    optislang.open(file_path=tmp_example_project("calculator_with_params"))
     project = optislang.project
     root_system = project.root_system
     node = root_system.find_nodes_by_name("Calculator")[0]
@@ -118,9 +114,9 @@ def test_control(optislang: Optislang):
 
 
 # TEST SYSTEM
-def test_find_node_by_uid(optislang: Optislang):
+def test_find_node_by_uid(optislang: Optislang, tmp_example_project):
     """Test `find_node_by_uid`."""
-    optislang.open(file_path=nested_systems)
+    optislang.open(file_path=tmp_example_project("nested_systems"))
     project = optislang.project
     root_system = project.root_system
 
@@ -177,9 +173,9 @@ def test_find_node_by_uid(optislang: Optislang):
     optislang.dispose()
 
 
-def test_find_node_by_name(optislang: Optislang):
+def test_find_node_by_name(optislang: Optislang, tmp_example_project):
     """Test `find_node_by_name`."""
-    optislang.open(file_path=nested_systems)
+    optislang.open(file_path=tmp_example_project("nested_systems"))
     project = optislang.project
     root_system = project.root_system
 
@@ -216,9 +212,9 @@ def test_find_node_by_name(optislang: Optislang):
 
 
 # TEST PARAMETRIC SYSTEM
-def test_get_parameter_manager(optislang: Optislang):
+def test_get_parameter_manager(optislang: Optislang, tmp_example_project):
     """Test initialization and __str__ methods of both `ParametricSystem` and `ParameterManager`."""
-    optislang.open(file_path=nested_systems)
+    optislang.open(file_path=tmp_example_project("nested_systems"))
     project = optislang.project
     root_system = project.root_system
     parametric_system: ParametricSystem = root_system.find_nodes_by_name("Parametric System")[0]
@@ -231,9 +227,9 @@ def test_get_parameter_manager(optislang: Optislang):
     assert dnr is None
 
 
-def test_get_omdb_files(tmp_path: Path):
+def test_get_omdb_files(tmp_example_project):
     """Test `get_omdb_files()` method."""
-    optislang = Optislang(project_path=omdb_files)
+    optislang = Optislang(project_path=tmp_example_project("omdb_files"))
     optislang.set_timeout(30)
     optislang.reset()
     optislang.start()
@@ -254,9 +250,9 @@ def test_get_omdb_files(tmp_path: Path):
     optislang.dispose()
 
 
-def test_save_designs_as(tmp_path: Path):
+def test_save_designs_as(tmp_path: Path, tmp_example_project):
     """Test `save_designs_as` method."""
-    optislang = Optislang(project_path=omdb_files)
+    optislang = Optislang(project_path=tmp_example_project("omdb_files"))
     optislang.set_timeout(30)
     optislang.reset()
     optislang.start()
