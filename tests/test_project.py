@@ -4,13 +4,12 @@ import time
 
 import pytest
 
-from ansys.optislang.core import Optislang, examples
+from ansys.optislang.core import Optislang
 from ansys.optislang.core.io import RegisteredFile
 from ansys.optislang.core.nodes import RootSystem
 from ansys.optislang.core.project_parametric import Design, ParameterManager
 
 pytestmark = pytest.mark.local_osl
-calculator_w_parameters = examples.get_files("calculator_with_params")[1][0]
 
 
 @pytest.fixture()
@@ -27,7 +26,7 @@ def optislang(scope="function", autouse=True) -> Optislang:
     return osl
 
 
-def test_project_queries(optislang: Optislang):
+def test_project_queries(optislang: Optislang, tmp_example_project):
     """Test project queries."""
     project = optislang.project
 
@@ -43,7 +42,7 @@ def test_project_queries(optislang: Optislang):
     status = project.get_status()
     assert isinstance(status, str)
 
-    optislang.open(file_path=calculator_w_parameters)
+    optislang.open(file_path=tmp_example_project("calculator_with_params"))
 
     reg_files = project.get_registered_files()
     assert len(reg_files) == 3
