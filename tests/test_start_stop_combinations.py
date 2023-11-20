@@ -21,20 +21,20 @@ def optislang() -> Optislang:
 
 
 @pytest.mark.parametrize(
-    "input, expected",
+    "input",
     [
-        ((("start", True, True), ("stop", True)), None),  # default
-        ((("start", False, True), ("stop", True)), None),  # don't wait for started -> also default
-        ((("start", True, True), ("stop", False)), None),  # stop: don't wait for finished
-        ((("start", True, False), ("stop", True)), None),  # start: don't wait for finished
-        ((("start", False, False), ("stop", False)), None),  # all false
-        ((("start", True, True), ("stop", True), ("stop", True)), None),
-        ((("start", True, True), ("stop", True), ("start", True, True)), None),
-        ((("stop", True), ("stop", True), ("start", True, True)), None),
-        ((("start", True, True), ("start", True, True), ("start", True, True)), None),
+        (("start", True, True), ("stop", True)),  # default
+        (("start", False, True), ("stop", True)),  # don't wait for started -> also default
+        (("start", True, True), ("stop", False)),  # stop: don't wait for finished
+        (("start", True, False), ("stop", True)),  # start: don't wait for finished
+        (("start", False, False), ("stop", False)),  # all false
+        (("start", True, True), ("stop", True), ("stop", True)),
+        (("start", True, True), ("stop", True), ("start", True, True)),
+        (("stop", True), ("stop", True), ("start", True, True)),
+        (("start", True, True), ("start", True, True), ("start", True, True)),
     ],
 )
-def test_combinations(optislang: Optislang, input, expected):
+def test_combinations(optislang: Optislang, input):
     "Test combinations."
     for method in input:
         if method[0] == "start":
