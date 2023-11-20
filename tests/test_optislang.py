@@ -33,12 +33,10 @@ def optislang(scope="function", autouse=False) -> Optislang:
 #     assert dnr is None
 
 
-# def test_dispose(optislang: Optislang):
-# "Test ``dispose``."
-# with does_not_raise() as dnr:
-# optislang.dispose()
-# time.sleep(3)
-# assert dnr is None
+def test_dispose():
+    "Test ``dispose``."
+    osl = Optislang()
+    osl.dispose()
 
 
 def test_has_active_project(optislang: Optislang):
