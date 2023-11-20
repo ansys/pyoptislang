@@ -1,6 +1,4 @@
 """Test different start/stop/stop_gently combinations with Optislang class."""
-from contextlib import nullcontext as does_not_raise
-
 import pytest
 
 from ansys.optislang.core import Optislang
@@ -17,30 +15,29 @@ def optislang() -> Optislang:
     Optislang:
         Connects to the optiSLang application and provides an API to control it.
     """
-    return Optislang()
+    osl = Optislang()
+    yield osl
+    osl.dispose()
 
 
 @pytest.mark.parametrize(
-    "input, expected",
+    "input",
     [
-        ((("start", True, True), ("stop", True)), None),  # default
-        ((("start", False, True), ("stop", True)), None),  # don't wait for started -> also default
-        ((("start", True, True), ("stop", False)), None),  # stop: don't wait for finished
-        ((("start", True, False), ("stop", True)), None),  # start: don't wait for finished
-        ((("start", False, False), ("stop", False)), None),  # all false
-        ((("start", True, True), ("stop", True), ("stop", True)), None),
-        ((("start", True, True), ("stop", True), ("start", True, True)), None),
-        ((("stop", True), ("stop", True), ("start", True, True)), None),
-        ((("start", True, True), ("start", True, True), ("start", True, True)), None),
+        (("start", True, True), ("stop", True)),  # default
+        (("start", False, True), ("stop", True)),  # don't wait for started -> also default
+        (("start", True, True), ("stop", False)),  # stop: don't wait for finished
+        (("start", True, False), ("stop", True)),  # start: don't wait for finished
+        (("start", False, False), ("stop", False)),  # all false
+        (("start", True, True), ("stop", True), ("stop", True)),
+        (("start", True, True), ("stop", True), ("start", True, True)),
+        (("stop", True), ("stop", True), ("start", True, True)),
+        (("start", True, True), ("start", True, True), ("start", True, True)),
     ],
 )
-def test_combinations(optislang: Optislang, input, expected):
+def test_combinations(optislang: Optislang, input):
     "Test combinations."
-    with does_not_raise() as dnr:
-        for method in input:
-            if method[0] == "start":
-                optislang.start(method[1], method[2])
-            if method[0] == "stop":
-                optislang.stop(method[1])
-        optislang.dispose()
-    assert dnr is expected
+    for method in input:
+        if method[0] == "start":
+            optislang.start(method[1], method[2])
+        if method[0] == "stop":
+            optislang.stop(method[1])

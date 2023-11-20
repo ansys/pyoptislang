@@ -1,6 +1,4 @@
-from contextlib import nullcontext as does_not_raise
 from pathlib import Path
-import time
 
 import pytest
 
@@ -23,12 +21,14 @@ def optislang(scope="function", autouse=True) -> Optislang:
     """
     osl = Optislang()
     osl.set_timeout(20)
-    return osl
+    yield osl
+    osl.dispose()
 
 
 def test_project_queries(optislang: Optislang, tmp_example_project):
     """Test project queries."""
     project = optislang.project
+    assert project is not None
 
     description = project.get_description()
     assert isinstance(description, str)
@@ -55,31 +55,25 @@ def test_project_queries(optislang: Optislang, tmp_example_project):
     project_tree = project._get_project_tree()
     assert isinstance(project_tree, list)
 
-    optislang.dispose()
-
 
 def test_project_properties(optislang: Optislang):
     """Test `root_system`, `uid` and `__str__` method."""
     project = optislang.project
+    assert project is not None
+
     uid = project.uid
     assert isinstance(uid, str)
     root_system = project.root_system
     assert isinstance(root_system, RootSystem)
     parameter_manager = project.parameter_manager
     assert isinstance(parameter_manager, ParameterManager)
-    with does_not_raise() as dnr:
-        print(project)
-        optislang.dispose()
-        time.sleep(3)
-    assert dnr is None
 
 
 def test_get_evaluate_design(optislang: Optislang):
     """Test `get_reference_design` and `evaluate_design`."""
     project = optislang.project
+    assert project is not None
     ref_design = project.get_reference_design()
     assert isinstance(ref_design, Design)
     eval_design = project.evaluate_design(design=ref_design)
     assert isinstance(eval_design, Design)
-    optislang.dispose()
-    time.sleep(3)
