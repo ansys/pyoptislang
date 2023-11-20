@@ -1,5 +1,4 @@
 from contextlib import closing
-from contextlib import nullcontext as does_not_raise
 import os
 from pathlib import Path
 import socket
@@ -108,10 +107,8 @@ def test_local_shutdown_on_finished_false_cm(send_dispose, send_shutdown, osl_no
             osl = None
 
     if not send_shutdown:
-        with does_not_raise() as dnr:
-            osl = Optislang(host="127.0.0.1", port=osl_port, ini_timeout=10)
-            osl.shutdown()
-        assert dnr is None
+        osl = Optislang(host="127.0.0.1", port=osl_port, ini_timeout=10)
+        osl.shutdown()
     else:
         with pytest.raises(
             (
@@ -149,10 +146,8 @@ def test_remote_cm(send_dispose, send_shutdown, osl_none):
             osl = None
 
     if not send_shutdown:
-        with does_not_raise() as dnr:
-            osl = Optislang(host="127.0.0.1", port=osl_server_process.port_range[0], ini_timeout=10)
-            osl.shutdown()
-        assert dnr is None
+        osl = Optislang(host="127.0.0.1", port=osl_server_process.port_range[0], ini_timeout=10)
+        osl.shutdown()
     else:
         with pytest.raises(
             (
@@ -218,10 +213,8 @@ def test_local_shutdown_on_finished_false_wocm(send_dispose, send_shutdown):
         osl.shutdown()
 
     if not send_shutdown:
-        with does_not_raise() as dnr:
-            osl = Optislang(host="127.0.0.1", port=osl_port, ini_timeout=10)
-            osl.shutdown()
-        assert dnr is None
+        osl = Optislang(host="127.0.0.1", port=osl_port, ini_timeout=10)
+        osl.shutdown()
     else:
         with pytest.raises(
             (
@@ -256,10 +249,8 @@ def test_remote_wocm(send_dispose, send_shutdown):
         osl.shutdown()
 
     if not send_shutdown:
-        with does_not_raise() as dnr:
-            osl = Optislang(host="127.0.0.1", port=osl_server_process.port_range[0], ini_timeout=10)
-            osl.shutdown()
-        assert dnr is None
+        osl = Optislang(host="127.0.0.1", port=osl_server_process.port_range[0], ini_timeout=10)
+        osl.shutdown()
     else:
         with pytest.raises(
             (

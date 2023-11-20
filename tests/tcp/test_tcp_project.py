@@ -1,5 +1,4 @@
 from pathlib import Path
-import time
 
 import pytest
 
@@ -28,12 +27,14 @@ def optislang(scope="function", autouse=True) -> Optislang:
     """
     osl = Optislang()
     osl.timeout = 20
-    return osl
+    yield osl
+    osl.dispose()
 
 
 def test_project_queries(optislang: Optislang, tmp_example_project):
     """Test project queries."""
     project: TcpProjectProxy = optislang.project
+    assert project is not None
 
     available_nodes = project.get_available_nodes()
     assert isinstance(available_nodes, dict)
@@ -69,13 +70,11 @@ def test_project_queries(optislang: Optislang, tmp_example_project):
     project_tree = project._get_project_tree()
     assert isinstance(project_tree, list)
 
-    optislang.dispose()
-    time.sleep(3)
-
 
 def test_project_properties(optislang: Optislang):
     """Test `root_system`, `uid` and `__str__` method."""
     project: TcpProjectProxy = optislang.project
+    assert project is not None
     uid = project.uid
     assert isinstance(uid, str)
     root_system = project.root_system
@@ -89,63 +88,56 @@ def test_project_properties(optislang: Optislang):
 
     print(project)
 
-    optislang.dispose()
-    time.sleep(3)
-
 
 def test_evaluate_design(optislang: Optislang):
     """Test `get_reference_design` and `evaluate_design`."""
     project: TcpProjectProxy = optislang.project
+    assert project is not None
     ref_design = project.get_reference_design()
     assert isinstance(ref_design, Design)
     eval_design = project.evaluate_design(design=ref_design)
     assert isinstance(eval_design, Design)
-    optislang.dispose()
-    time.sleep(3)
 
 
 def test_reset(optislang: Optislang):
     """Test `reset()` command."""
     project = optislang.project
+    assert project is not None
     project.reset()
-    optislang.dispose()
-    time.sleep(3)
 
 
 def test_run_python_file(optislang: Optislang, tmp_path: Path):
     "Test ``run_python_file``."
     project = optislang.project
+    assert project is not None
     cmd = "a = 5\nb = 10\nresult = a + b\nprint(result)"
     cmd_path = tmp_path / "commands.txt"
     with open(cmd_path, "w") as f:
         f.write(cmd)
     run_file = project.run_python_file(file_path=cmd_path)
     assert isinstance(run_file, tuple)
-    optislang.dispose()
-    time.sleep(3)
 
 
 def test_run_python_script(optislang: Optislang):
     "Test ``run_python_script``."
     project = optislang.project
+    assert project is not None
     run_script = project.run_python_script("a = 5\nb = 10\nresult = a + b\nprint(result)")
     assert isinstance(run_script, tuple)
     assert run_script[0][0:2] == "15"
-    optislang.dispose()
-    time.sleep(3)
 
 
 def test_start(optislang: Optislang):
     """Test `start()` command."""
     project = optislang.project
+    assert project is not None
     project.start()
-    optislang.dispose()
-    time.sleep(3)
 
 
 def test_stop(optislang: Optislang):
     """Test `stop()` command."""
     project = optislang.project
+    assert project is not None
     project.run_python_script(
         r"""
 from py_os_design import *
@@ -162,8 +154,6 @@ connect(python, "ODesign", sens, "IIDesign")
     )
     project.start(wait_for_finished=False)
     project.stop()
-    optislang.dispose()
-    time.sleep(3)
 
 
 # def test_stop_gently(optislang: Optislang):

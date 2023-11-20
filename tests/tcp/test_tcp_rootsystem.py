@@ -35,6 +35,7 @@ def test_delete(optislang: Optislang):
 def test_get_reference_design(optislang: Optislang):
     """Test ``get_refence_design``."""
     project = optislang.project
+    assert project is not None
     root_system = project.root_system
     design = root_system.get_reference_design()
     optislang.dispose()
@@ -52,6 +53,7 @@ def test_evaluate_design(optislang: Optislang, tmp_path: Path):
     application.save_as(file_path=tmp_path / "test_modify_parameter.opf")
     project.reset()
     project = optislang.project
+    assert project is not None
     root_system = project.root_system
     design = Design(parameters=parameters)
     assert design.status == DesignStatus.IDLE
@@ -83,6 +85,7 @@ def test_evaluate_design(optislang: Optislang, tmp_path: Path):
 def test_design_structure(optislang: Optislang):
     """Test ``get_missing&unused_parameters_names``."""
     project = optislang.project
+    assert project is not None
     root_system = project.root_system
     designs = [
         Design(parameters=parameters),

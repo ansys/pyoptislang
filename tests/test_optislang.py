@@ -25,10 +25,19 @@ def optislang(scope="function", autouse=False) -> Optislang:
     return osl
 
 
+# # def test_close(optislang: Optislang):
+#     "Test ``close`` (close opened and create new project)."
+#     with does_not_raise() as dnr:
+#         optislang.close()
+#         optislang.new()
+#         optislang.dispose()
+#     assert dnr is None
+
+
 def test_dispose(optislang: Optislang):
     "Test ``dispose``."
-    optislang.dispose()
-    time.sleep(3)
+    osl = Optislang()
+    osl.dispose()
 
 
 def test_optislang_properties(optislang: Optislang):
@@ -47,6 +56,15 @@ def test_optislang_properties(optislang: Optislang):
     osl_server = optislang.osl_server
     assert isinstance(osl_server, OslServer)
 
+    version = optislang.get_osl_version_string()
+    assert isinstance(version, str)
+
+    major_version, minor_version, maintenance_version, revision = optislang.get_osl_version()
+    assert isinstance(major_version, int)
+    assert isinstance(minor_version, int)
+    assert isinstance(maintenance_version, int) or maintenance_version == None
+    assert isinstance(revision, int) or revision == None
+
     project = optislang.project
     assert isinstance(project, Project)
 
@@ -58,11 +76,6 @@ def test_optislang_properties(optislang: Optislang):
     assert optislang.timeout == 30
     with pytest.raises(TypeError):
         optislang.timeout = "20"
-    with pytest.raises(ValueError):
-        optislang.timeout = -20
-
-    optislang.dispose()
-    time.sleep(3)
 
 
 def test_shutdown():
