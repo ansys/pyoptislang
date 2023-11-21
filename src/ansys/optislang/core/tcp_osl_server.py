@@ -1002,6 +1002,7 @@ class TcpOslServer(OslServer):
         self.__host = host
         self.__port = port
         self.__timeout = None
+        self.__max_num_request_attempts_on_timeout = 3
 
         if logger is None:
             self._logger = logging.getLogger(__name__)
@@ -2654,26 +2655,33 @@ class TcpOslServer(OslServer):
         if self.__host is None or self.__port is None:
             raise RuntimeError("optiSLang server is not started.")
 
-        start_time = time.time()
         self._logger.debug("Sending command or query to the server: %s", command)
         client = TcpClient(logger=self._logger)
-        try:
-            client.connect(
-                self.__host, self.__port, timeout=_get_current_timeout(self.__timeout, start_time)
-            )
-            client.send_msg(command, timeout=_get_current_timeout(self.__timeout, start_time))
-            response_str = client.receive_msg(
-                timeout=_get_current_timeout(self.__timeout, start_time)
-            )
+        
+        response_str = ""
 
-        except TimeoutError as ex:
-            raise
-        except Exception as ex:
-            raise OslCommunicationError(
-                "An error occurred while communicating with the optiSLang server."
-            ) from ex
-        finally:
-            client.disconnect()
+        for request_attempt in range (1, self.__max_num_request_attempts_on_timeout + 1):
+            start_time = time.time()
+            try:
+                client.connect(
+                    self.__host, self.__port, timeout=_get_current_timeout(self.__timeout, start_time)
+                )
+                client.send_msg(command, timeout=_get_current_timeout(self.__timeout, start_time))
+                response_str = client.receive_msg(
+                    timeout=_get_current_timeout(self.__timeout, start_time)
+                )
+                break
+            except TimeoutError as ex:
+                if request_attempt == self.__max_num_request_attempts_on_timeout:
+                    raise
+                else:
+                    pass
+            except Exception as ex:
+                raise OslCommunicationError(
+                    "An error occurred while communicating with the optiSLang server."
+                ) from ex 
+            finally:
+                client.disconnect()
 
         self._logger.debug("Response received: %s", response_str)
         response = json.loads(response_str)
