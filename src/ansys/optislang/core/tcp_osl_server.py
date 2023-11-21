@@ -2657,21 +2657,23 @@ class TcpOslServer(OslServer):
 
         self._logger.debug("Sending command or query to the server: %s", command)
         client = TcpClient(logger=self._logger)
-        
+
         response_str = ""
 
-        for request_attempt in range (1, self.__max_num_request_attempts_on_timeout + 1):
+        for request_attempt in range(1, self.__max_num_request_attempts_on_timeout + 1):
             start_time = time.time()
             try:
                 client.connect(
-                    self.__host, self.__port, timeout=_get_current_timeout(self.__timeout, start_time)
+                    self.__host,
+                    self.__port,
+                    timeout=_get_current_timeout(self.__timeout, start_time),
                 )
                 client.send_msg(command, timeout=_get_current_timeout(self.__timeout, start_time))
                 response_str = client.receive_msg(
                     timeout=_get_current_timeout(self.__timeout, start_time)
                 )
                 break
-            except TimeoutError as ex:
+            except TimeoutError:
                 if request_attempt == self.__max_num_request_attempts_on_timeout:
                     raise
                 else:
@@ -2679,7 +2681,7 @@ class TcpOslServer(OslServer):
             except Exception as ex:
                 raise OslCommunicationError(
                     "An error occurred while communicating with the optiSLang server."
-                ) from ex 
+                ) from ex
             finally:
                 client.disconnect()
 
