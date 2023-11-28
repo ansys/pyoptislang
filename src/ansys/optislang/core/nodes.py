@@ -215,7 +215,7 @@ class Node:
 
         Returns
         -------
-        Tuple[RegisteredFile]
+        Tuple[RegisteredFile, ...]
             Tuple of registered files.
 
         Raises
@@ -253,7 +253,7 @@ class Node:
 
         Returns
         -------
-        Tuple[RegisteredFile]
+        Tuple[RegisteredFile, ...]
             Tuple of result files.
 
         Raises
@@ -277,7 +277,7 @@ class Node:
 
         Returns
         -------
-        Tuple[str]
+        Tuple[str, ...]
             Actor states ids.
 
         Raises
@@ -348,7 +348,7 @@ class Node:
         command: str
             Command to execute. Options are ``"start"``, ``"restart"``, ``"stop_gently"``,
             ``"stop"``, and ``"reset"``.
-        hid: str, optional
+        hid: Optional[str], optional
             Hid entry. The default is ``None``. The actor unique ID is required.
         wait_for_completion: bool, optional
             Whether to wait for completion. The default is ``True``.
@@ -357,7 +357,7 @@ class Node:
 
         Returns
         -------
-        boolean or None
+        Optional[bool]
             ``True`` when successful, ``False`` when failed.
         """
         if hid is None:  # Run command against all designs
@@ -490,7 +490,7 @@ class Node:
 
         Returns
         -------
-        Tuple[dict]
+        Tuple[dict, ...]
             Tuple with status info dictionary for each state.
 
         Raises
@@ -996,7 +996,7 @@ class ParametricSystem(System):
             Name of the file.
         format : FileOutputFormat, optional
             Format of the file, by default ``FileOutputFormat.JSON``.
-        dir : Union[Path, str], optional
+        dir : Optional[Union[Path, str]], optional
             Directory, where file should be saved, by default ``None``.
             Project's working directory is used by default.
 
@@ -1331,6 +1331,8 @@ class RootSystem(ParametricSystem):
         command: str
             Command to execute. Options are ``"restart"``, ``"stop_gently"``, ``"stop"``
             and ``"reset"``.
+        hid: Optional[str], optional
+            Hid entry.
         wait_for_completion: bool, opt
             True/False
         timeout: Union[float, int], opt
@@ -1338,7 +1340,7 @@ class RootSystem(ParametricSystem):
 
         Returns
         -------
-        boolean or None
+        Optional[bool]
             ``True`` when successful, ``False`` when failed.
         """
         response = self._osl_server.send_command(getattr(commands, command)())
