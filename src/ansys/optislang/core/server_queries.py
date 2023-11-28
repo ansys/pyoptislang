@@ -61,7 +61,7 @@ def actor_properties(uid: str, password: Optional[str] = None) -> str:
 
 def actor_states(
     uid: str,
-    include_state_info: bool = True,
+    include_state_info: bool = False,
     password: Optional[str] = None,
 ) -> str:
     """Generate JSON string of actor_states query.

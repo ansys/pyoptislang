@@ -52,7 +52,7 @@ def test_actor_states():
     dictionary = json.loads(json_string)
     requiered_string = json.loads(
         '{ "What": "ACTOR_STATES", "uid": "5cdfb20b-bef6-4412-9985-89f5ded5ee95",'
-        ' "args": { "include_state_info": true } }',
+        ' "args": { "include_state_info": false } }',
     )
     assert type(json_string) == str
     assert sorted(dictionary.items()) == sorted(requiered_string.items())
