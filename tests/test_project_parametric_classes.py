@@ -594,7 +594,13 @@ def test_design_variable():
     assert design_variable == design_variable_eq
     assert not design_variable == design_variable_neq
 
+    design_variable_copy = copy.deepcopy(design_variable)
+    assert design_variable_copy == design_variable
 
+    print(design_variable)
+
+
+# TEST PARAMETERS:
 def test_parameter():
     """Test `Parameter`."""
     parameter = Parameter(
@@ -689,6 +695,8 @@ def test_optimization_parameter():
     optimization_parameter_copy.range = [1, 2]
     assert optimization_parameter_copy.range == (1, 2)
 
+    print(optimization_parameter_from_dict)
+
 
 def test_stochastic_parameter():
     """Test `StochasticParameter`."""
@@ -737,6 +745,8 @@ def test_stochastic_parameter():
     assert stochastic_parameter_copy.statistical_moments == (1, 2)
     stochastic_parameter_copy.statistical_moments = [1]
     assert stochastic_parameter_copy.statistical_moments == (1,)
+
+    print(stochastic_parameter_from_dict)
 
 
 def test_stochastic_parameter_2():
@@ -787,6 +797,8 @@ def test_stochastic_parameter_2():
     stochastic_parameter_copy.statistical_moments = [1]
     assert stochastic_parameter_copy.statistical_moments == (1,)
 
+    print(stochastic_parameter_from_dict)
+
 
 def test_stochastic_parameter_3():
     """Test `StochasticParameter`."""
@@ -835,6 +847,8 @@ def test_stochastic_parameter_3():
     assert stochastic_parameter_copy.distribution_parameters == (1, 2)
     stochastic_parameter_copy.distribution_parameters = [1]
     assert stochastic_parameter_copy.distribution_parameters == (1,)
+
+    print(stochastic_parameter_from_dict)
 
 
 def test_mixed_parameter():
@@ -893,6 +907,8 @@ def test_mixed_parameter():
     assert mixed_parameter_copy.distribution_parameters == (1, 2)
     mixed_parameter_copy.distribution_parameters = [1]
     assert mixed_parameter_copy.distribution_parameters == (1,)
+
+    print(mixed_parameter_from_dict)
 
 
 def test_dependent_parameter():
@@ -1048,6 +1064,8 @@ def test_contraint_criterion():
     assert constraint_criterion_copy.limit_expression_value == 10
     assert constraint_criterion_copy.limit_expression_value_type == CriterionValueType.SCALAR
 
+    print(constraint_criterion_from_dict)
+
 
 def test_limit_state_criterion():
     """Test ``LimitStateCriterion``."""
@@ -1074,6 +1092,8 @@ def test_limit_state_criterion():
     assert limit_state_criterion_copy.limit_expression_value == 10
     assert limit_state_criterion_copy.limit_expression_value_type == CriterionValueType.SCALAR
 
+    print(limit_state_criterion_from_dict)
+
 
 def test_objective_criterion():
     """Test ``ObjectiveCriterion``."""
@@ -1087,6 +1107,8 @@ def test_objective_criterion():
 
     objective_criterion_copy = copy.deepcopy(OBJECTIVE_CRITERION)
     assert OBJECTIVE_CRITERION == objective_criterion_copy
+
+    print(objective_criterion_from_dict)
 
 
 def test_variable_criterion():
@@ -1158,6 +1180,8 @@ def test_response():
     with pytest.raises(TypeError):
         response.reference_value = (1, 2, 3)
 
+    print(response)
+
 
 # endregion
 
@@ -1197,6 +1221,8 @@ def test_design_properties(design: Design):
     assert isinstance(design.variables_names, tuple)
     for parameter in design.parameters:
         assert isinstance(parameter, DesignVariable)
+
+    print(design)
 
 
 def test_clear_parameters(design: Design):
