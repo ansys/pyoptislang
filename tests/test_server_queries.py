@@ -5,16 +5,16 @@ import pytest
 
 from ansys.optislang.core import server_queries as sq
 
-my_string = "5cdfb20b-bef6-4412-9985-89f5ded5ee95"
-my_dict = {"feature": "CAN_FINALIZE"}
-hid = "0.1"
-my_slot = "MySlot"
-my_password = "otislang.-*123"
+example_uid = "5cdfb20b-bef6-4412-9985-89f5ded5ee95"
+example_dict = {"feature": "CAN_FINALIZE"}
+example_hid = "0.1"
+example_slot = "MySlot"
+example_password = "otislang.-*123"
 
 
 def test_actor_info():
     "Test actor_info."
-    json_string = sq.actor_info(uid=my_string)
+    json_string = sq.actor_info(uid=example_uid)
     dictionary = json.loads(json_string)
     requiered_string = json.loads(
         '{ "What": "ACTOR_INFO", "uid": "5cdfb20b-bef6-4412-9985-89f5ded5ee95" }'
@@ -22,16 +22,32 @@ def test_actor_info():
     assert type(json_string) == str
     assert sorted(dictionary.items()) == sorted(requiered_string.items())
     # with password
-    json_string = sq.actor_info(uid=my_string, password=my_password)
+    json_string = sq.actor_info(uid=example_uid, password=example_password)
     dictionary = json.loads(json_string)
-    dictionary["Password"] = my_password
+    assert dictionary["Password"] == example_password
     with pytest.raises(TypeError):
         sq.actor_info()
 
 
+def test_actor_internal_variables():
+    "Test actor_internal_variables."
+    json_string = sq.actor_internal_variables(uid=example_uid)
+    dictionary = json.loads(json_string)
+    requiered_string = json.loads(
+        '{ "What": "ACTOR_INTERNAL_VARIABLES", "uid": "5cdfb20b-bef6-4412-9985-89f5ded5ee95", \
+        "args": { "include_reference_values": true } }'
+    )
+    assert isinstance(json_string, str)
+    assert sorted(dictionary.items()) == sorted(requiered_string.items())
+    # with password
+    json_string = sq.actor_internal_variables(uid=example_uid, password=example_password)
+    dictionary = json.loads(json_string)
+    assert dictionary["Password"] == example_password
+
+
 def test_actor_properties():
     "Test actor_properties."
-    json_string = sq.actor_properties(uid=my_string)
+    json_string = sq.actor_properties(uid=example_uid)
     dictionary = json.loads(json_string)
     requiered_string = json.loads(
         '{ "What": "ACTOR_PROPERTIES", "uid": "5cdfb20b-bef6-4412-9985-89f5ded5ee95" }'
@@ -39,55 +55,123 @@ def test_actor_properties():
     assert type(json_string) == str
     assert sorted(dictionary.items()) == sorted(requiered_string.items())
     # with password
-    json_string = sq.actor_properties(uid=my_string, password=my_password)
+    json_string = sq.actor_properties(uid=example_uid, password=example_password)
     dictionary = json.loads(json_string)
-    dictionary["Password"] = my_password
+    assert dictionary["Password"] == example_password
     with pytest.raises(TypeError):
         sq.actor_properties()
 
 
-def test_actor_states():
-    "Test actor_states."
-    json_string = sq.actor_states(uid=my_string)
+def test_actor_registered_input_slots():
+    "Test actor_registered_input_slots."
+    json_string = sq.actor_registered_input_slots(uid=example_uid, include_reference_values=True)
     dictionary = json.loads(json_string)
     requiered_string = json.loads(
-        '{ "What": "ACTOR_STATES", "uid": "5cdfb20b-bef6-4412-9985-89f5ded5ee95" }'
+        '{ "What": "ACTOR_REGISTERED_INPUT_SLOTS", "uid": "5cdfb20b-bef6-4412-9985-89f5ded5ee95", \
+        "args": { "include_reference_values": true } }'
+    )
+    assert isinstance(json_string, str)
+    assert sorted(dictionary.items()) == sorted(requiered_string.items())
+    # with password
+    json_string = sq.actor_registered_input_slots(uid=example_uid, password=example_password)
+    dictionary = json.loads(json_string)
+    assert dictionary["Password"] == example_password
+
+
+def test_actor_registered_output_slots():
+    "Test actor_registered_output_slots."
+    json_string = sq.actor_registered_output_slots(uid=example_uid, include_reference_values=True)
+    dictionary = json.loads(json_string)
+    requiered_string = json.loads(
+        '{ "What": "ACTOR_REGISTERED_OUTPUT_SLOTS", "uid": "5cdfb20b-bef6-4412-9985-89f5ded5ee95", \
+        "args": { "include_reference_values": true } }'
+    )
+    assert isinstance(json_string, str)
+    assert sorted(dictionary.items()) == sorted(requiered_string.items())
+    # with password
+    json_string = sq.actor_registered_output_slots(uid=example_uid, password=example_password)
+    dictionary = json.loads(json_string)
+    assert dictionary["Password"] == example_password
+
+
+def test_actor_registered_parameters():
+    "Test actor_registered_parameters."
+    json_string = sq.actor_registered_parameters(uid=example_uid, include_reference_values=True)
+    dictionary = json.loads(json_string)
+    requiered_string = json.loads(
+        '{ "What": "ACTOR_REGISTERED_PARAMETERS", "uid": "5cdfb20b-bef6-4412-9985-89f5ded5ee95", \
+        "args": { "include_reference_values": true } }'
+    )
+    assert isinstance(json_string, str)
+    assert sorted(dictionary.items()) == sorted(requiered_string.items())
+    # with password
+    json_string = sq.actor_registered_parameters(uid=example_uid, password=example_password)
+    dictionary = json.loads(json_string)
+    assert dictionary["Password"] == example_password
+
+
+def test_actor_registered_responses():
+    "Test actor_registered_responses."
+    json_string = sq.actor_registered_responses(uid=example_uid, include_reference_values=True)
+    dictionary = json.loads(json_string)
+    requiered_string = json.loads(
+        '{ "What": "ACTOR_REGISTERED_RESPONSES", "uid": "5cdfb20b-bef6-4412-9985-89f5ded5ee95", \
+        "args": { "include_reference_values": true } }'
+    )
+    assert isinstance(json_string, str)
+    assert sorted(dictionary.items()) == sorted(requiered_string.items())
+    # with password
+    json_string = sq.actor_registered_responses(uid=example_uid, password=example_password)
+    dictionary = json.loads(json_string)
+    assert dictionary["Password"] == example_password
+
+
+def test_actor_states():
+    "Test actor_states."
+    json_string = sq.actor_states(uid=example_uid)
+    dictionary = json.loads(json_string)
+    requiered_string = json.loads(
+        '{ "What": "ACTOR_STATES", "uid": "5cdfb20b-bef6-4412-9985-89f5ded5ee95",'
+        ' "args": { "include_state_info": false } }',
     )
     assert type(json_string) == str
     assert sorted(dictionary.items()) == sorted(requiered_string.items())
     # with password
-    json_string = sq.actor_states(uid=my_string, password=my_password)
+    json_string = sq.actor_states(uid=example_uid, password=example_password)
     dictionary = json.loads(json_string)
-    dictionary["Password"] = my_password
+    assert dictionary["Password"] == example_password
     with pytest.raises(TypeError):
         sq.actor_states()
 
 
 def test_actor_status_info():
     "Test actor_status_info."
-    json_string = sq.actor_status_info(uid=my_string, hid=hid)
+    json_string = sq.actor_status_info(uid=example_uid, hid=example_hid)
     dictionary = json.loads(json_string)
     requiered_string = json.loads(
         '{ "What": "ACTOR_STATUS_INFO", "uid": "5cdfb20b-bef6-4412-9985-89f5ded5ee95",'
-        ' "hid": "0.1" }',
+        ' "hid": "0.1", "args": {'
+        ' "include_designs": true,'
+        ' "include_non_scalar_design_values": false,'
+        ' "include_algorithm_info": false } }',
     )
     assert type(json_string) == str
     assert sorted(dictionary.items()) == sorted(requiered_string.items())
     # with password
-    json_string = sq.actor_status_info(uid=my_string, hid=hid, password=my_password)
+    json_string = sq.actor_status_info(uid=example_uid, hid=example_hid, password=example_password)
     dictionary = json.loads(json_string)
-    dictionary["Password"] = my_password
+    assert dictionary["Password"] == example_password
     with pytest.raises(TypeError):
         sq.actor_status_info()
     with pytest.raises(TypeError):
-        sq.actor_status_info(uid=my_string)
+        sq.actor_status_info(uid=example_uid)
     with pytest.raises(TypeError):
-        sq.actor_status_info(hid=my_string)
+        sq.actor_status_info(hid=example_uid)
 
 
 def test_actor_supports():
     "Test actor_supports."
-    json_string = sq.actor_supports(uid=my_string, feature_name="CAN_FINALIZE")
+    json_string = sq.actor_supports(uid=example_uid, feature_name="CAN_FINALIZE")
     dictionary = json.loads(json_string)
     requiered_string = json.loads(
         '{ "What": "ACTOR_SUPPORTS", "uid": "5cdfb20b-bef6-4412-9985-89f5ded5ee95",'
@@ -97,16 +181,59 @@ def test_actor_supports():
     assert sorted(dictionary.items()) == sorted(requiered_string.items())
     # with password
     json_string = sq.actor_supports(
-        uid=my_string, feature_name="CAN_FINALIZE", password=my_password
+        uid=example_uid, feature_name="CAN_FINALIZE", password=example_password
     )
     dictionary = json.loads(json_string)
-    dictionary["Password"] = my_password
+    assert dictionary["Password"] == example_password
     with pytest.raises(TypeError):
         sq.actor_supports()
     with pytest.raises(TypeError):
-        sq.actor_supports(uid=my_string)
+        sq.actor_supports(uid=example_uid)
     with pytest.raises(TypeError):
-        sq.actor_supports(args=my_dict)
+        sq.actor_supports(args=example_dict)
+
+
+def test_available_input_locations():
+    "Test available_input_locations."
+    json_string = sq.available_input_locations(uid=example_uid)
+    dictionary = json.loads(json_string)
+    requiered_string = json.loads(
+        '{ "What": "AVAILABLE_INPUT_LOCATIONS", "uid": "5cdfb20b-bef6-4412-9985-89f5ded5ee95" }'
+    )
+    assert isinstance(json_string, str)
+    assert sorted(dictionary.items()) == sorted(requiered_string.items())
+    # with password
+    json_string = sq.available_input_locations(uid=example_uid, password=example_password)
+    dictionary = json.loads(json_string)
+    assert dictionary["Password"] == example_password
+
+
+def test_available_nodes():
+    "Test available_nodes."
+    json_string = sq.available_nodes()
+    dictionary = json.loads(json_string)
+    requiered_string = json.loads('{ "What": "AVAILABLE_NODES" }')
+    assert isinstance(json_string, str)
+    assert sorted(dictionary.items()) == sorted(requiered_string.items())
+    # with password
+    json_string = sq.available_nodes(password=example_password)
+    dictionary = json.loads(json_string)
+    assert dictionary["Password"] == example_password
+
+
+def test_available_output_locations():
+    "Test available_output_locations."
+    json_string = sq.available_output_locations(uid=example_uid)
+    dictionary = json.loads(json_string)
+    requiered_string = json.loads(
+        '{ "What": "AVAILABLE_OUTPUT_LOCATIONS", "uid": "5cdfb20b-bef6-4412-9985-89f5ded5ee95" }'
+    )
+    assert isinstance(json_string, str)
+    assert sorted(dictionary.items()) == sorted(requiered_string.items())
+    # with password
+    json_string = sq.available_output_locations(uid=example_uid, password=example_password)
+    dictionary = json.loads(json_string)
+    assert dictionary["Password"] == example_password
 
 
 def test_basic_project_info():
@@ -117,26 +244,51 @@ def test_basic_project_info():
     assert type(json_string) == str
     assert sorted(dictionary.items()) == sorted(requiered_string.items())
     # with password
-    json_string = sq.basic_project_info(password=my_password)
+    json_string = sq.basic_project_info(password=example_password)
     dictionary = json.loads(json_string)
-    dictionary["Password"] = my_password
+    assert dictionary["Password"] == example_password
     with pytest.raises(TypeError):
-        sq.basic_project_info(rand_arg=my_string)
+        sq.basic_project_info(rand_arg=example_uid)
+
+
+def test_doe_size():
+    "Test doe_size."
+    json_string = sq.doe_size(uid=example_uid, sampling_type="fullfactorial", num_discrete_levels=2)
+    dictionary = json.loads(json_string)
+    requiered_string = json.loads(
+        '{ "What": "DOE_SIZE", "uid": "5cdfb20b-bef6-4412-9985-89f5ded5ee95", \
+        "args": {"num_discrete_levels": 2, "sampling_type": "fullfactorial"}}'
+    )
+    assert type(json_string) == str
+    assert sorted(dictionary.items()) == sorted(requiered_string.items())
+    # with password
+    json_string = sq.doe_size(
+        uid=example_uid,
+        sampling_type="fullfactorial",
+        num_discrete_levels=2,
+        password=example_password,
+    )
+    dictionary = json.loads(json_string)
+    assert dictionary["Password"] == example_password
 
 
 def test_full_project_status_info():
     "Test full_project_status_info."
     json_string = sq.full_project_status_info()
     dictionary = json.loads(json_string)
-    requiered_string = json.loads('{ "What": "FULL_PROJECT_STATUS_INFO" }')
+    requiered_string = json.loads(
+        '{ "What": "FULL_PROJECT_STATUS_INFO", "args": {'
+        ' "include_non_scalar_design_values": false,'
+        ' "include_algorithm_info": false } }',
+    )
     assert type(json_string) == str
     assert sorted(dictionary.items()) == sorted(requiered_string.items())
     # with password
-    json_string = sq.full_project_status_info(password=my_password)
+    json_string = sq.full_project_status_info(password=example_password)
     dictionary = json.loads(json_string)
-    dictionary["Password"] = my_password
+    assert dictionary["Password"] == example_password
     with pytest.raises(TypeError):
-        sq.full_project_status_info(rand_arg=my_string)
+        sq.full_project_status_info(rand_arg=example_uid)
 
 
 def test_full_project_tree():
@@ -147,11 +299,11 @@ def test_full_project_tree():
     assert type(json_string) == str
     assert sorted(dictionary.items()) == sorted(requiered_string.items())
     # with password
-    json_string = sq.full_project_tree(password=my_password)
+    json_string = sq.full_project_tree(password=example_password)
     dictionary = json.loads(json_string)
-    dictionary["Password"] = my_password
+    assert dictionary["Password"] == example_password
     with pytest.raises(TypeError):
-        sq.full_project_tree(rand_arg=my_string)
+        sq.full_project_tree(rand_arg=example_uid)
 
 
 def test_full_project_tree_with_properties():
@@ -162,16 +314,54 @@ def test_full_project_tree_with_properties():
     assert type(json_string) == str
     assert sorted(dictionary.items()) == sorted(requiered_string.items())
     # with password
-    json_string = sq.full_project_tree_with_properties(password=my_password)
+    json_string = sq.full_project_tree_with_properties(password=example_password)
     dictionary = json.loads(json_string)
-    dictionary["Password"] = my_password
+    assert dictionary["Password"] == example_password
     with pytest.raises(TypeError):
-        sq.full_project_tree_with_properties(rand_arg=my_string)
+        sq.full_project_tree_with_properties(rand_arg=example_uid)
+
+
+def test_get_criteria():
+    "Test get_criteria."
+    json_string = sq.get_criteria(uid=example_uid)
+    dictionary = json.loads(json_string)
+    requiered_string = json.loads(
+        '{"What": "GET_CRITERIA", "uid": "5cdfb20b-bef6-4412-9985-89f5ded5ee95"}'
+    )
+    assert type(json_string) == str
+    assert sorted(dictionary.items()) == sorted(requiered_string.items())
+    # with password
+    json_string = sq.get_criteria(
+        uid=example_uid,
+        password=example_password,
+    )
+    dictionary = json.loads(json_string)
+    assert dictionary["Password"] == example_password
+
+
+def test_get_criterion():
+    "Test get_criterion."
+    json_string = sq.get_criterion(uid=example_uid, name="obj2")
+    dictionary = json.loads(json_string)
+    requiered_string = json.loads(
+        '{"What": "GET_CRITERION", "uid": "5cdfb20b-bef6-4412-9985-89f5ded5ee95", \
+         "args": {"name": "obj2"}}'
+    )
+    assert type(json_string) == str
+    assert sorted(dictionary.items()) == sorted(requiered_string.items())
+    # with password
+    json_string = sq.get_criterion(
+        uid=example_uid,
+        name="obj2",
+        password=example_password,
+    )
+    dictionary = json.loads(json_string)
+    assert dictionary["Password"] == example_password
 
 
 def test_hpc_licensing_forwarded_environment():
     "Test hpc_licensing_forwarded_environment."
-    json_string = sq.hpc_licensing_forwarded_environment(uid=my_string)
+    json_string = sq.hpc_licensing_forwarded_environment(uid=example_uid)
     dictionary = json.loads(json_string)
     requiered_string = json.loads(
         '{ "What": "HPC_LICENSING_FORWARDED_ENVIRONMENT",'
@@ -180,16 +370,16 @@ def test_hpc_licensing_forwarded_environment():
     assert type(json_string) == str
     assert sorted(dictionary.items()) == sorted(requiered_string.items())
     # with password
-    json_string = sq.hpc_licensing_forwarded_environment(uid=my_string, password=my_password)
+    json_string = sq.hpc_licensing_forwarded_environment(uid=example_uid, password=example_password)
     dictionary = json.loads(json_string)
-    dictionary["Password"] = my_password
+    assert dictionary["Password"] == example_password
     with pytest.raises(TypeError):
         sq.hpc_licensing_forwarded_environment()
 
 
 def test_input_slot_value():
     "Test input slot value."
-    json_string = sq.input_slot_value(uid=my_string, hid=hid, slot_name="IDesign")
+    json_string = sq.input_slot_value(uid=example_uid, hid=example_hid, slot_name="IDesign")
     dictionary = json.loads(json_string)
     requiered_string = json.loads(
         '{ "What": "INPUT_SLOT_VALUE", "uid": "5cdfb20b-bef6-4412-9985-89f5ded5ee95",'
@@ -199,29 +389,29 @@ def test_input_slot_value():
     assert sorted(dictionary.items()) == sorted(requiered_string.items())
     # with password
     json_string = sq.input_slot_value(
-        uid=my_string, hid=hid, slot_name="IDesign", password=my_password
+        uid=example_uid, hid=example_hid, slot_name="IDesign", password=example_password
     )
     dictionary = json.loads(json_string)
-    dictionary["Password"] = my_password
+    assert dictionary["Password"] == example_password
     with pytest.raises(TypeError):
         sq.input_slot_value()
     with pytest.raises(TypeError):
-        sq.input_slot_value(uid=my_string)
+        sq.input_slot_value(uid=example_uid)
     with pytest.raises(TypeError):
-        sq.input_slot_value(hid=hid)
+        sq.input_slot_value(hid=example_hid)
     with pytest.raises(TypeError):
-        sq.input_slot_value(slot_name=my_slot)
+        sq.input_slot_value(slot_name=example_slot)
     with pytest.raises(TypeError):
-        sq.input_slot_value(hid=hid, slot_name=my_slot)
+        sq.input_slot_value(hid=example_hid, slot_name=example_slot)
     with pytest.raises(TypeError):
-        sq.input_slot_value(uid=my_string, slot_name=my_slot)
+        sq.input_slot_value(uid=example_uid, slot_name=example_slot)
     with pytest.raises(TypeError):
-        sq.input_slot_value(uid=my_string, hid=hid)
+        sq.input_slot_value(uid=example_uid, hid=example_hid)
 
 
 def test_output_slot_value():
     "Test output slot value."
-    json_string = sq.output_slot_value(uid=my_string, hid=hid, slot_name="ODesign")
+    json_string = sq.output_slot_value(uid=example_uid, hid=example_hid, slot_name="ODesign")
     dictionary = json.loads(json_string)
     requiered_string = json.loads(
         '{ "What": "OUTPUT_SLOT_VALUE", "uid": "5cdfb20b-bef6-4412-9985-89f5ded5ee95",'
@@ -231,24 +421,24 @@ def test_output_slot_value():
     assert sorted(dictionary.items()) == sorted(requiered_string.items())
     # with password
     json_string = sq.output_slot_value(
-        uid=my_string, hid=hid, slot_name="ODesign", password=my_password
+        uid=example_uid, hid=example_hid, slot_name="ODesign", password=example_password
     )
     dictionary = json.loads(json_string)
-    dictionary["Password"] = my_password
+    assert dictionary["Password"] == example_password
     with pytest.raises(TypeError):
         sq.output_slot_value()
     with pytest.raises(TypeError):
-        sq.output_slot_value(uid=my_string)
+        sq.output_slot_value(uid=example_uid)
     with pytest.raises(TypeError):
-        sq.output_slot_value(hid=hid)
+        sq.output_slot_value(hid=example_hid)
     with pytest.raises(TypeError):
-        sq.output_slot_value(slot_name=my_slot)
+        sq.output_slot_value(slot_name=example_slot)
     with pytest.raises(TypeError):
-        sq.output_slot_value(hid=hid, slot_name=my_slot)
+        sq.output_slot_value(hid=example_hid, slot_name=example_slot)
     with pytest.raises(TypeError):
-        sq.output_slot_value(uid=my_string, slot_name=my_slot)
+        sq.output_slot_value(uid=example_uid, slot_name=example_slot)
     with pytest.raises(TypeError):
-        sq.output_slot_value(uid=my_string, hid=hid)
+        sq.output_slot_value(uid=example_uid, hid=example_hid)
 
 
 def test_project_tree_systems():
@@ -259,11 +449,11 @@ def test_project_tree_systems():
     assert type(json_string) == str
     assert sorted(dictionary.items()) == sorted(requiered_string.items())
     # with password
-    json_string = sq.project_tree_systems(password=my_password)
+    json_string = sq.project_tree_systems(password=example_password)
     dictionary = json.loads(json_string)
-    dictionary["Password"] = my_password
+    assert dictionary["Password"] == example_password
     with pytest.raises(TypeError):
-        sq.project_tree_systems(rand_arg=my_string)
+        sq.project_tree_systems(rand_arg=example_uid)
 
 
 def test_project_tree_systems_with_properties():
@@ -274,11 +464,11 @@ def test_project_tree_systems_with_properties():
     assert type(json_string) == str
     assert sorted(dictionary.items()) == sorted(requiered_string.items())
     # with password
-    json_string = sq.project_tree_systems_with_properties(password=my_password)
+    json_string = sq.project_tree_systems_with_properties(password=example_password)
     dictionary = json.loads(json_string)
-    dictionary["Password"] = my_password
+    assert dictionary["Password"] == example_password
     with pytest.raises(TypeError):
-        sq.project_tree_systems_with_properties(rand_arg=my_string)
+        sq.project_tree_systems_with_properties(rand_arg=example_uid)
 
 
 def test_server_info():
@@ -289,11 +479,11 @@ def test_server_info():
     assert type(json_string) == str
     assert sorted(dictionary.items()) == sorted(requiered_string.items())
     # with password
-    json_string = sq.server_info(password=my_password)
+    json_string = sq.server_info(password=example_password)
     dictionary = json.loads(json_string)
-    dictionary["Password"] = my_password
+    assert dictionary["Password"] == example_password
     with pytest.raises(TypeError):
-        sq.server_info(rand_arg=my_string)
+        sq.server_info(rand_arg=example_uid)
 
 
 def test_server_is_alive():
@@ -304,23 +494,28 @@ def test_server_is_alive():
     assert type(json_string) == str
     assert sorted(dictionary.items()) == sorted(requiered_string.items())
     # with password
-    json_string = sq.server_is_alive(password=my_password)
+    json_string = sq.server_is_alive(password=example_password)
     dictionary = json.loads(json_string)
-    dictionary["Password"] = my_password
+    assert dictionary["Password"] == example_password
     with pytest.raises(TypeError):
-        sq.server_is_alive(rand_arg=my_string)
+        sq.server_is_alive(rand_arg=example_uid)
 
 
 def test_systems_status_info():
     "Test server_status_info."
     json_string = sq.systems_status_info()
     dictionary = json.loads(json_string)
-    requiered_string = json.loads('{ "What": "SYSTEMS_STATUS_INFO" }')
+    requiered_string = json.loads(
+        '{ "What": "SYSTEMS_STATUS_INFO", "args": {'
+        ' "include_designs": true,'
+        ' "include_non_scalar_design_values": false,'
+        ' "include_algorithm_info": false } }',
+    )
     assert type(json_string) == str
     assert sorted(dictionary.items()) == sorted(requiered_string.items())
     # with password
-    json_string = sq.systems_status_info(password=my_password)
+    json_string = sq.systems_status_info(password=example_password)
     dictionary = json.loads(json_string)
-    dictionary["Password"] = my_password
+    assert dictionary["Password"] == example_password
     with pytest.raises(TypeError):
-        sq.systems_status_info(rand_arg=my_string)
+        sq.systems_status_info(rand_arg=example_uid)
