@@ -178,7 +178,7 @@ class OslLogger:
         ----------
         new_logger_name : str
             Name of the logger.
-        level: str, opt
+        level: Optional[str], optional
             Level of logging. The default is ``None``, in which gase the global log level is set.
 
         Returns
@@ -238,8 +238,8 @@ class OslLogger:
         osl_instance: Optislang
             Optislang instance object. This object should contain the ``name``
             attribute.
-        level: str, opt
-            Level of logging.
+        level: Optional[str], optional
+            Level of logging. Defaults to ``None``.
 
         Returns
         -------

@@ -384,11 +384,13 @@ class Criterion:
         name: str = "",
         type_: Union[CriterionType, str] = CriterionType.VARIABLE,
         expression: str = "0",
-        expression_value: Union[tuple, bool, float, complex, list, dict, None] = None,
-        expression_value_type: Union[CriterionValueType, None] = None,
+        expression_value: Optional[Union[tuple, bool, float, complex, list, dict]] = None,
+        expression_value_type: Optional[CriterionValueType] = None,
         criterion: Union[ComparisonType, str] = ComparisonType.IGNORE,
-        value: Union[Tuple[CriterionValueType, str], bool, float, complex, list, dict, None] = None,
-        value_type: Union[CriterionValueType, None] = None,
+        value: Optional[
+            Union[Tuple[CriterionValueType, str], bool, float, complex, list, dict]
+        ] = None,
+        value_type: Optional[CriterionValueType] = None,
     ) -> None:
         """Create a new instance of ``Criterion``.
 
@@ -400,15 +402,15 @@ class Criterion:
             Type of criterion, e. g. 'objective'.
         expression: str
             Criterion expression.
-        expression_value: Union[tuple, bool, float, complex, list, dict, None], opt
+        expression_value: Optional[Union[tuple, bool, float, complex, list, dict]], optional
             Expression value.
-        expression_value_type: Union[CriterionValueType, None], opt
+        expression_value_type: Optional[CriterionValueType], optional
             Expression value type.
         criterion: Union[CriterionType, str]
             Type of comparison symbol, e. g. 'min'.
-        value: Union[tuple, bool, float, complex, list, dict, None], optional
+        value: Optional[Union[tuple, bool, float, complex, list, dict]], optional
             Value of the criterion.
-        value_type: Union[CriterionValueType, None], opt
+        value_type: Optional[CriterionValueType], optional
             Type of the criterion value.
         """
         self.name = name
@@ -825,14 +827,14 @@ class ConstraintCriterion(Criterion):
         self,
         name: str = "",
         expression: str = "0",
-        expression_value: Union[tuple, bool, float, complex, list, dict, None] = None,
-        expression_value_type: Union[CriterionValueType, None] = None,
+        expression_value: Optional[Union[tuple, bool, float, complex, list, dict]] = None,
+        expression_value_type: Optional[CriterionValueType] = None,
         criterion: Union[ComparisonType, str] = ComparisonType.LESSEQUAL,
         limit_expression: str = "0",
-        limit_expression_value: Union[tuple, bool, float, complex, list, dict, None] = None,
-        limit_expression_value_type: Union[CriterionValueType, None] = None,
-        value: Union[tuple, bool, float, complex, list, dict, None] = None,
-        value_type: Union[CriterionValueType, None] = None,
+        limit_expression_value: Optional[Union[tuple, bool, float, complex, list, dict]] = None,
+        limit_expression_value_type: Optional[CriterionValueType] = None,
+        value: Optional[Union[tuple, bool, float, complex, list, dict]] = None,
+        value_type: Optional[CriterionValueType] = None,
     ) -> None:
         """Initialize a new instance of ``ConstraintCriterion`` class.
 
@@ -842,21 +844,21 @@ class ConstraintCriterion(Criterion):
             Criterion name.
         expression: str
             Criterion expression.
-        expression_value: Union[tuple, bool, float, complex, list, dict, None], opt
+        expression_value: Optional[Union[tuple, bool, float, complex, list, dict]], optional
             Expression value.
-        expression_value_type: Union[CriterionValueType, None], opt
+        expression_value_type: Optional[CriterionValueType], optional
             Expression value type.
         criterion: Union[CriterionType, str]
             Comparison symbol type, e. g. 'lessequal'.
         limit_expression: str
             Limit expression.
-        limit_expression_value: Union[tuple, bool, float, complex, list, dict]
+        limit_expression_value: Optional[Union[tuple, bool, float, complex, list, dict]], optional
             Limit expression value.
-        limit_expression_value_type: Union[CriterionValueType, None], opt
+        limit_expression_value_type: Optional[CriterionValueType], optional
             Limit expression value type.
-        value: Union[tuple, bool, float, complex, list, dict, None], optional
+        value: Optional[Union[tuple, bool, float, complex, list, dict]], optional
             Criterion value.
-        value_type: Union[CriterionValueType, None], opt
+        value_type: Optional[CriterionValueType], optional
             Type of the criterion value.
         """
         super().__init__(
@@ -1082,14 +1084,14 @@ class LimitStateCriterion(Criterion):
         self,
         name: str = "",
         expression: str = "0",
-        expression_value: Union[tuple, bool, float, complex, list, dict, None] = None,
-        expression_value_type: Union[CriterionValueType, None] = None,
+        expression_value: Optional[Union[tuple, bool, float, complex, list, dict]] = None,
+        expression_value_type: Optional[CriterionValueType] = None,
         criterion: Union[ComparisonType, str] = ComparisonType.LESSLIMITSTATE,
         limit_expression: str = "0",
         limit_expression_value: Optional[Union[tuple, bool, float, complex, list, dict]] = None,
-        limit_expression_value_type: Union[CriterionValueType, None] = None,
-        value: Union[tuple, bool, float, complex, list, dict, None] = None,
-        value_type: Union[CriterionValueType, None] = None,
+        limit_expression_value_type: Optional[CriterionValueType] = None,
+        value: Optional[Union[tuple, bool, float, complex, list, dict]] = None,
+        value_type: Optional[CriterionValueType] = None,
     ) -> None:
         """Initialize a new instance of ``LimitStateCriterion`` class.
 
@@ -1099,21 +1101,21 @@ class LimitStateCriterion(Criterion):
             Criterion name.
         expression: str
             Criterion expression.
-        expression_value: Union[tuple, bool, float, complex, list, dict, None], opt
-            Expression value.
-        expression_value_type: Union[CriterionValueType, None], opt
-            Expression value type.
+        expression_value: Optional[Union[tuple, bool, float, complex, list, dict, None]], optional
+            Expression value. Defaults to ``None``.
+        expression_value_type: Optional[CriterionValueType], optional
+            Expression value type. Defaults to ``None``.
         criterion: Union[CriterionType, str]
             Comparison symbol type, e. g. 'min'.
         limit_expression: str
             Limit expression.
-        limit_expression_value: Union[tuple, bool, float, complex, list, dict]
-            Limit expression value.
-        limit_expression_value_type: Union[CriterionValueType, None], opt
-            Limit expression value type.
-        value: Union[tuple, bool, float, complex, list, dict, None], optional
+        limit_expression_value: Optional[Union[tuple, bool, float, complex, list, dict]], optional
+            Limit expression value. Defaults to ``None``.
+        limit_expression_value_type: Optional[Union[CriterionValueType, None]], optional
+            Limit expression value type. Defaults to ``None``.
+        value: Optional[Union[tuple, bool, float, complex, list, dict]], optional
             Criterion value.
-        value_type: Union[CriterionValueType, None], opt
+        value_type: Optional[CriterionValueType], optional
             Type of the criterion value.
         """
         super().__init__(
@@ -1339,11 +1341,11 @@ class ObjectiveCriterion(Criterion):
         self,
         name: str = "",
         expression: str = "0",
-        expression_value: Union[tuple, bool, float, complex, list, dict, None] = None,
+        expression_value: Optional[Union[tuple, bool, float, complex, list, dict]] = None,
         expression_value_type: Optional[CriterionValueType] = None,
         criterion: Union[ComparisonType, str] = ComparisonType.MIN,
-        value: Union[tuple, bool, float, complex, list, dict, None] = None,
-        value_type: Union[CriterionValueType, None] = None,
+        value: Optional[Union[tuple, bool, float, complex, list, dict]] = None,
+        value_type: Optional[CriterionValueType] = None,
     ) -> None:
         """Create a new instance of the ``ObjectiveCriterion`` class.
 
@@ -1353,15 +1355,15 @@ class ObjectiveCriterion(Criterion):
             Criterion name.
         expression: str
             Criterion expression.
-        expression_value: Union[tuple, bool, float, complex, list, dict, None], opt
+        expression_value: Optional[Union[tuple, bool, float, complex, list, dict]], optional
             Expression value.
-        expression_value_type: CriterionValueType, opt
+        expression_value_type: Optional[CriterionValueType], optional
             Expression value type.
         criterion: Union[CriterionType, str]
             Comparison symbol type, e. g. 'min'.
-        value: Union[tuple, bool, float, complex, list, dict, None], optional
+        value: Optional[Union[tuple, bool, float, complex, list, dict]], optional
             Criterion value.
-        value_type: Union[CriterionValueType, None], opt
+        value_type: Optional[CriterionValueType], optional
             Type of the criterion value.
         """
         super().__init__(
@@ -1494,9 +1496,9 @@ class VariableCriterion(Criterion):
         self,
         name: str = "",
         expression: str = "0",
-        expression_value: Union[tuple, bool, float, complex, list, dict, None] = None,
+        expression_value: Optional[Union[tuple, bool, float, complex, list, dict]] = None,
         expression_value_type: Optional[CriterionValueType] = None,
-        value: Union[tuple, bool, float, complex, list, dict, None] = None,
+        value: Optional[Union[tuple, bool, float, complex, list, dict]] = None,
         value_type: Optional[CriterionValueType] = None,
     ) -> None:
         """Create a new instance of ``VariableCriterion`` class.
@@ -1507,13 +1509,13 @@ class VariableCriterion(Criterion):
             Criterion name.
         expression: str
             Criterion expression.
-        expression_value: Union[tuple, bool, float, complex, list, dict, None], opt
+        expression_value: Optional[Union[tuple, bool, float, complex, list, dict, None]], optional
             Expression value.
-        expression_value_type: CriterionValueType, opt
+        expression_value_type: Optional[CriterionValueType], optional
             Expression value type.
-        value: Union[tuple, bool, float, complex, list, dict, None], optional
+        value: Optional[Union[tuple, bool, float, complex, list, dict]], optional
             Criterion value.
-        value_type: CriterionValueType, opt
+        value_type: Optional[CriterionValueType], optional
             Type of the criterion value.
         """
         super().__init__(
@@ -1643,7 +1645,7 @@ class DesignVariable:
     def __init__(
         self,
         name: str = "",
-        value: Union[bool, float, complex, list, dict, None] = None,
+        value: Optional[Union[bool, float, complex, list, dict]] = None,
     ) -> None:
         """Create a new instance of the ``DesignVariable`` class.
 
@@ -1651,7 +1653,7 @@ class DesignVariable:
         ----------
         name: str
             Variable's name.
-        value: Union[bool, float, complex, list, dict, None]
+        value: Optional[Union[bool, float, complex, list, dict]], optional
             Variable's value.
         """
         self.name = name
@@ -1728,7 +1730,7 @@ class Parameter:
     def __init__(
         self,
         name: str = "",
-        reference_value: Union[bool, float, str, None] = None,
+        reference_value: Optional[Union[bool, float, str]] = None,
         id: str = "",
         const: bool = False,
         type_: Union[ParameterType, str] = ParameterType.DETERMINISTIC,
@@ -1739,7 +1741,7 @@ class Parameter:
         ----------
         name: str
             Name of the parameter.
-        reference_value: Union[bool, float, str, None]
+        reference_value: Optional[Union[bool, float, str]], optional
             Parameter's reference value.
         id: str
             Parameter's unique id.
@@ -1945,7 +1947,7 @@ class DependentParameter(Parameter):
         self,
         name: str = "",
         operation: str = "0",
-        reference_value: Union[bool, float, str, None, Tuple[Any, ParameterValueType]] = None,
+        reference_value: Optional[Union[bool, float, str, Tuple[Any, ParameterValueType]]] = None,
         id: str = str(uuid.uuid4()),
         const: bool = False,
     ) -> None:
@@ -1957,7 +1959,7 @@ class DependentParameter(Parameter):
             Name of the parameter.
         operation: str, optional
             Mathematic expression to evaluate.
-        reference_value: Union[bool, float, str, None, Tuple[Any, ParameterValueType]], optional
+        reference_value: Optional[Union[bool, float, str, Tuple[Any, ParameterValueType]]], optional
             Reference value of the parameter.
         id: str, optional
             Unique ID of the parameter.
@@ -2092,7 +2094,7 @@ class MixedParameter(Parameter):
     def __init__(
         self,
         name: str = "",
-        reference_value: Union[bool, float, str, None, Tuple[Any, ParameterValueType]] = 0,
+        reference_value: Union[bool, float, str, Tuple[Any, ParameterValueType]] = 0,
         id: str = str(uuid.uuid4()),
         const: bool = False,
         deterministic_resolution: Union[ParameterResolution, str] = ParameterResolution.CONTINUOUS,
@@ -2101,9 +2103,9 @@ class MixedParameter(Parameter):
             ParameterResolution, str
         ] = ParameterResolution.MARGINALDISTRIBUTION,
         distribution_type: Union[DistributionType, str] = DistributionType.NORMAL,
-        distribution_parameters: Union[Sequence[float], None] = None,
-        statistical_moments: Union[Sequence[float], None] = None,
-        cov: Union[float, None] = None,
+        distribution_parameters: Optional[Sequence[float]] = None,
+        statistical_moments: Optional[Sequence[float]] = None,
+        cov: Optional[float] = None,
     ) -> None:
         """Create a new instance of the ``MixedParameter`` class.
 
@@ -2125,11 +2127,11 @@ class MixedParameter(Parameter):
             Parameter's stochastic resolution.
         distribution_type: Union[DistributionType, str], optional
             Parameter's distribution type.
-        distribution_parameters: Union[Sequence[float, ...], None], optional
+        distribution_parameters: Optional[Sequence[float, ...]], optional
             Distribution's parameters.
-        statistical_moments: Union[Sequence[float, ...], None], optional
+        statistical_moments: Optional[Sequence[float, ...]], optional
             Distribution's statistical moments.
-        cov: Union[float, None], optional
+        cov: Optional[float], optional
             Distribution's COV.
         """
         super().__init__(
@@ -2769,9 +2771,9 @@ class StochasticParameter(Parameter):
             ParameterResolution, str
         ] = ParameterResolution.MARGINALDISTRIBUTION,
         distribution_type: Union[DistributionType, str] = DistributionType.NORMAL,
-        distribution_parameters: Union[Sequence[float], None] = None,
-        statistical_moments: Union[Sequence[float], None] = None,
-        cov: Union[float, None] = None,
+        distribution_parameters: Optional[Sequence[float]] = None,
+        statistical_moments: Optional[Sequence[float]] = None,
+        cov: Optional[float] = None,
     ) -> None:
         """Create a new instance of the ``StochasticParameter`` class.
 
@@ -2789,12 +2791,12 @@ class StochasticParameter(Parameter):
             Parameter's stochastic resolution.
         distribution_type: Union[DistributionType, str], optional
             Parameter's distribution type.
-        distribution_parameters: Union[Sequence[float, ...], None], optional
-            Distribution's parameters.
-        statistical_moments: Union[Sequence[float, ...], None], optional
-            Distribution's statistical moments.
-        cov: Union[float, None], optional
-            Distribution's COV.
+        distribution_parameters: Optional[Sequence[float, ...]], optional
+            Distribution's parameters. Defaults to ``None``.
+        statistical_moments: Optional[Sequence[float, ...]], optional
+            Distribution's statistical moments. Defaults to ``None``.
+        cov: Optional[float], optional
+            Distribution's COV. Defaults to ``None``.
         """
         super().__init__(
             name=name,
@@ -3092,8 +3094,8 @@ class Response:
             Response name.
         reference_value: Union[tuple, bool, float, complex, list, dict, None], optional
             Reference value of the response.
-        reference_value_type: ResponseValueType, opt
-            Type of the response reference value.
+        reference_value_type: Optional[ResponseValueType], optional
+            Type of the response reference value. Defaults to ``None``.
         """
         self.name = name
         if reference_value and isinstance(reference_value_type, ResponseValueType):

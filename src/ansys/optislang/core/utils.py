@@ -24,7 +24,7 @@ def enum_from_str(
         String to be converted.
     enum_class: Enum
         Enumeration type, upper case enumeration items are expected.
-    replace: Tuple[str, str], optional
+    replace: Optional[Tuple[str, str]], optional
         Characters to be replaced in given ``string``.
             Tuple[0]: Replace from.
             Tuple[1]: Replace to.
@@ -59,13 +59,13 @@ def get_osl_exec(osl_version: Optional[Union[int, str]] = None) -> Optional[Tupl
 
     Parameters
     ----------
-    osl_version : int, str, None, optional
+    osl_version : Optional[Union[int, str]], optional
         optiSLang version in a three-digit format like this ``221``. The default
         is ``None``, in which case the latest installed version is used.
 
     Returns
     -------
-    Tuple[int, pathlib.Path] or None
+    Optional[Tuple[int, pathlib.Path]]
         optiSLang version and path to the corresponding executable file, if it exists.
         If both Ansys and standalone installations are present, the latest Ansys
         installation is returned. If no executable file is found for a specified
@@ -126,13 +126,13 @@ def get_osl_opx_import_script(osl_executable: Optional[Union[str, Path]] = None)
 
     Parameters
     ----------
-    osl_executable : Union[str, pathlib.Path], optional
+    osl_executable : Optional[Union[str, pathlib.Path]], optional
         optiSLang executable path to use as a reference for locating the import script file.
         The default is ``None``, in which case the default optiSLang executable file is used.
 
     Returns
     -------
-    Path or None
+    Optional[Path]
         Path to the optiSLang OPX import script file, if location succeeded,
         ``None`` is returned otherwise.
 

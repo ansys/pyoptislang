@@ -30,16 +30,16 @@ class Optislang:
 
     Parameters
     ----------
-    host : str, optional
+    host : Optional[str], optional
         IPv4/v6 address or domain name on which optiSLang is running as a
         server. The default is ``None``.
-    port : int, optional
+    port : Optional[int], optional
         Port on which optiSLang is running as a server. The default is ``None``.
-    executable : Union[str, pathlib.Path], optional
+    executable : Optional[Union[str, pathlib.Path]], optional
         Path to the optiSLang executable file to execute on a the local host.
         The default is ``None``. This parameter is ignored when ``host``
         and ``port`` parameters are specified.
-    project_path : Union[str, pathlib.Path], optional
+    project_path : Optional[Union[str, pathlib.Path]], optional
         Path to the optiSLang project file that a new local optiSLang server
         is to use. The default is ``None``. This parameter is ignored
         when ``host`` and ``port`` parameters are specified. Here is how
@@ -62,7 +62,7 @@ class Optislang:
 
     port_range : Tuple[int, int], optional
         Defines the port range for optiSLang server. Defaults to ``None``.
-    no_run : bool, optional
+    no_run : Optional[bool], optional
         Determines whether not to run the specified project when started in batch mode.
         Defaults to ``None``.
 
@@ -94,7 +94,7 @@ class Optislang:
 
         .. note:: Only supported in batch mode.
 
-    listener_id : str, optional
+    listener_id : Optional[str], optional
         Specific unique ID for the TCP listener. Defaults to ``None``.
     multi_listener : Iterable[Tuple[str, int, Optional[str]]], optional
         Multiple remote listeners (plain TCP/IP based) to be registered at optiSLang server.
@@ -102,12 +102,13 @@ class Optislang:
         Defaults to ``None``.
     ini_timeout : float, optional
         Time in seconds to connect to the optiSLang server. The default is ``20``.
-    name : str, optional
-        ID of the optiSLang instance.
-    password : str, optional
+    name : Optional[str], optional
+        ID of the optiSLang instance. Defaults to ``None``.
+    password : Optional[str], optional
         Server password. The default is ``None``. This parameter is used when
         communication with the server requires that the request contain a password.
-    loglevel : str, optional
+        Defaults to ``None``.
+    loglevel : Optional[str], optional
         Logging level. The options are:
 
         - ``CRITICAL``: Log errors that are fatal for the app.
@@ -116,6 +117,8 @@ class Optislang:
         - ``INFO``: Log some useful information that the program works as expected.
         - ``DEBUG``: Log all information for use in debugging.
 
+        Defaults to ``None``.
+
     shutdown_on_finished: bool, optional
         Whether to shut down when execution is finished and no listeners are registered.
         The default is ``True``. This parameter is ignored when ``host`` and
@@ -123,40 +126,40 @@ class Optislang:
 
         .. note:: Only supported in batch mode.
 
-    env_vars : Mapping[str, str], optional
+    env_vars : Optional[Mapping[str, str]], optional
         Additional environmental variables (key and value) for the optiSLang server process.
         Defaults to ``None``.
-    import_project_properties_file : Union[str, pathlib.Path], optional
+    import_project_properties_file : Optional[Union[str, pathlib.Path]], optional
         Optional path to a project properties file to import. Defaults to ``None``.
-    export_project_properties_file : Union[str, pathlib.Path], optional
+    export_project_properties_file : Optional[Union[str, pathlib.Path]], optional
         Optional path to a project properties file to export. Defaults to ``None``.
 
         .. note:: Only supported in batch mode.
 
-    import_placeholders_file : Union[str, pathlib.Path], optional
+    import_placeholders_file : Optional[Union[str, pathlib.Path]], optional
         Optional path to a placeholders file to import. Defaults to ``None``.
-    export_placeholders_file : Union[str, pathlib.Path], optional
+    export_placeholders_file : Optional[Union[str, pathlib.Path]], optional
         Optional path to a placeholders file to export. Defaults to ``None``.
 
         .. note:: Only supported in batch mode.
 
-    output_file : Union[str, pathlib.Path], optional
+    output_file : Optional[Union[str, pathlib.Path]], optional
         Optional path to an output file for writing project run results to. Defaults to ``None``.
 
         .. note:: Only supported in batch mode.
 
-    dump_project_state : Union[str, pathlib.Path], optional
+    dump_project_state : Optional[Union[str, pathlib.Path]], optional
         Optional path to a project state dump file to export. If a relative path is provided,
         it is considered to be relative to the project working directory. Defaults to ``None``.
 
         .. note:: Only supported in batch mode.
 
-    opx_project_definition_file : Union[str, pathlib.Path], optional
+    opx_project_definition_file : Optional[Union[str, pathlib.Path]], optional
         Optional path to an OPX project definition file. Defaults to ``None``.
 
         .. note:: Only supported in batch mode.
 
-    additional_args : Iterable[str], optional
+    additional_args : Optional[Iterable[str]], optional
         Additional command line arguments used for execution of the optiSLang server process.
         Defaults to ``None``.
 
@@ -391,7 +394,7 @@ class Optislang:
 
         Returns
         -------
-        Project
+        Optional[Project]
             Loaded project. If no project is loaded, ``None`` is returned.
         """
         return self.__project
