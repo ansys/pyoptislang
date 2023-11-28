@@ -290,6 +290,21 @@ def test_start_stop_listening(
 #     assert dnr is None
 
 
+def test_osl_version_properties(osl_server_process: OslServerProcess):
+    """Test ``osl_version`` and ``osl_version_string``."""
+    tcp_osl_server = create_tcp_osl_server(osl_server_process)
+    osl_version = tcp_osl_server.osl_version
+    assert len(osl_version) == 4
+    assert isinstance(osl_version[0], int)
+    assert isinstance(osl_version[1], int)
+    assert isinstance(osl_version[2], int) or osl_version[2] is None
+    assert isinstance(osl_version[3], int) or osl_version[3] is None
+    osl_version_string = tcp_osl_server.osl_version_string
+    assert isinstance(osl_version_string, str)
+    tcp_osl_server.shutdown()
+    tcp_osl_server.dispose()
+
+
 def test_evaluate_design(tmp_path: Path, tmp_example_project):
     "Test ``evaluate_design``."
     osl_server_process = create_osl_server_process(
@@ -554,28 +569,6 @@ def test_get_basic_project_info(osl_server_process: OslServerProcess):
     tcp_osl_server.dispose()
     assert isinstance(basic_project_info, dict)
     assert bool(basic_project_info)
-
-
-def test_get_osl_version_string(osl_server_process: OslServerProcess):
-    """Test ``get_osl_version_string``."""
-    tcp_osl_server = create_tcp_osl_server(osl_server_process)
-    version = tcp_osl_server.get_osl_version_string()
-    tcp_osl_server.shutdown()
-    tcp_osl_server.dispose()
-    assert isinstance(version, str)
-    assert bool(version)
-
-
-def test_get_osl_version(osl_server_process: OslServerProcess):
-    """Test ``get_osl_version``."""
-    tcp_osl_server = create_tcp_osl_server(osl_server_process)
-    major_version, minor_version, maintenance_version, revision = tcp_osl_server.get_osl_version()
-    tcp_osl_server.shutdown()
-    tcp_osl_server.dispose()
-    assert isinstance(major_version, int)
-    assert isinstance(minor_version, int)
-    assert isinstance(maintenance_version, int) or maintenance_version == None
-    assert isinstance(revision, int) or revision == None
 
 
 def test_get_project_description(osl_server_process: OslServerProcess):
