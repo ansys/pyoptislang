@@ -10,7 +10,7 @@ import uuid
 
 import pytest
 
-from ansys.optislang.core import OslServerProcess, errors, examples
+from ansys.optislang.core import OslServerProcess, errors
 import ansys.optislang.core.tcp_osl_server as tos
 
 _host = socket.gethostbyname(socket.gethostname())
@@ -24,7 +24,6 @@ def find_free_port():
 
 
 _msg = '{ "What": "SYSTEMS_STATUS_INFO" }'
-parametric_project = examples.get_files("calculator_with_params")[1][0]
 
 pytestmark = pytest.mark.local_osl
 
@@ -306,10 +305,10 @@ def test_osl_version_properties(osl_server_process: OslServerProcess):
     tcp_osl_server.dispose()
 
 
-def test_evaluate_design(tmp_path: Path):
+def test_evaluate_design(tmp_path: Path, tmp_example_project):
     "Test ``evaluate_design``."
     osl_server_process = create_osl_server_process(
-        shutdown_on_finished=False, project_path=parametric_project
+        shutdown_on_finished=False, project_path=tmp_example_project("calculator_with_params")
     )
     tcp_osl_server = create_tcp_osl_server(osl_server_process)
     tcp_osl_server.save_copy(file_path=tmp_path / "test_evaluate_design.opf")
@@ -328,10 +327,10 @@ def test_evaluate_design(tmp_path: Path):
         ("3577cb69-15b9-4ad1-a53c-ac8af8aaea83", errors.OslCommandError),
     ],
 )
-def test_get_actor_info(uid, expected):
+def test_get_actor_info(uid, expected, tmp_example_project):
     """Test ``get_actor_info``."""
     osl_server_process = create_osl_server_process(
-        shutdown_on_finished=False, project_path=parametric_project
+        shutdown_on_finished=False, project_path=tmp_example_project("calculator_with_params")
     )
     tcp_osl_server = create_tcp_osl_server(osl_server_process)
     if expected == errors.OslCommandError:
@@ -351,10 +350,10 @@ def test_get_actor_info(uid, expected):
         ("3577cb69-15b9-4ad1-a53c-ac8af8aaea83", errors.OslCommandError),
     ],
 )
-def test_get_actor_properties(uid, expected):
+def test_get_actor_properties(uid, expected, tmp_example_project):
     """Test ``get_actor_properties``."""
     osl_server_process = create_osl_server_process(
-        shutdown_on_finished=False, project_path=parametric_project
+        shutdown_on_finished=False, project_path=tmp_example_project("calculator_with_params")
     )
     tcp_osl_server = create_tcp_osl_server(osl_server_process)
     if expected == errors.OslCommandError:
@@ -374,10 +373,10 @@ def test_get_actor_properties(uid, expected):
         ("3577cb69-15b9-4ad1-a53c-ac8af8aaea83", errors.OslCommandError),
     ],
 )
-def test_get_actor_states(uid, expected):
+def test_get_actor_states(uid, expected, tmp_example_project):
     """Test ``get_actor_states``."""
     osl_server_process = create_osl_server_process(
-        shutdown_on_finished=False, project_path=parametric_project
+        shutdown_on_finished=False, project_path=tmp_example_project("calculator_with_params")
     )
     tcp_osl_server = create_tcp_osl_server(osl_server_process)
     if expected == errors.OslCommandError:
@@ -398,10 +397,10 @@ def test_get_actor_states(uid, expected):
         ("3577cb69-15b9-4ad1-a53c-ac8af8aaea83", errors.OslCommandError),
     ],
 )
-def test_get_actor_status_info(uid, expected):
+def test_get_actor_status_info(uid, expected, tmp_example_project):
     """Test ``get_actor_status_info``."""
     osl_server_process = create_osl_server_process(
-        shutdown_on_finished=False, project_path=parametric_project
+        shutdown_on_finished=False, project_path=tmp_example_project("calculator_with_params")
     )
     tcp_osl_server = create_tcp_osl_server(osl_server_process)
     if expected == errors.OslCommandError:
@@ -422,10 +421,10 @@ def test_get_actor_status_info(uid, expected):
         ("3577cb69-15b9-4ad1-a53c-ac8af8aaea83", "can_finalize", errors.OslCommandError),
     ],
 )
-def test_get_actor_supports(uid, feature_name, expected):
+def test_get_actor_supports(uid, feature_name, expected, tmp_example_project):
     """Test ``get_actor_status_info``."""
     osl_server_process = create_osl_server_process(
-        shutdown_on_finished=False, project_path=parametric_project
+        shutdown_on_finished=False, project_path=tmp_example_project("calculator_with_params")
     )
     tcp_osl_server = create_tcp_osl_server(osl_server_process)
     if expected == errors.OslCommandError:
@@ -467,10 +466,10 @@ def test_get_full_project_tree_with_properties(osl_server_process: OslServerProc
     tcp_osl_server.dispose()
 
 
-def test_get_hpc_licensing_forwarded_environment():
+def test_get_hpc_licensing_forwarded_environment(tmp_example_project):
     """Test ``get_hpc_licensing_forwarded_environment``."""
     osl_server_process = create_osl_server_process(
-        shutdown_on_finished=False, project_path=parametric_project
+        shutdown_on_finished=False, project_path=tmp_example_project("calculator_with_params")
     )
     tcp_osl_server = create_tcp_osl_server(osl_server_process)
     hpc_licensing = tcp_osl_server.get_hpc_licensing_forwarded_environment(
@@ -490,10 +489,10 @@ def test_get_hpc_licensing_forwarded_environment():
         ("3577cb69-15b9-4ad1-a53c-ac8af8aaea83", "0", "OVar", errors.OslCommandError),
     ],
 )
-def test_get_input_slot_value(uid, hid, slot_name, expected):
+def test_get_input_slot_value(uid, hid, slot_name, expected, tmp_example_project):
     """Test ``get_input_slot_value``."""
     osl_server_process = create_osl_server_process(
-        shutdown_on_finished=False, project_path=parametric_project
+        shutdown_on_finished=False, project_path=tmp_example_project("calculator_with_params")
     )
     tcp_osl_server = create_tcp_osl_server(osl_server_process)
     if expected == errors.OslCommandError:
@@ -516,10 +515,10 @@ def test_get_input_slot_value(uid, hid, slot_name, expected):
         ("3577cb69-15b9-4ad1-a53c-ac8af8aaea83", "0", "var", errors.OslCommandError),
     ],
 )
-def test_get_output_slot_value(uid, hid, slot_name, expected):
+def test_get_output_slot_value(uid, hid, slot_name, expected, tmp_example_project):
     """Test ``get_output_slot_value``."""
     osl_server_process = create_osl_server_process(
-        shutdown_on_finished=False, project_path=parametric_project
+        shutdown_on_finished=False, project_path=tmp_example_project("calculator_with_params")
     )
     tcp_osl_server = create_tcp_osl_server(osl_server_process)
     if expected == errors.OslCommandError:
@@ -666,10 +665,10 @@ def test_new(osl_server_process: OslServerProcess, tmp_path: Path):
 
 
 @pytest.mark.parametrize("path_type", [str, Path])
-def test_open(osl_server_process: OslServerProcess, path_type):
+def test_open(osl_server_process: OslServerProcess, tmp_example_project, path_type):
     """Test ``open``."""
     tcp_osl_server = create_tcp_osl_server(osl_server_process)
-    project = examples.get_files("simple_calculator")[1][0]
+    project = tmp_example_project("simple_calculator")
     assert project.is_file()
     if path_type == str:
         project = str(project)
