@@ -1718,6 +1718,10 @@ class DesignVariable:
         """
         self.__value = value
 
+    def __str__(self) -> str:
+        """Return information about the design variable."""
+        return f"Name: {self.name}\n" f"Value: {self.value}\n"
+
 
 # Parameters
 class Parameter:
@@ -2078,7 +2082,6 @@ class DependentParameter(Parameter):
             f"Name: {self.name}\n"
             f"ID: {self.id}\n"
             f"Reference value: {self.reference_value}\n"
-            f"Reference value type: {self.reference_value_type}\n"
             f"Const: {self.const}\n"
             f"Type: {self.type}\n"
             f"Dependency expression: {self.operation}\n"

@@ -1,4 +1,3 @@
-from contextlib import nullcontext as does_not_raise
 import sys
 
 import pytest
@@ -33,9 +32,7 @@ def test_safe_decode(input, expected):
 
 def test_to_ascii_safe():
     "Test ``to_ascii_safe``."
-    with does_not_raise() as dnr:
-        encoding.to_ascii_safe(test_text_type)
-    assert dnr is None
+    encoding.to_ascii_safe(test_text_type)
 
 
 def test_force_bytes():

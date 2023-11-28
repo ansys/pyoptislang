@@ -131,7 +131,8 @@ def test_actor_states():
     json_string = sq.actor_states(uid=example_uid)
     dictionary = json.loads(json_string)
     requiered_string = json.loads(
-        '{ "What": "ACTOR_STATES", "uid": "5cdfb20b-bef6-4412-9985-89f5ded5ee95" }'
+        '{ "What": "ACTOR_STATES", "uid": "5cdfb20b-bef6-4412-9985-89f5ded5ee95",'
+        ' "args": { "include_state_info": false } }',
     )
     assert type(json_string) == str
     assert sorted(dictionary.items()) == sorted(requiered_string.items())
@@ -149,7 +150,10 @@ def test_actor_status_info():
     dictionary = json.loads(json_string)
     requiered_string = json.loads(
         '{ "What": "ACTOR_STATUS_INFO", "uid": "5cdfb20b-bef6-4412-9985-89f5ded5ee95",'
-        ' "hid": "0.1" }',
+        ' "hid": "0.1", "args": {'
+        ' "include_designs": true,'
+        ' "include_non_scalar_design_values": false,'
+        ' "include_algorithm_info": false } }',
     )
     assert type(json_string) == str
     assert sorted(dictionary.items()) == sorted(requiered_string.items())
@@ -272,7 +276,11 @@ def test_full_project_status_info():
     "Test full_project_status_info."
     json_string = sq.full_project_status_info()
     dictionary = json.loads(json_string)
-    requiered_string = json.loads('{ "What": "FULL_PROJECT_STATUS_INFO" }')
+    requiered_string = json.loads(
+        '{ "What": "FULL_PROJECT_STATUS_INFO", "args": {'
+        ' "include_non_scalar_design_values": false,'
+        ' "include_algorithm_info": false } }',
+    )
     assert type(json_string) == str
     assert sorted(dictionary.items()) == sorted(requiered_string.items())
     # with password
@@ -497,7 +505,12 @@ def test_systems_status_info():
     "Test server_status_info."
     json_string = sq.systems_status_info()
     dictionary = json.loads(json_string)
-    requiered_string = json.loads('{ "What": "SYSTEMS_STATUS_INFO" }')
+    requiered_string = json.loads(
+        '{ "What": "SYSTEMS_STATUS_INFO", "args": {'
+        ' "include_designs": true,'
+        ' "include_non_scalar_design_values": false,'
+        ' "include_algorithm_info": false } }',
+    )
     assert type(json_string) == str
     assert sorted(dictionary.items()) == sorted(requiered_string.items())
     # with password
