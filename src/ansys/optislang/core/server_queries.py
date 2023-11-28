@@ -98,6 +98,7 @@ def actor_properties(uid: str, password: Optional[str] = None) -> str:
     """
     return _to_json(_gen_query(what=_ACTOR_PROPERTIES, uid=uid, password=password))
 
+
 def actor_registered_input_slots(
     uid: str, include_reference_values: bool = True, password: Optional[str] = None
 ) -> str:
@@ -212,6 +213,7 @@ def actor_registered_responses(
             password=password,
         )
     )
+
 
 def actor_states(
     uid: str,
@@ -378,6 +380,7 @@ def basic_project_info(password: Optional[str] = None) -> str:
         JSON string of basic_project_info query.
     """
     return _to_json(_gen_query(what=_BASIC_PROJECT_INFO, password=password))
+
 
 def doe_size(
     uid: str, sampling_type: str, num_discrete_levels: int, password: Optional[str] = None
