@@ -35,7 +35,7 @@ from ansys.optislang.core.tcp import server_commands as commands
 from ansys.optislang.core.tcp import server_queries as queries
 
 
-def _get_current_timeout(initial_timeout: Union[float, None], start_time: float) -> None:
+def _get_current_timeout(initial_timeout: Union[float, None], start_time: float) -> Optional[float]:
     """Get actual timeout value.
 
     The function will raise a timeout exception if the timeout has expired.
@@ -50,6 +50,11 @@ def _get_current_timeout(initial_timeout: Union[float, None], start_time: float)
     start_time : float
         The time when the initial time out starts to count down. It is defined in seconds
         since the epoch as a floating point number.
+
+    Returns
+    -------
+    Optional[float]
+        Remaining timeout.
 
     Raises
     ------
@@ -71,8 +76,8 @@ class TcpClient:
 
     Parameters
     ----------
-    socket: socket.SocketType, None, optional
-        Client socket.
+    socket: Optional[socket.SocketType], optional
+        Client socket. Defaults to ``None``.
     logger: Any, optional
         Object for logging. If ``None``, standard logging object is used. Defaults to ``None``.
 
@@ -92,7 +97,7 @@ class TcpClient:
     # Response size in bytes. Value is assumed to be binary 64Bit unsigned integer.
     _RESPONSE_SIZE_BYTES = 8
 
-    def __init__(self, socket: Union[socket.SocketType, None] = None, logger=None) -> None:
+    def __init__(self, socket: Optional[socket.SocketType] = None, logger=None) -> None:
         """Initialize a new instance of the ``TcpClient`` class."""
         self.__socket = socket
 
@@ -815,12 +820,12 @@ class TcpOslServer(OslServer):
     host : Optional[str], optional
         A string representation of an IPv4/v6 address or domain name of running optiSLang server.
         Defaults to ``None``.
-    port : int, optional
+    port : Optional[int], optional
         A numeric port number of running optiSLang server. Defaults to ``None``.
-    executable : Union[str, pathlib.Path], optional
+    executable : Optional[Union[str, pathlib.Path]], optional
         Path to the optiSLang executable file which supposed to be executed on localhost.
         It is ignored when the host and port parameters are specified. Defaults to ``None``.
-    project_path : Union[str, pathlib.Path], optional
+    project_path : Optional[Union[str, pathlib.Path]], optional
         Path to the optiSLang project file which is supposed to be used by new local optiSLang
         server. It is ignored when the host and port parameters are specified.
         - If the project file exists, it is opened.
@@ -838,9 +843,9 @@ class TcpOslServer(OslServer):
 
         ..note:: Cannot be used in combination with batch mode.
 
-    port_range : Tuple[int, int], optional
+    port_range : Optional[Tuple[int, int]], optional
         Defines the port range for optiSLang server. Defaults to ``None``.
-    no_run : bool, optional
+    no_run : Optional[bool], optional
         Determines whether not to run the specified project when started in batch mode.
         Defaults to ``None``.
 
@@ -854,26 +859,23 @@ class TcpOslServer(OslServer):
 
     force : bool, optional
         Determines whether to force opening/processing specified project when started in batch mode
-        even if issues occur.
-        Defaults to ``True``.
+        even if issues occur. Defaults to ``True``.
 
         .. note:: Only supported in batch mode.
 
     reset : bool, optional
-        Determines whether to reset specified project after load.
-        Defaults to ``False``.
+        Determines whether to reset specified project after load. Defaults to ``False``.
 
         .. note:: Only supported in batch mode.
 
     auto_relocate : bool, optional
-        Determines whether to automatically relocate missing file paths.
-        Defaults to ``False``.
+        Determines whether to automatically relocate missing file paths. Defaults to ``False``.
 
         .. note:: Only supported in batch mode.
 
-    listener_id : str, optional
+    listener_id : Optional[str], optional
         Specific unique ID for the TCP listener. Defaults to ``None``.
-    multi_listener : Iterable[Tuple[str, int, Optional[str]]], optional
+    multi_listener : Optional[Iterable[Tuple[str, int, Optional[str]]]], optional
         Multiple remote listeners (plain TCP/IP based) to be registered at optiSLang server.
         Each listener is a combination of host, port and (optionally) listener ID.
         Defaults to ``None``.
@@ -881,10 +883,10 @@ class TcpOslServer(OslServer):
         Time in seconds to listen to the optiSLang server port. If the port is not listened
         for specified time, the optiSLang server is not started and RuntimeError is raised.
         It is ignored when the host and port parameters are specified. Defaults to 20 s.
-    password : str, optional
+    password : Optional[str], optional
         The server password. Use when communication with the server requires the request
         to contain a password entry. Defaults to ``None``.
-    logger : Any, optional
+    logger : Optional[Any], optional
         Object for logging. If ``None``, standard logging object is used. Defaults to ``None``.
     shutdown_on_finished: bool, optional
         Shut down when execution is finished and there are not any listeners registered.
@@ -892,40 +894,40 @@ class TcpOslServer(OslServer):
 
         .. note:: Only supported in batch mode.
 
-    env_vars : Mapping[str, str], optional
+    env_vars : Optional[Mapping[str, str]], optional
         Additional environmental variables (key and value) for the optiSLang server process.
         Defaults to ``None``.
-    import_project_properties_file : Union[str, pathlib.Path], optional
+    import_project_properties_file : Optional[Union[str, pathlib.Path]], optional
         Optional path to a project properties file to import. Defaults to ``None``.
-    export_project_properties_file : Union[str, pathlib.Path], optional
+    export_project_properties_file : Optional[Union[str, pathlib.Path]], optional
         Optional path to a project properties file to export. Defaults to ``None``.
 
         .. note:: Only supported in batch mode.
 
-    import_placeholders_file : Union[str, pathlib.Path], optional
+    import_placeholders_file : Optional[Union[str, pathlib.Path]], optional
         Optional path to a placeholders file to import. Defaults to ``None``.
-    export_placeholders_file : Union[str, pathlib.Path], optional
+    export_placeholders_file : Optional[Union[str, pathlib.Path]], optional
         Optional path to a placeholders file to export. Defaults to ``None``.
 
         .. note:: Only supported in batch mode.
 
-    output_file : Union[str, pathlib.Path], optional
+    output_file : Optional[Union[str, pathlib.Path]], optional
         Optional path to an output file for writing project run results to. Defaults to ``None``.
 
         .. note:: Only supported in batch mode.
 
-    dump_project_state : Union[str, pathlib.Path], optional
+    dump_project_state : Optional[Union[str, pathlib.Path]], optional
         Optional path to a project state dump file to export. If a relative path is provided,
         it is considered to be relative to the project working directory. Defaults to ``None``.
 
         .. note:: Only supported in batch mode.
 
-    opx_project_definition_file : Union[str, pathlib.Path], optional
+    opx_project_definition_file : Optional[Union[str, pathlib.Path]], optional
         Optional path to an OPX project definition file. Defaults to ``None``.
 
         .. note:: Only supported in batch mode.
 
-    additional_args : Iterable[str], optional
+    additional_args : Optional[Iterable[str]], optional
         Additional command line arguments used for execution of the optiSLang server process.
         Defaults to ``None``.
 
@@ -990,7 +992,7 @@ class TcpOslServer(OslServer):
         multi_listener: Optional[Iterable[Tuple[str, int, Optional[str]]]] = None,
         ini_timeout: float = 20,
         password: Optional[str] = None,
-        logger=None,
+        logger: Optional[Any] = None,
         shutdown_on_finished: bool = True,
         env_vars: Optional[Mapping[str, str]] = None,
         import_project_properties_file: Optional[Union[str, Path]] = None,
@@ -1151,6 +1153,40 @@ class TcpOslServer(OslServer):
 
         for listener in self.__listeners.values():
             listener.timeout = timeout
+
+    def add_criterion(
+        self, uid: str, criterion_type: str, expression: str, name: str, limit: Optional[str] = None
+    ) -> None:
+        """Create criterion for the system.
+
+        Parameters
+        ----------
+        uid : str
+            Actor uid.
+        criterion_type: str
+            Type of the criterion.
+        expression: str
+            Expression to be evaluated.
+        name: str
+            Criterion name.
+        limit: Optional[str], optional
+            Limit expression to be evaluated.
+        Raises
+        ------
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        # TODO: create unit test
+        self.send_command(
+            commands.add_criterion(
+                actor_uid=uid,
+                criterion_type=criterion_type,
+                expression=expression,
+                name=name,
+                limit=limit,
+                password=self.__password,
+            )
+        )
 
     def connect_nodes(
         self, from_actor_uid: str, from_slot: str, to_actor_uid: str, to_slot: str
@@ -1350,6 +1386,195 @@ class TcpOslServer(OslServer):
         """
         return self.send_command(queries.actor_info(uid=uid, password=self.__password))
 
+    def get_actor_internal_variables(
+        self, uid: str, include_reference_values: bool = True
+    ) -> List[dict]:
+        """Get currently registered internal variables for a certain (integration) actor.
+
+        Parameters
+        ----------
+        uid : str
+            Actor uid.
+        include_reference_values: bool, optional
+            Whether reference values are to be included.
+
+        Returns
+        -------
+        List[dict]
+            Actor's internal variables.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        # TODO: create unit test
+        return self.send_command(
+            queries.actor_internal_variables(
+                uid=uid, include_reference_values=include_reference_values, password=self.__password
+            )
+        )["internal_variables"]
+
+    def get_actor_properties(self, uid: str) -> Dict:
+        """Get properties of actor defined by uid.
+
+        Parameters
+        ----------
+        uid : str
+            Actor uid.
+
+        Returns
+        -------
+        Dict
+            Properties of actor defined by uid.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        return self.send_command(queries.actor_properties(uid=uid, password=self.__password))
+
+    def get_actor_registered_input_slots(
+        self, uid: str, include_reference_values: bool = True
+    ) -> List[dict]:
+        """Get currently registered input slots for a certain (integration) actor.
+
+        Parameters
+        ----------
+        uid : str
+            Actor uid.
+        include_reference_values: bool, optional
+            Whether reference values are to be included.
+
+        Returns
+        -------
+        List[dict]
+            Actor's registered input slots.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        # TODO: create unit test
+        return self.send_command(
+            queries.actor_registered_input_slots(
+                uid=uid, include_reference_values=include_reference_values, password=self.__password
+            )
+        )["registered_input_slots"]
+
+    def get_actor_registered_output_slots(
+        self, uid: str, include_reference_values: bool = True
+    ) -> List[dict]:
+        """Get currently registered output slots for a certain (integration) actor.
+
+        Parameters
+        ----------
+        uid : str
+            Actor uid.
+        include_reference_values: bool, optional
+            Whether reference values are to be included.
+
+        Returns
+        -------
+        List[dict]
+            Actor's registered output slots.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        # TODO: create unit test
+        return self.send_command(
+            queries.actor_registered_output_slots(
+                uid=uid, include_reference_values=include_reference_values, password=self.__password
+            )
+        )["registered_output_slots"]
+
+    def get_actor_registered_parameters(
+        self, uid: str, include_reference_values: bool = True
+    ) -> List[dict]:
+        """Get currently registered parameters for a certain (integration) actor.
+
+        Parameters
+        ----------
+        uid : str
+            Actor uid.
+        include_reference_values: bool, optional
+            Whether reference values are to be included.
+
+        Returns
+        -------
+        List[dict]
+            Actor's registered parameters.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        # TODO: create unit test
+        return self.send_command(
+            queries.actor_registered_parameters(
+                uid=uid, include_reference_values=include_reference_values, password=self.__password
+            )
+        )["registered_parameters"]
+
+    def get_actor_registered_responses(
+        self, uid: str, include_reference_values: bool = True
+    ) -> List[dict]:
+        """Get currently registered responses for a certain (integration) actor.
+
+        Parameters
+        ----------
+        uid : str
+            Actor uid.
+        include_reference_values: bool, optional
+            Whether reference values are to be included.
+
+        Returns
+        -------
+        List[dict]
+            Actor's registered responses.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        # TODO: create unit test
+        return self.send_command(
+            queries.actor_registered_responses(
+                uid=uid, include_reference_values=include_reference_values, password=self.__password
+            )
+        )["registered_responses"]
+
     def get_actor_states(
         self,
         uid: str,
@@ -1461,6 +1686,33 @@ class TcpOslServer(OslServer):
             queries.actor_supports(uid=uid, feature_name=feature_name, password=self.__password)
         )[feature_name.lower()]
 
+    def get_available_input_locations(self, uid: str) -> List[dict]:
+        """Get available input locations for a certain (integration) actor, if supported.
+
+        Parameters
+        ----------
+        uid : str
+            Actor uid.
+
+        Returns
+        -------
+        List[dict]
+            Actor's available input locations.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        # TODO: create unit test
+        return self.send_command(
+            queries.available_input_locations(uid=uid, password=self.__password)
+        )["available_input_locations"]
+
     def get_available_nodes(self) -> Dict[str, List[str]]:
         """Get available node types for current oSL server.
 
@@ -1478,10 +1730,38 @@ class TcpOslServer(OslServer):
         TimeoutError
             Raised when the timeout float value expires.
         """
+        # TODO: create unit test
         available_nodes = self.send_command(queries.available_nodes(self.__password))
         available_nodes.pop("message")
         available_nodes.pop("status")
         return available_nodes
+
+    def get_available_output_locations(self, uid: str) -> List[dict]:
+        """Get available output locations for a certain (integration) actor, if supported.
+
+        Parameters
+        ----------
+        uid : str
+            Actor uid.
+
+        Returns
+        -------
+        List[dict]
+            Actor's available output locations.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        # TODO: create unit test
+        return self.send_command(
+            queries.available_output_locations(uid=uid, password=self.__password)
+        )["available_output_locations"]
 
     def get_basic_project_info(self) -> Dict:
         """Get basic project info, like name, location, global settings and status.
@@ -1501,6 +1781,92 @@ class TcpOslServer(OslServer):
             Raised when the timeout float value expires.
         """
         return self.send_command(queries.basic_project_info(self.__password))
+
+    def get_criteria(self, uid: str) -> List[dict]:
+        """Get information about all existing criterion from the system.
+
+        Parameters
+        ----------
+        uid : str
+            Actor uid.
+        Returns
+        -------
+        List[dict]
+            Criteria information.
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        # TODO: create unit test
+        return self.send_command(queries.get_criteria(uid=uid, password=self.__password))[
+            "criteria"
+        ]
+
+    def get_criterion(self, uid: str, name: str) -> Dict:
+        """Get existing criterion from the system.
+
+        Parameters
+        ----------
+        uid : str
+            Actor uid.
+        name: str
+            Criterion name.
+        Returns
+        -------
+        Dict
+            Criterion information.
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        # TODO: create unit test
+        return self.send_command(
+            queries.get_criterion(uid=uid, name=name, password=self.__password)
+        )["criteria"]
+
+    def get_doe_size(self, uid: str, sampling_type: str, num_discrete_levels: int) -> int:
+        """Get the DOE size for given sampling type and number of levels for a specific actor.
+
+        Parameters
+        ----------
+        uid : str
+            Actor uid.
+        sampling_type: str
+            Sampling type.
+        num_discrete_levels: int
+            Number of discrete levels.
+        Returns
+        -------
+        int
+            DOE size.
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        # TODO: create unit test
+        return self.send_command(
+            queries.doe_size(
+                uid=uid,
+                sampling_type=sampling_type,
+                num_discrete_levels=num_discrete_levels,
+                password=self.__password,
+            )
+        )["number_of_samples"]
 
     def get_full_project_status_info(
         self,
@@ -2146,6 +2512,50 @@ class TcpOslServer(OslServer):
             )
         )
 
+    def remove_criteria(self, uid: str) -> None:
+        """Remove all criteria from the system.
+
+        Parameters
+        ----------
+        uid : str
+            Actor uid.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        # TODO: create unit test
+        self.send_command(commands.remove_criteria(actor_uid=uid, password=self.__password))
+
+    def remove_criterion(self, uid: str, name: str) -> None:
+        """Remove existing criterion from the system.
+
+        Parameters
+        ----------
+        uid : str
+            Actor uid.
+        name: str
+            Name of the criterion.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        # TODO: create unit test
+        self.send_command(
+            commands.remove_criterion(actor_uid=uid, name=name, password=self.__password)
+        )
+
     def remove_node(self, actor_uid: str) -> None:
         """Remove node specified by uid.
 
@@ -2395,17 +2805,26 @@ class TcpOslServer(OslServer):
 
         return response
 
-    def set_actor_property(self, actor_uid: str, name: str, value: Any) -> None:
-        """Set an actor property.
+    def set_criterion_property(
+        self,
+        uid: str,
+        criterion_name: str,
+        name: str,
+        value: Any,
+    ) -> None:
+        """Set the properties of existing criterion for the system.
 
         Parameters
         ----------
-        actor_uid : str
+        uid : str
             Actor uid.
-        name : str
+        criterion_name: str
+            Name of the criterion.
+        name: str
             Property name.
-        value : Any
+        value: Any
             Property value.
+
 
         Raises
         ------
@@ -2416,9 +2835,14 @@ class TcpOslServer(OslServer):
         TimeoutError
             Raised when the timeout float value expires.
         """
+        # TODO: create unit test
         self.send_command(
-            commands.set_actor_property(
-                actor_uid=actor_uid, name=name, value=value, password=self.__password
+            commands.set_criterion_property(
+                actor_uid=uid,
+                criterion_name=criterion_name,
+                name=name,
+                value=value,
+                password=self.__password,
             )
         )
 
@@ -2782,8 +3206,8 @@ class TcpOslServer(OslServer):
         ----------
         timeout: float
             Timeout.
-        Uid: str
-            Listener uid.
+        Uid: Optional[str], optional
+            Listener uid. Defaults to ``None``.
 
         Returns
         -------
@@ -2978,7 +3402,7 @@ class TcpOslServer(OslServer):
         timeout: float
             Listener will remain active for ``timeout`` ms unless refreshed.
 
-        notifications: Iterable[ServerNotification], optional
+        notifications: Optional[Iterable[ServerNotification]], optional
             Either ["ALL"] or Sequence picked from below options:
             Server: [ "SERVER_UP", "SERVER_DOWN" ] (always be sent by default).
             Logging: [ "LOG_INFO", "LOG_WARNING", "LOG_ERROR", "LOG_DEBUG" ].
@@ -2986,6 +3410,7 @@ class TcpOslServer(OslServer):
                 "NOTHING_PROCESSED", "CHECK_FAILED", "EXEC_FAILED" ].
             Nodes: [ "ACTOR_STATE_CHANGED", "ACTOR_ACTIVE_CHANGED", "ACTOR_NAME_CHANGED",
                 "ACTOR_CONTENTS_CHANGED", "ACTOR_DATA_CHANGED" ].
+            Defaults to ``None``.
 
         Returns
         -------

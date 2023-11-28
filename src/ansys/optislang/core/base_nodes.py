@@ -174,7 +174,7 @@ class Node(ABC):
             Command to execute. Options are ``"start"``, ``"restart"``, ``"stop_gently"``,
             ``"stop"``, and ``"reset"``.
         hid: Optional[str], optional
-            Hid entry. The default is ``None``. The actor unique ID is required.
+            Hid entry. The default is ``None``.
         wait_for_completion: bool, optional
             Whether to wait for completion. The default is ``True``.
         timeout: Union[float, int], optional

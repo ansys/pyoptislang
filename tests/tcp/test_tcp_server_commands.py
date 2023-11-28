@@ -10,7 +10,7 @@ uid = "d2ab72dd-0d46-488a-aa05-0ddc19794c60"
 uid_ = "8a79b28a-d79e-4a78-bf22-293f15c02b25"
 hid = "0.1"
 type_ = "sensitivity"
-my_password = "otislang.-*123"
+example_password = "otislang.-*123"
 rand_arg = [1, "2", {3}]
 path = "C:/samples_path/Project.opf"
 script = "C:/samples_path/script.py"
@@ -49,6 +49,33 @@ start_designs = [
 parent_hwnd = "XXX"
 
 
+def test_add_criterion():
+    "Test add_criterion."
+    # basic
+    json_string = sc.add_criterion(
+        actor_uid=actor_uid, criterion_type="max", expression="Y", name="obj2"
+    )
+    dictionary = json.loads(json_string)
+    requiered_string = json.loads(
+        '{"projects": [{"commands": [{"actor_uid": "5cdfb20b-bef6-4412-9985-89f5ded5ee95", \
+        "args": {"criterion_type":"max", "expression": "Y", "limit": "", "name": "obj2"}, \
+        "command": "ADD_CRITERION", "type": "builtin"}]}]}'
+    )
+    assert type(json_string) == str
+    assert sorted(dictionary.items()) == sorted(requiered_string.items())
+
+    # with password
+    json_string = sc.add_criterion(
+        actor_uid=actor_uid,
+        criterion_type="max",
+        expression="Y",
+        name="obj2",
+        password=example_password,
+    )
+    dictionary = json.loads(json_string)
+    dictionary["Password"] == example_password
+
+
 def test_apply_wizzard():
     "Test apply_wizard."
     # basic
@@ -74,9 +101,9 @@ def test_apply_wizzard():
     assert type(json_string) == str
     assert sorted(dictionary.items()) == sorted(requiered_string.items())
     # with password
-    json_string = sc.apply_wizard(actor_uid=actor_uid, type_=type_, password=my_password)
+    json_string = sc.apply_wizard(actor_uid=actor_uid, type_=type_, password=example_password)
     dictionary = json.loads(json_string)
-    dictionary["Password"] = my_password
+    dictionary["Password"] == example_password
     with pytest.raises(TypeError):
         sc.apply_wizard()
 
@@ -92,9 +119,9 @@ def test_close():
     assert type(json_string) == str
     assert sorted(dictionary.items()) == sorted(requiered_string.items())
     # with password
-    json_string = sc.close(password=my_password)
+    json_string = sc.close(password=example_password)
     dictionary = json.loads(json_string)
-    dictionary["Password"] = my_password
+    dictionary["Password"] == example_password
     with pytest.raises(TypeError):
         sc.close(rand_arg=rand_arg)
 
@@ -122,10 +149,10 @@ def test_connect_nodes():
         from_slot="OMDBPath",
         to_actor_uid=to_actor_uid,
         to_slot="IMDBPath",
-        password=my_password,
+        password=example_password,
     )
     dictionary = json.loads(json_string)
-    dictionary["Password"] = my_password
+    dictionary["Password"] == example_password
     with pytest.raises(TypeError):
         sc.connect_nodes()
 
@@ -156,10 +183,10 @@ def test_create_input_slot():
     assert sorted(dictionary.items()) == sorted(requiered_string.items())
     # with password
     json_string = sc.create_input_slot(
-        actor_uid=actor_uid, slot_name="MyInputSlot", password=my_password
+        actor_uid=actor_uid, slot_name="MyInputSlot", password=example_password
     )
     dictionary = json.loads(json_string)
-    dictionary["Password"] = my_password
+    dictionary["Password"] == example_password
     with pytest.raises(TypeError):
         sc.create_input_slot(actor_uid=actor_uid)
     with pytest.raises(TypeError):
@@ -192,9 +219,11 @@ def test_create_node():
     assert type(json_string) == str
     assert sorted(dictionary.items()) == sorted(requiered_string.items())
     # with password
-    json_string = sc.create_node(type_="Sensitivity", name="Sensi-System", password=my_password)
+    json_string = sc.create_node(
+        type_="Sensitivity", name="Sensi-System", password=example_password
+    )
     dictionary = json.loads(json_string)
-    dictionary["Password"] = my_password
+    dictionary["Password"] == example_password
     with pytest.raises(TypeError):
         sc.create_node(type_="Sensitivity")
     with pytest.raises(TypeError):
@@ -227,10 +256,10 @@ def test_create_output_slot():
     assert sorted(dictionary.items()) == sorted(requiered_string.items())
     # with password
     json_string = sc.create_output_slot(
-        actor_uid=actor_uid, slot_name="MyOutputSlot", password=my_password
+        actor_uid=actor_uid, slot_name="MyOutputSlot", password=example_password
     )
     dictionary = json.loads(json_string)
-    dictionary["Password"] = my_password
+    dictionary["Password"] == example_password
     with pytest.raises(TypeError):
         sc.create_output_slot(actor_uid=actor_uid)
     with pytest.raises(TypeError):
@@ -277,10 +306,10 @@ def test_create_start_designs():
     assert sorted(dictionary.items()) == sorted(requiered_string.items())
     # with password
     json_string = sc.create_start_designs(
-        actor_uid=actor_uid, sampling_type="fullfactorial", password=my_password
+        actor_uid=actor_uid, sampling_type="fullfactorial", password=example_password
     )
     dictionary = json.loads(json_string)
-    dictionary["Password"] = my_password
+    dictionary["Password"] == example_password
     with pytest.raises(TypeError):
         sc.create_start_designs(actor_uid=actor_uid)
     with pytest.raises(TypeError):
@@ -324,10 +353,13 @@ def test_disconnect_slot():
     assert sorted(dictionary.items()) == sorted(requiered_string.items())
     # with password
     json_string = sc.disconnect_slot(
-        actor_uid=actor_uid, slot_name="MyInputSlot", direction="sdInputs", password=my_password
+        actor_uid=actor_uid,
+        slot_name="MyInputSlot",
+        direction="sdInputs",
+        password=example_password,
     )
     dictionary = json.loads(json_string)
-    dictionary["Password"] = my_password
+    dictionary["Password"] == example_password
     with pytest.raises(TypeError):
         sc.disconnect_slot(actor_uid=actor_uid)
     with pytest.raises(TypeError):
@@ -352,9 +384,9 @@ def test_evaluate_design():
     assert type(json_string) == str
     assert sorted(dictionary.items()) == sorted(requiered_string.items())
     # with password
-    json_string = sc.evaluate_design(parameters=parameters, password=my_password)
+    json_string = sc.evaluate_design(parameters=parameters, password=example_password)
     dictionary = json.loads(json_string)
-    dictionary["Password"] = my_password
+    dictionary["Password"] == example_password
     with pytest.raises(TypeError):
         sc.evaluate_design()
 
@@ -385,9 +417,9 @@ def test_export_designs():
     assert type(json_string) == str
     assert sorted(dictionary.items()) == sorted(requiered_string.items())
     # with password
-    json_string = sc.export_designs(actor_uid=actor_uid, path=result, password=my_password)
+    json_string = sc.export_designs(actor_uid=actor_uid, path=result, password=example_password)
     dictionary = json.loads(json_string)
-    dictionary["Password"] = my_password
+    dictionary["Password"] == example_password
     with pytest.raises(TypeError):
         sc.export_designs(actor_uid=actor_uid)
     with pytest.raises(TypeError):
@@ -408,9 +440,9 @@ def test_finalize():
     assert type(json_string) == str
     assert sorted(dictionary.items()) == sorted(requiered_string.items())
     # with password
-    json_string = sc.finalize(actor_uid=actor_uid, password=my_password)
+    json_string = sc.finalize(actor_uid=actor_uid, password=example_password)
     dictionary = json.loads(json_string)
-    dictionary["Password"] = my_password
+    dictionary["Password"] == example_password
     with pytest.raises(TypeError):
         sc.finalize()
 
@@ -428,9 +460,9 @@ def test_link_registered_file():
     assert type(json_string) == str
     assert sorted(dictionary.items()) == sorted(requiered_string.items())
     # with password
-    json_string = sc.link_registered_file(actor_uid=actor_uid, uid=uid, password=my_password)
+    json_string = sc.link_registered_file(actor_uid=actor_uid, uid=uid, password=example_password)
     dictionary = json.loads(json_string)
-    dictionary["Password"] = my_password
+    dictionary["Password"] == example_password
     with pytest.raises(TypeError):
         sc.link_registered_file(actor_uid=actor_uid)
     with pytest.raises(TypeError):
@@ -450,9 +482,9 @@ def test_new():
     assert type(json_string) == str
     assert sorted(dictionary.items()) == sorted(requiered_string.items())
     # with password
-    json_string = sc.new(password=my_password)
+    json_string = sc.new(password=example_password)
     dictionary = json.loads(json_string)
-    dictionary["Password"] = my_password
+    dictionary["Password"] == example_password
     with pytest.raises(TypeError):
         sc.new(rand_arg=rand_arg)
 
@@ -471,10 +503,10 @@ def test_open():
     assert sorted(dictionary.items()) == sorted(requiered_string.items())
     # with password
     json_string = sc.open(
-        path=path, do_force=True, do_restore=False, do_reset=False, password=my_password
+        path=path, do_force=True, do_restore=False, do_reset=False, password=example_password
     )
     dictionary = json.loads(json_string)
-    dictionary["Password"] = my_password
+    dictionary["Password"] == example_password
     with pytest.raises(TypeError):
         sc.open()
 
@@ -490,9 +522,9 @@ def test_pause():
     assert type(json_string) == str
     assert sorted(dictionary.items()) == sorted(requiered_string.items())
     # with password
-    json_string = sc.pause(password=my_password)
+    json_string = sc.pause(password=example_password)
     dictionary = json.loads(json_string)
-    dictionary["Password"] = my_password
+    dictionary["Password"] == example_password
     with pytest.raises(TypeError):
         sc.finalize(rand_arg=rand_arg)
 
@@ -518,9 +550,9 @@ def test_reevaluate_state():
     assert type(json_string) == str
     assert sorted(dictionary.items()) == sorted(requiered_string.items())
     # with password
-    json_string = sc.reevaluate_state(actor_uid=actor_uid, password=my_password)
+    json_string = sc.reevaluate_state(actor_uid=actor_uid, password=example_password)
     dictionary = json.loads(json_string)
-    dictionary["Password"] = my_password
+    dictionary["Password"] == example_password
     with pytest.raises(TypeError):
         sc.reevaluate_state()
 
@@ -538,9 +570,9 @@ def test_refresh_listener_registration():
     assert type(json_string) == str
     assert sorted(dictionary.items()) == sorted(requiered_string.items())
     # with password
-    json_string = sc.refresh_listener_registration(uid=uid, password=my_password)
+    json_string = sc.refresh_listener_registration(uid=uid, password=example_password)
     dictionary = json.loads(json_string)
-    dictionary["Password"] = my_password
+    dictionary["Password"] == example_password
     with pytest.raises(TypeError):
         sc.refresh_listener_registration()
 
@@ -560,10 +592,10 @@ def test_register_file():
     assert sorted(dictionary.items()) == sorted(requiered_string.items())
     # with password
     json_string = sc.register_file(
-        ident="File42", action="Send", local_location=local_location, password=my_password
+        ident="File42", action="Send", local_location=local_location, password=example_password
     )
     dictionary = json.loads(json_string)
-    dictionary["Password"] = my_password
+    dictionary["Password"] == example_password
     with pytest.raises(TypeError):
         sc.register_file(rand_arg=rand_arg)
 
@@ -604,9 +636,9 @@ def test_register_listener():
     assert type(json_string) == str
     assert sorted(dictionary.items()) == sorted(requiered_string.items())
     # with password
-    json_string = sc.register_listener(id="123456", password=my_password)
+    json_string = sc.register_listener(id="123456", password=example_password)
     dictionary = json.loads(json_string)
-    dictionary["Password"] = my_password
+    dictionary["Password"] == example_password
     with pytest.raises(TypeError):
         sc.register_listener(id="123456", host="127.0.0.1", port=5330)
     with pytest.raises(TypeError):
@@ -630,9 +662,9 @@ def test_register_locations_as_parameter():
     assert type(json_string) == str
     assert sorted(dictionary.items()) == sorted(requiered_string.items())
     # with password
-    json_string = sc.register_locations_as_parameter(actor_uid=actor_uid, password=my_password)
+    json_string = sc.register_locations_as_parameter(actor_uid=actor_uid, password=example_password)
     dictionary = json.loads(json_string)
-    dictionary["Password"] = my_password
+    dictionary["Password"] == example_password
     with pytest.raises(TypeError):
         sc.register_locations_as_parameter()
 
@@ -650,11 +682,45 @@ def test_register_locations_as_response():
     assert type(json_string) == str
     assert sorted(dictionary.items()) == sorted(requiered_string.items())
     # with password
-    json_string = sc.register_locations_as_response(actor_uid=actor_uid, password=my_password)
+    json_string = sc.register_locations_as_response(actor_uid=actor_uid, password=example_password)
     dictionary = json.loads(json_string)
-    dictionary["Password"] = my_password
+    dictionary["Password"] == example_password
     with pytest.raises(TypeError):
         sc.register_locations_as_response()
+
+
+def test_remove_criteria():
+    "Test remove_criteria."
+    # basic
+    json_string = sc.remove_criteria(actor_uid=actor_uid)
+    dictionary = json.loads(json_string)
+    requiered_string = json.loads(
+        '{"projects": [{"commands": [{"actor_uid": "5cdfb20b-bef6-4412-9985-89f5ded5ee95", \
+        "command": "REMOVE_CRITERIA", "type": "builtin"}]}]}'
+    )
+    assert type(json_string) == str
+    assert sorted(dictionary.items()) == sorted(requiered_string.items())
+    # with password
+    json_string = sc.remove_criteria(actor_uid=actor_uid, password=example_password)
+    dictionary = json.loads(json_string)
+    dictionary["Password"] == example_password
+
+
+def test_remove_criterion():
+    "Test remove_criterion."
+    # basic
+    json_string = sc.remove_criterion(actor_uid=actor_uid, name="obj2")
+    dictionary = json.loads(json_string)
+    requiered_string = json.loads(
+        '{"projects": [{"commands": [{"actor_uid": "5cdfb20b-bef6-4412-9985-89f5ded5ee95", \
+        "args": {"name": "obj2"}, "command": "REMOVE_CRITERION", "type": "builtin"}]}]}'
+    )
+    assert type(json_string) == str
+    assert sorted(dictionary.items()) == sorted(requiered_string.items())
+    # with password
+    json_string = sc.remove_criterion(actor_uid=actor_uid, name="obj2", password=example_password)
+    dictionary = json.loads(json_string)
+    dictionary["Password"] == example_password
 
 
 def test_remove_node():
@@ -669,9 +735,9 @@ def test_remove_node():
     assert type(json_string) == str
     assert sorted(dictionary.items()) == sorted(requiered_string.items())
     # with password
-    json_string = sc.remove_node(actor_uid=actor_uid, password=my_password)
+    json_string = sc.remove_node(actor_uid=actor_uid, password=example_password)
     dictionary = json.loads(json_string)
-    dictionary["Password"] = my_password
+    dictionary["Password"] == example_password
     with pytest.raises(TypeError):
         sc.remove_node()
 
@@ -689,9 +755,11 @@ def test_re_register_locations_as_parameter():
     assert type(json_string) == str
     assert sorted(dictionary.items()) == sorted(requiered_string.items())
     # with password
-    json_string = sc.re_register_locations_as_parameter(actor_uid=actor_uid, password=my_password)
+    json_string = sc.re_register_locations_as_parameter(
+        actor_uid=actor_uid, password=example_password
+    )
     dictionary = json.loads(json_string)
-    dictionary["Password"] = my_password
+    dictionary["Password"] == example_password
     with pytest.raises(TypeError):
         sc.re_register_locations_as_parameter()
 
@@ -709,9 +777,11 @@ def test_re_register_locations_as_response():
     assert type(json_string) == str
     assert sorted(dictionary.items()) == sorted(requiered_string.items())
     # with password
-    json_string = sc.re_register_locations_as_response(actor_uid=actor_uid, password=my_password)
+    json_string = sc.re_register_locations_as_response(
+        actor_uid=actor_uid, password=example_password
+    )
     dictionary = json.loads(json_string)
-    dictionary["Password"] = my_password
+    dictionary["Password"] == example_password
     with pytest.raises(TypeError):
         sc.re_register_locations_as_response()
 
@@ -736,9 +806,9 @@ def test_reset():
     assert type(json_string) == str
     assert sorted(dictionary.items()) == sorted(requiered_string.items())
     # with password
-    json_string = sc.reset(password=my_password)
+    json_string = sc.reset(password=example_password)
     dictionary = json.loads(json_string)
-    dictionary["Password"] = my_password
+    dictionary["Password"] == example_password
 
 
 def test_restart():
@@ -752,9 +822,9 @@ def test_restart():
     assert type(json_string) == str
     assert sorted(dictionary.items()) == sorted(requiered_string.items())
     # with password
-    json_string = sc.restart(password=my_password)
+    json_string = sc.restart(password=example_password)
     dictionary = json.loads(json_string)
-    dictionary["Password"] = my_password
+    dictionary["Password"] == example_password
 
 
 def test_resume():
@@ -768,9 +838,9 @@ def test_resume():
     assert type(json_string) == str
     assert sorted(dictionary.items()) == sorted(requiered_string.items())
     # with password
-    json_string = sc.resume(password=my_password)
+    json_string = sc.resume(password=example_password)
     dictionary = json.loads(json_string)
-    dictionary["Password"] = my_password
+    dictionary["Password"] == example_password
 
 
 def test_run_python_script():
@@ -794,9 +864,9 @@ def test_run_python_script():
     assert type(json_string) == str
     assert sorted(dictionary.items()) == sorted(requiered_string.items())
     # with password
-    json_string = sc.run_python_script(script=script, password=my_password)
+    json_string = sc.run_python_script(script=script, password=example_password)
     dictionary = json.loads(json_string)
-    dictionary["Password"] = my_password
+    dictionary["Password"] == example_password
     with pytest.raises(TypeError):
         sc.run_python_script()
 
@@ -823,9 +893,9 @@ def test_run_registered_files_actions():
     assert type(json_string) == str
     assert sorted(dictionary.items()) == sorted(requiered_string.items())
     # with password
-    json_string = sc.run_registered_files_actions(password=my_password)
+    json_string = sc.run_registered_files_actions(password=example_password)
     dictionary = json.loads(json_string)
-    dictionary["Password"] = my_password
+    dictionary["Password"] == example_password
 
 
 def test_save():
@@ -839,9 +909,9 @@ def test_save():
     assert type(json_string) == str
     assert sorted(dictionary.items()) == sorted(requiered_string.items())
     # with password
-    json_string = sc.save(password=my_password)
+    json_string = sc.save(password=example_password)
     dictionary = json.loads(json_string)
-    dictionary["Password"] = my_password
+    dictionary["Password"] == example_password
     with pytest.raises(TypeError):
         sc.save(rand_arg=rand_arg)
 
@@ -860,10 +930,10 @@ def test_save_as():
     assert sorted(dictionary.items()) == sorted(requiered_string.items())
     # with password
     json_string = sc.save_as(
-        path=path, do_force=True, do_restore=False, do_reset=False, password=my_password
+        path=path, do_force=True, do_restore=False, do_reset=False, password=example_password
     )
     dictionary = json.loads(json_string)
-    dictionary["Password"] = my_password
+    dictionary["Password"] == example_password
     with pytest.raises(TypeError):
         sc.save_as()
 
@@ -880,9 +950,9 @@ def test_save_copy():
     assert type(json_string) == str
     assert sorted(dictionary.items()) == sorted(requiered_string.items())
     # with password
-    json_string = sc.save_copy(path=path, password=my_password)
+    json_string = sc.save_copy(path=path, password=example_password)
     dictionary = json.loads(json_string)
-    dictionary["Password"] = my_password
+    dictionary["Password"] == example_password
     with pytest.raises(TypeError):
         sc.save_copy()
 
@@ -901,10 +971,10 @@ def test_set_actor_property():
     assert sorted(dictionary.items()) == sorted(requiered_string.items())
     # with password
     json_string = sc.set_actor_property(
-        actor_uid=actor_uid, name="MaxParallel", value="32", password=my_password
+        actor_uid=actor_uid, name="MaxParallel", value="32", password=example_password
     )
     dictionary = json.loads(json_string)
-    dictionary["Password"] = my_password
+    dictionary["Password"] == example_password
     with pytest.raises(TypeError):
         sc.set_actor_property(actor_uid=actor_uid)
     with pytest.raises(TypeError):
@@ -913,6 +983,32 @@ def test_set_actor_property():
         sc.set_actor_property(actor_uid=actor_uid, value="32")
     with pytest.raises(TypeError):
         sc.set_actor_property(name="MaxParallel", value="32")
+
+
+def test_set_criterion_property():
+    "Test set_criterion_property."
+    # basic
+    json_string = sc.set_criterion_property(
+        actor_uid=actor_uid, criterion_name="obj2", name="type", value="min"
+    )
+    dictionary = json.loads(json_string)
+    requiered_string = json.loads(
+        '{"projects": [{"commands": [{"actor_uid": "5cdfb20b-bef6-4412-9985-89f5ded5ee95", \
+        "args": {"criterion_name": "obj2", "name": "type", "value": "min"}, \
+        "command": "SET_CRITERION_PROPERTY", "type": "builtin"}]}]}'
+    )
+    assert type(json_string) == str
+    assert sorted(dictionary.items()) == sorted(requiered_string.items())
+    # with password
+    json_string = sc.set_criterion_property(
+        actor_uid=actor_uid,
+        criterion_name="obj2",
+        name="type",
+        value="min",
+        password=example_password,
+    )
+    dictionary = json.loads(json_string)
+    dictionary["Password"] == example_password
 
 
 def test_set_actor_setting():
@@ -931,10 +1027,13 @@ def test_set_actor_setting():
     assert sorted(dictionary.items()) == sorted(requiered_string.items())
     # with password
     json_string = sc.set_actor_setting(
-        actor_uid=actor_uid, name="maximum_designs_to_validate", value="5", password=my_password
+        actor_uid=actor_uid,
+        name="maximum_designs_to_validate",
+        value="5",
+        password=example_password,
     )
     dictionary = json.loads(json_string)
-    dictionary["Password"] = my_password
+    dictionary["Password"] == example_password
     with pytest.raises(TypeError):
         sc.set_actor_setting(actor_uid=actor_uid)
     with pytest.raises(TypeError):
@@ -961,10 +1060,10 @@ def test_set_actor_state_property():
     assert sorted(dictionary.items()) == sorted(requiered_string.items())
     # with password
     json_string = sc.set_actor_state_property(
-        actor_uid=actor_uid, name="stop_after_execution", value="true", password=my_password
+        actor_uid=actor_uid, name="stop_after_execution", value="true", password=example_password
     )
     dictionary = json.loads(json_string)
-    dictionary["Password"] = my_password
+    dictionary["Password"] == example_password
     with pytest.raises(TypeError):
         sc.set_actor_state_property(actor_uid=actor_uid)
     with pytest.raises(TypeError):
@@ -987,9 +1086,11 @@ def test_set_placeholder_value():
     assert type(json_string) == str
     assert sorted(dictionary.items()) == sorted(requiered_string.items())
     # with password
-    json_string = sc.set_placeholder_value(name="model_name", value="model1", password=my_password)
+    json_string = sc.set_placeholder_value(
+        name="model_name", value="model1", password=example_password
+    )
     dictionary = json.loads(json_string)
-    dictionary["Password"] = my_password
+    dictionary["Password"] == example_password
     with pytest.raises(TypeError):
         sc.set_placeholder_value(name="model_name")
     with pytest.raises(TypeError):
@@ -1011,10 +1112,10 @@ def test_set_project_setting():
     assert sorted(dictionary.items()) == sorted(requiered_string.items())
     # with password
     json_string = sc.set_project_setting(
-        name="number_of_message_queue_threads", value="64", password=my_password
+        name="number_of_message_queue_threads", value="64", password=example_password
     )
     dictionary = json.loads(json_string)
-    dictionary["Password"] = my_password
+    dictionary["Password"] == example_password
     with pytest.raises(TypeError):
         sc.set_project_setting(name="number_of_message_queue_threads")
     with pytest.raises(TypeError):
@@ -1049,10 +1150,10 @@ def test_set_registered_file_value():
     assert sorted(dictionary.items()) == sorted(requiered_string.items())
     # with password
     json_string = sc.set_registered_file_value(
-        uid=uid, name="embedded", value="true", password=my_password
+        uid=uid, name="embedded", value="true", password=example_password
     )
     dictionary = json.loads(json_string)
-    dictionary["Password"] = my_password
+    dictionary["Password"] == example_password
     with pytest.raises(TypeError):
         sc.set_registered_file_value(uid=uid, name="embedded")
     with pytest.raises(TypeError):
@@ -1080,10 +1181,10 @@ def test_set_start_designs():
     assert sorted(dictionary.items()) == sorted(requiered_string.items())
     # with password
     json_string = sc.set_start_designs(
-        actor_uid=actor_uid, start_designs=start_designs, password=my_password
+        actor_uid=actor_uid, start_designs=start_designs, password=example_password
     )
     dictionary = json.loads(json_string)
-    dictionary["Password"] = my_password
+    dictionary["Password"] == example_password
     with pytest.raises(TypeError):
         sc.set_start_designs(actor_uid=actor_uid)
     with pytest.raises(TypeError):
@@ -1113,9 +1214,9 @@ def test_set_succeeded_state():
     assert type(json_string) == str
     assert sorted(dictionary.items()) == sorted(requiered_string.items())
     # with password
-    json_string = sc.set_succeeded_state(actor_uid=actor_uid, password=my_password)
+    json_string = sc.set_succeeded_state(actor_uid=actor_uid, password=example_password)
     dictionary = json.loads(json_string)
-    dictionary["Password"] = my_password
+    dictionary["Password"] == example_password
     with pytest.raises(TypeError):
         sc.set_succeeded_state()
     with pytest.raises(TypeError):
@@ -1148,9 +1249,9 @@ def test_show_dialog():
     dictionary["parent_hwnd"] = "XXX"
     dictionary["usage_mode"] = "EXPERT"
     # with password
-    json_string = sc.show_dialog(type_="help")
+    json_string = sc.show_dialog(type_="help", password=example_password)
     dictionary = json.loads(json_string)
-    dictionary["Password"] = my_password
+    dictionary["Password"] == example_password
     with pytest.raises(TypeError):
         sc.show_dialog(type_="random")
     with pytest.raises(TypeError):
@@ -1178,9 +1279,9 @@ def test_show_node_dialog():
     dictionary["parent_hwnd"] = "XXX"
     dictionary["usage_mode"] = "EXPERT"
     # with password
-    json_string = sc.show_node_dialog(actor_uid=actor_uid, password=my_password)
+    json_string = sc.show_node_dialog(actor_uid=actor_uid, password=example_password)
     dictionary = json.loads(json_string)
-    dictionary["Password"] = my_password
+    dictionary["Password"] == example_password
     with pytest.raises(TypeError):
         sc.show_node_dialog(blocking="true", type_="help", usage_mode="EXPERT", parent_hwnd="XXX")
     with pytest.raises(TypeError):
@@ -1198,9 +1299,9 @@ def test_shutdown():
     assert type(json_string) == str
     assert sorted(dictionary.items()) == sorted(requiered_string.items())
     # with password
-    json_string = sc.shutdown(password=my_password)
+    json_string = sc.shutdown(password=example_password)
     dictionary = json.loads(json_string)
-    dictionary["Password"] = my_password
+    dictionary["Password"] == example_password
     with pytest.raises(TypeError):
         sc.shutdown(rand_arg=rand_arg)
 
@@ -1217,9 +1318,9 @@ def test_shutdown_when_finished():
     assert type(json_string) == str
     assert sorted(dictionary.items()) == sorted(requiered_string.items())
     # with password
-    json_string = sc.shutdown_when_finished(password=my_password)
+    json_string = sc.shutdown_when_finished(password=example_password)
     dictionary = json.loads(json_string)
-    dictionary["Password"] = my_password
+    dictionary["Password"] == example_password
     with pytest.raises(TypeError):
         sc.shutdown_when_finished(rand_arg=rand_arg)
 
@@ -1235,9 +1336,9 @@ def test_start():
     assert type(json_string) == str
     assert sorted(dictionary.items()) == sorted(requiered_string.items())
     # with password
-    json_string = sc.start(password=my_password)
+    json_string = sc.start(password=example_password)
     dictionary = json.loads(json_string)
-    dictionary["Password"] = my_password
+    dictionary["Password"] == example_password
     with pytest.raises(TypeError):
         sc.start(rand_arg=rand_arg)
 
@@ -1253,9 +1354,9 @@ def test_stop():
     assert type(json_string) == str
     assert sorted(dictionary.items()) == sorted(requiered_string.items())
     # with password
-    json_string = sc.stop(password=my_password)
+    json_string = sc.stop(password=example_password)
     dictionary = json.loads(json_string)
-    dictionary["Password"] = my_password
+    dictionary["Password"] == example_password
     with pytest.raises(TypeError):
         sc.stop(rand_arg=rand_arg)
 
@@ -1271,9 +1372,9 @@ def test_stop_gently():
     assert type(json_string) == str
     assert sorted(dictionary.items()) == sorted(requiered_string.items())
     # with password
-    json_string = sc.stop_gently(password=my_password)
+    json_string = sc.stop_gently(password=example_password)
     dictionary = json.loads(json_string)
-    dictionary["Password"] = my_password
+    dictionary["Password"] == example_password
     with pytest.raises(TypeError):
         sc.stop_gently(rand_arg=rand_arg)
 
@@ -1311,10 +1412,10 @@ def test_subscribe_for_push_notifications():
     assert sorted(dictionary.items()) == sorted(requiered_string.items())
     # with password
     json_string = sc.subscribe_for_push_notifications(
-        uid=uid_, notifications=["ALL"], password=my_password
+        uid=uid_, notifications=["ALL"], password=example_password
     )
     dictionary = json.loads(json_string)
-    dictionary["Password"] = my_password
+    dictionary["Password"] == example_password
     with pytest.raises(TypeError):
         sc.subscribe_for_push_notifications(uid=uid_)
     with pytest.raises(TypeError):
@@ -1338,9 +1439,9 @@ def test_unlink_registered_file():
     assert type(json_string) == str
     assert sorted(dictionary.items()) == sorted(requiered_string.items())
     # with password
-    json_string = sc.unlink_registered_file(actor_uid=actor_uid, uid=uid, password=my_password)
+    json_string = sc.unlink_registered_file(actor_uid=actor_uid, uid=uid, password=example_password)
     dictionary = json.loads(json_string)
-    dictionary["Password"] = my_password
+    dictionary["Password"] == example_password
     with pytest.raises(TypeError):
         sc.unlink_registered_file(uid=uid)
     with pytest.raises(TypeError):
@@ -1359,9 +1460,9 @@ def test_unregister_file():
     assert type(json_string) == str
     assert sorted(dictionary.items()) == sorted(requiered_string.items())
     # with password
-    json_string = sc.unregister_file(uid=uid, password=my_password)
+    json_string = sc.unregister_file(uid=uid, password=example_password)
     dictionary = json.loads(json_string)
-    dictionary["Password"] = my_password
+    dictionary["Password"] == example_password
     with pytest.raises(TypeError):
         sc.unregister_file()
 
@@ -1378,9 +1479,9 @@ def test_unregister_listener():
     assert type(json_string) == str
     assert sorted(dictionary.items()) == sorted(requiered_string.items())
     # with password
-    json_string = sc.unregister_listener(uid=uid, password=my_password)
+    json_string = sc.unregister_listener(uid=uid, password=example_password)
     dictionary = json.loads(json_string)
-    dictionary["Password"] = my_password
+    dictionary["Password"] == example_password
     with pytest.raises(TypeError):
         sc.unregister_listener()
 
@@ -1410,9 +1511,9 @@ def test_write_monitoring_database():
     assert type(json_string) == str
     assert sorted(dictionary.items()) == sorted(requiered_string.items())
     # with password
-    json_string = sc.write_monitoring_database(actor_uid=actor_uid, password=my_password)
+    json_string = sc.write_monitoring_database(actor_uid=actor_uid, password=example_password)
     dictionary = json.loads(json_string)
-    dictionary["Password"] = my_password
+    dictionary["Password"] == example_password
     with pytest.raises(TypeError):
         sc.write_monitoring_database(path="C:/samples_path/result.omdb", hid=hid)
     with pytest.raises(TypeError):

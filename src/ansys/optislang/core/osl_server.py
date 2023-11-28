@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import Union
+from typing import Optional, Union
 
 
 class OslServer(ABC):
@@ -15,7 +15,7 @@ class OslServer(ABC):
 
     @property
     @abstractmethod
-    def host(self) -> Union[str, None]:  # pragma no cover
+    def host(self) -> Optional[str]:  # pragma no cover
         """Get optiSLang server address or domain name.
 
         Get a string representation of an IPv4/v6 address or domain name
@@ -23,7 +23,7 @@ class OslServer(ABC):
 
         Returns
         -------
-        timeout: Union[int, None]
+        host: Optional[int]
             The IPv4/v6 address or domain name of the running optiSLang server, if applicable.
             Defaults to ``None``.
         """
@@ -31,12 +31,12 @@ class OslServer(ABC):
 
     @property
     @abstractmethod
-    def port(self) -> Union[int, None]:  # pragma: no cover
+    def port(self) -> Optional[int]:  # pragma: no cover
         """Get the port the osl server is listening on.
 
         Returns
         -------
-        timeout: Union[int, None]
+        port: Optional[int]
             The port the osl server is listening on, if applicable.
             Defaults to ``None``.
         """
