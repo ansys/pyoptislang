@@ -1350,32 +1350,12 @@ class TcpOslServer(OslServer):
         """
         return self.send_command(queries.actor_info(uid=uid, password=self.__password))
 
-    def get_actor_properties(self, uid: str) -> Dict:
-        """Get properties of actor defined by uid.
-
-        Parameters
-        ----------
-        uid : str
-            Actor uid.
-
-        Returns
-        -------
-        Dict
-            Properties of actor defined by uid.
-
-        Raises
-        ------
-        OslCommunicationError
-            Raised when an error occurs while communicating with server.
-        OslCommandError
-            Raised when the command or query fails.
-        TimeoutError
-            Raised when the timeout float value expires.
-        """
-        return self.send_command(queries.actor_properties(uid=uid, password=self.__password))
-
-    def get_actor_states(self, uid: str) -> Dict:
-        """Get available actor states for a certain actor (only the IDs of the available states).
+    def get_actor_states(
+        self,
+        uid: str,
+        include_state_info: bool = False,
+    ) -> Dict:
+        """Get available actor states for a certain actor.
 
         These can be used in conjunction with "get_actor_status_info" to obtain actor status info
         for a specific state ID.
@@ -1384,30 +1364,8 @@ class TcpOslServer(OslServer):
         ----------
         uid : str
             Actor uid.
-        Returns
-        -------
-        Dict
-            Info about actor defined by uid.
-        Raises
-        ------
-        OslCommunicationError
-            Raised when an error occurs while communicating with server.
-        OslCommandError
-            Raised when the command or query fails.
-        TimeoutError
-            Raised when the timeout float value expires.
-        """
-        return self.send_command(queries.actor_states(uid=uid, password=self.__password))
-
-    def get_actor_status_info(self, uid: str, hid: str) -> Dict:
-        """Get status info about actor defined by actor uid and state Hid.
-
-        Parameters
-        ----------
-        uid : str
-            Actor uid.
-        hid: str
-            State/Design hierarchical id.
+        include_state_info: bool
+            Include additional info for each state. Otherwise, only state IDs are returned.
         Returns
         -------
         Dict
@@ -1422,7 +1380,57 @@ class TcpOslServer(OslServer):
             Raised when the timeout float value expires.
         """
         return self.send_command(
-            queries.actor_status_info(uid=uid, hid=hid, password=self.__password)
+            queries.actor_states(
+                uid=uid,
+                include_state_info=include_state_info,
+                password=self.__password,
+            )
+        )
+
+    def get_actor_status_info(
+        self,
+        uid: str,
+        hid: str,
+        include_designs: bool = True,
+        include_non_scalar_design_values: bool = False,
+        include_algorithm_info: bool = False,
+    ) -> Dict:
+        """Get status info about actor defined by actor uid and state Hid.
+
+        Parameters
+        ----------
+        uid : str
+            Actor uid.
+        hid: str
+            State/Design hierarchical id.
+        include_designs: bool
+            Include (result) designs in status info response.
+        include_non_scalar_design_values: bool
+            Include non scalar values in (result) designs.
+        include_algorithm_info: bool
+            Include algorithm result info in status info response.
+        Returns
+        -------
+        Dict
+            Info about actor defined by uid.
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        return self.send_command(
+            queries.actor_status_info(
+                uid=uid,
+                hid=hid,
+                include_designs=include_designs,
+                include_non_scalar_design_values=include_non_scalar_design_values,
+                include_algorithm_info=include_algorithm_info,
+                password=self.__password,
+            )
         )
 
     def get_actor_supports(self, uid: str, feature_name: str) -> bool:
@@ -1494,9 +1502,19 @@ class TcpOslServer(OslServer):
         """
         return self.send_command(queries.basic_project_info(self.__password))
 
-    def get_full_project_status_info(self) -> Dict:
+    def get_full_project_status_info(
+        self,
+        include_non_scalar_design_values: bool = False,
+        include_algorithm_info: bool = False,
+    ) -> Dict:
         """Get full project status info.
 
+        Parameters
+        ----------
+        include_non_scalar_design_values: bool
+            Include non scalar values in (result) designs.
+        include_algorithm_info: bool
+            Include algorithm result info in status info response.
         Returns
         -------
         Dict
@@ -1511,7 +1529,13 @@ class TcpOslServer(OslServer):
         TimeoutError
             Raised when the timeout float value expires.
         """
-        return self.send_command(queries.full_project_status_info(password=self.__password))
+        return self.send_command(
+            queries.full_project_status_info(
+                include_non_scalar_design_values=include_non_scalar_design_values,
+                include_algorithm_info=include_algorithm_info,
+                password=self.__password,
+            )
+        )
 
     def get_full_project_tree(self) -> Dict:
         """Get full project tree.
@@ -1980,9 +2004,22 @@ class TcpOslServer(OslServer):
         is_alive = response_dict.get("status") == "success"
         return is_alive
 
-    def get_systems_status_info(self) -> Dict:
+    def get_systems_status_info(
+        self,
+        include_designs: bool = True,
+        include_non_scalar_design_values: bool = False,
+        include_algorithm_info: bool = False,
+    ) -> Dict:
         """Get project status info, including systems only.
 
+        Parameters
+        ----------
+        include_designs: bool
+            Include (result) designs in status info response.
+        include_non_scalar_design_values: bool
+            Include non scalar values in (result) designs.
+        include_algorithm_info: bool
+            Include algorithm result info in status info response.
         Returns
         -------
         Dict
@@ -1997,7 +2034,14 @@ class TcpOslServer(OslServer):
         TimeoutError
             Raised when the timeout float value expires.
         """
-        return self.send_command(queries.systems_status_info(password=self.__password))
+        return self.send_command(
+            queries.systems_status_info(
+                include_designs=include_designs,
+                include_non_scalar_design_values=include_non_scalar_design_values,
+                include_algorithm_info=include_algorithm_info,
+                password=self.__password,
+            )
+        )
 
     @deprecated(version="0.5.0", reason="Use :py:attr:`TcpOslServer.timeout` instead.")
     def get_timeout(self) -> Union[float, None]:
