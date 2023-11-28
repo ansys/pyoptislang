@@ -14,7 +14,7 @@ from ansys.optislang.core.tcp.osl_server import TcpOslServer
 if TYPE_CHECKING:
     from ansys.optislang.core.application import Application
     from ansys.optislang.core.logging import OslCustomAdapter
-    from ansys.optislang.core.osl_server import OslServer
+    from ansys.optislang.core.osl_server import OslServer, OslVersion
     from ansys.optislang.core.project import Project
 
 
@@ -178,7 +178,7 @@ class Optislang:
 
     >>> from ansys.optislang.core import Optislang
     >>> osl = Optislang()
-    >>> osl_version = osl.get_osl_version_string()
+    >>> osl_version = osl.osl_version_string
     >>> print(osl_version)
     >>> osl.dispose()
     """
@@ -399,6 +399,29 @@ class Optislang:
         return self.__osl_server
 
     @property
+    def osl_version(self) -> OslVersion:
+        """Version of used optiSLang.
+
+        Returns
+        -------
+        OslVersion
+            optiSLang version as typing.NamedTuple containing
+            major, minor, maintenance and revision versions.
+        """
+        return self.__osl_server.osl_version
+
+    @property
+    def osl_version_string(self) -> str:
+        """Version of used optiSLang.
+
+        Returns
+        -------
+        str
+            optiSLang version.
+        """
+        return self.__osl_server.osl_version_string
+
+    @property
     def project(self) -> Optional[Project]:
         """Instance of the ``Project`` class.
 
@@ -481,6 +504,7 @@ class Optislang:
             ":py:class:`Application <ansys.optislang.core.application.Application>`."
         ),
     )
+    @deprecated(version="0.5.0", reason="Use :py:attr:`Optislang.osl_version_string` instead.")
     def get_osl_version_string(self) -> str:
         """Get the optiSLang version in use as a string.
 
@@ -500,21 +524,15 @@ class Optislang:
         """
         return self.application.get_version_string()
 
-    @deprecated(
-        version="0.5.0",
-        reason=(
-            "This functionality was moved to "
-            ":py:class:`Application <ansys.optislang.core.application.Application>`."
-        ),
-    )
-    def get_osl_version(self) -> Tuple[Union[int, None], ...]:
+    @deprecated(version="0.5.0", reason="Use :py:attr:`Optislang.osl_version` instead.")
+    def get_osl_version(self) -> OslVersion:
         """Get the optiSLang version in use as a tuple.
 
         Returns
         -------
-        tuple
-            optiSLang version as tuple contains the
-            major version, minor version, maintenance version, and revision.
+        OslVersion
+            optiSLang version as typing.NamedTuple containing
+            major, minor, maintenance and revision versions.
 
         Raises
         ------
@@ -522,6 +540,8 @@ class Optislang:
             Raised when an error occurs while communicating with the server.
         OslCommandError
             Raised when a command or query fails.
+        RuntimeError
+            Raised when parsing version numbers from string fails.
         TimeoutError
             Raised when the timeout float value expires.
         """

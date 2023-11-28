@@ -56,7 +56,7 @@ def test_optislang_properties(optislang: Optislang):
     osl_server = optislang.osl_server
     assert isinstance(osl_server, OslServer)
 
-    version = optislang.get_osl_version_string()
+    version = optislang.osl_version_string
     assert isinstance(version, str)
 
     major_version, minor_version, maintenance_version, revision = optislang.get_osl_version()

@@ -30,7 +30,7 @@ from ansys.optislang.core.errors import (
     ResponseFormatError,
 )
 from ansys.optislang.core.osl_process import OslServerProcess, ServerNotification
-from ansys.optislang.core.osl_server import OslServer
+from ansys.optislang.core.osl_server import OslServer, OslVersion
 from ansys.optislang.core.tcp import server_commands as commands
 from ansys.optislang.core.tcp import server_queries as queries
 
@@ -944,7 +944,7 @@ class TcpOslServer(OslServer):
 
     >>> from ansys.optislang.core.tcp_osl_server import TcpOslServer
     >>> osl_server = TcpOslServer()
-    >>> osl_version = osl_server.get_osl_version_string()
+    >>> osl_version = osl_server.osl_version_string
     >>> print(osl_version)
     >>> osl_server.dispose()
 
@@ -954,7 +954,7 @@ class TcpOslServer(OslServer):
     >>> host = "192.168.101.1"  # IP address of the remote host
     >>> port = 49200            # Port of the remote optiSLang server
     >>> osl_server = TcpOslServer(host, port)
-    >>> osl_version = osl_server.get_osl_version_string()
+    >>> osl_version = osl_server.osl_version_string
     >>> print(osl_version)
     >>> osl_server.dispose()
     """
@@ -1066,14 +1066,13 @@ class TcpOslServer(OslServer):
             self.__listeners["main_listener"] = listener
             self.__start_listeners_registration_thread()
 
-        # osl version
-        osl_version_string = self.get_server_info()["application"]["version"]
-        osl_version = self.__class__.__osl_version_string_to_int(version=osl_version_string)
+        self.__osl_version = self._get_osl_version()
+        self.__osl_version_string = self._get_osl_version_string()
 
-        if osl_version[0] is not None:
-            if osl_version[0] < 23:
+        if self.__osl_version[0] is not None:
+            if self.__osl_version[0] < 23:
                 self._logger.warning(
-                    f"The version of the used Ansys optiSLang ({osl_version_string})"
+                    f"The version of the used Ansys optiSLang ({self.__osl_version_string})"
                     " is not fully supported. Please use at least version 23.1."
                 )
 
@@ -1091,6 +1090,29 @@ class TcpOslServer(OslServer):
             Defaults to ``None``.
         """
         return self.__host
+
+    @property
+    def osl_version(self) -> OslVersion:
+        """Version of used optiSLang.
+
+        Returns
+        -------
+        OslVersion
+            optiSLang version as typing.NamedTuple containing
+            major, minor, maintenance and revision versions.
+        """
+        return self.__osl_version
+
+    @property
+    def osl_version_string(self) -> str:
+        """Version of used optiSLang.
+
+        Returns
+        -------
+        str
+            optiSLang version.
+        """
+        return self.__osl_version_string
 
     @property
     def port(self) -> Union[int, None]:
@@ -2048,13 +2070,30 @@ class TcpOslServer(OslServer):
             )
         )
 
-    @deprecated(
-        version="0.5.0",
-        reason=(
-            "This functionality was moved to "
-            ":py:class:`Application <ansys.optislang.core.application.Application>`."
-        ),
-    )
+    @deprecated(version="0.5.0", reason="Use :py:attr:`TcpOslServer.osl_version` instead.")
+    def get_osl_version(self) -> OslVersion:
+        """Get version of used optiSLang.
+
+        Returns
+        -------
+        OslVersion
+            optiSLang version as typing.NamedTuple containing
+            major, minor, maintenance and revision versions.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        RuntimeError
+            Raised when parsing version numbers from string fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        return self._get_osl_version()
+
+    @deprecated(version="0.5.0", reason="Use :py:attr:`TcpOslServer.osl_version_string` instead.")
     def get_osl_version_string(self) -> str:
         """Get version of used optiSLang.
 
@@ -2072,65 +2111,7 @@ class TcpOslServer(OslServer):
         TimeoutError
             Raised when the timeout float value expires.
         """
-        server_info = self.get_server_info()
-        return server_info["application"]["version"]
-
-    @deprecated(
-        version="0.5.0",
-        reason=(
-            "This functionality was moved to "
-            ":py:class:`Application <ansys.optislang.core.application.Application>`."
-        ),
-    )
-    def get_osl_version(self) -> Tuple[Union[int, None], ...]:
-        """Get version of used optiSLang.
-
-        Returns
-        -------
-        tuple
-            optiSLang version as tuple containing
-            major version, minor version, maintenance version and revision.
-
-        Raises
-        ------
-        OslCommunicationError
-            Raised when an error occurs while communicating with server.
-        OslCommandError
-            Raised when the command or query fails.
-        TimeoutError
-            Raised when the timeout float value expires.
-        """
-        osl_version_str = self.get_osl_version_string()
-
-        osl_version_entries = re.findall(r"[\w']+", osl_version_str)
-
-        major_version = None
-        minor_version = None
-        maint_version = None
-        revision = None
-
-        if len(osl_version_entries) > 0:
-            try:
-                major_version = int(osl_version_entries[0])
-            except:
-                pass
-        if len(osl_version_entries) > 1:
-            try:
-                minor_version = int(osl_version_entries[1])
-            except:
-                pass
-        if len(osl_version_entries) > 2:
-            try:
-                maint_version = int(osl_version_entries[2])
-            except:
-                pass
-        if len(osl_version_entries) > 3:
-            try:
-                revision = int(osl_version_entries[3])
-            except:
-                pass
-
-        return major_version, minor_version, maint_version, revision
+        return self._get_osl_version_string()
 
     @deprecated(version="0.5.0", reason="Use :py:attr:`TcpOslServer.port` instead.")
     def get_port(self) -> Union[int, None]:
@@ -3083,6 +3064,80 @@ class TcpOslServer(OslServer):
         self.__osl_process = None
         self.__host = None
         self.__port = None
+
+    def _get_osl_version(self) -> OslVersion:
+        """Get version of used optiSLang.
+
+        Returns
+        -------
+        OslVersion
+            optiSLang version as typing.NamedTuple containing
+            major, minor, maintenance and revision versions.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        RuntimeError
+            Raised when parsing version numbers from string fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        osl_version_str = self._get_osl_version_string()
+
+        pattern = r"(\d+)\.(\d+)(?:\.(\d+))? *(?:dev)? *\((M?\d+)\)"
+        osl_version_entries = re.search(pattern, osl_version_str)
+
+        if osl_version_entries:
+            major, minor, maintenance, revision = osl_version_entries.groups()
+            major, minor = int(major), int(minor)
+            maintenance = int(maintenance) if maintenance.isdigit() else None
+            revision = int(revision) if revision.isdigit() else None
+            return OslVersion(major, minor, maintenance, revision)
+        else:
+            raise RuntimeError("Invalid provided optiSLang version string.")
+
+    def _get_osl_version_string(self) -> str:
+        """Get version of used optiSLang.
+
+        Returns
+        -------
+        str
+            optiSLang version.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        server_info = self.get_server_info()
+        return server_info["application"]["version"]
+
+    def _unregister_listener(self, listener: TcpOslListener) -> None:
+        """Unregister a listener.
+
+        Parameters
+        ----------
+        listener : TcpOslListener
+            Class with listener properties.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        self.send_command(commands.unregister_listener(str(listener.uid), self.__password))
+        listener.uid = None
 
     def _start_local(self, ini_timeout: float, shutdown_on_finished: bool) -> None:
         """Start local optiSLang server.

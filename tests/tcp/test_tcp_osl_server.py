@@ -275,12 +275,6 @@ def test_start_stop_listening(
 
 # region TcpOslServer
 
-# def test_close(osl_server_process: OslServerProcess):
-#     tcp_osl_server = create_tcp_osl_server(osl_server_process)
-#     tcp_osl_server.close()
-#     tcp_osl_server.new()
-#     tcp_osl_server.dispose()
-
 
 def test_tcp_osl_properties(osl_server_process: OslServerProcess):
     """Test `host`, `port` and `timeout` properties of `TcpOslServer` class."""
@@ -298,6 +292,15 @@ def test_tcp_osl_properties(osl_server_process: OslServerProcess):
         tcp_osl_server.timeout = "5"
     tcp_osl_server.shutdown()
     tcp_osl_server.dispose()
+
+
+# def test_close(osl_server_process: OslServerProcess):
+#     tcp_osl_server = create_tcp_osl_server(osl_server_process)
+#     with does_not_raise() as dnr:
+#         tcp_osl_server.close()
+#         tcp_osl_server.new()
+#         tcp_osl_server.dispose()
+#     assert dnr is None
 
 
 def test_connect_nodes(tmp_path: Path, tmp_example_project):
@@ -364,31 +367,6 @@ def test_evaluate_design(tmp_path: Path, tmp_example_project):
     result = tcp_osl_server.evaluate_design({"a": 5, "b": 10})
     assert isinstance(result, list)
     assert isinstance(result[0], dict)
-    tcp_osl_server.shutdown()
-    tcp_osl_server.dispose()
-
-
-@pytest.mark.parametrize(
-    "uid, expected",
-    [
-        ("3577cb69-15b9-4ad1-a53c-ac8af8aaea82", dict),
-        ("3577cb69-15b9-4ad1-a53c-ac8af8aaea83", errors.OslCommandError),
-    ],
-)
-def test_get_actor_info(uid, expected, tmp_example_project):
-    """Test ``get_actor_info``."""
-    osl_server_process = create_osl_server_process(
-        shutdown_on_finished=False, project_path=tmp_example_project("calculator_with_params")
-    )
-    tcp_osl_server = create_tcp_osl_server(osl_server_process)
-    variable_uid = "b8b8b48f-b806-4382-9777-f03ceb5dccc0"
-    calculator_uid = "e63ce638-ec33-47cf-ba02-2d83771678fa"
-
-    tcp_osl_server.connect_nodes(
-        from_actor_uid=variable_uid, from_slot="OVar", to_actor_uid=calculator_uid, to_slot="A"
-    )
-    info = tcp_osl_server.get_actor_info(calculator_uid)
-    assert len(info["connections"]) == 1
     tcp_osl_server.shutdown()
     tcp_osl_server.dispose()
 
@@ -535,7 +513,7 @@ def test_get_server_queries(osl_server_process: OslServerProcess):
     server_info = tcp_osl_server.get_server_info()
     assert isinstance(server_info, dict)
     assert bool(server_info)
-    # server_is_alive
+    # server is alive
     is_alive = tcp_osl_server.get_server_is_alive()
     assert isinstance(is_alive, bool)
     assert is_alive

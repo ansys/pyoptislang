@@ -2,7 +2,27 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import Optional, Union
+from typing import NamedTuple, Optional, Union
+
+
+class OslVersion(NamedTuple):
+    """optiSLang version.
+
+    Attributes:
+        major: int
+            The major version number.
+        minor: int
+            The minor version number.
+        maintenance: Optional[int]
+            The maintenance version number. ``None`` if not parsed correctly.
+        revision: Optional[int]
+            The revision number. ``None`` if not parsed correctly.
+    """
+
+    major: int
+    minor: int
+    maintenance: Optional[int]
+    revision: Optional[int]
 
 
 class OslServer(ABC):
@@ -26,6 +46,33 @@ class OslServer(ABC):
         host: Optional[int]
             The IPv4/v6 address or domain name of the running optiSLang server, if applicable.
             Defaults to ``None``.
+        """
+        pass
+
+    @property
+    @abstractmethod
+    def osl_version(
+        self,
+    ) -> OslVersion:  # pragma: no cover
+        """Version of used optiSLang.
+
+        Returns
+        -------
+        OslVersion
+            optiSLang version as typing.NamedTuple containing
+            major, minor, maintenance and revision versions.
+        """
+        pass
+
+    @property
+    @abstractmethod
+    def osl_version_string(self) -> str:  # pragma: no cover
+        """Version of used optiSLang.
+
+        Returns
+        -------
+        str
+            optiSLang version.
         """
         pass
 
