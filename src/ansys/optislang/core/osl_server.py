@@ -3,7 +3,27 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Sequence, Tuple, Union
+from typing import Any, Dict, List, NamedTuple, Optional, Sequence, Tuple, Union
+
+
+class OslVersion(NamedTuple):
+    """optiSLang version.
+
+    Attributes:
+        major: int
+            The major version number.
+        minor: int
+            The minor version number.
+        maintenance: Optional[int]
+            The maintenance version number. ``None`` if not parsed correctly.
+        revision: Optional[int]
+            The revision number. ``None`` if not parsed correctly.
+    """
+
+    major: int
+    minor: int
+    maintenance: Optional[int]
+    revision: Optional[int]
 
 
 class OslServer(ABC):
@@ -12,6 +32,33 @@ class OslServer(ABC):
     @abstractmethod
     def __init__(self):
         """``OslServer`` class is an abstract base class and cannot be instantiated."""
+
+    @property
+    @abstractmethod
+    def osl_version(
+        self,
+    ) -> OslVersion:  # pragma: no cover
+        """Version of used optiSLang.
+
+        Returns
+        -------
+        OslVersion
+            optiSLang version as typing.NamedTuple containing
+            major, minor, maintenance and revision versions.
+        """
+        pass
+
+    @property
+    @abstractmethod
+    def osl_version_string(self) -> str:  # pragma: no cover
+        """Version of used optiSLang.
+
+        Returns
+        -------
+        str
+            optiSLang version.
+        """
+        pass
 
     # @abstractmethod
     # def close(self) -> None:
@@ -728,14 +775,16 @@ class OslServer(ABC):
         pass
 
     @abstractmethod
-    def get_osl_version(self) -> Tuple[Union[int, None], ...]:  # pragma: no cover
+    def get_osl_version(
+        self,
+    ) -> OslVersion:  # pragma: no cover
         """Get version of used optiSLang.
 
         Returns
         -------
-        tuple
-            optiSLang version as tuple containing
-            major version, minor version, maintenance version and revision.
+        OslVersion
+            optiSLang version as typing.NamedTuple containing
+            major, minor, maintenance and revision versions.
 
         Raises
         ------
@@ -743,6 +792,8 @@ class OslServer(ABC):
             Raised when an error occurs while communicating with server.
         OslCommandError
             Raised when the command or query fails.
+        RuntimeError
+            Raised when parsing version numbers from string fails.
         TimeoutError
             Raised when the timeout float value expires.
         """
