@@ -60,6 +60,45 @@ class OslServer(ABC):
         """
         pass
 
+    @property
+    @abstractmethod
+    def timeout(self) -> Optional[float]:  # pragma: no cover
+        """Get the timeout value for executing commands.
+
+        Returns
+        -------
+        timeout: Union[float, None]
+            Timeout in seconds to perform commands. This value must be greater
+            than zero or ``None``. The default is ``None``. Another function
+            raises a timeout exception if the timeout value has elapsed before
+            an operation has completed. If the timeout is ``None``, functions
+            wait until they're finished, and no timeout exception is raised.
+        """
+        pass
+
+    @timeout.setter
+    @abstractmethod
+    def timeout(self, timeout: Union[float, None] = 30) -> None:  # pragma: no cover
+        """Set the timeout value for the executing commands.
+
+        Parameters
+        ----------
+        timeout: Union[float, None]
+            Timeout in seconds to perform commands. This value must be greater
+            than zero or ``None``. The default is ``30``. Another function
+            raises a timeout exception if the timeout value has elapsed before
+            an operation has completed. If the timeout is ``None``, functions
+            wait until they're finished, and no timeout exception is raised.
+
+        Raises
+        ------
+        ValueError
+            Raised when the timeout value is less than or equal to 0.
+        TypeError
+            Raised when the timeout is not a Union[float, None].
+        """
+        pass
+
     # @abstractmethod
     # def close(self) -> None:
     #     """Close the current project.
@@ -755,51 +794,6 @@ class OslServer(ABC):
         pass
 
     @abstractmethod
-    def get_osl_version_string(self) -> str:  # pragma: no cover
-        """Get version of used optiSLang.
-
-        Returns
-        -------
-        str
-            optiSLang version.
-
-        Raises
-        ------
-        OslCommunicationError
-            Raised when an error occurs while communicating with server.
-        OslCommandError
-            Raised when the command or query fails.
-        TimeoutError
-            Raised when the timeout float value expires.
-        """
-        pass
-
-    @abstractmethod
-    def get_osl_version(
-        self,
-    ) -> OslVersion:  # pragma: no cover
-        """Get version of used optiSLang.
-
-        Returns
-        -------
-        OslVersion
-            optiSLang version as typing.NamedTuple containing
-            major, minor, maintenance and revision versions.
-
-        Raises
-        ------
-        OslCommunicationError
-            Raised when an error occurs while communicating with server.
-        OslCommandError
-            Raised when the command or query fails.
-        RuntimeError
-            Raised when parsing version numbers from string fails.
-        TimeoutError
-            Raised when the timeout float value expires.
-        """
-        pass
-
-    @abstractmethod
     def get_project_description(self) -> str:  # pragma: no cover
         """Get description of optiSLang project.
 
@@ -971,30 +965,6 @@ class OslServer(ABC):
         -------
         Dict
             Project status info including systems only.
-
-        Raises
-        ------
-        OslCommunicationError
-            Raised when an error occurs while communicating with server.
-        OslCommandError
-            Raised when the command or query fails.
-        TimeoutError
-            Raised when the timeout float value expires.
-        """
-        pass
-
-    @abstractmethod
-    def get_timeout(self) -> Union[float, None]:  # pragma: no cover
-        """Get current timeout value for execution of commands.
-
-        Returns
-        -------
-        timeout: Union[float, None]
-            Timeout in seconds to perform commands, it must be greater than zero or ``None``.
-            Another functions will raise a timeout exception if the timeout period value has
-            elapsed before the operation has completed. If ``None`` is given, functions
-            will wait until they're finished (no timeout exception is raised).
-            Defaults to ``None``.
 
         Raises
         ------
@@ -1298,32 +1268,6 @@ class OslServer(ABC):
             Raised when the command or query fails.
         TimeoutError
             Raised when the timeout float value expires.
-        """
-        pass
-
-    @abstractmethod
-    def set_timeout(self, timeout: Union[float, None] = None) -> None:  # pragma: no cover
-        """Set timeout value for execution of commands.
-
-        Parameters
-        ----------
-        timeout: Union[float, None]
-            Timeout in seconds to perform commands, it must be greater than zero or ``None``.
-            Another functions will raise a timeout exception if the timeout period value has
-            elapsed before the operation has completed. If ``None`` is given, functions
-            will wait until they're finished (no timeout exception is raised).
-            Defaults to ``None``.
-
-        Raises
-        ------
-        OslCommunicationError
-            Raised when an error occurs while communicating with server.
-        OslCommandError
-            Raised when the command or query fails.
-        ValueError
-            Raised when timeout <= 0.
-        TypeError
-            Raised when timeout not Union[float, None].
         """
         pass
 
