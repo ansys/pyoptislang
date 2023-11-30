@@ -1,0 +1,20 @@
+name: Nightly
+on:
+  push:
+    branches:
+      - "maint/nightly-tests"
+
+jobs:
+  nighty-tests:
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/ansys/optislang:23.2.0
+      credentials:
+        username: ansys-bot
+        password: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - name: "Pytest"
+        uses: ansys/actions/tests-pytest@v4
+        with:
+          python-version: "3.10"
+          use-python-cache: false

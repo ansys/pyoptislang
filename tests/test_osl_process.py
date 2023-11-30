@@ -1,6 +1,8 @@
 import logging
 import os
+import re
 import time
+from typing import Optional
 
 import psutil
 import pytest
@@ -28,7 +30,7 @@ def wait_for_file_creation(file: str, timeout: float = 60) -> None:
         timeout -= 1
 
 
-def wait_for_log_record(text: str, caplog, timeout: float = 60) -> logging.LogRecord:
+def wait_for_log_record(text: str, caplog, timeout: float = 60) -> Optional[logging.LogRecord]:
     """Wait for log record.
 
     Parameters
@@ -300,3 +302,31 @@ def test_port_range(executable, project_file, server_info_file):
         assert os.path.isfile(server_info_file)
         port = get_port_from_server_info_file(server_info_file)
         assert port_range[0] <= port and port <= port_range[1]
+
+
+def test_process_out_override(executable, project_file, caplog):
+    """Ensure working override to disable process output."""
+
+    varname = "PYOPTISLANG_DISABLE_OPTISLANG_OUTPUT"
+
+    if varname in os.environ:
+        pytest.skip()
+
+    os.environ["PYOPTISLANG_DISABLE_OPTISLANG_OUTPUT"] = "FOO"
+
+    with OslServerProcess(
+        executable,
+        project_file,
+        logger=get_logger(),
+        log_process_stdout=True,
+        log_process_stderr=True,
+    ) as osl_process:
+        osl_process.start()
+        wait_for_file_creation(project_file)
+
+        def does_not_contain(text):
+            return re.search(text, caplog.text, re.IGNORECASE) is None
+
+        assert does_not_contain("starting optiSLang")
+        assert does_not_contain("optiSLang Stdout")
+        assert does_not_contain("optiSLang Stderr")
