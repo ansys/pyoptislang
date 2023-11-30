@@ -70,7 +70,7 @@ def _get_current_timeout(initial_timeout: Union[float, None], start_time: float)
 
 
 class FunctionsAttributeRegister:
-    """Class which stores attributes specific to individual ``TcpOslServer`` functions."""
+    """Class which stores attributes specific to individual functions."""
 
     def __init__(self, default_value: Any, validator: Optional[Callable[[Any], bool]]) -> None:
         """Create a ``FunctionsAttributeRegister`` instance.
@@ -184,6 +184,11 @@ class FunctionsAttributeRegister:
     def __validate_value(self, value: Any) -> None:
         """Validate given value.
 
+        Parameters
+        ----------
+        value: Any
+            Value to be validated using instance's validator.
+
         Raises
         ------
         ValueError
@@ -192,8 +197,13 @@ class FunctionsAttributeRegister:
         if self.__validator is not None and not self.__validator(value):
             raise ValueError("Invalid default value.")
 
-    def __parse_callable_to_str(self, function: str) -> Callable:
+    def __parse_callable_to_str(self, function: Callable) -> str:
         """Parse given function to string.
+
+        Parameters
+        ----------
+        function: Callable
+            Function to be parsed to string.
 
         Returns
         -------
