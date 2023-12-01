@@ -21,4 +21,5 @@ jobs:
         uses: ansys/actions/tests-pytest@v4
         with:
           python-version: "3.10"
+          pytest-extra-args: "--local_osl"
           use-python-cache: false
