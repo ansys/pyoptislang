@@ -72,7 +72,9 @@ def _get_current_timeout(initial_timeout: Union[float, None], start_time: float)
 class FunctionsAttributeRegister:
     """Class which stores attributes specific to individual functions."""
 
-    def __init__(self, default_value: Any, validator: Optional[Callable[[Any], bool]]) -> None:
+    def __init__(
+        self, default_value: Any, validator: Optional[Callable[[Any], bool]] = None
+    ) -> None:
         """Create a ``FunctionsAttributeRegister`` instance.
 
         Parameters
@@ -195,7 +197,7 @@ class FunctionsAttributeRegister:
             Raised when invalid value is passed.
         """
         if self.__validator is not None and not self.__validator(value):
-            raise ValueError("Invalid default value.")
+            raise ValueError(f"Invalid value `{value}` was passed.")
 
     def __parse_callable_to_str(self, function: Callable) -> str:
         """Parse given function to string.
@@ -3865,8 +3867,10 @@ class TcpOslServer(OslServer):
 
     @staticmethod
     def __validate_timeout_value(value: Any) -> bool:
-        return value is None or (isinstance(value, (int, float)) and not isinstance(value, bool))
+        return value is None or (
+            isinstance(value, (int, float)) and not isinstance(value, bool) and value > 0
+        )
 
     @staticmethod
     def __validate_max_request_attempts_value(value: Any) -> bool:
-        return isinstance(value, int) and not isinstance(value, bool)
+        return isinstance(value, int) and not isinstance(value, bool) and value > 0
