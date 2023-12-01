@@ -5,7 +5,8 @@ on:
       - "maint/nightly-tests"
 
 jobs:
-  nighty-tests:
+  test-suite:
+    name: "Test suite"
     runs-on: ubuntu-latest
     container:
       image: ghcr.io/ansys/optislang:23.2.0
