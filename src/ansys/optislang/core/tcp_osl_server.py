@@ -2804,8 +2804,8 @@ class TcpOslServer(OslServer):
         """
         osl_version_str = self._get_osl_version_string()
 
-        pattern = r"(\d+)\.(\d+)(?:\.(\d+))? *(?:dev)? *\((M?\d+)\)"
-        osl_version_entries = re.search(pattern, osl_version_str)
+        pattern = r"(\d+)\.(\d+)\.(\d+).* \((\d+)M?\)"
+        osl_version_entries = re.fullmatch(pattern, osl_version_str)
 
         if osl_version_entries:
             major, minor, maintenance, revision = osl_version_entries.groups()
