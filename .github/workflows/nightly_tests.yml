@@ -15,6 +15,9 @@ jobs:
         password: ${{ secrets.GITHUB_TOKEN }}
     steps:
       - name: "Pytest"
+        env:
+          PYOPTISLANG_DISABLE_OPTISLANG_OUTPUT: true
+          ANSYSLMD_LICENSE_FILE: format("1055@{0}", ${{ secrets.LICENSE_SERVER }})
         uses: ansys/actions/tests-pytest@v4
         with:
           python-version: "3.10"
