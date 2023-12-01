@@ -303,7 +303,7 @@ class Optislang:
         """Return product name, version of optiSLang, and version of PyOptiSLang."""
         return (
             f"Product name: optiSLang\n"
-            f"Version: {self.get_osl_version_string()}\n"
+            f"Version: {self.osl_version_string}\n"
             f"PyOptiSLang: {version('ansys.optislang.core')}"
         )
 
