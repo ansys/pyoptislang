@@ -16,9 +16,10 @@ jobs:
     steps:
       - name: "Pytest"
         env:
+          PYOPTISLANG_DISABLE_OPTISLANG_OUTPUT: true
           ANSYSLMD_LICENSE_FILE: ${{ format('1055@{0}', secrets.LICENSE_SERVER) }}
         uses: ansys/actions/tests-pytest@v4
         with:
           python-version: "3.10"
-          pytest-extra-args: "--local_osl -k test_project_queries"
+          pytest-extra-args: "--local_osl"
           use-python-cache: false
