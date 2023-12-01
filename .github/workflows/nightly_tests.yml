@@ -7,7 +7,7 @@ on:
 jobs:
   test-suite:
     name: "Test suite"
-    runs-on: ubuntu-latest
+    runs-on: public-ubuntu-latest-16-cores
     container:
       image: ghcr.io/ansys/optislang:23.2.0-jammy
       credentials:
