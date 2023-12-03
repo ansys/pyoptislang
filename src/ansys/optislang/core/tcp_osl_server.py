@@ -2804,7 +2804,7 @@ class TcpOslServer(OslServer):
         """
         osl_version_str = self._get_osl_version_string()
 
-        pattern = r"(\d+)\.(\d+)\.(\d+).* \((\d+)M?\)"
+        pattern = r"(\d+)\.(\d+)\.(\d+).*\((\d+)M?\)"
         osl_version_entries = re.fullmatch(pattern, osl_version_str)
 
         if osl_version_entries:
