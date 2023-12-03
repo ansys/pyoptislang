@@ -6,10 +6,14 @@ on:
 
 jobs:
   test-suite:
-    name: "optiSLang 23R2"
+    strategy:
+      matrix:
+        osl_version: ["23.2.0"]
+    name: "optiSLang ${{ matrix.osl_version }}"
     runs-on: public-ubuntu-latest-16-cores
     container:
       image: ghcr.io/ansys/optislang:23.2.0-jammy
+      image: ${{ format('ghcr.io/ansys/optislang:{0}-jammy', matrix.osl_version) }}
       credentials:
         username: ansys-bot
         password: ${{ secrets.GITHUB_TOKEN }}
