@@ -1,4 +1,4 @@
-name: Nightly
+name: Integration Tests
 on:
   push:
     branches:
@@ -6,7 +6,7 @@ on:
 
 jobs:
   test-suite:
-    name: "Test suite"
+    name: "optiSLang 23R2"
     runs-on: public-ubuntu-latest-16-cores
     container:
       image: ghcr.io/ansys/optislang:23.2.0-jammy
@@ -21,5 +21,5 @@ jobs:
         uses: ansys/actions/tests-pytest@v4
         with:
           python-version: "3.10"
-          pytest-extra-args: "--local_osl -k 'test_examples'"
+          pytest-extra-args: "--local_osl -k 'not test_examples'"
           use-python-cache: false
