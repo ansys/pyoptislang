@@ -447,7 +447,7 @@ class Optislang:
         TimeoutError
             Raised when the timeout float value expires.
         """
-        return self.__osl_server.get_osl_version_string()
+        return self.__osl_server.osl_version_string
 
     @deprecated(version="0.5.0", reason="Use :py:attr:`Optislang.osl_version` instead.")
     def get_osl_version(self) -> OslVersion:
@@ -470,7 +470,7 @@ class Optislang:
         TimeoutError
             Raised when the timeout float value expires.
         """
-        return self.__osl_server.get_osl_version()
+        return self.__osl_server.osl_version
 
     def get_timeout(self) -> Union[float, None]:
         """Get the timeout value for executing commands.
