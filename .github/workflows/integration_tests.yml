@@ -1,8 +1,9 @@
 name: Integration Tests
 on:
-  push:
-    branches:
-      - "maint/nightly-tests"
+  workflow_dispatch:
+  pull_request:
+    types:
+      - closed
 
 jobs:
   test-suite:
@@ -10,6 +11,7 @@ jobs:
       matrix:
         osl_version: ["23.2.0"]
     name: "optiSLang ${{ matrix.osl_version }}"
+    if: github.event.pull_request.merged == true
     runs-on: public-ubuntu-latest-16-cores
     container:
       image: ${{ format('ghcr.io/ansys/optislang:{0}-jammy', matrix.osl_version) }}
