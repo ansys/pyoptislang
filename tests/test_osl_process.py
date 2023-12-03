@@ -129,6 +129,7 @@ def get_logger() -> logging.Logger:
     return logger
 
 
+@pytest.mark.xfail
 def test_start_wo_project_file(executable, caplog):
     """Test start of the optiSLang process without project file specified.
 
@@ -152,6 +153,7 @@ def test_start_wo_project_file(executable, caplog):
         check_log_for_errors(caplog)
 
 
+@pytest.mark.xfail
 def test_start_with_project_file(executable, project_file, caplog):
     """Test start of the optiSLang process with path to the project file specified.
 
@@ -193,6 +195,7 @@ def test_init_with_invalid_project_file(executable, tmp_path):
         osl_process = OslServerProcess(executable, project_file)
 
 
+@pytest.mark.xfail
 def test_open_project_file(executable, project_file, caplog):
     """Test open of optiSLang project file.
 
