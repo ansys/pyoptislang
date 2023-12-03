@@ -12,7 +12,6 @@ jobs:
     name: "optiSLang ${{ matrix.osl_version }}"
     runs-on: public-ubuntu-latest-16-cores
     container:
-      image: ghcr.io/ansys/optislang:23.2.0-jammy
       image: ${{ format('ghcr.io/ansys/optislang:{0}-jammy', matrix.osl_version) }}
       credentials:
         username: ansys-bot
