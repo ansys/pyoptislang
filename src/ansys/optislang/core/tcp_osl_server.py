@@ -2549,6 +2549,12 @@ class TcpOslServer(OslServer):
 
         current_func_name = self.open.__name__
 
+        if self.__osl_version[0] < 24:
+            self._logger.error(
+                f"Command ``open`` doesn't work correctly in version {self.__osl_version_string}."
+                " Please use at least version 24.1."
+            )
+
         self.send_command(
             command=commands.open(
                 path=str(file_path.as_posix()),
@@ -2798,6 +2804,11 @@ class TcpOslServer(OslServer):
         """
         file_path = self.__cast_to_path(file_path=file_path)
         self.__validate_path(file_path=file_path)
+        if self.__osl_version[0] < 24:
+            self._logger.error(
+                "Command ``save_copy`` doesn't work correctly in version"
+                f" {self.__osl_version_string}. Please use at least version 24.1."
+            )
         current_func_name = self.save_copy.__name__
         self.send_command(
             command=commands.save_copy(str(file_path.as_posix()), self.__password),
