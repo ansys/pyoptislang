@@ -2483,6 +2483,12 @@ class TcpOslServer(OslServer):
         if not file_path.is_file():
             raise FileNotFoundError(f'File "{file_path}" doesn\'t exist.')
 
+        if self.__osl_version[0] < 24:
+            self._logger.error(
+                f"Command ``open`` doesn't work correctly in version {self.__osl_version_string}."
+                " Please use at least version 24.1."
+            )
+
         self.send_command(
             commands.open(
                 path=str(file_path.as_posix()),
@@ -2723,6 +2729,11 @@ class TcpOslServer(OslServer):
         """
         file_path = self.__cast_to_path(file_path=file_path)
         self.__validate_path(file_path=file_path)
+        if self.__osl_version[0] < 24:
+            self._logger.error(
+                "Command ``save_copy`` doesn't work correctly in version"
+                f" {self.__osl_version_string}. Please use at least version 24.1."
+            )
         self.send_command(commands.save_copy(str(file_path.as_posix()), self.__password))
 
     def send_command(self, command: str) -> Dict:
