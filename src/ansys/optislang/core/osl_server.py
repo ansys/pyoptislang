@@ -13,16 +13,16 @@ class OslVersion(NamedTuple):
             The major version number.
         minor: int
             The minor version number.
-        maintenance: Optional[int]
-            The maintenance version number. ``None`` if not parsed correctly.
-        revision: Optional[int]
-            The revision number. ``None`` if not parsed correctly.
+        maintenance: int
+            The maintenance version number.
+        revision: int
+            The revision number.
     """
 
     major: int
     minor: int
-    maintenance: Optional[int]
-    revision: Optional[int]
+    maintenance: int
+    revision: int
 
 
 class OslServer(ABC):

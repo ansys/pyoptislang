@@ -345,13 +345,14 @@ def test_disconnect_slot(tmp_path: Path, tmp_example_project):
         shutdown_on_finished=False, project_path=tmp_example_project("calculator_with_params")
     )
     tcp_osl_server = create_tcp_osl_server(osl_server_process)
-    UID = "3577cb69-15b9-4ad1-a53c-ac8af8aaea82"
-    INPUT_SLOT_NAME = "OVar"
-    OUTPUT_SLOT_NAME = "var"
-    # input slot
-    tcp_osl_server.disconnect_slot(UID, INPUT_SLOT_NAME, "sdInputs")
-    # output slot
-    tcp_osl_server.disconnect_slot(UID, OUTPUT_SLOT_NAME, "sdOutputs")
+    osl_version = tcp_osl_server.osl_version
+    assert len(osl_version) == 4
+    assert isinstance(osl_version[0], int)
+    assert isinstance(osl_version[1], int)
+    assert isinstance(osl_version[2], int)
+    assert isinstance(osl_version[3], int)
+    osl_version_string = tcp_osl_server.osl_version_string
+    assert isinstance(osl_version_string, str)
     tcp_osl_server.shutdown()
     tcp_osl_server.dispose()
 

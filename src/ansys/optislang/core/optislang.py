@@ -310,7 +310,7 @@ class Optislang:
         """Return product name, version of optiSLang, and version of PyOptiSLang."""
         return (
             f"Product name: optiSLang\n"
-            f"Version: {self.application.get_version_string()}\n"
+            f"Version: {self.osl_version_string}\n"
             f"PyOptiSLang: {version('ansys.optislang.core')}"
         )
 
@@ -522,7 +522,7 @@ class Optislang:
         TimeoutError
             Raised when the timeout float value expires.
         """
-        return self.application.get_version_string()
+        return self.__osl_server.osl_version_string
 
     @deprecated(version="0.5.0", reason="Use :py:attr:`Optislang.osl_version` instead.")
     def get_osl_version(self) -> OslVersion:
@@ -545,7 +545,7 @@ class Optislang:
         TimeoutError
             Raised when the timeout float value expires.
         """
-        return self.application.get_version()
+        return self.__osl_server.osl_version
 
     @deprecated(version="0.5.0", reason="Use :py:attr:`Optislang.timeout` instead.")
     def get_timeout(self) -> Union[float, None]:

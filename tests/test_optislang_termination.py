@@ -61,8 +61,7 @@ pytestmark = pytest.mark.local_osl
 def test_local_default_cm(send_dispose, send_shutdown, osl_none):
     osl_port = None
     with Optislang(shutdown_on_finished=True) as osl:
-        version = osl.application.get_version()
-        osl.application.project.start()
+        osl.start()
         osl_port = osl._Optislang__osl_server._TcpOslServer__port
         if send_dispose:
             osl.dispose()
@@ -96,8 +95,7 @@ def test_local_default_cm(send_dispose, send_shutdown, osl_none):
 def test_local_shutdown_on_finished_false_cm(send_dispose, send_shutdown, osl_none):
     osl_port = None
     with Optislang(shutdown_on_finished=False) as osl:
-        version = osl.application.get_version()
-        osl.application.project.start()
+        osl.start()
         osl_port = osl._Optislang__osl_server._TcpOslServer__port
         if send_dispose:
             osl.dispose()
@@ -136,8 +134,7 @@ def test_remote_cm(send_dispose, send_shutdown, osl_none):
     osl_server_process = create_osl_server_process(shutdown_on_finished=False)
     # connect to running optiSLang server
     with Optislang(host=_host, port=osl_server_process.port_range[0]) as osl:
-        version = osl.application.get_version()
-        osl.application.project.start()
+        osl.start()
         if send_dispose:
             osl.dispose()
         if send_shutdown:
@@ -174,8 +171,7 @@ def test_remote_cm(send_dispose, send_shutdown, osl_none):
 )
 def test_local_default_wocm(send_dispose, send_shutdown):
     osl = Optislang(shutdown_on_finished=True)
-    version = osl.application.get_version()
-    osl.application.project.start()
+    osl.start()
     osl_port = osl._Optislang__osl_server._TcpOslServer__port
     if send_dispose:
         osl.dispose()
@@ -204,8 +200,7 @@ def test_local_default_wocm(send_dispose, send_shutdown):
 )
 def test_local_shutdown_on_finished_false_wocm(send_dispose, send_shutdown):
     osl = Optislang(shutdown_on_finished=False)
-    version = osl.application.get_version()
-    osl.application.project.start()
+    osl.start()
     osl_port = osl._Optislang__osl_server._TcpOslServer__port
     if send_dispose:
         osl.dispose()
@@ -241,8 +236,7 @@ def test_remote_wocm(send_dispose, send_shutdown):
     osl_server_process = create_osl_server_process(shutdown_on_finished=False)
     # connect to running optiSLang server
     osl = Optislang(host=_host, port=osl_server_process.port_range[0])
-    version = osl.application.get_version()
-    osl.application.project.start()
+    osl.start()
     if send_dispose:
         osl.dispose()
     if send_shutdown:
@@ -270,7 +264,7 @@ def test_local_and_remote_simultaneously():
     osl_remote = Optislang(port=osl_local.osl_server.port, host=osl_local.osl_server.host)
     osl_local.dispose()
     time.sleep(30)
-    version = osl_remote.application.get_version_string()
+    name = osl_remote.application.project.get_name()
     osl_remote.dispose()
 
 
