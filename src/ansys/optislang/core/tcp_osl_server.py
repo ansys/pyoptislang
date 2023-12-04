@@ -2236,7 +2236,7 @@ class TcpOslServer(OslServer):
             raise FileNotFoundError(f'File "{file_path}" doesn\'t exist.')
 
         if self.__osl_version[0] < 24:
-            self._logger.warning(
+            self._logger.error(
                 f"Command ``open`` doesn't work correctly in version {self.__osl_version_string}."
                 " Please use at least version 24.1."
             )
@@ -2463,7 +2463,7 @@ class TcpOslServer(OslServer):
         file_path = self.__cast_to_path(file_path=file_path)
         self.__validate_path(file_path=file_path)
         if self.__osl_version[0] < 24:
-            self._logger.warning(
+            self._logger.error(
                 "Command ``save_copy`` doesn't work correctly in version"
                 f" {self.__osl_version_string}. Please use at least version 24.1."
             )
