@@ -39,18 +39,17 @@ def create_osl_server_process(shutdown_on_finished=False, project_path=None) -> 
         )
         osl_server_process.start()
 
-        start_timeout = 30
-        time_counter = 0
+        start_timeout = 60
+        start = time.time()
         while not os.path.exists(server_info_file):
-            time.sleep(1)
-            time_counter += 1
-            if time_counter > start_timeout:
+            time.sleep(0.1)
+            if time.time() - start > start_timeout:
                 break
 
         if os.path.exists(server_info_file):
             return osl_server_process
         osl_server_process.terminate()
-        raise TimeoutError("optiSLang Process start timed out")
+        raise TimeoutError("optiSLang Process start timed out after {}s".format(start_timeout))
 
 
 @pytest.fixture(scope="function", autouse=False)
