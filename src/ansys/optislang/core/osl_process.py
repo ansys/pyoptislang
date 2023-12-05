@@ -298,6 +298,9 @@ class OslServerProcess:
         self.__log_process_stderr = log_process_stderr
         self.__additional_args = additional_args
 
+        if "PYOPTISLANG_DISABLE_OPTISLANG_OUTPUT" in os.environ:
+            self.__log_process_stdout, self.__log_process_stderr = False, False
+
     @property
     def executable(self) -> Path:
         """Path to the optiSLang executable file.
