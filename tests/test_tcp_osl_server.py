@@ -157,11 +157,7 @@ def test_send_file(
     path_type,
 ):
     "Test ``send_file``"
-    file_path = tmp_path / "testfile.txt"
-    if path_type == str:
-        file_path = str(file_path)
-    elif path_type != Path:
-        assert False
+    file_path = path_type(tmp_path / "testfile.txt")
 
     with open(file_path, "w") as testfile:
         testfile.write(_msg)
@@ -189,13 +185,8 @@ def test_receive_file(
     path_type,
 ):
     "Test ``receive_file`"
-    file_path = tmp_path / "testfile.txt"
-    received_path = tmp_path / "received.txt"
-    if path_type == str:
-        file_path = str(file_path)
-        received_path = str(received_path)
-    elif path_type != Path:
-        assert False
+    file_path = path_type(tmp_path / "testfile.txt")
+    received_path = path_type(tmp_path / "received.txt")
 
     with open(file_path, "w") as testfile:
         testfile.write(_msg)
@@ -687,11 +678,7 @@ b = 10
 result = a + b
 print(result)
 """
-    cmd_path = tmp_path / "commands.txt"
-    if path_type == str:
-        cmd_path = str(cmd_path)
-    elif path_type != Path:
-        assert False
+    cmd_path = path_type(tmp_path / "commands.txt")
 
     with open(cmd_path, "w") as f:
         f.write(cmd)
@@ -738,10 +725,7 @@ def test_save_as(
 ):
     """Test ``save_as``."""
     file_path = tmp_path / "test_save.opf"
-    if path_type == str:
-        arg_path = str(file_path)
-    elif path_type == Path:
-        arg_path = file_path
+    arg_path = path_type(file_path)
 
     tcp_osl_server = create_tcp_osl_server(osl_server_process)
     tcp_osl_server.save_as(file_path=arg_path)
@@ -758,10 +742,7 @@ def test_save_copy(
 ):
     """Test ``save_copy``."""
     copy_path = tmp_path / "test_save_copy.opf"
-    if path_type == str:
-        arg_path = str(copy_path)
-    elif path_type == Path:
-        arg_path = copy_path
+    arg_path = path_type(copy_path)
 
     tcp_osl_server = create_tcp_osl_server(osl_server_process)
     tcp_osl_server.save_copy(arg_path)
@@ -777,7 +758,7 @@ def test_set_timeout(osl_server_process: OslServerProcess):
     with pytest.raises(ValueError):
         tcp_osl_server.set_timeout(-5)
     with pytest.raises(TypeError):
-        tcp_osl_server.set_timeout("5")
+        tcp_osl_server.set_timeout("5")  # type: ignore
     tcp_osl_server.shutdown()
     tcp_osl_server.dispose()
 
