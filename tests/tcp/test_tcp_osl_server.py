@@ -1,5 +1,4 @@
 from contextlib import closing
-from contextlib import nullcontext as does_not_raise
 import logging
 import os
 from pathlib import Path
@@ -107,28 +106,24 @@ def create_tcp_osl_server(osl_server_process: OslServerProcess) -> tos.TcpOslSer
 # region TcpClient
 def test_client_properties(osl_server_process: OslServerProcess, tcp_client: tos.TcpClient):
     "Test ``local_address`` and ``remote_address``."
-    with does_not_raise() as dnr:
-        tcp_client.connect(host=_host, port=osl_server_process.port_range[0])
-        ra = tcp_client.remote_address
-        assert isinstance(ra, tuple)
-        assert isinstance(ra[0], str)
-        assert isinstance(ra[1], int)
-        la = tcp_client.local_address
-        assert isinstance(la, tuple)
-        assert isinstance(la[0], str)
-        assert isinstance(la[1], int)
-        tcp_client.disconnect()
-        osl_server_process.terminate()
-    assert dnr is None
+    tcp_client.connect(host=_host, port=osl_server_process.port_range[0])
+    ra = tcp_client.remote_address
+    assert isinstance(ra, tuple)
+    assert isinstance(ra[0], str)
+    assert isinstance(ra[1], int)
+    la = tcp_client.local_address
+    assert isinstance(la, tuple)
+    assert isinstance(la[0], str)
+    assert isinstance(la[1], int)
+    tcp_client.disconnect()
+    osl_server_process.terminate()
 
 
 def test_connect_and_disconnect(osl_server_process: OslServerProcess, tcp_client: tos.TcpClient):
     "Test ``connect``."
-    with does_not_raise() as dnr:
-        tcp_client.connect(host=_host, port=osl_server_process.port_range[0])
-        tcp_client.disconnect()
-        osl_server_process.terminate()
-    assert dnr is None
+    tcp_client.connect(host=_host, port=osl_server_process.port_range[0])
+    tcp_client.disconnect()
+    osl_server_process.terminate()
 
 
 def test_tcpclient_properties(osl_server_process: OslServerProcess, tcp_client: tos.TcpClient):
@@ -148,12 +143,10 @@ def test_tcpclient_properties(osl_server_process: OslServerProcess, tcp_client: 
 
 def test_send_msg(osl_server_process: OslServerProcess, tcp_client: tos.TcpClient):
     "Test ``send_msg`"
-    with does_not_raise() as dnr:
-        tcp_client.connect(host=_host, port=osl_server_process.port_range[0])
-        tcp_client.send_msg(_msg)
-        tcp_client.disconnect()
-        osl_server_process.terminate()
-    assert dnr is None
+    tcp_client.connect(host=_host, port=osl_server_process.port_range[0])
+    tcp_client.send_msg(_msg)
+    tcp_client.disconnect()
+    osl_server_process.terminate()
 
 
 @pytest.mark.parametrize("path_type", [str, Path])
@@ -172,12 +165,11 @@ def test_send_file(
 
     with open(file_path, "w") as testfile:
         testfile.write(_msg)
-    with does_not_raise() as dnr:
-        tcp_client.connect(host=_host, port=osl_server_process.port_range[0])
-        tcp_client.send_file(file_path)
-        tcp_client.disconnect()
-        osl_server_process.terminate()
-    assert dnr is None
+
+    tcp_client.connect(host=_host, port=osl_server_process.port_range[0])
+    tcp_client.send_file(file_path)
+    tcp_client.disconnect()
+    osl_server_process.terminate()
 
 
 def test_receive_msg(osl_server_process: OslServerProcess, tcp_client: tos.TcpClient):
@@ -210,12 +202,10 @@ def test_receive_file(
         testfile.write(_msg)
     tcp_client.connect(host=_host, port=osl_server_process.port_range[0])
     tcp_client.send_file(file_path)
-    with does_not_raise() as dnr:
-        tcp_client.receive_file(received_path)
+    tcp_client.receive_file(received_path)
     assert os.path.isfile(received_path)
     tcp_client.disconnect()
     osl_server_process.terminate()
-    assert dnr is None
 
 
 # endregion
@@ -262,10 +252,8 @@ def test_listener_properties(
 
 def test_add_clear_callback(osl_server_process: OslServerProcess, tcp_listener: tos.TcpOslListener):
     """Test add and clear callback."""
-    with does_not_raise() as dnr:
-        tcp_listener.add_callback(print, "print-this")
-        tcp_listener.clear_callbacks()
-    assert dnr is None
+    tcp_listener.add_callback(print, "print-this")
+    tcp_listener.clear_callbacks()
     tcp_listener.dispose()
     osl_server_process.terminate()
 
@@ -289,11 +277,9 @@ def test_start_stop_listening(
 
 # def test_close(osl_server_process: OslServerProcess):
 #     tcp_osl_server = create_tcp_osl_server(osl_server_process)
-#     with does_not_raise() as dnr:
-#         tcp_osl_server.close()
-#         tcp_osl_server.new()
-#         tcp_osl_server.dispose()
-#     assert dnr is None
+#     tcp_osl_server.close()
+#     tcp_osl_server.new()
+#     tcp_osl_server.dispose()
 
 
 def test_tcp_osl_properties(osl_server_process: OslServerProcess):
@@ -353,18 +339,16 @@ def test_create_remove_node(osl_server_process: OslServerProcess):
 def test_disconnect_slot(tmp_path: Path, tmp_example_project):
     "Test ``disconnect_slot`` command."
     osl_server_process = create_osl_server_process(
-        shutdown_on_finished=False, project_path=tmp_example_project("parametric_project")
+        shutdown_on_finished=False, project_path=tmp_example_project("calculator_with_params")
     )
     tcp_osl_server = create_tcp_osl_server(osl_server_process)
     UID = "3577cb69-15b9-4ad1-a53c-ac8af8aaea82"
     INPUT_SLOT_NAME = "OVar"
     OUTPUT_SLOT_NAME = "var"
-    with does_not_raise() as dnr:
-        # input slot
-        tcp_osl_server.disconnect_slot(UID, INPUT_SLOT_NAME, "sdInputs")
-        # output slot
-        tcp_osl_server.disconnect_slot(UID, OUTPUT_SLOT_NAME, "sdOutputs")
-    assert dnr is None
+    # input slot
+    tcp_osl_server.disconnect_slot(UID, INPUT_SLOT_NAME, "sdInputs")
+    # output slot
+    tcp_osl_server.disconnect_slot(UID, OUTPUT_SLOT_NAME, "sdOutputs")
     tcp_osl_server.shutdown()
     tcp_osl_server.dispose()
 
@@ -397,7 +381,6 @@ def test_get_actor_info(uid, expected, tmp_example_project):
         shutdown_on_finished=False, project_path=tmp_example_project("calculator_with_params")
     )
     tcp_osl_server = create_tcp_osl_server(osl_server_process)
-    tcp_osl_server.save_as(file_path=tmp_path / "test_connect_nodes.opf")
     variable_uid = "b8b8b48f-b806-4382-9777-f03ceb5dccc0"
     calculator_uid = "e63ce638-ec33-47cf-ba02-2d83771678fa"
 
@@ -410,101 +393,8 @@ def test_get_actor_info(uid, expected, tmp_example_project):
     tcp_osl_server.dispose()
 
 
-@pytest.mark.parametrize(
-    "uid, expected",
-    [
-        ("3577cb69-15b9-4ad1-a53c-ac8af8aaea82", dict),
-        ("3577cb69-15b9-4ad1-a53c-ac8af8aaea83", errors.OslCommandError),
-    ],
-)
-def test_get_actor_states(uid, expected):
-    """Test ``get_actor_states``."""
-    osl_server_process = create_osl_server_process(
-        shutdown_on_finished=False, project_path=tmp_example_project("calculator_with_params")
-    )
-    tcp_osl_server = create_tcp_osl_server(osl_server_process)
-    tcp_osl_server.save_as(file_path=tmp_path / "test_disconnect_slot.opf")
-    UID = "3577cb69-15b9-4ad1-a53c-ac8af8aaea82"
-    INPUT_SLOT_NAME = "OVar"
-    OUTPUT_SLOT_NAME = "var"
-    with does_not_raise() as dnr:
-        # input slot
-        tcp_osl_server.disconnect_slot(UID, INPUT_SLOT_NAME, "sdInputs")
-        # output slot
-        tcp_osl_server.disconnect_slot(UID, OUTPUT_SLOT_NAME, "sdOutputs")
-    assert dnr is None
-    tcp_osl_server.shutdown()
-    tcp_osl_server.dispose()
-
-
-@pytest.mark.parametrize(
-    "uid, expected",
-    [
-        ("3577cb69-15b9-4ad1-a53c-ac8af8aaea82", dict),
-        ("3577cb69-15b9-4ad1-a53c-ac8af8aaea83", errors.OslCommandError),
-    ],
-)
-def test_get_actor_status_info(uid, expected, tmp_example_project):
-    """Test ``get_actor_status_info``."""
-    osl_server_process = create_osl_server_process(
-        shutdown_on_finished=False, project_path=tmp_example_project("calculator_with_params")
-    )
-    tcp_osl_server = create_tcp_osl_server(osl_server_process)
-    tcp_osl_server.reset()
-    result = tcp_osl_server.evaluate_design({"a": 5, "b": 10})
-    tcp_osl_server.shutdown()
-    tcp_osl_server.dispose()
-
-
 def test_get_actor_queries(tmp_example_project):
     """Test `get_actor_` - `info`, `properties`,`states`, `status_info`, `supports` queries."""
-    osl_server_process = create_osl_server_process(
-        shutdown_on_finished=False, project_path=tmp_example_project()
-    )
-    tcp_osl_server = create_tcp_osl_server(osl_server_process)
-    UID = "3577cb69-15b9-4ad1-a53c-ac8af8aaea82"
-    INVALID_UID = "3577cb69-15b9-4ad1-a53c-ac8af8aaea83"
-    # info
-    info = tcp_osl_server.get_actor_info(UID)
-    assert isinstance(info, dict)
-    with pytest.raises(errors.OslCommandError):
-        info = tcp_osl_server.get_actor_info(INVALID_UID)
-    # properties
-    properties = tcp_osl_server.get_actor_properties(UID)
-    assert isinstance(properties, dict)
-    with pytest.raises(errors.OslCommandError):
-        properties = tcp_osl_server.get_actor_properties(INVALID_UID)
-    # states
-    states = tcp_osl_server.get_actor_states(UID)
-    assert isinstance(states, dict)
-    with pytest.raises(errors.OslCommandError):
-        states = tcp_osl_server.get_actor_states(INVALID_UID)
-    # status_info
-    status_info = tcp_osl_server.get_actor_status_info(UID, "0")
-    assert isinstance(status_info, dict)
-    with pytest.raises(errors.OslCommandError):
-        status_info = tcp_osl_server.get_actor_status_info(INVALID_UID, "0")
-    with pytest.raises(errors.OslCommandError):
-        status_info = tcp_osl_server.get_actor_status_info(UID, "1")
-    # supports
-    supports = tcp_osl_server.get_actor_supports(UID, "can_finalize")
-    assert isinstance(supports, bool)
-    with pytest.raises(errors.OslCommandError):
-        supports = tcp_osl_server.get_actor_supports(INVALID_UID, "can_finalize")
-    tcp_osl_server.shutdown()
-    tcp_osl_server.dispose()
-
-
-@pytest.mark.parametrize(
-    "uid, feature_name, expected",
-    [
-        ("3577cb69-15b9-4ad1-a53c-ac8af8aaea82", "can_finalize", bool),
-        ("3577cb69-15b9-4ad1-a53c-ac8af8aaea82", "invalid_input", errors.OslCommandError),
-        ("3577cb69-15b9-4ad1-a53c-ac8af8aaea83", "can_finalize", errors.OslCommandError),
-    ],
-)
-def test_get_actor_supports(uid, feature_name, expected):
-    """Test ``get_actor_status_info``."""
     osl_server_process = create_osl_server_process(
         shutdown_on_finished=False, project_path=tmp_example_project("calculator_with_params")
     )
@@ -594,16 +484,7 @@ def test_get_hpc_licensing_forwarded_environment(tmp_example_project):
     assert isinstance(hpc_licensing, dict)
 
 
-@pytest.mark.parametrize(
-    "uid, hid, slot_name, expected",
-    [
-        ("3577cb69-15b9-4ad1-a53c-ac8af8aaea82", "0", "OVar", dict),
-        ("3577cb69-15b9-4ad1-a53c-ac8af8aaea82", "invalid", "OVar", errors.OslCommandError),
-        ("3577cb69-15b9-4ad1-a53c-ac8af8aaea82", "0", "invalid", errors.OslCommandError),
-        ("3577cb69-15b9-4ad1-a53c-ac8af8aaea83", "0", "OVar", errors.OslCommandError),
-    ],
-)
-def test_get_input_slot_value(uid, hid, slot_name, expected, tmp_example_project):
+def test_get_input_slot_value(tmp_example_project):
     """Test ``get_input_slot_value``."""
     osl_server_process = create_osl_server_process(
         shutdown_on_finished=False, project_path=tmp_example_project("calculator_with_params")
@@ -625,16 +506,7 @@ def test_get_input_slot_value(uid, hid, slot_name, expected, tmp_example_project
     tcp_osl_server.dispose()
 
 
-@pytest.mark.parametrize(
-    "uid, hid, slot_name, expected",
-    [
-        ("3577cb69-15b9-4ad1-a53c-ac8af8aaea82", "0", "var", dict),
-        ("3577cb69-15b9-4ad1-a53c-ac8af8aaea82", "invalid", "var", errors.OslCommandError),
-        ("3577cb69-15b9-4ad1-a53c-ac8af8aaea82", "0", "invalid", errors.OslCommandError),
-        ("3577cb69-15b9-4ad1-a53c-ac8af8aaea83", "0", "var", errors.OslCommandError),
-    ],
-)
-def test_get_output_slot_value(uid, hid, slot_name, expected, tmp_example_project):
+def test_get_output_slot_value(tmp_example_project):
     """Test ``get_output_slot_value``."""
     osl_server_process = create_osl_server_process(
         shutdown_on_finished=False, project_path=tmp_example_project("calculator_with_params")
@@ -700,11 +572,9 @@ def test_open(osl_server_process: OslServerProcess, tmp_example_project, path_ty
 def test_reset(osl_server_process: OslServerProcess):
     """Test ``reset``."""
     tcp_osl_server = create_tcp_osl_server(osl_server_process)
-    with does_not_raise() as dnr:
-        tcp_osl_server.reset()
+    tcp_osl_server.reset()
     tcp_osl_server.shutdown()
     tcp_osl_server.dispose()
-    assert dnr is None
 
 
 @pytest.mark.parametrize("path_type", [str, Path])
@@ -817,17 +687,15 @@ def test_save_copy(
     tcp_osl_server.shutdown()
     tcp_osl_server.dispose()
     assert copy_path.is_file()
-    # TODO: Uncomment this after fixed on optiSLang side
-    # assert new_wdir == old_wdir
-    # assert new_loc == old_loc
+    assert new_wdir == old_wdir
+    assert new_loc == old_loc
 
 
-def test_set_actor_property(tmp_path: Path):
+def test_set_actor_property(tmp_path: Path, tmp_example_project):
     osl_server_process = create_osl_server_process(
-        shutdown_on_finished=False, project_path=parametric_project
+        shutdown_on_finished=False, project_path=tmp_example_project("calculator_with_params")
     )
     tcp_osl_server = create_tcp_osl_server(osl_server_process)
-    tcp_osl_server.save_as(file_path=tmp_path / "test_set_actor_property.opf")
 
     UID = "3577cb69-15b9-4ad1-a53c-ac8af8aaea82"
     # enum prop
@@ -862,48 +730,38 @@ def test_set_actor_property(tmp_path: Path):
 def test_start(osl_server_process: OslServerProcess):
     """Test ``start``."""
     tcp_osl_server = create_tcp_osl_server(osl_server_process)
-    with does_not_raise() as dnr:
-        tcp_osl_server.start()
+    tcp_osl_server.start()
     tcp_osl_server.shutdown()
     tcp_osl_server.dispose()
-    assert dnr is None
 
 
 def test_stop(osl_server_process: OslServerProcess):
     """Test ``stop``."""
     tcp_osl_server = create_tcp_osl_server(osl_server_process)
-    with does_not_raise() as dnr:
-        tcp_osl_server.stop()
+    tcp_osl_server.stop()
     tcp_osl_server.shutdown()
     tcp_osl_server.dispose()
-    assert dnr is None
 
 
 # def test_stop_gently(osl_server_process: OslServerProcess):
 #     """Test ``stop_gently``."""
 #     tcp_osl_server = create_tcp_osl_server(osl_server_process)
-#     with does_not_raise() as dnr:
-#         tcp_osl_server.stop_gently()
+#     tcp_osl_server.stop_gently()
 #     tcp_osl_server.shutdown()
-#     assert dnr is None
 
 
 def test_shutdown(osl_server_process: OslServerProcess):
     """Test ``shutdown``."""
     tcp_osl_server = create_tcp_osl_server(osl_server_process)
-    with does_not_raise() as dnr:
-        tcp_osl_server.shutdown()
-        tcp_osl_server.dispose()
-    assert dnr is None
+    tcp_osl_server.shutdown()
+    tcp_osl_server.dispose()
 
 
 def test_force_shutdown_local_process():
     """Test ``_force_shutdown_local_process``."""
-    with does_not_raise() as dnr:
-        tcp_osl_server = tos.TcpOslServer()
-        tcp_osl_server._force_shutdown_local_process()
-        tcp_osl_server.dispose()
-    assert dnr is None
+    tcp_osl_server = tos.TcpOslServer()
+    tcp_osl_server._force_shutdown_local_process()
+    tcp_osl_server.dispose()
 
 
 # endregion

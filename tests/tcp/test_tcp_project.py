@@ -1,10 +1,9 @@
-from contextlib import nullcontext as does_not_raise
 from pathlib import Path
 import time
 
 import pytest
 
-from ansys.optislang.core import Optislang, examples
+from ansys.optislang.core import Optislang
 from ansys.optislang.core.io import RegisteredFile
 from ansys.optislang.core.project_parametric import Design
 from ansys.optislang.core.tcp.base_nodes import TcpRootSystemProxy
@@ -16,7 +15,6 @@ from ansys.optislang.core.tcp.managers import (
 from ansys.optislang.core.tcp.project import TcpProjectProxy
 
 pytestmark = pytest.mark.local_osl
-calculator_w_parameters = examples.get_files("calculator_with_params")[1][0]
 
 
 @pytest.fixture()
@@ -33,7 +31,7 @@ def optislang(scope="function", autouse=True) -> Optislang:
     return osl
 
 
-def test_project_queries(optislang: Optislang):
+def test_project_queries(optislang: Optislang, tmp_example_project):
     """Test project queries."""
     project: TcpProjectProxy = optislang.project
 
@@ -58,7 +56,7 @@ def test_project_queries(optislang: Optislang):
     project_tree = project._get_project_tree()
     assert isinstance(project_tree, list)
 
-    optislang.application.open(file_path=calculator_w_parameters)
+    optislang.application.open(file_path=tmp_example_project("calculator_with_params"))
 
     reg_files = project.get_registered_files()
     assert len(reg_files) == 3
@@ -89,8 +87,7 @@ def test_project_properties(optislang: Optislang):
     response_manager = project.response_manager
     assert isinstance(response_manager, TcpResponseManagerProxy)
 
-    with does_not_raise() as dnr:
-        print(project)
+    print(project)
 
     optislang.dispose()
     time.sleep(3)
@@ -110,8 +107,7 @@ def test_evaluate_design(optislang: Optislang):
 def test_reset(optislang: Optislang):
     """Test `reset()` command."""
     project = optislang.project
-    with does_not_raise() as dnr:
-        project.reset()
+    project.reset()
     optislang.dispose()
     time.sleep(3)
 
@@ -142,8 +138,7 @@ def test_run_python_script(optislang: Optislang):
 def test_start(optislang: Optislang):
     """Test `start()` command."""
     project = optislang.project
-    with does_not_raise() as dnr:
-        project.start()
+    project.start()
     optislang.dispose()
     time.sleep(3)
 

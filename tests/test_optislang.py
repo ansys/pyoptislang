@@ -1,4 +1,3 @@
-from contextlib import nullcontext as does_not_raise
 import time
 
 import pytest
@@ -28,16 +27,13 @@ def optislang(scope="function", autouse=False) -> Optislang:
 
 def test_dispose(optislang: Optislang):
     "Test ``dispose``."
-    with does_not_raise() as dnr:
-        optislang.dispose()
-        time.sleep(3)
-    assert dnr is None
+    optislang.dispose()
+    time.sleep(3)
 
 
 def test_optislang_properties(optislang: Optislang):
     """Test ``Optislang`` properties."""
-    with does_not_raise() as dnr:
-        print(optislang)
+    print(optislang)
 
     application = optislang.application
     assert isinstance(application, Application)
@@ -66,4 +62,12 @@ def test_optislang_properties(optislang: Optislang):
         optislang.timeout = -20
 
     optislang.dispose()
+    time.sleep(3)
+
+
+def test_shutdown():
+    "Test ``shutdown``."
+    osl = Optislang(shutdown_on_finished=False)
+    osl.shutdown()
+    osl.dispose()
     time.sleep(3)
