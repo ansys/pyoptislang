@@ -325,8 +325,9 @@ def test_osl_version_properties(osl_server_process: OslServerProcess):
     assert len(osl_version) == 4
     assert isinstance(osl_version[0], int)
     assert isinstance(osl_version[1], int)
-    assert isinstance(osl_version[2], int) or osl_version[2] is None
-    assert isinstance(osl_version[3], int) or osl_version[3] is None
+    assert isinstance(osl_version[2], int)
+    assert isinstance(osl_version[3], int)
+
     osl_version_string = tcp_osl_server.osl_version_string
     assert isinstance(osl_version_string, str)
     tcp_osl_server.shutdown()

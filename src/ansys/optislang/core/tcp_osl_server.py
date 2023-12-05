@@ -3188,17 +3188,16 @@ class TcpOslServer(OslServer):
         """
         osl_version_str = self._get_osl_version_string()
 
-        pattern = r"(\d+)\.(\d+)(?:\.(\d+))? *(?:dev)? *\((M?\d+)\)"
-        osl_version_entries = re.search(pattern, osl_version_str)
+        pattern = r"(\d+)\.(\d+)\.(\d+).*\((\d+)M?\)"
+        osl_version_entries = re.fullmatch(pattern, osl_version_str)
 
         if osl_version_entries:
             major, minor, maintenance, revision = osl_version_entries.groups()
-            major, minor = int(major), int(minor)
-            maintenance = int(maintenance) if maintenance.isdigit() else None
-            revision = int(revision) if revision.isdigit() else None
-            return OslVersion(major, minor, maintenance, revision)
+            return OslVersion(int(major), int(minor), int(maintenance), int(revision))
         else:
-            raise RuntimeError("Invalid provided optiSLang version string.")
+            raise RuntimeError(
+                'Invalid provided optiSLang version string: "{}".'.format(osl_version_str)
+            )
 
     def _get_osl_version_string(self) -> str:
         """Get version of used optiSLang.

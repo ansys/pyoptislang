@@ -56,8 +56,8 @@ def test_osl_version(optislang: Optislang):
     major_version, minor_version, maintenance_version, revision = optislang.osl_version
     assert isinstance(major_version, int)
     assert isinstance(minor_version, int)
-    assert isinstance(maintenance_version, int) or maintenance_version == None
-    assert isinstance(revision, int) or revision == None
+    assert isinstance(maintenance_version, int)
+    assert isinstance(revision, int)
 
 
 def test_get_project(optislang: Optislang):
