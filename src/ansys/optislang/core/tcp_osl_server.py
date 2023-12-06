@@ -124,7 +124,7 @@ class FunctionsAttributeRegister:
             Attribute value registered for the given function or default value if not registered.
         """
         if isinstance(function, Callable):
-            function = self.__parse_callable_to_str(function=function)
+            function = function.__name__
         if self.is_registered(function=function):
             return self.__register.get(function)
         else:
@@ -144,7 +144,7 @@ class FunctionsAttributeRegister:
             Info whether attribute is registered.
         """
         if isinstance(function, Callable):
-            function = self.__parse_callable_to_str(function=function)
+            function = function.__name__
         return function in self.__register.keys()
 
     def register(self, function: Union[Callable, str], value: Any) -> None:
@@ -163,7 +163,7 @@ class FunctionsAttributeRegister:
             Raised when invalid value is passed.
         """
         if isinstance(function, Callable):
-            function = self.__parse_callable_to_str(function=function)
+            function = function.__name__
         self.__validate_value(value=value)
         self.__register[function] = value
 
@@ -176,7 +176,7 @@ class FunctionsAttributeRegister:
             Function to be removed from the register.
         """
         if isinstance(function, Callable):
-            function = self.__parse_callable_to_str(function=function)
+            function = function = function.__name__
         self.__register.pop(function, None)
 
     def unregister_all(self) -> None:
@@ -198,21 +198,6 @@ class FunctionsAttributeRegister:
         """
         if self.__validator is not None and not self.__validator(value):
             raise ValueError(f"Invalid value `{value}` was passed.")
-
-    def __parse_callable_to_str(self, function: Callable) -> str:
-        """Parse given function to string.
-
-        Parameters
-        ----------
-        function: Callable
-            Function to be parsed to string.
-
-        Returns
-        -------
-        str
-            Given function converted to string.
-        """
-        return function.__name__
 
 
 class TcpClient:
