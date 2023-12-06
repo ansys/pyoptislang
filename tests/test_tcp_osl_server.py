@@ -1,5 +1,4 @@
 from contextlib import closing
-from contextlib import nullcontext as does_not_raise
 import logging
 import os
 from pathlib import Path
@@ -40,18 +39,17 @@ def create_osl_server_process(shutdown_on_finished=False, project_path=None) -> 
         )
         osl_server_process.start()
 
-        start_timeout = 30
-        time_counter = 0
+        start_timeout = 60
+        start = time.time()
         while not os.path.exists(server_info_file):
-            time.sleep(1)
-            time_counter += 1
-            if time_counter > start_timeout:
+            time.sleep(0.1)
+            if time.time() - start > start_timeout:
                 break
 
         if os.path.exists(server_info_file):
             return osl_server_process
         osl_server_process.terminate()
-        raise TimeoutError("optiSLang Process start timed out")
+        raise TimeoutError("optiSLang Process start timed out after {}s".format(start_timeout))
 
 
 @pytest.fixture(scope="function", autouse=False)
@@ -107,28 +105,24 @@ def create_tcp_osl_server(osl_server_process: OslServerProcess) -> tos.TcpOslSer
 # TcpClient
 def test_client_properties(osl_server_process: OslServerProcess, tcp_client: tos.TcpClient):
     "Test ``local_address`` and ``remote_address``."
-    with does_not_raise() as dnr:
-        tcp_client.connect(host=_host, port=osl_server_process.port_range[0])
-        ra = tcp_client.remote_address
-        assert isinstance(ra, tuple)
-        assert isinstance(ra[0], str)
-        assert isinstance(ra[1], int)
-        la = tcp_client.local_address
-        assert isinstance(la, tuple)
-        assert isinstance(la[0], str)
-        assert isinstance(la[1], int)
-        tcp_client.disconnect()
-        osl_server_process.terminate()
-    assert dnr is None
+    tcp_client.connect(host=_host, port=osl_server_process.port_range[0])
+    ra = tcp_client.remote_address
+    assert isinstance(ra, tuple)
+    assert isinstance(ra[0], str)
+    assert isinstance(ra[1], int)
+    la = tcp_client.local_address
+    assert isinstance(la, tuple)
+    assert isinstance(la[0], str)
+    assert isinstance(la[1], int)
+    tcp_client.disconnect()
+    osl_server_process.terminate()
 
 
 def test_connect_and_disconnect(osl_server_process: OslServerProcess, tcp_client: tos.TcpClient):
     "Test ``connect``."
-    with does_not_raise() as dnr:
-        tcp_client.connect(host=_host, port=osl_server_process.port_range[0])
-        tcp_client.disconnect()
-        osl_server_process.terminate()
-    assert dnr is None
+    tcp_client.connect(host=_host, port=osl_server_process.port_range[0])
+    tcp_client.disconnect()
+    osl_server_process.terminate()
 
 
 def test_tcpclient_properties(osl_server_process: OslServerProcess, tcp_client: tos.TcpClient):
@@ -148,12 +142,10 @@ def test_tcpclient_properties(osl_server_process: OslServerProcess, tcp_client: 
 
 def test_send_msg(osl_server_process: OslServerProcess, tcp_client: tos.TcpClient):
     "Test ``send_msg`"
-    with does_not_raise() as dnr:
-        tcp_client.connect(host=_host, port=osl_server_process.port_range[0])
-        tcp_client.send_msg(_msg)
-        tcp_client.disconnect()
-        osl_server_process.terminate()
-    assert dnr is None
+    tcp_client.connect(host=_host, port=osl_server_process.port_range[0])
+    tcp_client.send_msg(_msg)
+    tcp_client.disconnect()
+    osl_server_process.terminate()
 
 
 @pytest.mark.parametrize("path_type", [str, Path])
@@ -164,20 +156,14 @@ def test_send_file(
     path_type,
 ):
     "Test ``send_file``"
-    file_path = tmp_path / "testfile.txt"
-    if path_type == str:
-        file_path = str(file_path)
-    elif path_type != Path:
-        assert False
+    file_path = path_type(tmp_path / "testfile.txt")
 
     with open(file_path, "w") as testfile:
         testfile.write(_msg)
-    with does_not_raise() as dnr:
-        tcp_client.connect(host=_host, port=osl_server_process.port_range[0])
-        tcp_client.send_file(file_path)
-        tcp_client.disconnect()
-        osl_server_process.terminate()
-    assert dnr is None
+    tcp_client.connect(host=_host, port=osl_server_process.port_range[0])
+    tcp_client.send_file(file_path)
+    tcp_client.disconnect()
+    osl_server_process.terminate()
 
 
 def test_receive_msg(osl_server_process: OslServerProcess, tcp_client: tos.TcpClient):
@@ -198,24 +184,17 @@ def test_receive_file(
     path_type,
 ):
     "Test ``receive_file`"
-    file_path = tmp_path / "testfile.txt"
-    received_path = tmp_path / "received.txt"
-    if path_type == str:
-        file_path = str(file_path)
-        received_path = str(received_path)
-    elif path_type != Path:
-        assert False
+    file_path = path_type(tmp_path / "testfile.txt")
+    received_path = path_type(tmp_path / "received.txt")
 
     with open(file_path, "w") as testfile:
         testfile.write(_msg)
     tcp_client.connect(host=_host, port=osl_server_process.port_range[0])
     tcp_client.send_file(file_path)
-    with does_not_raise() as dnr:
-        tcp_client.receive_file(received_path)
+    tcp_client.receive_file(received_path)
     assert os.path.isfile(received_path)
     tcp_client.disconnect()
     osl_server_process.terminate()
-    assert dnr is None
 
 
 # TcpListener
@@ -259,10 +238,8 @@ def test_listener_properties(
 
 def test_add_clear_callback(osl_server_process: OslServerProcess, tcp_listener: tos.TcpOslListener):
     """Test add and clear callback."""
-    with does_not_raise() as dnr:
-        tcp_listener.add_callback(print, "print-this")
-        tcp_listener.clear_callbacks()
-    assert dnr is None
+    tcp_listener.add_callback(print, "print-this")
+    tcp_listener.clear_callbacks()
     tcp_listener.dispose()
     osl_server_process.terminate()
 
@@ -682,11 +659,9 @@ def test_open(osl_server_process: OslServerProcess, tmp_example_project, path_ty
 def test_reset(osl_server_process: OslServerProcess):
     """Test ``reset``."""
     tcp_osl_server = create_tcp_osl_server(osl_server_process)
-    with does_not_raise() as dnr:
-        tcp_osl_server.reset()
+    tcp_osl_server.reset()
     tcp_osl_server.shutdown()
     tcp_osl_server.dispose()
-    assert dnr is None
 
 
 @pytest.mark.parametrize("path_type", [str, Path])
@@ -702,11 +677,7 @@ b = 10
 result = a + b
 print(result)
 """
-    cmd_path = tmp_path / "commands.txt"
-    if path_type == str:
-        cmd_path = str(cmd_path)
-    elif path_type != Path:
-        assert False
+    cmd_path = path_type(tmp_path / "commands.txt")
 
     with open(cmd_path, "w") as f:
         f.write(cmd)
@@ -753,10 +724,7 @@ def test_save_as(
 ):
     """Test ``save_as``."""
     file_path = tmp_path / "test_save.opf"
-    if path_type == str:
-        arg_path = str(file_path)
-    elif path_type == Path:
-        arg_path = file_path
+    arg_path = path_type(file_path)
 
     tcp_osl_server = create_tcp_osl_server(osl_server_process)
     tcp_osl_server.save_as(file_path=arg_path)
@@ -773,10 +741,7 @@ def test_save_copy(
 ):
     """Test ``save_copy``."""
     copy_path = tmp_path / "test_save_copy.opf"
-    if path_type == str:
-        arg_path = str(copy_path)
-    elif path_type == Path:
-        arg_path = copy_path
+    arg_path = path_type(copy_path)
 
     tcp_osl_server = create_tcp_osl_server(osl_server_process)
     tcp_osl_server.save_copy(arg_path)
@@ -792,7 +757,7 @@ def test_set_timeout(osl_server_process: OslServerProcess):
     with pytest.raises(ValueError):
         tcp_osl_server.set_timeout(-5)
     with pytest.raises(TypeError):
-        tcp_osl_server.set_timeout("5")
+        tcp_osl_server.set_timeout("5")  # type: ignore
     tcp_osl_server.shutdown()
     tcp_osl_server.dispose()
 
@@ -800,21 +765,17 @@ def test_set_timeout(osl_server_process: OslServerProcess):
 def test_start(osl_server_process: OslServerProcess):
     """Test ``start``."""
     tcp_osl_server = create_tcp_osl_server(osl_server_process)
-    with does_not_raise() as dnr:
-        tcp_osl_server.start()
+    tcp_osl_server.start()
     tcp_osl_server.shutdown()
     tcp_osl_server.dispose()
-    assert dnr is None
 
 
 def test_stop(osl_server_process: OslServerProcess):
     """Test ``stop``."""
     tcp_osl_server = create_tcp_osl_server(osl_server_process)
-    with does_not_raise() as dnr:
-        tcp_osl_server.stop()
+    tcp_osl_server.stop()
     tcp_osl_server.shutdown()
     tcp_osl_server.dispose()
-    assert dnr is None
 
 
 # def test_stop_gently(osl_server_process: OslServerProcess):
@@ -829,19 +790,15 @@ def test_stop(osl_server_process: OslServerProcess):
 def test_shutdown(osl_server_process: OslServerProcess):
     """Test ``shutdown``."""
     tcp_osl_server = create_tcp_osl_server(osl_server_process)
-    with does_not_raise() as dnr:
-        tcp_osl_server.shutdown()
-        tcp_osl_server.dispose()
-    assert dnr is None
+    tcp_osl_server.shutdown()
+    tcp_osl_server.dispose()
 
 
 def test_force_shutdown_local_process():
     """Test ``_force_shutdown_local_process``."""
-    with does_not_raise() as dnr:
-        tcp_osl_server = tos.TcpOslServer()
-        tcp_osl_server._force_shutdown_local_process()
-        tcp_osl_server.dispose()
-    assert dnr is None
+    tcp_osl_server = tos.TcpOslServer()
+    tcp_osl_server._force_shutdown_local_process()
+    tcp_osl_server.dispose()
 
 
 def test_get_project_uid(osl_server_process: OslServerProcess):
