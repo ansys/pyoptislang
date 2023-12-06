@@ -3,7 +3,7 @@ import time
 
 import pytest
 
-from ansys.optislang.core import Optislang, examples
+from ansys.optislang.core import Optislang
 from ansys.optislang.core.tcp.application import TcpApplicationProxy
 from ansys.optislang.core.tcp.project import TcpProjectProxy
 
@@ -61,12 +61,11 @@ def test_new(optislang: Optislang, tmp_path: Path):
 
 
 @pytest.mark.parametrize("path_type", [str, Path])
-def test_open(optislang: Optislang, path_type):
+def test_open(optislang: Optislang, path_type, tmp_example_project):
     "Test ``open``."
     application = optislang.application
-    project = examples.get_files("simple_calculator")[1][0]
-    if path_type == str:
-        project = str(project)
+    project = tmp_example_project("simple_calculator")
+    project = path_type(project)
 
     application.open(file_path=project)
     project_name = application.project.get_name()

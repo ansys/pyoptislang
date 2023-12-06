@@ -27,11 +27,9 @@ def optislang(scope="function", autouse=False) -> Optislang:
 
 # # def test_close(optislang: Optislang):
 #     "Test ``close`` (close opened and create new project)."
-#     with does_not_raise() as dnr:
-#         optislang.close()
-#         optislang.new()
-#         optislang.dispose()
-#     assert dnr is None
+#      optislang.close()
+#      optislang.new()
+#      optislang.dispose()
 
 
 def test_dispose():

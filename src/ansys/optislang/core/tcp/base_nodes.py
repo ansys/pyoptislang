@@ -2452,15 +2452,15 @@ class TcpSlotProxy(Slot):
                 osl_server=osl_server, node=node, name=name, type_=type_, type_hint=type_hint
             )
         elif type_ == SlotType.INNER_INPUT:
-            return InnerInputSlot(
+            return TcpInnerInputSlotProxy(
                 osl_server=osl_server, node=node, name=name, type_=type_, type_hint=type_hint
             )
         elif type_ == SlotType.OUTPUT:
-            return OutputSlot(
+            return TcpOutputSlotProxy(
                 osl_server=osl_server, node=node, name=name, type_=type_, type_hint=type_hint
             )
         elif type_ == SlotType.INNER_OUTPUT:
-            return InnerOutputSlot(
+            return TcpInnerOutputSlotProxy(
                 osl_server=osl_server, node=node, name=name, type_=type_, type_hint=type_hint
             )
         else:

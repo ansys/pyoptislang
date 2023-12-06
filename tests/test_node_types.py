@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from contextlib import nullcontext as does_not_raise
 from typing import TYPE_CHECKING, Any
 
 import pytest
@@ -89,9 +88,7 @@ def test_node_type():
     assert node_type == node_type_eq
     assert not node_type == node_type_neq1
     assert not node_type == node_type_neq2
-    with does_not_raise() as dnr:
-        print(node_type)
-    assert dnr is None
+    print(node_type)
 
 
 # endregion

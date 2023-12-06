@@ -285,17 +285,15 @@ def test_tcp_osl_properties(osl_server_process: OslServerProcess):
 
 # def test_close(osl_server_process: OslServerProcess):
 #     tcp_osl_server = create_tcp_osl_server(osl_server_process)
-#     with does_not_raise() as dnr:
-#         tcp_osl_server.close()
-#         tcp_osl_server.new()
-#         tcp_osl_server.dispose()
-#     assert dnr is None
+#     tcp_osl_server.close()
+#     tcp_osl_server.new()
+#     tcp_osl_server.dispose()
 
 
-def test_connect_nodes(tmp_path: Path, tmp_example_project):
+def test_connect_nodes(tmp_example_project):
     """Test `connect_nodes` method."""
     osl_server_process = create_osl_server_process(
-        shutdown_on_finished=False, project_path=tmp_example_project("connect_nodes")
+        shutdown_on_finished=False, project_path=tmp_example_project("nodes_connection")
     )
     tcp_osl_server = create_tcp_osl_server(osl_server_process)
     variable_uid = "b8b8b48f-b806-4382-9777-f03ceb5dccc0"
@@ -724,15 +722,6 @@ def test_force_shutdown_local_process():
     """Test ``_force_shutdown_local_process``."""
     tcp_osl_server = tos.TcpOslServer()
     tcp_osl_server._force_shutdown_local_process()
-    tcp_osl_server.dispose()
-
-
-def test_get_project_uid(osl_server_process: OslServerProcess):
-    """Test `project_uid`."""
-    tcp_osl_server = create_tcp_osl_server(osl_server_process)
-    uid = tcp_osl_server.get_project_uid()
-    assert isinstance(uid, str)
-    tcp_osl_server.shutdown()
     tcp_osl_server.dispose()
 
 

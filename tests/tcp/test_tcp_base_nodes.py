@@ -1,4 +1,3 @@
-from contextlib import nullcontext as does_not_raise
 from pathlib import Path
 
 import pytest
@@ -124,9 +123,7 @@ def test_node_queries(optislang: Optislang, tmp_example_project):
     status = node.get_status()
     assert isinstance(status, str)
 
-    with does_not_raise() as dnr:
-        print(node)
-    assert dnr is None
+    print(node)
 
     optislang.dispose()
 
@@ -214,17 +211,13 @@ def test_find_node_by_uid(optislang: Optislang, tmp_example_project):
         uid="8854b2c4-fd8a-4e07-839e-1f36553e2d40", search_depth=1
     )
     assert isinstance(level0_node, TcpNodeProxy)
-    with does_not_raise() as dnr:
-        print(level0_node)
-    assert dnr is None
+    print(level0_node)
 
     level0_system = root_system.find_node_by_uid(
         uid="a8375c1f-0e39-4901-aa29-56d88f693b54", search_depth=1
     )
     assert isinstance(level0_system, TcpSystemProxy)
-    with does_not_raise() as dnr:
-        print(level0_system)
-    assert dnr is None
+    print(level0_system)
 
     higher_level = root_system.find_node_by_uid(
         uid="051ba887-cd72-4fe1-a676-2d75a8a843e9", search_depth=1
