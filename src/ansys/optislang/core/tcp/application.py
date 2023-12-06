@@ -3,13 +3,13 @@ from __future__ import annotations
 
 import logging
 from pathlib import Path
-import re
-from typing import TYPE_CHECKING, Tuple, Union
+from typing import TYPE_CHECKING, Union
 
 from ansys.optislang.core.application import Application
 from ansys.optislang.core.tcp.project import TcpProjectProxy
 
 if TYPE_CHECKING:
+    from ansys.optislang.core.osl_server import OslVersion
     from ansys.optislang.core.tcp.osl_server import TcpOslServer
 
 
@@ -39,75 +39,28 @@ class TcpApplicationProxy(Application):
         """
         return self.__project
 
-    def get_version_string(self) -> str:
-        """Get version of used optiSLang.
+    @property
+    def version(self) -> OslVersion:
+        """Version of used optiSLang.
+
+        Returns
+        -------
+        OslVersion
+            optiSLang version as typing.NamedTuple containing
+            major, minor, maintenance and revision versions.
+        """
+        return self.__osl_server.osl_version
+
+    @property
+    def version_string(self) -> str:
+        """Version of used optiSLang.
 
         Returns
         -------
         str
             optiSLang version.
-
-        Raises
-        ------
-        OslCommunicationError
-            Raised when an error occurs while communicating with server.
-        OslCommandError
-            Raised when the command or query fails.
-        TimeoutError
-            Raised when the timeout float value expires.
         """
-        server_info = self.__osl_server.get_server_info()
-        return server_info["application"]["version"]
-
-    def get_version(self) -> Tuple[Union[int, None], ...]:
-        """Get version of used optiSLang.
-
-        Returns
-        -------
-        tuple
-            optiSLang version as tuple containing
-            major version, minor version, maintenance version and revision.
-
-        Raises
-        ------
-        OslCommunicationError
-            Raised when an error occurs while communicating with server.
-        OslCommandError
-            Raised when the command or query fails.
-        TimeoutError
-            Raised when the timeout float value expires.
-        """
-        osl_version_str = self.get_version_string()
-
-        osl_version_entries = re.findall(r"[\w']+", osl_version_str)
-
-        major_version = None
-        minor_version = None
-        maint_version = None
-        revision = None
-
-        if len(osl_version_entries) > 0:
-            try:
-                major_version = int(osl_version_entries[0])
-            except:
-                pass
-        if len(osl_version_entries) > 1:
-            try:
-                minor_version = int(osl_version_entries[1])
-            except:
-                pass
-        if len(osl_version_entries) > 2:
-            try:
-                maint_version = int(osl_version_entries[2])
-            except:
-                pass
-        if len(osl_version_entries) > 3:
-            try:
-                revision = int(osl_version_entries[3])
-            except:
-                pass
-
-        return major_version, minor_version, maint_version, revision
+        return self.__osl_server.osl_version_string
 
     def new(self) -> None:
         """Create and open a new project.

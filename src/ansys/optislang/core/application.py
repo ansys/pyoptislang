@@ -3,9 +3,10 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import TYPE_CHECKING, Tuple, Union
+from typing import TYPE_CHECKING, Union
 
 if TYPE_CHECKING:
+    from ansys.optislang.core.osl_server import OslVersion
     from ansys.optislang.core.project import Project
 
 
@@ -29,44 +30,28 @@ class Application(ABC):
         """
         pass
 
+    @property
     @abstractmethod
-    def get_version_string(self) -> str:  # pragma: no cover
-        """Get version of used optiSLang.
+    def version(self) -> OslVersion:  # pragma: no cover
+        """Version of used optiSLang.
+
+        Returns
+        -------
+        OslVersion
+            optiSLang version as typing.NamedTuple containing
+            major, minor, maintenance and revision versions.
+        """
+        pass
+
+    @property
+    @abstractmethod
+    def version_string(self) -> str:  # pragma: no cover
+        """Version of used optiSLang.
 
         Returns
         -------
         str
             optiSLang version.
-
-        Raises
-        ------
-        OslCommunicationError
-            Raised when an error occurs while communicating with server.
-        OslCommandError
-            Raised when the command or query fails.
-        TimeoutError
-            Raised when the timeout float value expires.
-        """
-        pass
-
-    @abstractmethod
-    def get_version(self) -> Tuple[Union[int, None], ...]:  # pragma: no cover
-        """Get the optiSLang version in use as a tuple.
-
-        Returns
-        -------
-        tuple
-            optiSLang version as tuple contains the
-            major version, minor version, maintenance version, and revision.
-
-        Raises
-        ------
-        OslCommunicationError
-            Raised when an error occurs while communicating with the server.
-        OslCommandError
-            Raised when a command or query fails.
-        TimeoutError
-            Raised when the timeout float value expires.
         """
         pass
 
