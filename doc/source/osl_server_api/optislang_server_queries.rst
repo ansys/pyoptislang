@@ -11,14 +11,25 @@ and can be used to generate queries to the optiSLang server:
    :toctree: _autosummary
 
    actor_info
+   actor_internal_variables
    actor_properties
+   actor_registered_input_slots
+   actor_registered_output_slots
+   actor_registered_parameters
+   actor_registered_responses
    actor_states
    actor_status_info
    actor_supports
+   available_input_locations
+   available_nodes
+   available_output_locations
    basic_project_info
+   doe_size
    full_project_status_info
    full_project_tree
    full_project_tree_with_properties
+   get_criteria
+   get_criterion
    hpc_licensing_forwarded_environment
    input_slot_value
    output_slot_value

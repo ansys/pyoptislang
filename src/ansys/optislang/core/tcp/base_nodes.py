@@ -1277,9 +1277,9 @@ class TcpSystemProxy(TcpNodeProxy, System):
         Raises
         ------
         TypeError
-            Raised when unsupported type of type_ is given.
+            Raised when unsupported type of ``type_`` is given.
         ValueError
-            Raised when unsupported value of type_ is given.
+            Raised when unsupported value of ``type_`` is given.
         """
         if not isinstance(type_, NodeType):
             raise TypeError(

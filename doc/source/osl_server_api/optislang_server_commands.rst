@@ -11,6 +11,7 @@ and can be used to generate commands to the optiSLang server:
    :toctree: _autosummary
 
    apply_wizard
+   add_criterion
    close
    connect_nodes
    create_input_slot
@@ -31,6 +32,8 @@ and can be used to generate commands to the optiSLang server:
    register_listener
    register_locations_as_parameter
    register_locations_as_response
+   remove_criteria
+   remove_criterion
    remove_node
    re_register_locations_as_parameter
    re_register_locations_as_response
@@ -45,6 +48,7 @@ and can be used to generate commands to the optiSLang server:
    set_actor_property
    set_actor_setting
    set_actor_state_property
+   set_criterion_property
    set_placeholder_value
    set_project_setting
    set_registered_file_value

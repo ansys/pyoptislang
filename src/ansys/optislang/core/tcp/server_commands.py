@@ -79,10 +79,8 @@ def add_criterion(
         Unique identifying actor of the object.
     criterion_type: str
         Type of the criterion. Supported values are:
-        [
-            'ignore', 'min', 'max', 'lessequal', 'equal',
-            'greaterequal', 'lesslimitstate', 'greaterlimitstate',
-        ]
+        ['ignore', 'min', 'max', 'lessequal', 'equal', 'greaterequal',
+        'lesslimitstate', 'greaterlimitstate']
     expression: str
         Expression to be evaluated.
     name: str

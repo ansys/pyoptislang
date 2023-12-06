@@ -543,9 +543,9 @@ class System(Node):
         Raises
         ------
         TypeError
-            Raised when unsupported type of type_ is given.
+            Raised when unsupported type of ``type_`` is given.
         ValueError
-            Raised when unsupported value of type_ is given.
+            Raised when unsupported value of ``type_`` is given.
         """
         pass
 
