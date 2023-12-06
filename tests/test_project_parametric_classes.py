@@ -930,6 +930,8 @@ def test_dependent_parameter():
     dependent_parameter_copy.operation = "10+Parameter_1"
     assert dependent_parameter_copy.operation == "10+Parameter_1"
 
+    print(dependent_parameter_from_dict)
+
 
 # endregion
 
@@ -1123,6 +1125,8 @@ def test_variable_criterion():
 
     variable_criterion_copy = copy.deepcopy(VARIABLE_CRITERION)
     assert VARIABLE_CRITERION == variable_criterion_copy
+
+    print(variable_criterion_from_dict)
 
 
 # endregion

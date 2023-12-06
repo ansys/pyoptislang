@@ -34,7 +34,7 @@ def optislang(scope="function", autouse=False) -> Optislang:
 #     assert dnr is None
 
 
-def test_dispose(optislang: Optislang):
+def test_dispose():
     "Test ``dispose``."
     osl = Optislang()
     osl.dispose()
