@@ -39,18 +39,17 @@ def create_osl_server_process(shutdown_on_finished=False, project_path=None) -> 
         )
         osl_server_process.start()
 
-        start_timeout = 30
-        time_counter = 0
+        start_timeout = 60
+        start = time.time()
         while not os.path.exists(server_info_file):
-            time.sleep(1)
-            time_counter += 1
-            if time_counter > start_timeout:
+            time.sleep(0.1)
+            if time.time() - start > start_timeout:
                 break
 
         if os.path.exists(server_info_file):
             return osl_server_process
         osl_server_process.terminate()
-        raise TimeoutError("optiSLang Process start timed out")
+        raise TimeoutError("optiSLang Process start timed out after {}s".format(start_timeout))
 
 
 @pytest.fixture(scope="function", autouse=False)
@@ -157,15 +156,10 @@ def test_send_file(
     path_type,
 ):
     "Test ``send_file``"
-    file_path = tmp_path / "testfile.txt"
-    if path_type == str:
-        file_path = str(file_path)
-    elif path_type != Path:
-        assert False
+    file_path = path_type(tmp_path / "testfile.txt")
 
     with open(file_path, "w") as testfile:
         testfile.write(_msg)
-
     tcp_client.connect(host=_host, port=osl_server_process.port_range[0])
     tcp_client.send_file(file_path)
     tcp_client.disconnect()
@@ -190,13 +184,8 @@ def test_receive_file(
     path_type,
 ):
     "Test ``receive_file`"
-    file_path = tmp_path / "testfile.txt"
-    received_path = tmp_path / "received.txt"
-    if path_type == str:
-        file_path = str(file_path)
-        received_path = str(received_path)
-    elif path_type != Path:
-        assert False
+    file_path = path_type(tmp_path / "testfile.txt")
+    received_path = path_type(tmp_path / "received.txt")
 
     with open(file_path, "w") as testfile:
         testfile.write(_msg)
@@ -563,12 +552,13 @@ def test_run_python_file(
     path_type,
 ):
     """Test ``run_python_file``."""
-    cmd = "a = 5\nb = 10\nresult = a + b\nprint(result)"
-    cmd_path = tmp_path / "commands.txt"
-    if path_type == str:
-        cmd_path = str(cmd_path)
-    elif path_type != Path:
-        assert False
+    cmd = """
+a = 5
+b = 10
+result = a + b
+print(result)
+"""
+    cmd_path = path_type(tmp_path / "commands.txt")
 
     with open(cmd_path, "w") as f:
         f.write(cmd)
@@ -612,10 +602,7 @@ def test_save_as(
 ):
     """Test ``save_as``."""
     file_path = tmp_path / "test_save.opf"
-    if path_type == str:
-        arg_path = str(file_path)
-    elif path_type == Path:
-        arg_path = file_path
+    arg_path = path_type(file_path)
 
     tcp_osl_server = create_tcp_osl_server(osl_server_process)
     old_wdir = Path(
@@ -646,10 +633,7 @@ def test_save_copy(
 ):
     """Test ``save_copy``."""
     copy_path = tmp_path / "test_save_copy.opf"
-    if path_type == str:
-        arg_path = str(copy_path)
-    elif path_type == Path:
-        arg_path = copy_path
+    arg_path = path_type(copy_path)
 
     tcp_osl_server = create_tcp_osl_server(osl_server_process)
     old_wdir = Path(
@@ -740,6 +724,15 @@ def test_force_shutdown_local_process():
     """Test ``_force_shutdown_local_process``."""
     tcp_osl_server = tos.TcpOslServer()
     tcp_osl_server._force_shutdown_local_process()
+    tcp_osl_server.dispose()
+
+
+def test_get_project_uid(osl_server_process: OslServerProcess):
+    """Test `project_uid`."""
+    tcp_osl_server = create_tcp_osl_server(osl_server_process)
+    uid = tcp_osl_server.get_project_uid()
+    assert isinstance(uid, str)
+    tcp_osl_server.shutdown()
     tcp_osl_server.dispose()
 
 
