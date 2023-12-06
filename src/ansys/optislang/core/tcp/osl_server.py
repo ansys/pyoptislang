@@ -2797,6 +2797,33 @@ class TcpOslServer(OslServer):
 
         return response
 
+    def set_actor_property(self, actor_uid: str, name: str, value: Any) -> None:
+        """Set an actor property.
+
+        Parameters
+        ----------
+        actor_uid : str
+            Actor uid.
+        name : str
+            Property name.
+        value : Any
+            Property value.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        self.send_command(
+            commands.set_actor_property(
+                actor_uid=actor_uid, name=name, value=value, password=self.__password
+            )
+        )
+
     def set_criterion_property(
         self,
         uid: str,
