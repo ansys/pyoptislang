@@ -1767,7 +1767,14 @@ class TcpParametricSystemProxy(TcpSystemProxy, ParametricSystem):
         if dir is not None and isinstance(dir, str):
             dir = Path(dir)
         elif dir is None:
-            dir = self._osl_server.get_working_dir()
+            dir_str = (
+                self._osl_server.get_basic_project_info()
+                .get("projects", [{}])[0]
+                .get("working_dir", None)
+            )
+            if dir_str is None:
+                raise RuntimeError("Projects working directory is not available.")
+            dir = Path(dir_str)
 
         if not isinstance(dir, Path):
             raise TypeError(f"Unsupported type of dir: `{type(dir)}`.")

@@ -4,7 +4,6 @@ import time
 import pytest
 
 from ansys.optislang.core import Optislang
-from ansys.optislang.core.tcp.application import TcpApplicationProxy
 from ansys.optislang.core.tcp.project import TcpProjectProxy
 
 pytestmark = pytest.mark.local_osl
@@ -24,28 +23,21 @@ def optislang(scope="function", autouse=True) -> Optislang:
     return osl
 
 
-def test_application_queries(optislang: Optislang):
-    """Test project queries."""
-    application: TcpApplicationProxy = optislang.application
-
-    major_version, minor_version, maintenance_version, revision = application.get_version()
-    assert isinstance(major_version, int)
-    assert isinstance(minor_version, int)
-    assert isinstance(maintenance_version, int) or maintenance_version == None
-    assert isinstance(revision, int) or revision == None
-
-    version_str = application.get_version_string()
-    assert isinstance(version_str, str)
-
-    optislang.dispose()
-    time.sleep(3)
-
-
 def test_application_properties(optislang: Optislang):
     """Test `root_system`, `uid` and `__str__` method."""
     application = optislang.application
     project = application.project
     assert isinstance(project, TcpProjectProxy)
+
+    major_version, minor_version, maintenance_version, revision = application.version
+    assert isinstance(major_version, int)
+    assert isinstance(minor_version, int)
+    assert isinstance(maintenance_version, int) or maintenance_version == None
+    assert isinstance(revision, int) or revision == None
+
+    version_str = application.version_string
+    assert isinstance(version_str, str)
+
     optislang.dispose()
     time.sleep(3)
 

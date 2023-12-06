@@ -36,7 +36,7 @@ def optislang(scope="function", autouse=False) -> Optislang:
 # region TEST NODE
 def test_node_initialization(optislang: Optislang, tmp_example_project):
     """Test `Node` initialization."""
-    optislang.application.open(file_path=tmp_example_project("calculator_w_parameters"))
+    optislang.application.open(file_path=tmp_example_project("calculator_with_params"))
     project = optislang.project
     root_system = project.root_system
     node = root_system.get_nodes()[0]
@@ -172,7 +172,7 @@ def test_get_ancestors(optislang: Optislang, tmp_example_project):
 
 def test_set_property(optislang: Optislang, tmp_example_project):
     """Test `set_property` method."""
-    optislang.application.open(file_path=tmp_example_project("calculator_w_parameters"))
+    optislang.application.open(file_path=tmp_example_project("calculator_with_params"))
     root_system = optislang.project.root_system
     node: TcpNodeProxy = root_system.find_nodes_by_name("Calculator")[0]
     # enum prop
