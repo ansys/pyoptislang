@@ -14,7 +14,10 @@ VersionMapping = Dict[int, Path]
 
 
 def enum_from_str(
-    string: str, enum_class: EnumMeta, replace: Optional[Tuple[str, str]] = None
+    string: str,
+    enum_class: EnumMeta,
+    replace: Optional[Tuple[str, str]] = None,
+    upper_case: bool = True,
 ) -> Enum:
     """Convert string to enumeration.
 
