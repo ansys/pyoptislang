@@ -24,13 +24,6 @@ def optislang(scope="function", autouse=False) -> Optislang:
     osl.dispose()
 
 
-# # def test_close(optislang: Optislang):
-#     "Test ``close`` (close opened and create new project)."
-#      optislang.close()
-#      optislang.new()
-#      optislang.dispose()
-
-
 def test_dispose():
     "Test ``dispose``."
     osl = Optislang()
