@@ -324,7 +324,6 @@ class TcpNodeProxy(Node):
         TimeoutError
             Raised when the timeout float value expires.
         """
-        # TODO: create unit test
         return self._get_slots(type_=SlotType.INPUT, name=name)
 
     def get_name(self) -> str:
@@ -369,7 +368,6 @@ class TcpNodeProxy(Node):
         TimeoutError
             Raised when the timeout float value expires.
         """
-        # TODO: create unit test
         return self._get_slots(type_=SlotType.OUTPUT, name=name)
 
     def get_parent(self) -> TcpNodeProxy:
@@ -1670,7 +1668,6 @@ class TcpParametricSystemProxy(TcpSystemProxy, ParametricSystem):
         TimeoutError
             Raised when the timeout float value expires.
         """
-        # TODO: create unit test
         return self._get_slots(type_=SlotType.INNER_INPUT, name=name)
 
     def get_inner_output_slots(
@@ -1697,7 +1694,6 @@ class TcpParametricSystemProxy(TcpSystemProxy, ParametricSystem):
         TimeoutError
             Raised when the timeout float value expires.
         """
-        # TODO: create unit test
         return self._get_slots(type_=SlotType.INNER_OUTPUT, name=name)
 
     def get_omdb_files(self) -> Tuple[File]:
@@ -2603,8 +2599,7 @@ class TcpInputSlotProxy(TcpSlotProxy, InputSlot):
         TimeoutError
             Raised when the timeout float value expires.
         """
-        # TODO: add version check, use command also if > 24.1
-        if not isinstance(from_slot, InnerOutputSlot):
+        if not isinstance(from_slot, InnerOutputSlot) or self._osl_server.osl_version.major >= 24:
             self._osl_server.connect_nodes(
                 from_actor_uid=from_slot.node.uid,
                 from_slot=from_slot.name,
@@ -2691,8 +2686,7 @@ class TcpOutputSlotProxy(TcpSlotProxy, OutputSlot):
         TimeoutError
             Raised when the timeout float value expires.
         """
-        # TODO: add version check, use command also if > 24.1
-        if not isinstance(to_slot, InnerInputSlot):
+        if not isinstance(to_slot, InnerInputSlot) or self._osl_server.osl_version.major >= 24:
             self._osl_server.connect_nodes(
                 from_actor_uid=self.node.uid,
                 from_slot=self.name,
@@ -2779,9 +2773,18 @@ class TcpInnerInputSlotProxy(TcpSlotProxy, InnerInputSlot):
         TimeoutError
             Raised when the timeout float value expires.
         """
-        # TODO: add version check, use command instead if > 24.1
-        python_script = self.__class__._create_connection_script(from_slot=from_slot, to_slot=self)
-        self._osl_server.run_python_script(script=python_script)
+        if self._osl_server.osl_version.major >= 24:
+            self._osl_server.connect_nodes(
+                from_actor_uid=from_slot.node.uid,
+                from_slot=from_slot,
+                to_actor_uid=self.node.uid,
+                to_slot=self.name,
+            )
+        else:
+            python_script = self.__class__._create_connection_script(
+                from_slot=from_slot, to_slot=self
+            )
+            self._osl_server.run_python_script(script=python_script)
         return Edge(from_slot=from_slot, to_slot=self)
 
 
@@ -2841,7 +2844,16 @@ class TcpInnerOutputSlotProxy(TcpSlotProxy, InnerOutputSlot):
         TimeoutError
             Raised when the timeout float value expires.
         """
-        # TODO: add version check, use command instead if > 24.1
-        python_script = self.__class__._create_connection_script(from_slot=self, to_slot=to_slot)
-        self._osl_server.run_python_script(script=python_script)
+        if self._osl_server.osl_version.major >= 24:
+            self._osl_server.connect_nodes(
+                from_actor_uid=self.node.uid,
+                from_slot=self,
+                to_actor_uid=to_slot.node.uid,
+                to_slot=to_slot.name,
+            )
+        else:
+            python_script = self.__class__._create_connection_script(
+                from_slot=self, to_slot=to_slot
+            )
+            self._osl_server.run_python_script(script=python_script)
         return Edge(from_slot=self, to_slot=to_slot)
