@@ -69,6 +69,137 @@ def _get_current_timeout(initial_timeout: Union[float, None], start_time: float)
         return initial_timeout
 
 
+class FunctionsAttributeRegister:
+    """Class which stores attributes specific to individual functions."""
+
+    def __init__(
+        self, default_value: Any, validator: Optional[Callable[[Any], bool]] = None
+    ) -> None:
+        """Create a ``FunctionsAttributeRegister`` instance.
+
+        Parameters
+        ----------
+        default_value : Any
+            Default value of function's attribute.
+        validator : Optional[Callable[[Any], bool]]
+            Function to validate registered values and default value.
+        """
+        self.__default_value = default_value
+        self.__register: Dict[str, Any] = {}
+        self.__validator = validator
+
+    @property
+    def default_value(self) -> Any:
+        """Default value of the attribute."""
+        return self.__default_value
+
+    @default_value.setter
+    def default_value(self, value: Any) -> None:
+        """Set default value of attribute.
+
+        Parameters
+        ----------
+        default_value : Any
+            Default value of attribute.
+
+        Raises
+        ------
+        ValueError
+            Raised when invalid value is passed.
+        """
+        self.__validate_value(value=value)
+        self.__default_value = value
+
+    def get_value(self, function: Union[Callable, str]) -> Any:
+        """Get value of given function's attribute.
+
+        Parameters
+        ----------
+        function : Union[Callable, str]
+            Function for which the attribute value is requested.
+
+        Returns
+        -------
+        Any
+            Attribute value registered for the given function or default value if not registered.
+        """
+        if isinstance(function, Callable):
+            function = function.__name__
+        if self.is_registered(function=function):
+            return self.__register.get(function)
+        else:
+            return self.default_value
+
+    def is_registered(self, function: Union[Callable, str]) -> bool:
+        """Get info whether attribute is registered for given function.
+
+        Parameters
+        ----------
+        function : Union[Callable, str]
+            Function for which the info about attribute registration is requested.
+
+        Returns
+        -------
+        bool
+            Info whether attribute is registered.
+        """
+        if isinstance(function, Callable):
+            function = function.__name__
+        return function in self.__register.keys()
+
+    def register(self, function: Union[Callable, str], value: Any) -> None:
+        """Register given value for given function.
+
+        Parameters
+        ----------
+        function : Union[Callable, str]
+            Function for which the attribute value is to be registered.
+        value : Any
+            Attribute value to be registered for the given function.
+
+        Raises
+        ------
+        ValueError
+            Raised when invalid value is passed.
+        """
+        if isinstance(function, Callable):
+            function = function.__name__
+        self.__validate_value(value=value)
+        self.__register[function] = value
+
+    def unregister(self, function: Union[Callable, str]) -> None:
+        """Remove given function from the register.
+
+        Parameters
+        ----------
+        function : Union[Callable, str]
+            Function to be removed from the register.
+        """
+        if isinstance(function, Callable):
+            function = function = function.__name__
+        self.__register.pop(function, None)
+
+    def unregister_all(self) -> None:
+        """Remove all functions from the register."""
+        self.__register.clear()
+
+    def __validate_value(self, value: Any) -> None:
+        """Validate given value.
+
+        Parameters
+        ----------
+        value: Any
+            Value to be validated using instance's validator.
+
+        Raises
+        ------
+        ValueError
+            Raised when invalid value is passed.
+        """
+        if self.__validator is not None and not self.__validator(value):
+            raise ValueError(f"Invalid value `{value}` was passed.")
+
+
 class TcpClient:
     r"""Client of the plain TCP/IP communication.
 
@@ -974,6 +1105,7 @@ class TcpOslServer(OslServer):
         "GENTLE_STOP_REQUESTED": 10,
     }
     _DEFAULT_PROJECT_FILE = "project.opf"
+    _DEFAULT_LISTENERS_REFRESH_INTERVAL = 20
 
     def __init__(
         self,
@@ -1008,7 +1140,10 @@ class TcpOslServer(OslServer):
         """Initialize a new instance of the ``TcpOslServer`` class."""
         self.__host = host
         self.__port = port
-        self.__timeout = None
+        self.__max_request_attempts_register = (
+            self.__class__.__get_default_max_request_attempts_register()
+        )
+        self.__timeouts_register = self.__class__.__get_default_timeouts_register()
 
         if logger is None:
             self._logger = logging.getLogger(__name__)
@@ -1030,7 +1165,7 @@ class TcpOslServer(OslServer):
         self.__listeners = {}
         self.__listeners_registration_thread = None
         self.__refresh_listeners = threading.Event()
-        self.__listeners_refresh_interval = 20
+        self.__listeners_refresh_interval = self.__class__._DEFAULT_LISTENERS_REFRESH_INTERVAL
         self.__disposed = False
         self.__env_vars = env_vars
         self.__listener_id = listener_id
@@ -1054,7 +1189,7 @@ class TcpOslServer(OslServer):
         else:
             self.__shutdown_on_finished = None
             listener = self.__create_listener(
-                timeout=self.__timeout,
+                timeout=None,
                 name="Main",
                 uid=self.__listener_id,
             )
@@ -1081,6 +1216,14 @@ class TcpOslServer(OslServer):
                 )
 
     @property
+    def max_request_attempts_register(self) -> FunctionsAttributeRegister:
+        """Register with maximum number of attempts to be executed for individual functions.
+
+        If max_request_attempts for specific function is not specified, default value is used.
+        """
+        return self.__max_request_attempts_register
+
+    @property
     def osl_version(self) -> OslVersion:
         """Version of used optiSLang.
 
@@ -1102,6 +1245,40 @@ class TcpOslServer(OslServer):
             optiSLang version.
         """
         return self.__osl_version_string
+
+    @property
+    def timeout(self) -> Optional[float]:
+        """Get default timeout value for execution of commands.
+
+        Returns
+        -------
+        timeout: Optional[float]
+            Timeout in seconds to perform commands.
+        """
+        return self.timeouts_register.default_value
+
+    @timeout.setter
+    def timeout(self, timeout: Union[float, None] = 30) -> None:
+        """Set default timeout value for execution of commands.
+
+        Parameters
+        ----------
+        timeout: Union[float, None]
+            Timeout in seconds to perform commands, it must be greater than zero or ``None``.
+            Another functions will raise a timeout exception if the timeout period value has
+            elapsed before the operation has completed.
+            If ``None`` is given, functions will wait until they're finished (no timeout
+            exception is raised). Defaults to ``30``.
+        """
+        self.timeouts_register.default_value = timeout
+
+    @property
+    def timeouts_register(self) -> FunctionsAttributeRegister:
+        """Register with timeout for a single attempt of execution for individual functions.
+
+        If timeout for specific function is not specified, default value is used.
+        """
+        return self.__timeouts_register
 
     def add_criterion(
         self, uid: str, criterion_type: str, expression: str, name: str, limit: Optional[str] = None
@@ -1131,15 +1308,18 @@ class TcpOslServer(OslServer):
             Raised when the timeout float value expires.
         """
         # TODO: create unit test
+        current_func_name = self.add_criterion.__name__
         self.send_command(
-            commands.add_criterion(
+            command=commands.add_criterion(
                 actor_uid=uid,
                 criterion_type=criterion_type,
                 expression=expression,
                 name=name,
                 limit=limit,
                 password=self.__password,
-            )
+            ),
+            timeout=self.timeouts_register.get_value(current_func_name),
+            max_request_attempts=self.max_request_attempts_register.get_value(current_func_name),
         )
 
     def dispose(self) -> None:
@@ -1184,8 +1364,11 @@ class TcpOslServer(OslServer):
         TimeoutError
             Raised when the timeout float value expires.
         """
+        current_func_name = self.evaluate_design.__name__
         return self.send_command(
-            commands.evaluate_design(evaluate_dict, self.__password),
+            command=commands.evaluate_design(evaluate_dict, self.__password),
+            timeout=self.timeouts_register.get_value(current_func_name),
+            max_request_attempts=self.max_request_attempts_register.get_value(current_func_name),
         )
 
     def get_actor_info(self, uid: str) -> Dict:
@@ -1210,7 +1393,12 @@ class TcpOslServer(OslServer):
         TimeoutError
             Raised when the timeout float value expires.
         """
-        return self.send_command(queries.actor_info(uid=uid, password=self.__password))
+        current_func_name = self.get_actor_info.__name__
+        return self.send_command(
+            command=queries.actor_info(uid=uid, password=self.__password),
+            timeout=self.timeouts_register.get_value(current_func_name),
+            max_request_attempts=self.max_request_attempts_register.get_value(current_func_name),
+        )
 
     def get_actor_internal_variables(
         self, uid: str, include_reference_values: bool = True
@@ -1239,10 +1427,13 @@ class TcpOslServer(OslServer):
             Raised when the timeout float value expires.
         """
         # TODO: create unit test
+        current_func_name = self.get_actor_internal_variables.__name__
         return self.send_command(
-            queries.actor_internal_variables(
+            command=queries.actor_internal_variables(
                 uid=uid, include_reference_values=include_reference_values, password=self.__password
-            )
+            ),
+            timeout=self.timeouts_register.get_value(current_func_name),
+            max_request_attempts=self.max_request_attempts_register.get_value(current_func_name),
         )["internal_variables"]
 
     def get_actor_properties(self, uid: str) -> Dict:
@@ -1267,7 +1458,12 @@ class TcpOslServer(OslServer):
         TimeoutError
             Raised when the timeout float value expires.
         """
-        return self.send_command(queries.actor_properties(uid=uid, password=self.__password))
+        current_func_name = self.get_actor_properties.__name__
+        return self.send_command(
+            command=queries.actor_properties(uid=uid, password=self.__password),
+            timeout=self.timeouts_register.get_value(current_func_name),
+            max_request_attempts=self.max_request_attempts_register.get_value(current_func_name),
+        )
 
     def get_actor_registered_input_slots(
         self, uid: str, include_reference_values: bool = True
@@ -1296,10 +1492,13 @@ class TcpOslServer(OslServer):
             Raised when the timeout float value expires.
         """
         # TODO: create unit test
+        current_func_name = self.get_actor_registered_input_slots.__name__
         return self.send_command(
-            queries.actor_registered_input_slots(
+            command=queries.actor_registered_input_slots(
                 uid=uid, include_reference_values=include_reference_values, password=self.__password
-            )
+            ),
+            timeout=self.timeouts_register.get_value(current_func_name),
+            max_request_attempts=self.max_request_attempts_register.get_value(current_func_name),
         )["registered_input_slots"]
 
     def get_actor_registered_output_slots(
@@ -1329,10 +1528,13 @@ class TcpOslServer(OslServer):
             Raised when the timeout float value expires.
         """
         # TODO: create unit test
+        current_func_name = self.get_actor_registered_output_slots.__name__
         return self.send_command(
-            queries.actor_registered_output_slots(
+            command=queries.actor_registered_output_slots(
                 uid=uid, include_reference_values=include_reference_values, password=self.__password
-            )
+            ),
+            timeout=self.timeouts_register.get_value(current_func_name),
+            max_request_attempts=self.max_request_attempts_register.get_value(current_func_name),
         )["registered_output_slots"]
 
     def get_actor_registered_parameters(
@@ -1362,10 +1564,13 @@ class TcpOslServer(OslServer):
             Raised when the timeout float value expires.
         """
         # TODO: create unit test
+        current_func_name = self.get_actor_registered_parameters.__name__
         return self.send_command(
-            queries.actor_registered_parameters(
+            command=queries.actor_registered_parameters(
                 uid=uid, include_reference_values=include_reference_values, password=self.__password
-            )
+            ),
+            timeout=self.timeouts_register.get_value(current_func_name),
+            max_request_attempts=self.max_request_attempts_register.get_value(current_func_name),
         )["registered_parameters"]
 
     def get_actor_registered_responses(
@@ -1395,10 +1600,13 @@ class TcpOslServer(OslServer):
             Raised when the timeout float value expires.
         """
         # TODO: create unit test
+        current_func_name = self.get_actor_registered_responses.__name__
         return self.send_command(
-            queries.actor_registered_responses(
+            command=queries.actor_registered_responses(
                 uid=uid, include_reference_values=include_reference_values, password=self.__password
-            )
+            ),
+            timeout=self.timeouts_register.get_value(current_func_name),
+            max_request_attempts=self.max_request_attempts_register.get_value(current_func_name),
         )["registered_responses"]
 
     def get_actor_states(
@@ -1430,12 +1638,15 @@ class TcpOslServer(OslServer):
         TimeoutError
             Raised when the timeout float value expires.
         """
+        current_func_name = self.get_actor_states.__name__
         return self.send_command(
-            queries.actor_states(
+            command=queries.actor_states(
                 uid=uid,
                 include_state_info=include_state_info,
                 password=self.__password,
-            )
+            ),
+            timeout=self.timeouts_register.get_value(current_func_name),
+            max_request_attempts=self.max_request_attempts_register.get_value(current_func_name),
         )
 
     def get_actor_status_info(
@@ -1473,15 +1684,18 @@ class TcpOslServer(OslServer):
         TimeoutError
             Raised when the timeout float value expires.
         """
+        current_func_name = self.get_actor_status_info.__name__
         return self.send_command(
-            queries.actor_status_info(
+            command=queries.actor_status_info(
                 uid=uid,
                 hid=hid,
                 include_designs=include_designs,
                 include_non_scalar_design_values=include_non_scalar_design_values,
                 include_algorithm_info=include_algorithm_info,
                 password=self.__password,
-            )
+            ),
+            timeout=self.timeouts_register.get_value(current_func_name),
+            max_request_attempts=self.max_request_attempts_register.get_value(current_func_name),
         )
 
     def get_actor_supports(self, uid: str, feature_name: str) -> bool:
@@ -1508,8 +1722,13 @@ class TcpOslServer(OslServer):
         TimeoutError
             Raised when the timeout float value expires.
         """
+        current_func_name = self.get_actor_supports.__name__
         return self.send_command(
-            queries.actor_supports(uid=uid, feature_name=feature_name, password=self.__password)
+            command=queries.actor_supports(
+                uid=uid, feature_name=feature_name, password=self.__password
+            ),
+            timeout=self.timeouts_register.get_value(current_func_name),
+            max_request_attempts=self.max_request_attempts_register.get_value(current_func_name),
         )[feature_name.lower()]
 
     def get_available_input_locations(self, uid: str) -> List[dict]:
@@ -1535,8 +1754,11 @@ class TcpOslServer(OslServer):
             Raised when the timeout float value expires.
         """
         # TODO: create unit test
+        current_func_name = self.get_available_input_locations.__name__
         return self.send_command(
-            queries.available_input_locations(uid=uid, password=self.__password)
+            command=queries.available_input_locations(uid=uid, password=self.__password),
+            timeout=self.timeouts_register.get_value(current_func_name),
+            max_request_attempts=self.max_request_attempts_register.get_value(current_func_name),
         )["available_input_locations"]
 
     def get_available_nodes(self) -> Dict[str, List[str]]:
@@ -1557,7 +1779,12 @@ class TcpOslServer(OslServer):
             Raised when the timeout float value expires.
         """
         # TODO: create unit test
-        available_nodes = self.send_command(queries.available_nodes(self.__password))
+        current_func_name = self.get_available_nodes.__name__
+        available_nodes = self.send_command(
+            command=queries.available_nodes(self.__password),
+            timeout=self.timeouts_register.get_value(current_func_name),
+            max_request_attempts=self.max_request_attempts_register.get_value(current_func_name),
+        )
         available_nodes.pop("message")
         available_nodes.pop("status")
         return available_nodes
@@ -1585,8 +1812,11 @@ class TcpOslServer(OslServer):
             Raised when the timeout float value expires.
         """
         # TODO: create unit test
+        current_func_name = self.get_available_output_locations.__name__
         return self.send_command(
-            queries.available_output_locations(uid=uid, password=self.__password)
+            command=queries.available_output_locations(uid=uid, password=self.__password),
+            timeout=self.timeouts_register.get_value(current_func_name),
+            max_request_attempts=self.max_request_attempts_register.get_value(current_func_name),
         )["available_output_locations"]
 
     def get_basic_project_info(self) -> Dict:
@@ -1606,7 +1836,12 @@ class TcpOslServer(OslServer):
         TimeoutError
             Raised when the timeout float value expires.
         """
-        return self.send_command(queries.basic_project_info(self.__password))
+        current_func_name = self.get_basic_project_info.__name__
+        return self.send_command(
+            command=queries.basic_project_info(self.__password),
+            timeout=self.timeouts_register.get_value(current_func_name),
+            max_request_attempts=self.max_request_attempts_register.get_value(current_func_name),
+        )
 
     def get_criteria(self, uid: str) -> List[dict]:
         """Get information about all existing criterion from the system.
@@ -1631,9 +1866,12 @@ class TcpOslServer(OslServer):
             Raised when the timeout float value expires.
         """
         # TODO: create unit test
-        return self.send_command(queries.get_criteria(uid=uid, password=self.__password))[
-            "criteria"
-        ]
+        current_func_name = self.get_criteria.__name__
+        return self.send_command(
+            command=queries.get_criteria(uid=uid, password=self.__password),
+            timeout=self.timeouts_register.get_value(current_func_name),
+            max_request_attempts=self.max_request_attempts_register.get_value(current_func_name),
+        )["criteria"]
 
     def get_criterion(self, uid: str, name: str) -> Dict:
         """Get existing criterion from the system.
@@ -1660,8 +1898,11 @@ class TcpOslServer(OslServer):
             Raised when the timeout float value expires.
         """
         # TODO: create unit test
+        current_func_name = self.get_criterion.__name__
         return self.send_command(
-            queries.get_criterion(uid=uid, name=name, password=self.__password)
+            command=queries.get_criterion(uid=uid, name=name, password=self.__password),
+            timeout=self.timeouts_register.get_value(current_func_name),
+            max_request_attempts=self.max_request_attempts_register.get_value(current_func_name),
         )["criteria"]
 
     def get_doe_size(self, uid: str, sampling_type: str, num_discrete_levels: int) -> int:
@@ -1691,13 +1932,16 @@ class TcpOslServer(OslServer):
             Raised when the timeout float value expires.
         """
         # TODO: create unit test
+        current_func_name = self.add_criterion.__name__
         return self.send_command(
-            queries.doe_size(
+            command=queries.doe_size(
                 uid=uid,
                 sampling_type=sampling_type,
                 num_discrete_levels=num_discrete_levels,
                 password=self.__password,
-            )
+            ),
+            timeout=self.timeouts_register.get_value(current_func_name),
+            max_request_attempts=self.max_request_attempts_register.get_value(current_func_name),
         )["number_of_samples"]
 
     def get_full_project_status_info(
@@ -1727,12 +1971,15 @@ class TcpOslServer(OslServer):
         TimeoutError
             Raised when the timeout float value expires.
         """
+        current_func_name = self.get_full_project_status_info.__name__
         return self.send_command(
-            queries.full_project_status_info(
+            command=queries.full_project_status_info(
                 include_non_scalar_design_values=include_non_scalar_design_values,
                 include_algorithm_info=include_algorithm_info,
                 password=self.__password,
-            )
+            ),
+            timeout=self.timeouts_register.get_value(current_func_name),
+            max_request_attempts=self.max_request_attempts_register.get_value(current_func_name),
         )
 
     def get_full_project_tree(self) -> Dict:
@@ -1752,7 +1999,12 @@ class TcpOslServer(OslServer):
         TimeoutError
             Raised when the timeout float value expires.
         """
-        return self.send_command(queries.full_project_tree(password=self.__password))
+        current_func_name = self.get_full_project_tree.__name__
+        return self.send_command(
+            command=queries.full_project_tree(password=self.__password),
+            timeout=self.timeouts_register.get_value(current_func_name),
+            max_request_attempts=self.max_request_attempts_register.get_value(current_func_name),
+        )
 
     def get_full_project_tree_with_properties(self) -> Dict:
         """Get full project tree with properties.
@@ -1771,8 +2023,11 @@ class TcpOslServer(OslServer):
         TimeoutError
             Raised when the timeout float value expires.
         """
+        current_func_name = self.get_full_project_tree_with_properties.__name__
         return self.send_command(
-            queries.full_project_tree_with_properties(password=self.__password)
+            command=queries.full_project_tree_with_properties(password=self.__password),
+            timeout=self.timeouts_register.get_value(current_func_name),
+            max_request_attempts=self.max_request_attempts_register.get_value(current_func_name),
         )
 
     def get_hpc_licensing_forwarded_environment(self, uid: str) -> Dict:
@@ -1797,8 +2052,11 @@ class TcpOslServer(OslServer):
         TimeoutError
             Raised when the timeout float value expires.
         """
+        current_func_name = self.get_hpc_licensing_forwarded_environment.__name__
         return self.send_command(
-            queries.hpc_licensing_forwarded_environment(uid=uid, password=self.__password)
+            command=queries.hpc_licensing_forwarded_environment(uid=uid, password=self.__password),
+            timeout=self.timeouts_register.get_value(current_func_name),
+            max_request_attempts=self.max_request_attempts_register.get_value(current_func_name),
         )
 
     def get_input_slot_value(self, uid: str, hid: str, slot_name: str) -> Dict:
@@ -1827,10 +2085,13 @@ class TcpOslServer(OslServer):
         TimeoutError
             Raised when the timeout float value expires.
         """
+        current_func_name = self.get_input_slot_value.__name__
         return self.send_command(
-            queries.input_slot_value(
+            command=queries.input_slot_value(
                 uid=uid, hid=hid, slot_name=slot_name, password=self.__password
-            )
+            ),
+            timeout=self.timeouts_register.get_value(current_func_name),
+            max_request_attempts=self.max_request_attempts_register.get_value(current_func_name),
         )
 
     def get_output_slot_value(self, uid: str, hid: str, slot_name: str) -> Dict:
@@ -1859,10 +2120,13 @@ class TcpOslServer(OslServer):
         TimeoutError
             Raised when the timeout float value expires.
         """
+        current_func_name = self.get_output_slot_value.__name__
         return self.send_command(
-            queries.output_slot_value(
+            command=queries.output_slot_value(
                 uid=uid, hid=hid, slot_name=slot_name, password=self.__password
-            )
+            ),
+            timeout=self.timeouts_register.get_value(current_func_name),
+            max_request_attempts=self.max_request_attempts_register.get_value(current_func_name),
         )
 
     @deprecated(version="0.5.0", reason="Use :py:attr:`TcpOslServer.osl_version` instead.")
@@ -2039,7 +2303,12 @@ class TcpOslServer(OslServer):
         TimeoutError
             Raised when the timeout float value expires.
         """
-        return self.send_command(queries.project_tree_systems(password=self.__password))
+        current_func_name = self.get_project_tree_systems.__name__
+        return self.send_command(
+            command=queries.project_tree_systems(password=self.__password),
+            timeout=self.timeouts_register.get_value(current_func_name),
+            max_request_attempts=self.max_request_attempts_register.get_value(current_func_name),
+        )
 
     def get_project_tree_systems_with_properties(self) -> Dict:
         """Get project tree systems with properties.
@@ -2058,8 +2327,11 @@ class TcpOslServer(OslServer):
         TimeoutError
             Raised when the timeout float value expires.
         """
+        current_func_name = self.get_project_tree_systems_with_properties.__name__
         return self.send_command(
-            queries.project_tree_systems_with_properties(password=self.__password)
+            command=queries.project_tree_systems_with_properties(password=self.__password),
+            timeout=self.timeouts_register.get_value(current_func_name),
+            max_request_attempts=self.max_request_attempts_register.get_value(current_func_name),
         )
 
     def get_server_info(self) -> Dict:
@@ -2079,7 +2351,12 @@ class TcpOslServer(OslServer):
         TimeoutError
             Raised when the timeout float value expires.
         """
-        return self.send_command(queries.server_info(self.__password))
+        current_func_name = self.get_server_info.__name__
+        return self.send_command(
+            command=queries.server_info(self.__password),
+            timeout=self.timeouts_register.get_value(current_func_name),
+            max_request_attempts=self.max_request_attempts_register.get_value(current_func_name),
+        )
 
     def get_server_is_alive(self) -> bool:
         """Get info whether the server is alive.
@@ -2098,9 +2375,17 @@ class TcpOslServer(OslServer):
         TimeoutError
             Raised when the timeout float value expires.
         """
-        response_dict = self.send_command(queries.server_is_alive(password=self.__password))
-        is_alive = response_dict.get("status") == "success"
-        return is_alive
+        current_func_name = self.get_server_is_alive.__name__
+        return (
+            self.send_command(
+                command=queries.server_is_alive(password=self.__password),
+                timeout=self.timeouts_register.get_value(current_func_name),
+                max_request_attempts=self.max_request_attempts_register.get_value(
+                    current_func_name
+                ),
+            ).get("status")
+            == "success"
+        )
 
     def get_systems_status_info(
         self,
@@ -2132,15 +2417,22 @@ class TcpOslServer(OslServer):
         TimeoutError
             Raised when the timeout float value expires.
         """
+        current_func_name = self.get_systems_status_info.__name__
         return self.send_command(
-            queries.systems_status_info(
+            command=queries.systems_status_info(
                 include_designs=include_designs,
                 include_non_scalar_design_values=include_non_scalar_design_values,
                 include_algorithm_info=include_algorithm_info,
                 password=self.__password,
-            )
+            ),
+            timeout=self.timeouts_register.get_value(current_func_name),
+            max_request_attempts=self.max_request_attempts_register.get_value(current_func_name),
         )
 
+    @deprecated(
+        version="0.5.0",
+        reason="Use :py:attr:`TcpOslServer.timeout_register.default_timeout` instead.",
+    )
     def get_timeout(self) -> Union[float, None]:
         """Get current timeout value for execution of commands.
 
@@ -2158,7 +2450,7 @@ class TcpOslServer(OslServer):
         TimeoutError
             Raised when the timeout float value expires.
         """
-        return self.__timeout
+        return self.timeouts_register
 
     def get_working_dir(self) -> Path:
         """Get path to the optiSLang project working directory.
@@ -2195,7 +2487,12 @@ class TcpOslServer(OslServer):
         TimeoutError
             Raised when the timeout float value expires.
         """
-        self.send_command(commands.new(password=self.__password))
+        current_func_name = self.new.__name__
+        self.send_command(
+            command=commands.new(password=self.__password),
+            timeout=self.timeouts_register.get_value(current_func_name),
+            max_request_attempts=self.max_request_attempts_register.get_value(current_func_name),
+        )
 
     def open(
         self,
@@ -2235,6 +2532,8 @@ class TcpOslServer(OslServer):
         if not file_path.is_file():
             raise FileNotFoundError(f'File "{file_path}" doesn\'t exist.')
 
+        current_func_name = self.open.__name__
+
         if self.__osl_version[0] < 24:
             self._logger.error(
                 f"Command ``open`` doesn't work correctly in version {self.__osl_version_string}."
@@ -2242,13 +2541,15 @@ class TcpOslServer(OslServer):
             )
 
         self.send_command(
-            commands.open(
+            command=commands.open(
                 path=str(file_path.as_posix()),
                 do_force=force,
                 do_restore=restore,
                 do_reset=reset,
                 password=self.__password,
-            )
+            ),
+            timeout=self.timeouts_register.get_value(current_func_name),
+            max_request_attempts=self.max_request_attempts_register.get_value(current_func_name),
         )
 
     def remove_criteria(self, uid: str) -> None:
@@ -2269,7 +2570,12 @@ class TcpOslServer(OslServer):
             Raised when the timeout float value expires.
         """
         # TODO: create unit test
-        self.send_command(commands.remove_criteria(actor_uid=uid, password=self.__password))
+        current_func_name = self.remove_criteria.__name__
+        self.send_command(
+            command=commands.remove_criteria(actor_uid=uid, password=self.__password),
+            timeout=self.timeouts_register.get_value(current_func_name),
+            max_request_attempts=self.max_request_attempts_register.get_value(current_func_name),
+        )
 
     def remove_criterion(self, uid: str, name: str) -> None:
         """Remove existing criterion from the system.
@@ -2291,8 +2597,11 @@ class TcpOslServer(OslServer):
             Raised when the timeout float value expires.
         """
         # TODO: create unit test
+        current_func_name = self.remove_criterion.__name__
         self.send_command(
-            commands.remove_criterion(actor_uid=uid, name=name, password=self.__password)
+            command=commands.remove_criterion(actor_uid=uid, name=name, password=self.__password),
+            timeout=self.timeouts_register.get_value(current_func_name),
+            max_request_attempts=self.max_request_attempts_register.get_value(current_func_name),
         )
 
     def reset(self):
@@ -2307,7 +2616,12 @@ class TcpOslServer(OslServer):
         TimeoutError
             Raised when the timeout float value expires.
         """
-        self.send_command(commands.reset(password=self.__password))
+        current_func_name = self.reset.__name__
+        self.send_command(
+            command=commands.reset(password=self.__password),
+            timeout=self.timeouts_register.get_value(current_func_name),
+            max_request_attempts=self.max_request_attempts_register.get_value(current_func_name),
+        )
 
     def run_python_script(
         self,
@@ -2337,7 +2651,12 @@ class TcpOslServer(OslServer):
         TimeoutError
             Raised when the timeout float value expires.
         """
-        responses = self.send_command(commands.run_python_script(script, args, self.__password))
+        current_func_name = self.run_python_script.__name__
+        responses = self.send_command(
+            command=commands.run_python_script(script, args, self.__password),
+            timeout=self.timeouts_register.get_value(current_func_name),
+            max_request_attempts=self.max_request_attempts_register.get_value(current_func_name),
+        )
         std_out = ""
         std_err = ""
         for response in responses:
@@ -2396,7 +2715,12 @@ class TcpOslServer(OslServer):
         TimeoutError
             Raised when the timeout float value expires.
         """
-        self.send_command(commands.save(password=self.__password))
+        current_func_name = self.save.__name__
+        self.send_command(
+            command=commands.save(password=self.__password),
+            timeout=self.timeouts_register.get_value(current_func_name),
+            max_request_attempts=self.max_request_attempts_register.get_value(current_func_name),
+        )
 
     def save_as(
         self,
@@ -2432,15 +2756,18 @@ class TcpOslServer(OslServer):
         """
         file_path = self.__cast_to_path(file_path=file_path)
         self.__validate_path(file_path=file_path)
+        current_func_name = self.save_as.__name__
 
         self.send_command(
-            commands.save_as(
+            command=commands.save_as(
                 path=str(file_path.as_posix()),
                 do_force=force,
                 do_restore=restore,
                 do_reset=reset,
                 password=self.__password,
-            )
+            ),
+            timeout=self.timeouts_register.get_value(current_func_name),
+            max_request_attempts=self.max_request_attempts_register.get_value(current_func_name),
         )
 
     def save_copy(self, file_path: Union[str, Path]) -> None:
@@ -2467,7 +2794,12 @@ class TcpOslServer(OslServer):
                 "Command ``save_copy`` doesn't work correctly in version"
                 f" {self.__osl_version_string}. Please use at least version 24.1."
             )
-        self.send_command(commands.save_copy(str(file_path.as_posix()), self.__password))
+        current_func_name = self.save_copy.__name__
+        self.send_command(
+            command=commands.save_copy(str(file_path.as_posix()), self.__password),
+            timeout=self.timeouts_register.get_value(current_func_name),
+            max_request_attempts=self.max_request_attempts_register.get_value(current_func_name),
+        )
 
     def set_criterion_property(
         self,
@@ -2500,17 +2832,24 @@ class TcpOslServer(OslServer):
             Raised when the timeout float value expires.
         """
         # TODO: create unit test
+        current_func_name = self.set_criterion_property.__name__
         self.send_command(
-            commands.set_criterion_property(
+            command=commands.set_criterion_property(
                 actor_uid=uid,
                 criterion_name=criterion_name,
                 name=name,
                 value=value,
                 password=self.__password,
-            )
+            ),
+            timeout=self.timeouts_register.get_value(current_func_name),
+            max_request_attempts=self.max_request_attempts_register.get_value(current_func_name),
         )
 
-    def set_timeout(self, timeout: Union[float, None] = None) -> None:
+    @deprecated(
+        version="0.5.0",
+        reason="Use :py:attr:`TcpOslServer.timeouts_register.default_timeout` instead.",
+    )
+    def set_timeout(self, timeout: Union[float, None] = 30) -> None:
         """Set timeout value for execution of commands.
 
         Parameters
@@ -2520,7 +2859,7 @@ class TcpOslServer(OslServer):
             Another functions will raise a timeout exception if the timeout period value has
             elapsed before the operation has completed.
             If ``None`` is given, functions will wait until they're finished (no timeout
-            exception is raised). Defaults to ``None``.
+            exception is raised). Defaults to ``30``.
 
         Raises
         ------
@@ -2533,24 +2872,7 @@ class TcpOslServer(OslServer):
         TypeError
             Raised when timeout not Union[float, None].
         """
-        if timeout is None:
-            self.__timeout = timeout
-        elif isinstance(timeout, (int, float)):
-            if timeout > 0:
-                self.__timeout = timeout
-            else:
-                raise ValueError(
-                    "Timeout must be float greater than zero or ``None`` but "
-                    f"``{timeout}`` was given."
-                )
-        else:
-            raise TypeError(
-                "Invalid type of timeout, timeout must be float greater than zero or "
-                f"``None`` but {type(timeout)} was given."
-            )
-
-        for listener in self.__listeners.values():
-            listener.timeout = timeout
+        self.timeouts_register.default_value = timeout
 
     def shutdown(self, force: bool = False) -> None:
         """Shutdown the optiSLang server.
@@ -2584,7 +2906,14 @@ class TcpOslServer(OslServer):
 
         if self.__shutdown_on_finished in (False, None):
             try:
-                self.send_command(commands.shutdown(self.__password))
+                current_func_name = self.shutdown.__name__
+                self.send_command(
+                    command=commands.shutdown(self.__password),
+                    timeout=self.timeouts_register.get_value(current_func_name),
+                    max_request_attempts=self.max_request_attempts_register.get_value(
+                        current_func_name
+                    ),
+                )
             except Exception:
                 if not force or self.__osl_process is None:
                     raise
@@ -2641,13 +2970,16 @@ class TcpOslServer(OslServer):
         """
         successfully_started = False
         already_running = False
+        current_func_name = self.start.__name__
 
         if self.get_project_status() == "PROCESSING":
             already_running = True
             self._logger.debug("Status PROCESSING")
 
         if not already_running and (wait_for_started or wait_for_finished):
-            exec_started_listener = self.__create_exec_started_listener()
+            exec_started_listener = self.__create_exec_started_listener(
+                timeout=self.timeouts_register.get_value(self.__class__.start)
+            )
             exec_started_listener.cleanup_notifications()
             wait_for_started_queue = Queue()
             exec_started_listener.add_callback(
@@ -2665,7 +2997,9 @@ class TcpOslServer(OslServer):
             self._logger.debug("Wait for started thread was created.")
 
         if wait_for_finished:
-            exec_finished_listener = self.__create_exec_finished_listener()
+            exec_finished_listener = self.__create_exec_finished_listener(
+                self.timeouts_register.get_value(self.__class__.start)
+            )
             exec_finished_listener.cleanup_notifications()
             wait_for_finished_queue = Queue()
             exec_finished_listener.add_callback(
@@ -2683,7 +3017,13 @@ class TcpOslServer(OslServer):
             self._logger.debug("Wait for finished thread was created.")
 
         if not already_running:
-            self.send_command(commands.start(self.__password))
+            self.send_command(
+                command=commands.start(self.__password),
+                timeout=self.timeouts_register.get_value(current_func_name),
+                max_request_attempts=self.max_request_attempts_register.get_value(
+                    current_func_name
+                ),
+            )
 
         if not already_running and (wait_for_started or wait_for_finished):
             self._logger.info(f"Waiting for started")
@@ -2721,8 +3061,12 @@ class TcpOslServer(OslServer):
         TimeoutError
             Raised when the timeout float value expires.
         """
+        current_func_name = self.stop.__name__
+
         if wait_for_finished:
-            exec_finished_listener = self.__create_exec_finished_listener()
+            exec_finished_listener = self.__create_exec_finished_listener(
+                timeout=self.timeouts_register.get_value(self.__class__.stop)
+            )
             exec_finished_listener.cleanup_notifications()
             wait_for_finished_queue = Queue()
             exec_finished_listener.add_callback(
@@ -2754,11 +3098,25 @@ class TcpOslServer(OslServer):
             stop_request_priority = self._STOP_REQUESTS_PRIORITIES["STOP"]
             current_status_priority = self._STOP_REQUESTED_STATES_PRIORITIES[status]
             if stop_request_priority > current_status_priority:
-                self.send_command(commands.stop(self.__password))
+                self.send_command(
+                    command=commands.stop(
+                        self.__password,
+                        timeout=self.timeouts_register.get_value(current_func_name),
+                        max_request_attempts=self.max_request_attempts_register.get_value(
+                            current_func_name
+                        ),
+                    )
+                )
             else:
                 self._logger.debug(f"Do not send STOP request, project status is: {status}")
         else:
-            self.send_command(commands.stop(self.__password))
+            self.send_command(
+                command=commands.stop(self.__password),
+                timeout=self.timeouts_register.get_value(current_func_name),
+                max_request_attempts=self.max_request_attempts_register.get_value(
+                    current_func_name
+                ),
+            )
 
         if wait_for_finished:
             self._logger.info(f"Waiting for finished")
@@ -2863,7 +3221,12 @@ class TcpOslServer(OslServer):
         TimeoutError
             Raised when the timeout float value expires.
         """
-        self.send_command(commands.unregister_listener(str(listener.uid), self.__password))
+        current_func_name = self._unregister_listener.__name__
+        self.send_command(
+            command=commands.unregister_listener(str(listener.uid), self.__password),
+            timeout=self.timeouts_register.get_value(current_func_name),
+            max_request_attempts=self.max_request_attempts_register.get_value(current_func_name),
+        )
         listener.uid = None
 
     def _start_local(self, ini_timeout: float, shutdown_on_finished: bool) -> None:
@@ -2891,7 +3254,7 @@ class TcpOslServer(OslServer):
 
         listener = self.__create_listener(
             uid=self.__listener_id if self.__listener_id else str(uuid.uuid4()),
-            timeout=self.__timeout,
+            timeout=None,
             name="Main",
         )
         port_queue = Queue()
@@ -2957,6 +3320,13 @@ class TcpOslServer(OslServer):
         self.dispose()
         raise KeyboardInterrupt
 
+    def __cast_to_path(self, file_path: Union[str, Path]) -> Path:
+        """Cast path to Path."""
+        if isinstance(file_path, Path):
+            return file_path
+        else:
+            return Path(file_path)
+
     def __create_listener(
         self, timeout: float, name: str, uid: Optional[str] = None
     ) -> TcpOslListener:
@@ -2997,7 +3367,7 @@ class TcpOslServer(OslServer):
 
         return listener
 
-    def __create_exec_started_listener(self) -> TcpOslListener:
+    def __create_exec_started_listener(self, timeout: Union[float, None] = None) -> TcpOslListener:
         """Create exec_started listener and add to self.__listeners.
 
         Returns
@@ -3005,6 +3375,8 @@ class TcpOslServer(OslServer):
         exec_started_listener: TcpOslListener
             Listener registered to the optiSLang server and subscribed
             for push notifications.
+        timeout: Union[float, None]
+            Listener's timeout.
 
         Raises
         ------
@@ -3016,7 +3388,7 @@ class TcpOslServer(OslServer):
             Raised when the timeout float value expires.
         """
         exec_started_listener = self.__create_listener(
-            timeout=self.__timeout,
+            timeout=timeout,
             name="ExecStarted",
         )
         exec_started_listener.uid = self.__register_listener(
@@ -3033,7 +3405,7 @@ class TcpOslServer(OslServer):
         self.__listeners["exec_started_listener"] = exec_started_listener
         return exec_started_listener
 
-    def __create_exec_finished_listener(self) -> TcpOslListener:
+    def __create_exec_finished_listener(self, timeout: Union[float, None] = None) -> TcpOslListener:
         """Create exec_finished listener and add to self.__listeners.
 
         Returns
@@ -3041,6 +3413,8 @@ class TcpOslServer(OslServer):
         exec_finished_listener: TcpOslListener
             Listener registered to the optiSLang server and subscribed
             for push notifications.
+        timeout: Union[float, None]
+            Listener's timeout.
 
         Raises
         ------
@@ -3052,7 +3426,7 @@ class TcpOslServer(OslServer):
             Raised when the timeout float value expires.
         """
         exec_finished_listener = self.__create_listener(
-            timeout=self.__timeout,
+            timeout=timeout,
             name="ExecFinished",
         )
         exec_finished_listener.uid = self.__register_listener(
@@ -3085,6 +3459,12 @@ class TcpOslServer(OslServer):
         self.__listeners.pop("exec_finished_listener")
         del exec_finished_listener
 
+    def __dispose_all_listeners(self) -> None:
+        """Dispose all listeners."""
+        for listener in self.__listeners.values():
+            listener.dispose()
+        self.__listeners = {}
+
     def __start_listeners_registration_thread(self) -> None:
         """Create new thread for refreshing of listeners registrations and start it."""
         self.__listeners_registration_thread = threading.Thread(
@@ -3114,7 +3494,7 @@ class TcpOslServer(OslServer):
 
         Parameters
         ----------
-        host : str
+        host: str
             A string representation of an IPv4/v6 address or domain name.
         port: int
             A numeric port number of listener.
@@ -3145,15 +3525,18 @@ class TcpOslServer(OslServer):
         TimeoutError
             Raised when the timeout float value expires.
         """
+        current_func_name = self.__register_listener.__name__
         msg = self.send_command(
-            commands.register_listener(
+            command=commands.register_listener(
                 host=host,
                 port=port,
                 timeout=timeout,
                 notifications=[ntf.name for ntf in notifications],
                 password=self.__password,
                 listener_uid=self.__listener_id,
-            )
+            ),
+            timeout=self.timeouts_register.get_value(current_func_name),
+            max_request_attempts=self.max_request_attempts_register.get_value(current_func_name),
         )
         return msg[0]["uid"]
 
@@ -3173,6 +3556,7 @@ class TcpOslServer(OslServer):
         """
         check_for_refresh = 0.5
         counter = 0
+        current_func_name = self.__refresh_listeners_registration.__name__
         while self.__refresh_listeners.is_set():
             if counter >= self.__listeners_refresh_interval:
                 for listener in self.__listeners.values():
@@ -3180,7 +3564,11 @@ class TcpOslServer(OslServer):
                         response = self.send_command(
                             commands.refresh_listener_registration(
                                 uid=listener.uid, password=self.__password
-                            )
+                            ),
+                            timeout=self.timeouts_register.get_value(current_func_name),
+                            max_request_attempts=self.max_request_attempts_register.get_value(
+                                current_func_name
+                            ),
                         )
                 counter = 0
             counter += check_for_refresh
@@ -3197,19 +3585,6 @@ class TcpOslServer(OslServer):
                 except Exception as ex:
                     self._logger.warning("Cannot unregister port listener: %s", ex)
 
-    def __dispose_all_listeners(self) -> None:
-        """Dispose all listeners."""
-        for listener in self.__listeners.values():
-            listener.dispose()
-        self.__listeners = {}
-
-    def __cast_to_path(self, file_path: Union[str, Path]) -> Path:
-        """Cast path to Path."""
-        if isinstance(file_path, Path):
-            return file_path
-        else:
-            return Path(file_path)
-
     def __validate_path(self, file_path: Path) -> None:
         """Check type and suffix of project_file path."""
         if not isinstance(file_path, Path):
@@ -3219,13 +3594,19 @@ class TcpOslServer(OslServer):
         if not file_path.suffix == ".opf":
             raise ValueError('Invalid optiSLang project file, project must end with ".opf".')
 
-    def send_command(self, command: str) -> Dict:
+    def send_command(self, command: str, **kwargs) -> Dict:
         """Send command or query to the optiSLang server.
 
         Parameters
         ----------
-        command : str
+        command: str
             Command or query to be executed on optiSLang server.
+        timeout: Union[float, None], optional
+            Timeout to execute command. If not provided,
+            `TcpOslServer.timeouts_register.default_value` is used.
+        max_request_attempts: int, optional
+            Maximum number of attempts to execute command. If not provided,
+            `TcpOslServer.max_request_attempts_register.default_value` is used.
 
         Returns
         -------
@@ -3243,31 +3624,48 @@ class TcpOslServer(OslServer):
         TimeoutError
             Raised when the timeout expires.
         """
+        timeout = (
+            kwargs.get("timeout")
+            if "timeout" in kwargs.keys()
+            else self.timeouts_register.default_value
+        )
+        max_request_attempts = (
+            kwargs.get("max_request_attempts")
+            if "max_request_attempts" in kwargs.keys()
+            else self.max_request_attempts_register.default_value
+        )
         if self.__disposed:
             raise OslDisposedError("Cannot send command, instance was already disposed.")
         if self.__host is None or self.__port is None:
             raise RuntimeError("optiSLang server is not started.")
 
-        start_time = time.time()
         self._logger.debug("Sending command or query to the server: %s", command)
         client = TcpClient(logger=self._logger)
-        try:
-            client.connect(
-                self.__host, self.__port, timeout=_get_current_timeout(self.__timeout, start_time)
-            )
-            client.send_msg(command, timeout=_get_current_timeout(self.__timeout, start_time))
-            response_str = client.receive_msg(
-                timeout=_get_current_timeout(self.__timeout, start_time)
-            )
 
-        except TimeoutError as ex:
-            raise
-        except Exception as ex:
-            raise OslCommunicationError(
-                "An error occurred while communicating with the optiSLang server."
-            ) from ex
-        finally:
-            client.disconnect()
+        response_str = ""
+
+        for request_attempt in range(1, max_request_attempts + 1):
+            start_time = time.time()
+            try:
+                client.connect(
+                    self.__host,
+                    self.__port,
+                    timeout=_get_current_timeout(timeout, start_time),
+                )
+                client.send_msg(command, timeout=_get_current_timeout(timeout, start_time))
+                response_str = client.receive_msg(timeout=_get_current_timeout(timeout, start_time))
+                break
+            except TimeoutError:
+                if request_attempt == max_request_attempts:
+                    raise
+                else:
+                    pass
+            except Exception as ex:
+                raise OslCommunicationError(
+                    "An error occurred while communicating with the optiSLang server."
+                ) from ex
+            finally:
+                client.disconnect()
 
         self._logger.debug("Response received: %s", response_str)
         response = json.loads(response_str)
@@ -3389,6 +3787,40 @@ class TcpOslServer(OslServer):
             raise OslCommandError(message)
 
     @staticmethod
+    def __get_default_max_request_attempts_register() -> FunctionsAttributeRegister:
+        max_requests_register = FunctionsAttributeRegister(
+            default_value=2, validator=__class__.__validate_max_request_attempts_value
+        )
+        max_requests_register.register(__class__.evaluate_design, 1)
+        max_requests_register.register(__class__.get_full_project_status_info, 1)
+        max_requests_register.register(__class__.open, 1)
+        max_requests_register.register(__class__.reset, 1)
+        max_requests_register.register(__class__.run_python_script, 1)
+        max_requests_register.register(__class__.save, 1)
+        max_requests_register.register(__class__.save_as, 1)
+        max_requests_register.register(__class__.save_copy, 1)
+        max_requests_register.register(__class__.start, 1)
+        max_requests_register.register(__class__.stop, 1)
+        return max_requests_register
+
+    @staticmethod
+    def __get_default_timeouts_register() -> FunctionsAttributeRegister:
+        timeout_register = FunctionsAttributeRegister(
+            default_value=30, validator=__class__.__validate_timeout_value
+        )
+        timeout_register.register(__class__.evaluate_design, None)
+        timeout_register.register(__class__.get_full_project_status_info, None)
+        timeout_register.register(__class__.open, None)
+        timeout_register.register(__class__.reset, None)
+        timeout_register.register(__class__.run_python_script, None)
+        timeout_register.register(__class__.save, None)
+        timeout_register.register(__class__.save_as, None)
+        timeout_register.register(__class__.save_copy, None)
+        timeout_register.register(__class__.start, None)
+        timeout_register.register(__class__.stop, None)
+        return timeout_register
+
+    @staticmethod
     def __port_on_listended(
         sender: TcpOslListener, response: dict, port_queue: Queue, logger
     ) -> None:
@@ -3427,3 +3859,13 @@ class TcpOslServer(OslServer):
                 logger.error(f"Listener {sender.name} timed out.")
         else:
             logger.error("Invalid response from server, push notification not evaluated.")
+
+    @staticmethod
+    def __validate_timeout_value(value: Any) -> bool:
+        return value is None or (
+            isinstance(value, (int, float)) and not isinstance(value, bool) and value > 0
+        )
+
+    @staticmethod
+    def __validate_max_request_attempts_value(value: Any) -> bool:
+        return isinstance(value, int) and not isinstance(value, bool) and value > 0

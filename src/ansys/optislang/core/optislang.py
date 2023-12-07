@@ -399,6 +399,43 @@ class Optislang:
         """
         return self.__project
 
+    @property
+    def timeout(self) -> Union[float, None]:
+        """Get the timeout value for executing commands.
+
+        Returns
+        -------
+        timeout: Union[float, None]
+            Timeout in seconds to perform commands. This value must be greater
+            than zero or ``None``. The default is ``None``. Another function
+            raises a timeout exception if the timeout value has elapsed before
+            an operation has completed. If the timeout is ``None``, functions
+            wait until they're finished, and no timeout exception is raised.
+        """
+        return self.osl_server.timeout
+
+    @timeout.setter
+    def timeout(self, timeout: Union[float, None] = 30) -> None:
+        """Set the timeout value for the executing commands.
+
+        Parameters
+        ----------
+        timeout: Union[float, None]
+            Timeout in seconds to perform commands. This value must be greater
+            than zero or ``None``. The default is ``30``. Another function
+            raises a timeout exception if the timeout value has elapsed before
+            an operation has completed. If the timeout is ``None``, functions
+            wait until they're finished, and no timeout exception is raised.
+
+        Raises
+        ------
+        ValueError
+            Raised when the timeout value is less than or equal to 0.
+        TypeError
+            Raised when the timeout is not a Union[float, None].
+        """
+        self.osl_server.timeout = timeout
+
     # close method doesn't work properly in optiSLang 2023 R1, Thus, it was commented out
     # def close(self) -> None:
     #     """Close the current project.
@@ -472,6 +509,7 @@ class Optislang:
         """
         return self.__osl_server.osl_version
 
+    @deprecated(version="0.5.0", reason="Use :py:attr:`Optislang.timeout` instead.")
     def get_timeout(self) -> Union[float, None]:
         """Get the timeout value for executing commands.
 
@@ -493,7 +531,7 @@ class Optislang:
         TimeoutError
             Raised when the timeout float value expires.
         """
-        return self.__osl_server.get_timeout()
+        return self.__osl_server.timeout
 
     def get_working_dir(self) -> Path:
         """Get the path to the optiSLang project's working directory.
@@ -719,6 +757,7 @@ class Optislang:
         """
         self.__osl_server.save_copy(file_path)
 
+    @deprecated(version="0.5.0", reason="Use :py:attr:`Optislang.timeout` instead.")
     def set_timeout(self, timeout: Union[float, None] = None) -> None:
         """Set the timeout value for the executing commands.
 
@@ -742,7 +781,7 @@ class Optislang:
         TypeError
             Raised when the timeout is not a Union[float, None].
         """
-        self.__osl_server.set_timeout(timeout)
+        self.__osl_server.timeout = timeout
 
     def shutdown(self, force: bool = False) -> None:
         """Shut down the optiSLang server.

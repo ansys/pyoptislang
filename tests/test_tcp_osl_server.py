@@ -98,8 +98,36 @@ def create_tcp_osl_server(osl_server_process: OslServerProcess) -> tos.TcpOslSer
         Class which provides access to optiSLang server using plain TCP/IP communication protocol.
     """
     tcp_osl_server = tos.TcpOslServer(host=_host, port=osl_server_process.port_range[0])
-    tcp_osl_server.set_timeout(timeout=10)
+    tcp_osl_server.timeout = 10
     return tcp_osl_server
+
+
+# region FunctionsAttributeRegister
+def test_functions_attribute_register():
+    functions_attribute_register = tos.FunctionsAttributeRegister(
+        1, lambda value: isinstance(value, (int, float))
+    )
+    assert functions_attribute_register.default_value == 1
+    functions_attribute_register.default_value = 10
+    assert functions_attribute_register.default_value == 10
+
+    with pytest.raises(ValueError):
+        functions_attribute_register.register("invalid", "string")
+
+    functions_attribute_register.register("test1", 20)
+    functions_attribute_register.register("test2", 30)
+    assert functions_attribute_register.get_value("test1") == 20
+    assert functions_attribute_register.get_value("dont_exist") == 10
+
+    functions_attribute_register.unregister("test1")
+    assert functions_attribute_register.get_value("test1") == 10
+    assert functions_attribute_register.is_registered("test2")
+    assert not functions_attribute_register.is_registered("test1")
+    functions_attribute_register.unregister_all()
+    assert not functions_attribute_register.is_registered("test2")
+
+
+# endregion
 
 
 # TcpClient
@@ -279,6 +307,99 @@ def test_osl_version_properties(osl_server_process: OslServerProcess):
 
     osl_version_string = tcp_osl_server.osl_version_string
     assert isinstance(osl_version_string, str)
+    tcp_osl_server.shutdown()
+    tcp_osl_server.dispose()
+
+
+def test_max_request_attempts_register(osl_server_process: OslServerProcess):
+    """Test `max_request_attempts_register`."""
+    tcp_osl_server = create_tcp_osl_server(osl_server_process)
+    max_request_attempts_register = tcp_osl_server.max_request_attempts_register
+    assert max_request_attempts_register.default_value == 2
+
+    with pytest.raises(ValueError):
+        max_request_attempts_register.register("invalid_value", "s")
+
+    with pytest.raises(ValueError):
+        max_request_attempts_register.register("invalid_value", -1)
+
+    with pytest.raises(ValueError):
+        max_request_attempts_register.register("invalid_value", True)
+
+    with pytest.raises(ValueError):
+        max_request_attempts_register.register("invalid_value", (1, 0))
+
+    max_request_attempts_register.register("valid_value1", 4)
+    max_request_attempts_register.register(tcp_osl_server.__class__.add_criterion, 3)
+    assert max_request_attempts_register.is_registered("valid_value1")
+    assert max_request_attempts_register.is_registered(tcp_osl_server.__class__.add_criterion)
+    assert max_request_attempts_register.is_registered("add_criterion")
+    assert max_request_attempts_register.get_value("valid_value1") == 4
+    assert max_request_attempts_register.get_value("add_criterion") == 3
+    assert max_request_attempts_register.get_value(tcp_osl_server.__class__.add_criterion) == 3
+
+    # overwrite
+    max_request_attempts_register.get_value("evaluate_design") == 1
+    max_request_attempts_register.register("evaluate_design", 3)
+    assert max_request_attempts_register.get_value("evaluate_design") == 3
+
+    max_request_attempts_register.unregister("valid_value1")
+    assert (
+        max_request_attempts_register.get_value("valid_value1")
+        == max_request_attempts_register.default_value
+    )
+    assert not max_request_attempts_register.is_registered("valid_value1")
+
+    max_request_attempts_register.unregister_all()
+    assert not max_request_attempts_register.is_registered("valid_value2")
+
+    tcp_osl_server.shutdown()
+    tcp_osl_server.dispose()
+
+
+def test_timeouts_register(osl_server_process: OslServerProcess):
+    """Test `timeouts_register`."""
+    tcp_osl_server = create_tcp_osl_server(osl_server_process)
+    timeouts_register = tcp_osl_server.timeouts_register
+    # note: method `create_tcp_osl_server` modifies timeout, default is `30` otherwise
+    assert timeouts_register.default_value == 10
+
+    with pytest.raises(ValueError):
+        timeouts_register.register("invalid_value", "s")
+
+    with pytest.raises(ValueError):
+        timeouts_register.register("invalid_value", -1)
+
+    with pytest.raises(ValueError):
+        timeouts_register.register("invalid_value", True)
+
+    with pytest.raises(ValueError):
+        timeouts_register.register("invalid_value", (1, 0))
+
+    timeouts_register.register("valid_value1", 8.0)
+    timeouts_register.register("valid_value2", None)
+    timeouts_register.register(tcp_osl_server.__class__.add_criterion, 15)
+    assert timeouts_register.is_registered("valid_value1")
+    assert timeouts_register.is_registered("valid_value2")
+    assert timeouts_register.is_registered(tcp_osl_server.__class__.add_criterion)
+    assert timeouts_register.is_registered("add_criterion")
+    assert timeouts_register.get_value("valid_value1") == 8
+    assert timeouts_register.get_value("valid_value2") is None
+    assert timeouts_register.get_value("add_criterion") == 15
+    assert timeouts_register.get_value(tcp_osl_server.__class__.add_criterion) == 15
+
+    # overwrite
+    timeouts_register.get_value("evaluate_design") is None
+    timeouts_register.register("evaluate_design", 1000)
+    assert timeouts_register.get_value("evaluate_design") == 1000
+
+    timeouts_register.unregister("valid_value1")
+    assert timeouts_register.get_value("valid_value1") == timeouts_register.default_value
+    assert not timeouts_register.is_registered("valid_value1")
+
+    timeouts_register.unregister_all()
+    assert not timeouts_register.is_registered("valid_value2")
+
     tcp_osl_server.shutdown()
     tcp_osl_server.dispose()
 
@@ -599,13 +720,13 @@ def test_get_server_is_alive(osl_server_process: OslServerProcess):
 
 
 def test_get_set_timeout(osl_server_process: OslServerProcess):
-    """Test ``get_get_timeout``."""
+    """Test ``get_set_timeout``."""
     tcp_osl_server = create_tcp_osl_server(osl_server_process)
-    timeout = tcp_osl_server.get_timeout()
+    timeout = tcp_osl_server.timeout
     assert isinstance(timeout, (int, float))
     assert timeout == 10
-    tcp_osl_server.set_timeout(15)
-    new_timeout = tcp_osl_server.get_timeout()
+    tcp_osl_server.timeout = 15
+    new_timeout = tcp_osl_server.timeout
     assert isinstance(new_timeout, (int, float))
     assert new_timeout == 15
     tcp_osl_server.shutdown()
@@ -748,18 +869,6 @@ def test_save_copy(
     tcp_osl_server.shutdown()
     tcp_osl_server.dispose()
     assert copy_path.is_file()
-
-
-def test_set_timeout(osl_server_process: OslServerProcess):
-    """Test ``set_timeout``."""
-    tcp_osl_server = create_tcp_osl_server(osl_server_process)
-    assert tcp_osl_server.get_timeout() == 10
-    with pytest.raises(ValueError):
-        tcp_osl_server.set_timeout(-5)
-    with pytest.raises(TypeError):
-        tcp_osl_server.set_timeout("5")  # type: ignore
-    tcp_osl_server.shutdown()
-    tcp_osl_server.dispose()
 
 
 def test_start(osl_server_process: OslServerProcess):
