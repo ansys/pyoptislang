@@ -856,7 +856,7 @@ class Optislang:
         TypeError
             Raised when the timeout is not a Union[float, None].
         """
-        self.timeout = timeout
+        self.osl_server.timeout = timeout
 
     def shutdown(self, force: bool = False) -> None:
         """Shut down the optiSLang server.

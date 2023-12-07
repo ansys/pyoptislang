@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import NamedTuple, Optional, Union
+from typing import NamedTuple, Optional
 
 
 class OslVersion(NamedTuple):
@@ -91,13 +91,17 @@ class OslServer(ABC):
 
     @property
     @abstractmethod
-    def timeout(self) -> Union[float, None]:  # pragma: no cover
-        """Get current timeout value for execution of commands.
+    def timeout(self) -> Optional[float]:  # pragma: no cover
+        """Get the timeout value for executing commands.
 
         Returns
         -------
-        timeout: Union[float, None]
-            Timeout in seconds to perform commands.
+        timeout: Optional[float]
+            Timeout in seconds to perform commands. This value must be greater
+            than zero or ``None``. The default is ``None``. Another function
+            raises a timeout exception if the timeout value has elapsed before
+            an operation has completed. If the timeout is ``None``, functions
+            wait until they're finished, and no timeout exception is raised.
         """
         pass
 
