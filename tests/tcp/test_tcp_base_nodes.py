@@ -7,6 +7,8 @@ from ansys.optislang.core.io import File, FileOutputFormat, RegisteredFile
 from ansys.optislang.core.node_types import AddinType, NodeType
 from ansys.optislang.core.tcp.base_nodes import (
     Edge,
+    TcpInnerInputSlotProxy,
+    TcpInnerOutputSlotProxy,
     TcpInputSlotProxy,
     TcpNodeProxy,
     TcpOutputSlotProxy,
@@ -30,7 +32,8 @@ def optislang(scope="function", autouse=False) -> Optislang:
     """
     osl = Optislang()
     osl.timeout = 20
-    return osl
+    yield osl
+    osl.dispose()
 
 
 # region TEST NODE
@@ -41,7 +44,6 @@ def test_node_initialization(optislang: Optislang, tmp_example_project):
     root_system = project.root_system
     node = root_system.get_nodes()[0]
     assert isinstance(node, TcpNodeProxy)
-    optislang.dispose()
 
 
 def test_node_properties(optislang: Optislang, tmp_example_project):
@@ -55,7 +57,6 @@ def test_node_properties(optislang: Optislang, tmp_example_project):
     assert isinstance(node.type, NodeType)
     assert isinstance(node.type.id, str)
     assert isinstance(node.type.subtype, AddinType)
-    optislang.dispose()
 
 
 def test_node_queries(optislang: Optislang, tmp_example_project):
@@ -125,8 +126,6 @@ def test_node_queries(optislang: Optislang, tmp_example_project):
 
     print(node)
 
-    optislang.dispose()
-
 
 def test_control(optislang: Optislang, tmp_example_project):
     """Test control methods of the instance of `Node` class."""
@@ -140,8 +139,6 @@ def test_control(optislang: Optislang, tmp_example_project):
         assert output is None
         output = node.control(command, timeout=3)
         assert isinstance(output, bool)
-
-    optislang.dispose()
 
 
 def test_get_ancestors(optislang: Optislang, tmp_example_project):
@@ -192,8 +189,6 @@ def test_set_property(optislang: Optislang, tmp_example_project):
     set_int_property = 2
     node.set_property("ExecutionOptions", set_int_property)
     assert node.get_property("ExecutionOptions") == set_int_property
-
-    optislang.dispose()
 
 
 # endregion
@@ -252,8 +247,6 @@ def test_find_node_by_uid(optislang: Optislang, tmp_example_project):
     )
     assert isinstance(level3_node, TcpNodeProxy)
 
-    optislang.dispose()
-
 
 def test_find_node_by_name(optislang: Optislang, tmp_example_project):
     """Test `find_node_by_name`."""
@@ -290,11 +283,12 @@ def test_find_node_by_name(optislang: Optislang, tmp_example_project):
     level3_nodes = root_system.find_nodes_by_name(name="Calculator_inSystem", search_depth=4)
     assert len(level3_nodes) == 3
 
-    optislang.dispose()
+
+# endregion
 
 
-# TEST PARAMETRIC SYSTEM
-def test_get_managers(optislang: Optislang, tmp_example_project):
+# region TEST PARAMETRIC SYSTEM
+def test_managers(optislang: Optislang, tmp_example_project):
     """Test initialization and __str__ methods of both `ParametricSystem` and `ParameterManager`."""
     optislang.application.open(file_path=tmp_example_project("nested_systems"))
     project = optislang.project
@@ -316,12 +310,24 @@ def test_get_managers(optislang: Optislang, tmp_example_project):
     assert isinstance(response_manager, ResponseManager)
     print(response_manager)
 
-    optislang.dispose()
+
+def test_get_inner_slots(optislang: Optislang, tmp_example_project):
+    """Test `get_inner_[input, output]_slots`."""
+    optislang.application.open(file_path=tmp_example_project("nested_systems"))
+    project = optislang.project
+    root_system = project.root_system
+    parametric_system: TcpParametricSystemProxy = root_system.find_nodes_by_name(
+        "Parametric System"
+    )[0]
+    inner_input_slots = parametric_system.get_inner_input_slots()
+    assert isinstance(inner_input_slots[0], TcpInnerInputSlotProxy)
+    inner_output_slots = parametric_system.get_inner_output_slots()
+    assert isinstance(inner_output_slots[0], TcpInnerOutputSlotProxy)
 
 
-def test_get_omdb_files(tmp_example_project):
+def test_get_omdb_files(optislang: Optislang, tmp_example_project):
     """Test `get_omdb_files()` method."""
-    optislang = Optislang(project_path=tmp_example_project("omdb_files"))
+    optislang.application.open(file_path=tmp_example_project("omdb_files"))
     optislang.timeout = 30
     optislang.application.project.reset()
     optislang.application.project.start()
@@ -339,7 +345,6 @@ def test_get_omdb_files(tmp_example_project):
     mis_omdb_file = most_inner_sensitivity.get_omdb_files()
     assert len(mis_omdb_file) > 0
     assert isinstance(mis_omdb_file[0], File)
-    optislang.dispose()
 
 
 def test_save_designs_as(tmp_path: Path, tmp_example_project):
@@ -369,8 +374,6 @@ def test_save_designs_as(tmp_path: Path, tmp_example_project):
     assert mis_file.path.suffix == ".json"
     mis_file.path.unlink()
     assert not mis_file.exists
-
-    optislang.dispose()
 
 
 # endregion

@@ -18,9 +18,10 @@ def optislang(tmp_example_project, scope="function", autouse=False) -> Optislang
     Optislang:
         Connects to the optiSLang application and provides an API to control it.
     """
-    osl = Optislang(project_path=tmp_example_project("parametric_project"))
+    osl = Optislang(project_path=tmp_example_project("calculator_with_params"))
     osl.timeout = 20
-    return osl
+    yield osl
+    osl.dispose()
 
 
 def test_delete(optislang: Optislang):
@@ -29,7 +30,6 @@ def test_delete(optislang: Optislang):
     root_system = project.root_system
     with pytest.raises(NotImplementedError):
         root_system.delete()
-    optislang.dispose()
 
 
 def test_get_reference_design(optislang: Optislang):
@@ -38,7 +38,6 @@ def test_get_reference_design(optislang: Optislang):
     assert project is not None
     root_system = project.root_system
     design = root_system.get_reference_design()
-    optislang.dispose()
     assert isinstance(design, Design)
     assert isinstance(design.parameters, tuple)
     assert isinstance(design.parameters[0], DesignVariable)
@@ -61,7 +60,6 @@ def test_evaluate_design(optislang: Optislang, tmp_path: Path):
     assert design.feasibility == None
     assert isinstance(design.variables, tuple)
     result = root_system.evaluate_design(design=design)
-    optislang.dispose()
     assert isinstance(result, Design)
     assert result.status == DesignStatus.SUCCEEDED
     assert design.status == DesignStatus.IDLE
@@ -106,4 +104,3 @@ def test_design_structure(optislang: Optislang):
         assert isinstance(undefined, tuple)
         assert missing == expected_outputs[index][0]
         assert undefined == expected_outputs[index][1]
-    optislang.dispose()

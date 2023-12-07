@@ -1,5 +1,3 @@
-import time
-
 import pytest
 
 from ansys.optislang.core import Optislang
@@ -22,7 +20,8 @@ def optislang(scope="function", autouse=False) -> Optislang:
     """
     osl = Optislang()
     osl.timeout = 20
-    return osl
+    yield osl
+    osl.dispose()
 
 
 # # def test_close(optislang: Optislang):
@@ -80,5 +79,3 @@ def test_shutdown():
     "Test ``shutdown``."
     osl = Optislang(shutdown_on_finished=False)
     osl.shutdown()
-    osl.dispose()
-    time.sleep(3)

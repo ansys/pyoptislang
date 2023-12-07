@@ -1,5 +1,4 @@
 from pathlib import Path
-import time
 
 import pytest
 
@@ -20,7 +19,8 @@ def optislang(scope="function", autouse=True) -> Optislang:
     """
     osl = Optislang()
     osl.timeout = 20
-    return osl
+    yield osl
+    osl.dispose()
 
 
 def test_application_properties(optislang: Optislang):
@@ -38,9 +38,6 @@ def test_application_properties(optislang: Optislang):
     version_str = application.version_string
     assert isinstance(version_str, str)
 
-    optislang.dispose()
-    time.sleep(3)
-
 
 def test_new(optislang: Optislang, tmp_path: Path):
     "Test ``new()``."
@@ -48,8 +45,6 @@ def test_new(optislang: Optislang, tmp_path: Path):
     application.new()
     assert application.project.get_name() == "Unnamed project"
     application.save_as(file_path=tmp_path / "newProject.opf")
-    optislang.dispose()
-    time.sleep(3)
 
 
 @pytest.mark.parametrize("path_type", [str, Path])
@@ -62,8 +57,6 @@ def test_open(optislang: Optislang, path_type, tmp_example_project):
     application.open(file_path=project)
     project_name = application.project.get_name()
     assert project_name == "calculator"
-    optislang.dispose()
-    time.sleep(3)
 
 
 def test_save(optislang: Optislang):
@@ -76,7 +69,6 @@ def test_save(optislang: Optislang):
     application.save()
     save_time = file_path.stat().st_mtime
     assert mod_time != save_time
-    optislang.dispose()
 
 
 @pytest.mark.parametrize("path_type", [str, Path])
@@ -94,8 +86,6 @@ def test_save_as(optislang: Optislang, tmp_path: Path, path_type):
 
     new_wdir = application.project.get_working_dir()
     new_location = application.project.get_location()
-    optislang.dispose()
-    time.sleep(3)
 
     assert file_path.is_file()
     assert old_wdir != new_wdir
@@ -119,13 +109,10 @@ def test_save_copy(optislang: Optislang, tmp_path: Path, path_type):
 
     new_wdir = application.project.get_working_dir()
     new_location = application.project.get_location()
-    optislang.dispose()
-    time.sleep(3)
 
     assert copy_path.is_file()
-    # TODO: Uncomment this after fixed on optiSLang side
-    # assert old_wdir == new_wdir
-    # assert old_location == new_location
+    assert old_wdir == new_wdir
+    assert old_location == new_location
 
 
 # def test_close(optislang: Optislang):

@@ -28,7 +28,8 @@ def optislang(scope="function", autouse=False) -> Optislang:
     """
     osl = Optislang()
     osl.timeout = 20
-    return osl
+    yield osl
+    osl.dispose()
 
 
 def test_all_nodes_creation(optislang: Optislang):
@@ -57,7 +58,6 @@ def test_all_nodes_creation(optislang: Optislang):
         assert node.uid == nodes_in_rs[0].uid
         assert node.type == nodes_in_rs[0].type
         node.delete()
-    optislang.dispose()
 
 
 def test_create_node_in_system(optislang: Optislang):
@@ -77,5 +77,3 @@ def test_create_node_in_system(optislang: Optislang):
     sens.delete_children_nodes()
     empty_tuple = sens.get_nodes()
     assert len(empty_tuple) == 0
-
-    optislang.dispose()

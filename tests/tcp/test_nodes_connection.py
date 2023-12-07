@@ -28,7 +28,8 @@ def optislang(tmp_example_project, scope="function", autouse=False) -> Optislang
     """
     osl = Optislang(project_path=tmp_example_project("nodes_connection"))
     osl.timeout = 20
-    return osl
+    yield osl
+    osl.dispose()
 
 
 def test_tcp_slot_proxy_properties(optislang: Optislang):
@@ -41,7 +42,6 @@ def test_tcp_slot_proxy_properties(optislang: Optislang):
     assert isinstance(random_slot.node, TcpNodeProxy)
     assert isinstance(random_slot.type, SlotType)
     assert isinstance(random_slot.type_hint, str)
-    optislang.dispose()
 
 
 def test_tcp_slot_queries(optislang: Optislang):
@@ -53,7 +53,6 @@ def test_tcp_slot_queries(optislang: Optislang):
     assert len(connections) == 1
     assert isinstance(connections[0], Edge)
     assert isinstance(output_slot.get_type_hint(), str)
-    optislang.dispose()
 
 
 def test_edge(optislang: Optislang):
@@ -66,7 +65,6 @@ def test_edge(optislang: Optislang):
     assert isinstance(edge.from_slot, OutputSlot)
     assert isinstance(edge.to_slot, InputSlot)
     assert edge.exists()
-    optislang.dispose()
 
 
 def test_connect_nodes(optislang: Optislang, tmp_path: Path):
@@ -111,4 +109,3 @@ def test_connect_nodes(optislang: Optislang, tmp_path: Path):
     assert len(calc_i.get_connections()) == 2
     calc_i_input.disconnect()
     assert len(calc_i.get_connections()) == 1
-    optislang.dispose()

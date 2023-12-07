@@ -2776,7 +2776,7 @@ class TcpInnerInputSlotProxy(TcpSlotProxy, InnerInputSlot):
         if self._osl_server.osl_version.major >= 24:
             self._osl_server.connect_nodes(
                 from_actor_uid=from_slot.node.uid,
-                from_slot=from_slot,
+                from_slot=from_slot.name,
                 to_actor_uid=self.node.uid,
                 to_slot=self.name,
             )
@@ -2847,7 +2847,7 @@ class TcpInnerOutputSlotProxy(TcpSlotProxy, InnerOutputSlot):
         if self._osl_server.osl_version.major >= 24:
             self._osl_server.connect_nodes(
                 from_actor_uid=self.node.uid,
-                from_slot=self,
+                from_slot=self.name,
                 to_actor_uid=to_slot.node.uid,
                 to_slot=to_slot.name,
             )

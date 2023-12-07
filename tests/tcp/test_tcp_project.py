@@ -1,4 +1,5 @@
 from pathlib import Path
+import time
 
 import pytest
 
@@ -104,6 +105,7 @@ def test_reset(optislang: Optislang):
     project = optislang.project
     assert project is not None
     project.reset()
+    time.sleep(1)
 
 
 def test_run_python_file(optislang: Optislang, tmp_path: Path):
