@@ -412,7 +412,7 @@ class Optislang:
             an operation has completed. If the timeout is ``None``, functions
             wait until they're finished, and no timeout exception is raised.
         """
-        return self.osl_server.timeout
+        return self.__osl_server.timeout
 
     @timeout.setter
     def timeout(self, timeout: Union[float, None] = 30) -> None:
@@ -434,7 +434,7 @@ class Optislang:
         TypeError
             Raised when the timeout is not a Union[float, None].
         """
-        self.osl_server.timeout = timeout
+        self.__osl_server.timeout = timeout
 
     # close method doesn't work properly in optiSLang 2023 R1, Thus, it was commented out
     # def close(self) -> None:
