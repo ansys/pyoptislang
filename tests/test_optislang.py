@@ -19,7 +19,7 @@ def optislang(scope="function", autouse=False) -> Optislang:
         Connects to the optiSLang application and provides an API to control it.
     """
     osl = Optislang()
-    osl.set_timeout(20)
+    osl.timeout = 20
     yield osl
     osl.dispose()
 
@@ -70,9 +70,11 @@ def test_get_set_timeout(optislang: Optislang):
     """Test `get_timeout` and `set_timeout`.
     Note: default value is `None` but timeout set to 20 in @pytest.fixture optislang.
     """
-    timeout = optislang.get_timeout()
+    timeout = optislang.timeout
     assert isinstance(timeout, (float, int))
     assert timeout == 20
+    optislang.timeout = 30
+    assert optislang.timeout == 30
 
 
 def test_get_working_dir(optislang: Optislang):
