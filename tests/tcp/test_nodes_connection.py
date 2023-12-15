@@ -5,8 +5,8 @@ from pathlib import Path
 import pytest
 
 from ansys.optislang.core import Optislang
-from ansys.optislang.core.base_nodes import InputSlot, OutputSlot, SlotType
-from ansys.optislang.core.tcp.base_nodes import (
+from ansys.optislang.core.nodes import InputSlot, OutputSlot, SlotType
+from ansys.optislang.core.tcp.nodes import (
     Edge,
     TcpNodeProxy,
     TcpParametricSystemProxy,
@@ -69,7 +69,6 @@ def test_edge(optislang: Optislang):
 
 def test_connect_nodes(optislang: Optislang, tmp_path: Path):
     """Test connecting nodes, obtaining connections and disconnecting slot."""
-    optislang.application.save_as(file_path=tmp_path / "test_connect_nodes.opf")
     rs: TcpRootSystemProxy = optislang.project.root_system
     a: TcpNodeProxy = rs.find_nodes_by_name("A")[0]
     b: TcpNodeProxy = rs.find_nodes_by_name("B")[0]

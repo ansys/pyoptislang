@@ -1,12 +1,14 @@
 Enumerations
 =============
-.. currentmodule:: ansys.optislang.core.base_nodes
+.. currentmodule:: ansys.optislang.core.nodes
 
 .. autosummary::
    :toctree: _autosummary
    :template: class.rst
 
    DesignFlow
+   NodeClassType
+   RegisteredLocationType
    SlotType
 
 .. currentmodule:: ansys.optislang.core.node_types

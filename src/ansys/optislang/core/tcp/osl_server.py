@@ -1193,6 +1193,7 @@ class TcpOslServer(OslServer):
             Criterion name.
         limit: Optional[str], optional
             Limit expression to be evaluated.
+
         Raises
         ------
         TimeoutError
@@ -2431,6 +2432,31 @@ class TcpOslServer(OslServer):
             return None
         return Path(project_info.get("projects", [{}])[0].get("working_dir", None))
 
+    def load(self, uid: str) -> None:
+        """Explicit load of node.
+
+        Parameters
+        ----------
+        uid: str
+            Actor uid.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        # TODO: create unit test
+        self.send_command(
+            commands.load(
+                actor_uid=uid,
+                password=self.__password,
+            )
+        )
+
     def new(self) -> None:
         """Create a new project.
 
@@ -2499,6 +2525,312 @@ class TcpOslServer(OslServer):
             )
         )
 
+    def re_register_locations_as_parameter(self, uid: str) -> None:
+        """Adjust all input locations with the already registered parameters.
+
+        Parameters
+        ----------
+        uid: str
+            Actor uid.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        # TODO: create unit test
+        self.send_command(
+            commands.re_register_locations_as_parameter(
+                actor_uid=uid,
+                password=self.__password,
+            )
+        )
+
+    def re_register_locations_as_response(self, uid: str) -> None:
+        """Adjust all input locations with the already registered responses.
+
+        Parameters
+        ----------
+        uid: str
+            Actor uid.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        # TODO: create unit test
+        self.send_command(
+            commands.re_register_locations_as_response(
+                actor_uid=uid,
+                password=self.__password,
+            )
+        )
+
+    def register_location_as_input_slot(
+        self,
+        uid: str,
+        location: Any,
+        name: Optional[str] = None,
+        reference_value: Optional[Any] = None,
+    ) -> None:
+        """Register a certain (input) location as a input slot.
+
+        Parameters
+        ----------
+        uid: str
+            Actor uid.
+        location: Any
+            Specification of location, depends on actor type.
+        name: Optional[str], optional
+            Input slot name.
+        reference_value: Optional[Any], optional
+            Input slot reference value.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        # TODO: create unit test
+        self.send_command(
+            commands.register_location_as_input_slot(
+                actor_uid=uid,
+                location=location,
+                name=name,
+                reference_value=reference_value,
+                password=self.__password,
+            )
+        )
+
+    def register_location_as_internal_variable(
+        self,
+        uid: str,
+        location: Any,
+        name: Optional[str] = None,
+        reference_value: Optional[Any] = None,
+    ) -> None:
+        """Register a certain (output) location as an internal variable.
+
+        Parameters
+        ----------
+        uid: str
+            Actor uid.
+        location: Any
+            Specification of location, depends on actor type.
+        name: Optional[str], optional
+            Variable name.
+        reference_value: Optional[Any], optional
+            Variable reference value.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        # TODO: create unit test
+        self.send_command(
+            commands.register_location_as_internal_variable(
+                actor_uid=uid,
+                location=location,
+                name=name,
+                reference_value=reference_value,
+                password=self.__password,
+            )
+        )
+
+    def register_location_as_output_slot(
+        self,
+        uid: str,
+        location: Any,
+        name: Optional[str] = None,
+        reference_value: Optional[Any] = None,
+    ) -> None:
+        """Register a certain (output) location as a output slot.
+
+        Parameters
+        ----------
+        uid: str
+            Actor uid.
+        location: Any
+            Specification of location, depends on actor type.
+        name: Optional[str], optional
+            Output slot name.
+        reference_value: Optional[Any], optional
+            Output slot reference value.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        # TODO: create unit test
+        self.send_command(
+            commands.register_location_as_output_slot(
+                actor_uid=uid,
+                location=location,
+                name=name,
+                reference_value=reference_value,
+                password=self.__password,
+            )
+        )
+
+    def register_location_as_parameter(
+        self,
+        uid: str,
+        location: Any,
+        name: Optional[str] = None,
+        reference_value: Optional[Any] = None,
+    ) -> None:
+        """Register a certain (input) location as a parameter.
+
+        Parameters
+        ----------
+        uid: str
+            Actor uid.
+        location: Any
+            Specification of location, depends on actor type.
+        name: Optional[str], optional
+            Parameter name.
+        reference_value: Optional[Any], optional
+            Parameter reference value.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        # TODO: create unit test
+        self.send_command(
+            commands.register_location_as_parameter(
+                actor_uid=uid,
+                location=location,
+                name=name,
+                reference_value=reference_value,
+                password=self.__password,
+            )
+        )
+
+    def register_locations_as_parameter(
+        self,
+        uid: str,
+    ) -> None:
+        """Register all input locations as parameters initially.
+
+        Parameters
+        ----------
+        uid: str
+            Actor uid.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        # TODO: create unit test
+        self.send_command(
+            commands.register_locations_as_parameter(
+                actor_uid=uid,
+                password=self.__password,
+            )
+        )
+
+    def register_location_as_response(
+        self,
+        uid: str,
+        location: Any,
+        name: Optional[str] = None,
+        reference_value: Optional[Any] = None,
+    ) -> None:
+        """Register a certain (output) location as a response.
+
+        Parameters
+        ----------
+        uid: str
+            Actor uid.
+        location: Any
+            Specification of location, depends on actor type.
+        name: Optional[str], optional
+            Response name.
+        reference_value: Optional[Any], optional
+            Response reference value.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        # TODO: create unit test
+        self.send_command(
+            commands.register_location_as_response(
+                actor_uid=uid,
+                location=location,
+                name=name,
+                reference_value=reference_value,
+                password=self.__password,
+            )
+        )
+
+    def register_locations_as_response(
+        self,
+        uid: str,
+    ) -> None:
+        """Registration of all input locations as responses initially.
+
+        Parameters
+        ----------
+        uid: str
+            Actor uid.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        # TODO: create unit test
+        self.send_command(
+            commands.register_locations_as_response(
+                actor_uid=uid,
+                password=self.__password,
+            )
+        )
+
     def remove_criteria(self, uid: str) -> None:
         """Remove all criteria from the system.
 
@@ -2562,8 +2894,17 @@ class TcpOslServer(OslServer):
         """
         self.send_command(commands.remove_node(actor_uid=actor_uid, password=self.__password))
 
-    def reset(self):
-        """Reset complete project.
+    def reset(self, actor_uid: Optional[str] = None, hid: Optional[str] = None):
+        """Reset complete project or a specific actor state.
+
+        For a complete project reset, do not specify the actor_uid and hid entries.
+
+        Parameters
+        ----------
+        actor_uid: Optional[str], optional
+            Actor uid entry. A Hirearchical ID (hid) is required. By default ``None``.
+        hid: Optional[str], optional
+            Hid entry. The actor uid is required. By default ``None``.
 
         Raises
         ------
@@ -2574,7 +2915,7 @@ class TcpOslServer(OslServer):
         TimeoutError
             Raised when the timeout float value expires.
         """
-        self.send_command(commands.reset(password=self.__password))
+        self.send_command(commands.reset(actor_uid=actor_uid, hid=hid, password=self.__password))
 
     def run_python_script(
         self,

@@ -5,7 +5,8 @@ import pytest
 from ansys.optislang.core import Optislang
 from ansys.optislang.core.io import File, FileOutputFormat, RegisteredFile
 from ansys.optislang.core.node_types import AddinType, NodeType
-from ansys.optislang.core.tcp.base_nodes import (
+from ansys.optislang.core.tcp.managers import CriteriaManager, ParameterManager, ResponseManager
+from ansys.optislang.core.tcp.nodes import (
     Edge,
     TcpInnerInputSlotProxy,
     TcpInnerOutputSlotProxy,
@@ -16,7 +17,6 @@ from ansys.optislang.core.tcp.base_nodes import (
     TcpRootSystemProxy,
     TcpSystemProxy,
 )
-from ansys.optislang.core.tcp.managers import CriteriaManager, ParameterManager, ResponseManager
 
 pytestmark = pytest.mark.local_osl
 

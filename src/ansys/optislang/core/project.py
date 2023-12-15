@@ -6,8 +6,8 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Sequence, Tuple, Union
 
 if TYPE_CHECKING:
-    from ansys.optislang.core.base_nodes import RootSystem
     from ansys.optislang.core.io import RegisteredFile
+    from ansys.optislang.core.nodes import RootSystem
     from ansys.optislang.core.project_parametric import Design
 
 

@@ -385,7 +385,7 @@ class Optislang:
         return self.__name
 
     @property
-    def osl_server(self) -> Union[OslServer, None]:
+    def osl_server(self) -> Optional[OslServer]:
         """Get the currently used instance of the OslServer.
 
         This instance can be used to directly communicate with optiSLang using
@@ -393,7 +393,7 @@ class Optislang:
 
         Returns
         -------
-        Union[OslServer, None]
+        Optional[OslServer]
             OptiSLang server object.
         """
         return self.__osl_server
@@ -484,7 +484,7 @@ class Optislang:
         self.__osl_server.dispose()
 
     @deprecated(version="0.5.0", reason="Use :py:attr:`Optislang.osl_server` instead.")
-    def get_osl_server(self) -> Union[OslServer, None]:
+    def get_osl_server(self) -> Optional[OslServer]:
         """Get the currently used instance of the OslServer.
 
         This instance can be used to directly communicate with optiSLang using
@@ -492,18 +492,11 @@ class Optislang:
 
         Returns
         -------
-        Union[OslServer, None]
+        Optional[OslServer]
             OptiSLang server object.
         """
         return self.osl_server
 
-    @deprecated(
-        version="0.5.0",
-        reason=(
-            "This functionality was moved to "
-            ":py:class:`Application <ansys.optislang.core.application.Application>`."
-        ),
-    )
     @deprecated(version="0.5.0", reason="Use :py:attr:`Optislang.osl_version_string` instead.")
     def get_osl_version_string(self) -> str:
         """Get the optiSLang version in use as a string.

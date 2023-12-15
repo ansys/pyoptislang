@@ -3,7 +3,7 @@
 ==================
 Design evaluation
 ==================
-You use the :py:class:`RootSystem <ansys.optislang.core.base_nodes.RootSystem>` class to
+You use the :py:class:`RootSystem <ansys.optislang.core.nodes.RootSystem>` class to
 create and evaluate designs. To access this class from the
 :py:class:`Optislang <ansys.optislang.core.optislang.Optislang>` instance,
 you use the :py:attr:`Project.root_system <ansys.optislang.core.project.Project.root_system>` property:
@@ -49,14 +49,14 @@ Create a design
 ---------------
 To create an instance of the :py:class:`Design <ansys.optislang.core.project_parametric.Design>`
 class, you can obtain a design with reference values from the
-:py:class:`RootSystem <ansys.optislang.core.base_nodes.RootSystem>` class
+:py:class:`RootSystem <ansys.optislang.core.nodes.RootSystem>` class
 and either modify its parameters or specify design parameters from scratch.
 
 
 Create a design from reference values
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 If a design has all parameters specified in the project, you can use the
-:py:meth:`get_reference_design() <ansys.optislang.core.base_nodes.RootSystem.get_reference_design>`
+:py:meth:`get_reference_design() <ansys.optislang.core.nodes.RootSystem.get_reference_design>`
 method to obtain the design's reference values. You can then modify
 parameter values using methods in the
 :py:class:`Design <ansys.optislang.core.project_parametric.Design>` class.
@@ -104,10 +104,10 @@ Verify design parameters
 ~~~~~~~~~~~~~~~~~~~~~~~~
 To verify if the design contains all parameters defined in the
 project, you use the
-:py:meth:`get_missing_parameters_names() <ansys.optislang.core.base_nodes.RootSystem.get_missing_parameters_names>`
+:py:meth:`get_missing_parameters_names() <ansys.optislang.core.nodes.RootSystem.get_missing_parameters_names>`
 method. To verify if the design contains parameters that are not defined
 in the project, you use the
-:py:meth:`get_undefined_parameters_names() <ansys.optislang.core.base_nodes.RootSystem.get_undefined_parameters_names>`
+:py:meth:`get_undefined_parameters_names() <ansys.optislang.core.nodes.RootSystem.get_undefined_parameters_names>`
 method. Running these verifications are not necessary though, because they
 always run internally while evaluating the design.
 
@@ -122,7 +122,7 @@ always run internally while evaluating the design.
 Evaluate the design
 -------------------
 To evaluate a design, you use the
-:py:meth:`evaluate_design() <ansys.optislang.core.base_nodes.RootSystem.evaluate_design>` method.
+:py:meth:`evaluate_design() <ansys.optislang.core.nodes.RootSystem.evaluate_design>` method.
 This method returns the same :py:class:`Design <ansys.optislang.core.project_parametric.Design>`
 instance with updated results.
 

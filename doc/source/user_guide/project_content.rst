@@ -31,11 +31,11 @@ Project structure
 The optiSLang project can be represented by a rooted tree structure. This structure consists 
 of nodes and the connections between these nodes. On the top level, there is one node
 designated as a project root system. It is represented by the
-:py:class:`RootSystem <ansys.optislang.core.base_nodes.RootSystem>` 
+:py:class:`RootSystem <ansys.optislang.core.nodes.RootSystem>` 
 instance. Each :py:class:`System <ansys.optislang.base_core.nodes.System>`
-, such as the :py:class:`RootSystem <ansys.optislang.core.base_nodes.RootSystem>` class or 
-:py:class:`ParametricSystem <ansys.optislang.core.base_nodes.ParametricSystem>` class, has a 
-:py:meth:`get_nodes() <ansys.optislang.core.bases_nodes.System.get_nodes>` method that returns all its
+, such as the :py:class:`RootSystem <ansys.optislang.core.nodes.RootSystem>` class or 
+:py:class:`ParametricSystem <ansys.optislang.core.nodes.ParametricSystem>` class, has a 
+:py:meth:`get_nodes() <ansys.optislang.core.nodes.System.get_nodes>` method that returns all its
 direct children nodes. This provides the ability to determine the entire project structure.
 
 The code shows how to go through all nodes in the project and print information about them:

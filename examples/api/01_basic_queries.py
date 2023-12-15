@@ -18,8 +18,8 @@ from pathlib import Path
 import tempfile
 
 from ansys.optislang.core import Optislang
-from ansys.optislang.core.base_nodes import ParametricSystem, System
 import ansys.optislang.core.examples as examples
+from ansys.optislang.core.nodes import ParametricSystem, System
 
 #########################################################
 # Helper functions

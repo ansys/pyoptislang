@@ -1,6 +1,6 @@
 Nodes connection
 ================
-.. currentmodule:: ansys.optislang.core.base_nodes
+.. currentmodule:: ansys.optislang.core.nodes
 
 .. autosummary::
    :toctree: _autosummary

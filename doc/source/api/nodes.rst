@@ -1,11 +1,11 @@
 Nodes
 =====
-These classes are specific to the :py:mod:`ansys.optislang.core.base_nodes <ansys.optislang.core.base_nodes>` module:
+These classes are specific to the :py:mod:`ansys.optislang.core.nodes <ansys.optislang.core.nodes>` module:
 
 .. toctree::
    :maxdepth: 2
 
-   base_nodes
+   node_classes
    nodes_connection
-   base_nodes_enumerations
+   nodes_enumerations
    node_types

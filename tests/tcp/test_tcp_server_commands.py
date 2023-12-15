@@ -469,6 +469,25 @@ def test_link_registered_file():
         sc.link_registered_file()
 
 
+def test_load():
+    "Test ``load``."
+    # basic
+    json_string = sc.load(actor_uid=actor_uid)
+    dictionary = json.loads(json_string)
+    requiered_string = json.loads(
+        '{ "projects": [ { "commands": [ { "type": "builtin", "command": "LOAD", "actor_uid": '
+        '"5cdfb20b-bef6-4412-9985-89f5ded5ee95" } ] } ] }'
+    )
+    assert type(json_string) == str
+    assert sorted(dictionary.items()) == sorted(requiered_string.items())
+    # with password
+    json_string = sc.load(actor_uid=actor_uid, password=example_password)
+    dictionary = json.loads(json_string)
+    dictionary["Password"] == example_password
+    with pytest.raises(TypeError):
+        sc.load()
+
+
 def test_new():
     "Test new."
     # basic
@@ -647,6 +666,110 @@ def test_register_listener():
         sc.register_listener()
 
 
+def test_register_location_as_input_slot():
+    "Test ``register_location_as_input_slot``."
+    # basic
+    json_string = sc.register_location_as_input_slot(
+        actor_uid=actor_uid, location={}, name="my_name", reference_value=42.0
+    )
+    dictionary = json.loads(json_string)
+    requiered_string = json.loads(
+        (
+            '{"projects": [{"commands": [{"actor_uid": "5cdfb20b-bef6-4412-9985-89f5ded5ee95",'
+            '"args": {"location": {}, "name": "my_name", "reference_value": 42.0},'
+            '"command": "REGISTER_LOCATION_AS_INPUT_SLOT", "type": "builtin"}]}]}'
+        )
+    )
+    assert type(json_string) == str
+    assert sorted(dictionary.items()) == sorted(requiered_string.items())
+    # with password
+    json_string = sc.register_location_as_input_slot(
+        actor_uid=actor_uid, location={}, password=example_password
+    )
+    dictionary = json.loads(json_string)
+    dictionary["Password"] == example_password
+    with pytest.raises(TypeError):
+        sc.register_location_as_input_slot()
+
+
+def test_register_location_as_internal_variable():
+    "Test ``register_location_as_internal_variable``."
+    # basic
+    json_string = sc.register_location_as_internal_variable(
+        actor_uid=actor_uid, location={}, name="my_name", reference_value=42.0
+    )
+    dictionary = json.loads(json_string)
+    requiered_string = json.loads(
+        (
+            '{"projects": [{"commands": [{"actor_uid": "5cdfb20b-bef6-4412-9985-89f5ded5ee95",'
+            '"args": {"location": {}, "name": "my_name", "reference_value": 42.0},'
+            '"command": "REGISTER_LOCATION_AS_INTERNAL_VARIABLE", "type": "builtin"}]}]}'
+        )
+    )
+    assert type(json_string) == str
+    assert sorted(dictionary.items()) == sorted(requiered_string.items())
+    # with password
+    json_string = sc.register_location_as_internal_variable(
+        actor_uid=actor_uid, location={}, password=example_password
+    )
+    dictionary = json.loads(json_string)
+    dictionary["Password"] == example_password
+    with pytest.raises(TypeError):
+        sc.register_location_as_internal_variable()
+
+
+def test_register_location_as_output_slot():
+    "Test ``register_location_as_output_slot``."
+    # basic
+    json_string = sc.register_location_as_output_slot(
+        actor_uid=actor_uid, location={}, name="my_name", reference_value=42.0
+    )
+    dictionary = json.loads(json_string)
+    requiered_string = json.loads(
+        (
+            '{"projects": [{"commands": [{"actor_uid": "5cdfb20b-bef6-4412-9985-89f5ded5ee95",'
+            '"args": {"location": {}, "name": "my_name", "reference_value": 42.0},'
+            '"command": "REGISTER_LOCATION_AS_OUTPUT_SLOT", "type": "builtin"}]}]}'
+        )
+    )
+    assert type(json_string) == str
+    assert sorted(dictionary.items()) == sorted(requiered_string.items())
+    # with password
+    json_string = sc.register_location_as_output_slot(
+        actor_uid=actor_uid, location={}, password=example_password
+    )
+    dictionary = json.loads(json_string)
+    dictionary["Password"] == example_password
+    with pytest.raises(TypeError):
+        sc.register_location_as_output_slot()
+
+
+def test_register_location_as_parameter():
+    "Test ``register_location_as_parameter``."
+    # basic
+    json_string = sc.register_location_as_parameter(
+        actor_uid=actor_uid, location={}, name="my_name", reference_value=42.0
+    )
+    dictionary = json.loads(json_string)
+    requiered_string = json.loads(
+        (
+            '{"projects": [{"commands": [{"actor_uid": "5cdfb20b-bef6-4412-9985-89f5ded5ee95",'
+            '"args": {"location": {}, "name": "my_name", "reference_value": 42.0},'
+            '"command": "REGISTER_LOCATION_AS_PARAMETER", "type": "builtin"}]}]}'
+        )
+    )
+    assert type(json_string) == str
+    assert sorted(dictionary.items()) == sorted(requiered_string.items())
+    # with password
+    json_string = sc.register_location_as_parameter(
+        actor_uid=actor_uid, location={}, password=example_password
+    )
+    dictionary = json.loads(json_string)
+    dictionary["Password"] == example_password
+    with pytest.raises(TypeError):
+        sc.register_location_as_parameter()
+
+
 def test_register_locations_as_parameter():
     "Test register_locations_as_parameter."
     # basic
@@ -665,6 +788,32 @@ def test_register_locations_as_parameter():
     dictionary["Password"] == example_password
     with pytest.raises(TypeError):
         sc.register_locations_as_parameter()
+
+
+def test_register_location_as_response():
+    "Test ``register_location_as_response``."
+    # basic
+    json_string = sc.register_location_as_response(
+        actor_uid=actor_uid, location={}, name="my_name", reference_value=42.0
+    )
+    dictionary = json.loads(json_string)
+    requiered_string = json.loads(
+        (
+            '{"projects": [{"commands": [{"actor_uid": "5cdfb20b-bef6-4412-9985-89f5ded5ee95",'
+            '"args": {"location": {}, "name": "my_name", "reference_value": 42.0},'
+            '"command": "REGISTER_LOCATION_AS_RESPONSE", "type": "builtin"}]}]}'
+        )
+    )
+    assert type(json_string) == str
+    assert sorted(dictionary.items()) == sorted(requiered_string.items())
+    # with password
+    json_string = sc.register_location_as_response(
+        actor_uid=actor_uid, location={}, password=example_password
+    )
+    dictionary = json.loads(json_string)
+    dictionary["Password"] == example_password
+    with pytest.raises(TypeError):
+        sc.register_location_as_response()
 
 
 def test_register_locations_as_response():
@@ -1164,7 +1313,6 @@ def test_set_start_designs():
     "Test set_start_designs."
     # opt1
     json_string = sc.set_start_designs(actor_uid=actor_uid, start_designs=start_designs)
-    print(json_string)
     dictionary = json.loads(json_string)
     requiered_string = json.loads(
         '{ "projects": [ { "commands": [ { "type": "builtin", "command": "SET_START_DESIGNS", '

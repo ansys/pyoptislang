@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING, Dict, List, Sequence, Tuple, Union
 
 from ansys.optislang.core.io import RegisteredFile, RegisteredFileUsage
 from ansys.optislang.core.project import Project
-from ansys.optislang.core.tcp.base_nodes import TcpRootSystemProxy
+from ansys.optislang.core.tcp.nodes import TcpRootSystemProxy
 
 if TYPE_CHECKING:
     from ansys.optislang.core.project_parametric import Design

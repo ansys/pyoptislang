@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING, Any
 
 import pytest
 
-from ansys.optislang.core.base_nodes import DesignFlow, SlotType
+from ansys.optislang.core.nodes import DesignFlow, NodeClassType, RegisteredLocationType, SlotType
 
 if TYPE_CHECKING:
     from enum import Enum
@@ -55,6 +55,36 @@ def test_design_flow(design_flow: DesignFlow, name: str):
 
 
 @pytest.mark.parametrize(
+    "node_class_type, name",
+    [
+        (NodeClassType, "NODE"),
+        (NodeClassType, "SYSTEM"),
+        (NodeClassType, "PARAMETRIC_SYSTEM"),
+        (NodeClassType, "ROOT_SYSTEM"),
+        (NodeClassType, "INTEGRATION_NODE"),
+    ],
+)
+def test_node_class_type(node_class_type: NodeClassType, name: str):
+    """Test `NodeClassType`."""
+    enumeration_test_method(enumeration_class=node_class_type, enumeration_name=name)
+
+
+@pytest.mark.parametrize(
+    "registered_location_type, name",
+    [
+        (RegisteredLocationType, "INPUT_SLOT"),
+        (RegisteredLocationType, "INTERNAL_VARIABLE"),
+        (RegisteredLocationType, "OUTPUT_SLOT"),
+        (RegisteredLocationType, "PARAMETER"),
+        (RegisteredLocationType, "RESPONSE"),
+    ],
+)
+def test_registered_location_type(registered_location_type: RegisteredLocationType, name: str):
+    """Test `RegisteredLocationType`."""
+    enumeration_test_method(enumeration_class=registered_location_type, enumeration_name=name)
+
+
+@pytest.mark.parametrize(
     "slot_type, name, direction",
     [
         (SlotType, "INPUT", "receiving"),
@@ -73,6 +103,8 @@ def test_slot_type(slot_type: SlotType, name: str, direction: str):
     "enumeration_class, invalid_value, invalid_value_type",
     [
         (DesignFlow, "invalid", 1),
+        (NodeClassType, "invalid", 1),
+        (RegisteredLocationType, "invalid", 1),
         (SlotType, "invalid", 1),
     ],
 )

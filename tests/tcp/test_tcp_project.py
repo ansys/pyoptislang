@@ -6,12 +6,12 @@ import pytest
 from ansys.optislang.core import Optislang
 from ansys.optislang.core.io import RegisteredFile
 from ansys.optislang.core.project_parametric import Design
-from ansys.optislang.core.tcp.base_nodes import TcpRootSystemProxy
 from ansys.optislang.core.tcp.managers import (
     TcpCriteriaManagerProxy,
     TcpParameterManagerProxy,
     TcpResponseManagerProxy,
 )
+from ansys.optislang.core.tcp.nodes import TcpRootSystemProxy
 from ansys.optislang.core.tcp.project import TcpProjectProxy
 
 pytestmark = pytest.mark.local_osl

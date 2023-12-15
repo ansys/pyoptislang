@@ -66,6 +66,73 @@ class DesignFlow(Enum):
         return enum_from_str(string=string, enum_class=__class__, replace=(" ", "_"))
 
 
+class NodeClassType(Enum):
+    """Provides ``LocationType`` options."""
+
+    NODE = 0
+    SYSTEM = 1
+    PARAMETRIC_SYSTEM = 2
+    ROOT_SYSTEM = 3
+    INTEGRATION_NODE = 4
+
+    @staticmethod
+    def from_str(string: str) -> NodeClassType:
+        """Convert string to an instance of the ``NodeClassType`` class.
+
+        Parameters
+        ----------
+        string: str
+            String to be converted.
+
+        Returns
+        -------
+        NodeClassType
+            Instance of the ``NodeClassType`` class.
+
+        Raises
+        ------
+        TypeError
+            Raised when an invalid type of ``string`` is given.
+        ValueError
+            Raised when an invalid value of ``string`` is given.
+        """
+        return enum_from_str(string=string, enum_class=__class__, replace=(" ", "_"))
+
+
+class RegisteredLocationType(Enum):
+    """Provides ``LocationType`` options."""
+
+    INTERNAL_VARIABLE = 0
+    PARAMETER = 1
+    RESPONSE = 2
+    INPUT_SLOT = 3
+    OUTPUT_SLOT = 4
+
+    @staticmethod
+    def from_str(string: str) -> RegisteredLocationType:
+        """Convert string to an instance of the ``LocationType`` class.
+
+        Parameters
+        ----------
+        string: str
+            String to be converted.
+
+        Returns
+        -------
+        LocationType
+            Instance of the ``LocationType`` class.
+
+        Raises
+        ------
+        TypeError
+            Raised when an invalid type of ``string`` is given.
+        ValueError
+            Raised when an invalid value of ``string`` is given.
+        """
+        # TODO: test
+        return enum_from_str(string=string, enum_class=__class__)
+
+
 class SlotType(Enum):
     """Provides slot type options."""
 
@@ -496,6 +563,178 @@ class Node(ABC):
             Property name.
         value : Any
             Property value.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        pass
+
+
+class IntegrationNode(Node):
+    """Base class for classes which provide for creating and operating on an integration node."""
+
+    @abstractmethod
+    def __init__(self):  # pragma: no cover
+        """``IntegrationNode`` class is an abstract base class and cannot be instantiated."""
+        pass
+
+    @abstractmethod
+    def get_available_input_locations(self) -> Tuple:  # pragma: no cover
+        """Get available input locations for the current node.
+
+        Returns
+        -------
+        Tuple
+            Available input locations.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        pass
+
+    @abstractmethod
+    def get_available_output_locations(self) -> Tuple:  # pragma: no cover
+        """Get available output locations for the current node.
+
+        Returns
+        -------
+        Tuple
+            Available output locations.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        pass
+
+    @abstractmethod
+    def get_registered_locations(
+        self, registered_locations_type: Union[RegisteredLocationType, str]
+    ) -> Tuple:  # pragma: no cover
+        """Get registered locations of the given type.
+
+        Parameters
+        ----------
+        registered_locations_type : Union[RegisteredLocationType, str]
+            Type of the registered location.
+
+        Returns
+        -------
+        Tuple
+            Registered locations of the given type.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        pass
+
+    @abstractmethod
+    def load(self) -> None:  # pragma: no cover
+        """Explicitly load the node.
+
+        Some optiSLang nodes support/need an explicit load prior to being able to register
+        or to make registering more convenient.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        pass
+
+    @abstractmethod
+    def register_location(
+        self,
+        register_as: Union[RegisteredLocationType, str],
+        location: Any,
+        name: Optional[str] = None,
+        reference_value: Optional[Any] = None,
+    ) -> None:  # pragma: no cover
+        """Register the given location as the given type.
+
+        Parameters
+        ----------
+        register_as : Union[RegisteredLocationType, str]
+            Type of object that is to be created at the given location.
+        location : Any
+            Location to be registered.
+        name : Optional[str], optional
+            Name of the registered object, by default ``None``.
+        reference_value : Optional[Any], optional
+            Reference value of the registered object, by default ``None``.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        pass
+
+    @abstractmethod
+    def register_locations(
+        self, register_as: Union[RegisteredLocationType, str]
+    ) -> None:  # pragma: no cover
+        """Register all available locations as the given type initially.
+
+        Parameters
+        ----------
+        register_as : Union[RegisteredLocationType, str]
+            Type of objects that are to be created. Supported for parameters (input locations)
+            and responses (output locations).
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        pass
+
+    @abstractmethod
+    def re_register_location(
+        self, registered_as: Union[RegisteredLocationType, str]
+    ) -> None:  # pragma: no cover
+        """Adjust locations with already registered objects of the given type.
+
+        Parameters
+        ----------
+        registered_as : Union[RegisteredLocationType, str]
+            Type of objects that are to be adjusted. Supported for parameters (input locations)
+            and responses (output locations).
 
         Raises
         ------

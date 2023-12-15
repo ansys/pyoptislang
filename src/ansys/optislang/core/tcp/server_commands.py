@@ -17,6 +17,7 @@ _EVALUATE_DESIGN = "EVALUATE_DESIGN"
 _EXPORT_DESIGNS = "EXPORT_DESIGNS"
 _FINALIZE = "FINALIZE"
 _LINK_REGISTERED_FILE = "LINK_REGISTERED_FILE"
+_LOAD = "LOAD"
 _NEW = "NEW"
 _OPEN = "OPEN"
 _PAUSE = "PAUSE"
@@ -24,7 +25,12 @@ _REEVALUATE_STATE = "REEVALUATE_STATE"
 _REFRESH_LISTENER_REGISTRATION = "REFRESH_LISTENER_REGISTRATION"
 _REGISTER_FILE = "REGISTER_FILE"
 _REGISTER_LISTENER = "REGISTER_LISTENER"
+_REGISTER_LOCATION_AS_INPUT_SLOT = "REGISTER_LOCATION_AS_INPUT_SLOT"
+_REGISTER_LOCATION_AS_INTERNAL_VARIABLE = "REGISTER_LOCATION_AS_INTERNAL_VARIABLE"
+_REGISTER_LOCATION_AS_OUTPUT_SLOT = "REGISTER_LOCATION_AS_OUTPUT_SLOT"
+_REGISTER_LOCATION_AS_PARAMETER = "REGISTER_LOCATION_AS_PARAMETER"
 _REGISTER_LOCATIONS_AS_PARAMETER = "REGISTER_LOCATIONS_AS_PARAMETER"
+_REGISTER_LOCATION_AS_RESPONSE = "REGISTER_LOCATION_AS_RESPONSE"
 _REGISTER_LOCATIONS_AS_RESPONSE = "REGISTER_LOCATIONS_AS_RESPONSE"
 _REMOVE_CRITERIA = "REMOVE_CRITERIA"
 _REMOVE_CRITERION = "REMOVE_CRITERION"
@@ -519,6 +525,24 @@ def link_registered_file(actor_uid: str, uid: str, password: Optional[str] = Non
     )
 
 
+def load(actor_uid: str, password: Optional[str] = None) -> str:
+    """Generate JSON string of ``load`` command.
+
+    Parameters
+    ----------
+    actor_uid: str
+        Actor uid entry.
+    password : Optional[str], optional
+        Password, by default ``None``.
+
+    Returns
+    -------
+    str
+        JSON string of ``load`` command.
+    """
+    return _to_json(_gen_server_command(command=_LOAD, actor_uid=actor_uid, password=password))
+
+
 def new(password: Optional[str] = None) -> str:
     """Generate JSON string of ``new`` command.
 
@@ -728,8 +752,188 @@ def register_listener(
     return _to_json(_gen_server_command(command=_REGISTER_LISTENER, args=args, password=password))
 
 
-def register_locations_as_parameter(actor_uid: str, password: Optional[str] = None) -> str:
+def register_location_as_input_slot(
+    actor_uid: str,
+    location: dict,
+    name: Optional[str] = None,
+    reference_value: Optional[Any] = None,
+    password: Optional[str] = None,
+) -> str:
+    """Generate JSON string of ``register_location_as_input_slot`` command.
+
+    Parameters
+    ----------
+    actor_uid: str
+        Actor uid entry.
+    location: dict
+        Dictionary with location properties.
+    name: Optional[str], optional
+        Input slot name.
+    reference_value: Optional[Any], optional
+        Input slot reference value.
+    password : Optional[str], optional
+        Password, by default ``None``.
+
+    Returns
+    -------
+    str
+        JSON string of ``register_location_as_input_slot`` command.
+    """
+    args: CommandArgs = {
+        "location": location,
+    }
+    if name is not None:
+        args["name"] = name
+    if reference_value is not None:
+        args["reference_value"] = reference_value
+
+    return _to_json(
+        _gen_server_command(
+            command=_REGISTER_LOCATION_AS_INPUT_SLOT,
+            actor_uid=actor_uid,
+            args=args,
+            password=password,
+        )
+    )
+
+
+def register_location_as_internal_variable(
+    actor_uid: str,
+    location: dict,
+    name: Optional[str] = None,
+    reference_value: Optional[Any] = None,
+    password: Optional[str] = None,
+) -> str:
+    """Generate JSON string of ``register_location_as_internal_variable`` command.
+
+    Parameters
+    ----------
+    actor_uid: str
+        Actor uid entry.
+    location: dict
+        Dictionary with location properties.
+    name: Optional[str], optional
+        Variable name.
+    reference_value: Optional[Any], optional
+        Variable reference value.
+    password : Optional[str], optional
+        Password, by default ``None``.
+
+    Returns
+    -------
+    str
+        JSON string of ``register_location_as_internal_variable` command.
+    """
+    args: CommandArgs = {
+        "location": location,
+    }
+    if name is not None:
+        args["name"] = name
+    if reference_value is not None:
+        args["reference_value"] = reference_value
+
+    return _to_json(
+        _gen_server_command(
+            command=_REGISTER_LOCATION_AS_INTERNAL_VARIABLE,
+            actor_uid=actor_uid,
+            args=args,
+            password=password,
+        )
+    )
+
+
+def register_location_as_output_slot(
+    actor_uid: str,
+    location: dict,
+    name: Optional[str] = None,
+    reference_value: Optional[Any] = None,
+    password: Optional[str] = None,
+) -> str:
+    """Generate JSON string of ``register_location_as_output_slot`` command.
+
+    Parameters
+    ----------
+    actor_uid: str
+        Actor uid entry.
+    location: dict
+        Dictionary with location properties.
+    name: Optional[str], optional
+        Output slot name.
+    reference_value: Optional[Any], optional
+        Output slot reference value.
+    password : Optional[str], optional
+        Password, by default ``None``.
+
+    Returns
+    -------
+    str
+        JSON string of ``register_location_as_output_slot` command.
+    """
+    args: CommandArgs = {
+        "location": location,
+    }
+    if name is not None:
+        args["name"] = name
+    if reference_value is not None:
+        args["reference_value"] = reference_value
+
+    return _to_json(
+        _gen_server_command(
+            command=_REGISTER_LOCATION_AS_OUTPUT_SLOT,
+            actor_uid=actor_uid,
+            args=args,
+            password=password,
+        )
+    )
+
+
+def register_location_as_parameter(
+    actor_uid: str,
+    location: dict,
+    name: Optional[str] = None,
+    reference_value: Optional[Any] = None,
+    password: Optional[str] = None,
+) -> str:
     """Generate JSON string of ``register_location_as_parameter`` command.
+
+    Parameters
+    ----------
+    actor_uid: str
+        Actor uid entry.
+    location: dict
+        Dictionary with location properties.
+    name: Optional[str], optional
+        Parameter name.
+    reference_value: Optional[Any], optional
+        Parameter reference value.
+    password : Optional[str], optional
+        Password, by default ``None``.
+
+    Returns
+    -------
+    str
+        JSON string of ``register_location_as_parameter` command.
+    """
+    args: CommandArgs = {
+        "location": location,
+    }
+    if name is not None:
+        args["name"] = name
+    if reference_value is not None:
+        args["reference_value"] = reference_value
+
+    return _to_json(
+        _gen_server_command(
+            command=_REGISTER_LOCATION_AS_PARAMETER,
+            actor_uid=actor_uid,
+            args=args,
+            password=password,
+        )
+    )
+
+
+def register_locations_as_parameter(actor_uid: str, password: Optional[str] = None) -> str:
+    """Generate JSON string of ``register_locations_as_parameter`` command.
 
     Parameters
     ----------
@@ -741,7 +945,7 @@ def register_locations_as_parameter(actor_uid: str, password: Optional[str] = No
     Returns
     -------
     str
-        JSON string of ``register_location_as_parameter`` command.
+        JSON string of ``register_locations_as_parameter`` command.
     """
     return _to_json(
         _gen_server_command(
@@ -750,8 +954,53 @@ def register_locations_as_parameter(actor_uid: str, password: Optional[str] = No
     )
 
 
-def register_locations_as_response(actor_uid: str, password: Optional[str] = None) -> str:
+def register_location_as_response(
+    actor_uid: str,
+    location: dict,
+    name: Optional[str] = None,
+    reference_value: Optional[Any] = None,
+    password: Optional[str] = None,
+) -> str:
     """Generate JSON string of ``register_location_as_response`` command.
+
+    Parameters
+    ----------
+    actor_uid: str
+        Actor uid entry.
+    location: dict
+        Dictionary with location properties.
+    name: Optional[str], optional
+        Response name.
+    reference_value: Optional[Any], optional
+        Response reference value.
+    password : Optional[str], optional
+        Password, by default ``None``.
+
+    Returns
+    -------
+    str
+        JSON string of ``register_location_as_response` command.
+    """
+    args: CommandArgs = {
+        "location": location,
+    }
+    if name is not None:
+        args["name"] = name
+    if reference_value is not None:
+        args["reference_value"] = reference_value
+
+    return _to_json(
+        _gen_server_command(
+            command=_REGISTER_LOCATION_AS_RESPONSE,
+            actor_uid=actor_uid,
+            args=args,
+            password=password,
+        )
+    )
+
+
+def register_locations_as_response(actor_uid: str, password: Optional[str] = None) -> str:
+    """Generate JSON string of ``register_locations_as_response`` command.
 
     Parameters
     ----------
@@ -763,7 +1012,7 @@ def register_locations_as_response(actor_uid: str, password: Optional[str] = Non
     Returns
     -------
     str
-        JSON string of ``register_location_as_response`` command.
+        JSON string of ``register_locations_as_response`` command.
     """
     return _to_json(
         _gen_server_command(

@@ -1,7 +1,7 @@
 import pytest
 
 from ansys.optislang.core import Optislang, node_types
-from ansys.optislang.core.tcp.base_nodes import System
+from ansys.optislang.core.tcp.nodes import System
 
 pytestmark = pytest.mark.local_osl
 

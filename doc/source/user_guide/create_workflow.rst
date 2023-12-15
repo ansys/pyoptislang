@@ -3,7 +3,7 @@
 ===============
 Create workflow
 ===============
-You use the :py:class:`RootSystem <ansys.optislang.core.base_nodes.RootSystem>` class ..
+You use the :py:class:`RootSystem <ansys.optislang.core.nodes.RootSystem>` class ..
 :py:class:`Optislang <ansys.optislang.core.optislang.Optislang>` instance,
 Describe creation and connection of nodes, add code to create some workflow
 use DesignFlow enum when creating nodes
