@@ -20,7 +20,6 @@ Built-in
     CetolInput
     CFturboInput
     Compare
-    Criteria
     Custom
     CustomETKIntegration
     CustomIntegration
@@ -28,7 +27,6 @@ Built-in
     DataExport
     DataImport
     DataMining
-    Designexport
     DesignExport
     DesignImport
     DPS
@@ -52,18 +50,12 @@ Built-in
     FloEFDInput
     IntegrationPlugin
     LSDynaParameterize
-    Mathcad
     Matlab
-    MergeDesigns
-    Monitoring
-    Mop
     Mopsolver
     MultiplasParameterize
     Octave
     OOCalc
-    Parameter
     Parameterize
-    ParameterSet
     Path
     PDM
     PDMReceive
@@ -78,14 +70,12 @@ Built-in
     ProEProcess
     Python2
     PythonScript
-    ScriptFile
     SimPackInput
     SimulationX
     SolverTemplate
     SoSGenerate
     SoSPostprocessing
     String
-    Sum
     TaggedParametersParameterize
     TurboOptInput
     Variable

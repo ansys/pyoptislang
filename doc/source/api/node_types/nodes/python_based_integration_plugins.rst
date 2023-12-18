@@ -27,7 +27,6 @@ Python based integration_plugins
     COMSOL_input
     COMSOL_output
     Convert_OMDB_to_BIN_SoS
-    DPF
     ETK_nD
     FMU_SoS
     Field_Data_Collector

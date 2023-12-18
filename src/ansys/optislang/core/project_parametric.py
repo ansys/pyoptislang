@@ -1940,13 +1940,15 @@ class Parameter:
                 else None
             ),
             "distribution_parameters": (
-                tuple(par_dict.get("stochastic_property", {}).get("distribution_parameters", []))
-                if par_dict.get("stochastic_property")
+                tuple(par_dict["stochastic_property"]["distribution_parameters"])
+                if par_dict.get("stochastic_property", {}).get("distribution_parameters")
                 else None
             ),
             "statistical_moments": (
-                tuple(par_dict.get("stochastic_property", {}).get("statistical_moments", []))
-                if par_dict.get("stochastic_property")
+                tuple(par_dict["stochastic_property"]["statistical_moments"])
+                if par_dict.get("stochastic_property", {}).get(
+                    "statistical_moments",
+                )
                 else None
             ),
             "cov": par_dict.get("stochastic_property", {}).get("cov", None),
@@ -1960,7 +1962,7 @@ class Parameter:
         # discrete values otherwise, stored as ([val1, val2, val3 ..])
         elif properties_dict["deterministic_resolution"] is not None:
             properties_dict["range"] = (
-                par_dict.get("deterministic_property", {}).get("discrete_states", []),
+                tuple(par_dict.get("deterministic_property", {}).get("discrete_states", [])),
             )
         else:
             properties_dict["range"] = None
@@ -2143,10 +2145,7 @@ class MixedParameter(Parameter):
         )
         self.__reference_value_type = ParameterValueType.REAL
         self.deterministic_resolution = deterministic_resolution
-        if not isinstance(range[0], (float, int)):
-            self.range = tuple(tuple(range[0]))
-        else:
-            self.range = tuple(range)
+        self.range = range
         self.stochastic_resolution = stochastic_resolution
         self.distribution_type = distribution_type
         self.distribution_parameters = (
@@ -2588,7 +2587,10 @@ class OptimizationParameter(Parameter):
         range: Union[Sequence[float, float], Sequence[Sequence[float]]]
             Range of the optimization parameter.
         """
-        self.__range = tuple(range)
+        if not isinstance(range[0], (float, int)):
+            self.__range = (tuple(range[0]),)
+        else:
+            self.__range = tuple(range)
 
     def to_dict(self) -> dict:
         """Convert an instance of the ``OptimizationParameter`` to a dictionary.

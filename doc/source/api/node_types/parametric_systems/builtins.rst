@@ -18,7 +18,6 @@ Built-in
     Reevaluate
     ReliabilityARSM
     ReliabilityAS
-    ReliabilityAsym
     ReliabilityDS
     ReliabilityFORM
     ReliabilityISPUD

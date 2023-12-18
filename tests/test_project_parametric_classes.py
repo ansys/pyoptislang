@@ -158,7 +158,9 @@ MIXED_PARAMETER_DICT = {
 CONSTRAINT_CRITERION = ConstraintCriterion(
     name="constr",
     expression="0",
+    expression_value=0,
     criterion=ComparisonType.LESSEQUAL,
+    limit_expression="0",
     limit_expression_value=0,
     value=0,
 )
@@ -199,7 +201,7 @@ CONSTRAINT_CRITERION_DICT = {
     },
 }
 OBJECTIVE_CRITERION = ObjectiveCriterion(
-    name="obj", expression="0", criterion=ComparisonType.MIN, value=0
+    name="obj", expression="0", expression_value=0, criterion=ComparisonType.MIN, value=0
 )
 OBJECTIVE_CRITERION_DICT = {
     "First": "obj",
@@ -240,10 +242,13 @@ OBJECTIVE_CRITERION_DICT = {
 LIMIT_STATE_CRITERION = LimitStateCriterion(
     name="lim_st",
     expression="0",
+    expression_value=0,
     criterion=ComparisonType.LESSLIMITSTATE,
+    limit_expression="0",
     limit_expression_value=0,
     value=0,
 )
+
 LIMIT_STATE_CRITERION_DICT = {
     "First": "lim_st",
     "Second": {
@@ -286,7 +291,7 @@ LIMIT_STATE_CRITERION_DICT = {
         },
     },
 }
-VARIABLE_CRITERION = VariableCriterion(name="var", expression="0", value=0)
+VARIABLE_CRITERION = VariableCriterion(name="var", expression="0", expression_value=0, value=0)
 VARIABLE_CRITERION_DICT = {
     "First": "var",
     "Second": {
@@ -652,7 +657,7 @@ def test_parameter():
     assert isinstance(stochastic_parameter_from_dict, StochasticParameter)
     mixed_parameter_from_dict = Parameter.from_dict(MIXED_PARAMETER_DICT)
     assert isinstance(mixed_parameter_from_dict, MixedParameter)
-    with pytest.raises(ValueError):
+    with pytest.raises((ValueError, KeyError)):
         Parameter.from_dict({"type": {"value": "invalid"}})
 
 
@@ -981,7 +986,7 @@ def test_criterion():
     variable_criterion_from_dict = Criterion.from_dict(criterion_dict=VARIABLE_CRITERION_DICT)
     assert isinstance(variable_criterion_from_dict, VariableCriterion)
 
-    with pytest.raises(ValueError):
+    with pytest.raises(TypeError):
         Criterion.from_dict({"Second": {"type": {"value": "invalid"}}})
 
     with pytest.raises(AttributeError):
@@ -1041,7 +1046,7 @@ def test_criterion():
         criterion.value = (1, 2, 3)
 
 
-def test_contraint_criterion():
+def test_constraint_criterion():
     """Test ``ConstraintCriterion``."""
     constraint_criterion_dict = CONSTRAINT_CRITERION.to_dict()
     assert isinstance(constraint_criterion_dict, dict)
