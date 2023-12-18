@@ -262,19 +262,23 @@ class ParameterManager:
 
     @abstractmethod
     def modify_parameter_property(
-        self, parameter_name: str, property_name: str, value: Any
+        self, parameter_name: str, property_name: str, property_value: Any
     ) -> None:  # pragma: no cover
         """Modify property of parameter in the system.
 
-        Returns
-        -------
-        Parameter
-            Parameter to be modified. Parameter name is used as identifier.
+        Parameters
+        ----------
+        parameter_name: str
+            Name of the parameter to be modified.
+        property_name: str
+            Name of the property to be modified.
+        property_value: Any
+            New value of the modified property.
 
         Raises
         ------
         NameError
-            Raised when the parameter with the given name already exists.
+            Raised when the parameter with the given name doesn't exists.
         OslCommunicationError
             Raised when an error occurs while communicating with the server.
         OslCommandError

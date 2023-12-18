@@ -19,6 +19,8 @@ if TYPE_CHECKING:
 class TcpCriteriaManagerProxy(CriteriaManager):
     """Contains methods for obtaining criteria."""
 
+    __PROPERTY_MAPPING = {"limit_expression": "limit"}
+
     def __init__(self, uid: str, osl_server: TcpOslServer) -> None:
         """Initialize a new instance of the ``TcpCriteriaManagerProxy`` class.
 
@@ -55,7 +57,6 @@ class TcpCriteriaManagerProxy(CriteriaManager):
         TimeoutError
             Raised when the timeout float value expires.
         """
-        # TODO: unit test
         if (self.__osl_server.osl_version.major + self.__osl_server.osl_version.minor / 10) < 23.2:
             raise NotImplementedError("Method is supported for Ansys optiSLang version >= 23.2.")
         else:
@@ -86,8 +87,11 @@ class TcpCriteriaManagerProxy(CriteriaManager):
         TimeoutError
             Raised when the timeout float value expires.
         """
-        props = self.__osl_server.get_actor_properties(uid=self.__uid)
-        container = props.get("properties", {}).get("Criteria", {}).get("sequence", [{}])
+        container = (
+            self.__osl_server.get_actor_properties(uid=self.__uid)
+            .get("Criteria", {})
+            .get("sequence", [{}])
+        )
         return tuple([Criterion.from_dict(criterion_dict) for criterion_dict in container])
 
     def get_criteria_names(self) -> Tuple[str, ...]:
@@ -107,8 +111,11 @@ class TcpCriteriaManagerProxy(CriteriaManager):
         TimeoutError
             Raised when the timeout float value expires.
         """
-        props = self.__osl_server.get_actor_properties(uid=self.__uid)
-        container = props.get("properties", {}).get("Criteria", {}).get("sequence", [{}])
+        container = (
+            self.__osl_server.get_actor_properties(uid=self.__uid)
+            .get("Criteria", {})
+            .get("sequence", [{}])
+        )
         return tuple([criterion_dict["First"] for criterion_dict in container])
 
     def modify_criterion(self, criterion: Criterion) -> None:
@@ -130,23 +137,24 @@ class TcpCriteriaManagerProxy(CriteriaManager):
         TimeoutError
             Raised when the timeout float value expires.
         """
-        # TODO: test
         if (self.__osl_server.osl_version.major + self.__osl_server.osl_version.minor / 10) < 23.2:
             raise NotImplementedError("Method is supported for optiSLang version >= 23.2.")
         else:
             self.modify_criterion_property(
-                criterion=criterion.name,
+                criterion_name=criterion.name,
                 property_name="type",
                 property_value=criterion.criterion.name,
             )
             self.modify_criterion_property(
-                criterion=criterion.name, property_name="lhs", property_value=criterion.expression
+                criterion_name=criterion.name,
+                property_name="expression",
+                property_value=criterion.expression,
             )
             if isinstance(criterion, (ConstraintCriterion, LimitStateCriterion)):
                 self.modify_criterion_property(
-                    criterion=criterion.name,
-                    property_name="rhs",
-                    property_value=criterion.expression,
+                    criterion_name=criterion.name,
+                    property_name="limit",
+                    property_value=criterion.limit_expression,
                 )
 
     def modify_criterion_property(
@@ -174,14 +182,13 @@ class TcpCriteriaManagerProxy(CriteriaManager):
         TimeoutError
             Raised when the timeout float value expires.
         """
-        # TODO: test
         if (self.__osl_server.osl_version.major + self.__osl_server.osl_version.minor / 10) < 23.2:
             raise NotImplementedError("Method is supported for optiSLang version >= 23.2.")
         else:
             self.__osl_server.set_criterion_property(
                 uid=self.__uid,
                 criterion_name=criterion_name,
-                name=property_name,
+                name=self.__class__.__PROPERTY_MAPPING.get(property_name, property_name),
                 value=property_value,
             )
 
@@ -199,7 +206,6 @@ class TcpCriteriaManagerProxy(CriteriaManager):
         TimeoutError
             Raised when the timeout float value expires.
         """
-        # TODO: test
         if (self.__osl_server.osl_version.major + self.__osl_server.osl_version.minor / 10) < 23.2:
             raise NotImplementedError("Method is supported for optiSLang version >= 23.2.")
         else:
@@ -224,7 +230,6 @@ class TcpCriteriaManagerProxy(CriteriaManager):
         TimeoutError
             Raised when the timeout float value expires.
         """
-        # TODO: test
         if (self.__osl_server.osl_version.major + self.__osl_server.osl_version.minor / 10) < 23.2:
             raise NotImplementedError("Method is supported for optiSLang version >= 23.2.")
         else:
@@ -234,7 +239,9 @@ class TcpCriteriaManagerProxy(CriteriaManager):
 class TcpParameterManagerProxy(ParameterManager):
     """Contains methods for obtaining parameters."""
 
-    __PROPERTY_MAPPING = {"operation": "dependency_expression"}
+    __PROPERTY_MAPPING = {
+        "operation": "dependency_expression",
+    }
 
     def __init__(self, uid: str, osl_server: TcpOslServer) -> None:
         """Initialize a new instance of the ``TcpParameterManagerProxy`` class.
@@ -272,7 +279,6 @@ class TcpParameterManagerProxy(ParameterManager):
         TimeoutError
             Raised when the timeout float value expires.
         """
-        # TODO: test
         parameter_manager, container = self.__get_parameter_container()
         if (
             self.__class__.__get_parameter_idx(container=container, parameter_name=parameter.name)
@@ -348,7 +354,6 @@ class TcpParameterManagerProxy(ParameterManager):
         TimeoutError
             Raised when the timeout float value expires.
         """
-        # TODO: test
         parameter_manager, container = self.__get_parameter_container()
         idx = self.__get_parameter_idx(container=container, parameter_name=parameter.name)
         if idx is not None:
@@ -363,19 +368,23 @@ class TcpParameterManagerProxy(ParameterManager):
             )
 
     def modify_parameter_property(
-        self, parameter_name: str, property_name: str, value: Any
+        self, parameter_name: str, property_name: str, property_value: Any
     ) -> None:
         """Modify property of parameter in the system.
 
-        Returns
-        -------
-        Parameter
-            Parameter to be modified. Parameter name is used as identifier.
+        Parameters
+        ----------
+        parameter_name: str
+            Name of the parameter to be modified.
+        property_name: str
+            Name of the property to be modified.
+        property_value: Any
+            New value of the modified property.
 
         Raises
         ------
         NameError
-            Raised when the parameter with the given name already exists.
+            Raised when the parameter with the given name doesn't exists.
         OslCommunicationError
             Raised when an error occurs while communicating with the server.
         OslCommandError
@@ -383,13 +392,12 @@ class TcpParameterManagerProxy(ParameterManager):
         TimeoutError
             Raised when the timeout float value expires.
         """
-        # TODO: test
         parameter_manager, container = self.__get_parameter_container()
         idx = self.__get_parameter_idx(container=container, parameter_name=parameter_name)
         if idx:
             container[idx][
                 self.__class__.__PROPERTY_MAPPING.get(property_name, property_name)
-            ] = value
+            ] = property_value
             parameter_manager["parameter_container"] = container
             self.__osl_server.set_actor_property(
                 actor_uid=self.__uid, name="ParameterManager", value=parameter_manager
@@ -411,7 +419,6 @@ class TcpParameterManagerProxy(ParameterManager):
         TimeoutError
             Raised when the timeout float value expires.
         """
-        # TODO: test
         parameter_manager, container = self.__get_parameter_container()
         parameter_manager["parameter_container"] = []
         self.__osl_server.set_actor_property(
@@ -437,7 +444,6 @@ class TcpParameterManagerProxy(ParameterManager):
         TimeoutError
             Raised when the timeout float value expires.
         """
-        # TODO: test
         parameter_manager, container = self.__get_parameter_container()
         idx = self.__get_parameter_idx(container=container, parameter_name=parameter_name)
         if idx is not None:
@@ -453,8 +459,9 @@ class TcpParameterManagerProxy(ParameterManager):
             )
 
     def __get_parameter_container(self) -> Tuple[Dict[str, list], List[dict]]:
-        properties = self.__osl_server.get_actor_properties(uid=self.__uid)
-        parameter_manager = properties["properties"]["ParameterManager"]
+        parameter_manager = self.__osl_server.get_actor_properties(uid=self.__uid)[
+            "ParameterManager"
+        ]
         container = parameter_manager["parameter_container"]
         return parameter_manager, container
 

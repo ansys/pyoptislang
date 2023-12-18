@@ -433,7 +433,7 @@ class TcpNodeProxy(Node):
         TimeoutError
             Raised when the timeout float value expires.
         """
-        return self._osl_server.get_actor_properties(uid=self.uid)["properties"]
+        return self._osl_server.get_actor_properties(uid=self.uid)
 
     def get_property(self, name: str) -> Any:
         """Get property from properties dictionary.
@@ -820,7 +820,7 @@ class TcpNodeProxy(Node):
             Raised when the timeout float value expires.
         """
         props = self._osl_server.get_actor_properties(uid=uid)
-        return "ParameterManager" in props["properties"]
+        return "ParameterManager" in props
 
     @staticmethod
     def _find_ancestor_line(

@@ -665,23 +665,19 @@ def test_set_actor_property(tmp_path: Path, tmp_example_project):
         "value": "classic_reevaluate_mode",
     }
     tcp_osl_server.set_actor_property(UID, "ReadMode", set_enum_property)
-    read_mode = tcp_osl_server.get_actor_properties(UID).get("properties", {}).get("ReadMode")
+    read_mode = tcp_osl_server.get_actor_properties(UID).get("ReadMode")
     assert read_mode == set_enum_property
 
     # bool prop
     set_bool_property = True
     tcp_osl_server.set_actor_property(UID, "StopAfterExecution", set_bool_property)
-    stop_after_exec = (
-        tcp_osl_server.get_actor_properties(UID).get("properties", {}).get("StopAfterExecution")
-    )
+    stop_after_exec = tcp_osl_server.get_actor_properties(UID).get("StopAfterExecution")
     assert stop_after_exec == set_bool_property
 
     # int prop
     set_int_property = 2
     tcp_osl_server.set_actor_property(UID, "ExecutionOptions", set_int_property)
-    exec_options = (
-        tcp_osl_server.get_actor_properties(UID).get("properties", {}).get("ExecutionOptions")
-    )
+    exec_options = tcp_osl_server.get_actor_properties(UID).get("ExecutionOptions")
     assert exec_options == set_int_property
 
     tcp_osl_server.shutdown()

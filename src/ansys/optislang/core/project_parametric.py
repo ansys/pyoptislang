@@ -424,7 +424,6 @@ class Criterion:
         if value and isinstance(value_type, CriterionValueType):
             self.value = (value_type, value)
         else:
-            print(value, value_type)
             self.value = value
 
     def __eq__(self, other) -> bool:
@@ -620,9 +619,9 @@ class Criterion:
         elif criterion_properties["criterion"] in [ComparisonType.MIN, ComparisonType.MAX]:
             return ObjectiveCriterion(
                 name=criterion_properties["name"],
-                expression=criterion_properties["expression"],
-                expression_value=criterion_properties["expression_value"],
-                expression_value_type=criterion_properties["expression_value_type"],
+                expression=criterion_properties["limit_expression"],
+                expression_value=criterion_properties["limit_expression_value"],
+                expression_value_type=criterion_properties["limit_expression_value_type"],
                 criterion=criterion_properties["criterion"],
                 value=criterion_properties["value"],
                 value_type=criterion_properties["value_type"],
@@ -708,30 +707,38 @@ class Criterion:
             expression_value = criterion_dict["lhs_value"][expression_value_type.name.lower()]
 
         limit_expression = criterion_dict.get("rhs")  # optional
-        limit_expression_value_type = CriterionValueType.from_str(
-            criterion_dict.get("rhs_value", {}).get("kind", {}).get("value", "UNINITIALIZED")
+        limit_expression_value_type = (
+            CriterionValueType.from_str(
+                criterion_dict["rhs_value"].get("kind", {}).get("value", "UNINITIALIZED")
+            )
+            if criterion_dict.get("rhs_value")
+            else None
         )
         if limit_expression_value_type in [CriterionValueType.SIGNAL, CriterionValueType.XYDATA]:
             limit_expression_value = (
                 criterion_dict["rhs_value"]["matrix"],
                 criterion_dict["rhs_value"]["vector"],
             )
-        elif limit_expression_value_type == CriterionValueType.UNINITIALIZED:
+        elif limit_expression_value_type in [CriterionValueType.UNINITIALIZED, None]:
             limit_expression_value = None
         else:
             limit_expression_value = criterion_dict["rhs_value"][
                 limit_expression_value_type.name.lower()
             ]
 
-        value_type = value_type = CriterionValueType.from_str(
-            criterion_dict.get("value", {}).get("kind", {}).get("value", "UNINITIALIZED")
+        value_type = value_type = (
+            CriterionValueType.from_str(
+                criterion_dict["value"].get("kind", {}).get("value", "UNINITIALIZED")
+            )
+            if criterion_dict.get("value")
+            else None
         )
         if value_type in [CriterionValueType.SIGNAL, CriterionValueType.XYDATA]:
             value = (
                 criterion_dict["value"]["matrix"],
                 criterion_dict["value"]["vector"],
             )
-        elif value_type == CriterionValueType.UNINITIALIZED:
+        elif value_type in [CriterionValueType.UNINITIALIZED, None]:
             value = None
         else:
             value = criterion_dict["value"][value_type.name.lower()]

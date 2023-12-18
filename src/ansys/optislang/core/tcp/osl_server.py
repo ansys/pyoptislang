@@ -1464,7 +1464,9 @@ class TcpOslServer(OslServer):
         TimeoutError
             Raised when the timeout float value expires.
         """
-        return self.send_command(queries.actor_properties(uid=uid, password=self.__password))
+        return self.send_command(queries.actor_properties(uid=uid, password=self.__password))[
+            "properties"
+        ]
 
     def get_actor_registered_input_slots(
         self, uid: str, include_reference_values: bool = True
