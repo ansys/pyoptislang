@@ -4,7 +4,13 @@ from typing import TYPE_CHECKING, Any
 
 import pytest
 
-from ansys.optislang.core.nodes import DesignFlow, NodeClassType, RegisteredLocationType, SlotType
+from ansys.optislang.core.nodes import (
+    DesignFlow,
+    NodeClassType,
+    RegisteredLocationType,
+    SamplingType,
+    SlotType,
+)
 
 if TYPE_CHECKING:
     from enum import Enum
@@ -82,6 +88,39 @@ def test_node_class_type(node_class_type: NodeClassType, name: str):
 def test_registered_location_type(registered_location_type: RegisteredLocationType, name: str):
     """Test `RegisteredLocationType`."""
     enumeration_test_method(enumeration_class=registered_location_type, enumeration_name=name)
+
+
+@pytest.mark.parametrize(
+    "sampling_type, name",
+    [
+        (SamplingType, "CENTERPOINT"),
+        (SamplingType, "FULLFACTORIAL"),
+        (SamplingType, "AXIAL"),
+        (SamplingType, "STARPOINTS"),
+        (SamplingType, "KOSHAL"),
+        (SamplingType, "CENTRALCOMPOSITE"),
+        (SamplingType, "MIXEDTERMS"),
+        (SamplingType, "LATINHYPER"),
+        (SamplingType, "LATINHYPERDETEMINISTIC"),
+        (SamplingType, "OPTIMIZEDLATINHYPER"),
+        (SamplingType, "ORTHOLATINHYPERDETEMINISTIC"),
+        (SamplingType, "SOBOLSEQUENCES"),
+        (SamplingType, "PLAINMONTECARLO"),
+        (SamplingType, "DOPTIMAL"),
+        (SamplingType, "DOPTIMALLINEAR"),
+        (SamplingType, "DOPTIMALQUADRATIC"),
+        (SamplingType, "DOPTIMALQUADRATICNOMIXED"),
+        (SamplingType, "KOSHALLINEAR"),
+        (SamplingType, "KOSHALQUADRATIC"),
+        (SamplingType, "FEKETE"),
+        (SamplingType, "BOXBEHNKEN"),
+        (SamplingType, "FULLCOMBINATORIAL"),
+        (SamplingType, "ADVANCEDLATINHYPER"),
+    ],
+)
+def test_sampling_type(sampling_type: SamplingType, name: str):
+    """Test `SamplingType`."""
+    enumeration_test_method(enumeration_class=sampling_type, enumeration_name=name)
 
 
 @pytest.mark.parametrize(

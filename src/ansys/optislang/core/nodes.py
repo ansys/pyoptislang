@@ -133,6 +133,55 @@ class RegisteredLocationType(Enum):
         return enum_from_str(string=string, enum_class=__class__)
 
 
+class SamplingType(Enum):
+    """Provides ``SamplingType`` options."""
+
+    CENTERPOINT = 0
+    FULLFACTORIAL = 1
+    AXIAL = 2
+    STARPOINTS = 3
+    KOSHAL = 4
+    CENTRALCOMPOSITE = 5
+    MIXEDTERMS = 6
+    LATINHYPER = 7
+    LATINHYPERDETEMINISTIC = 8
+    OPTIMIZEDLATINHYPER = 9
+    ORTHOLATINHYPERDETEMINISTIC = 10
+    SOBOLSEQUENCES = 11
+    PLAINMONTECARLO = 12
+    DOPTIMAL = 13
+    DOPTIMALLINEAR = 14
+    DOPTIMALQUADRATIC = 15
+    DOPTIMALQUADRATICNOMIXED = 16
+    KOSHALLINEAR = 17
+    KOSHALQUADRATIC = 18
+    FEKETE = 19
+    BOXBEHNKEN = 20
+    FULLCOMBINATORIAL = 21
+    ADVANCEDLATINHYPER = 22
+
+    @staticmethod
+    def from_str(string: str) -> SamplingType:
+        """Convert string to an instance of the ``SamplingType`` class.
+
+        Parameters
+        ----------
+        string: str
+            String to be converted.
+
+        Returns
+        -------
+        SamplingType
+            Instance of the ``SamplingType`` class.
+
+        Raises
+        ------
+        TypeError
+            Raised when an invalid type of ``string`` is given.
+        """
+        return enum_from_str(string=string, enum_class=__class__, replace=(" ", "_"))
+
+
 class SlotType(Enum):
     """Provides slot type options."""
 

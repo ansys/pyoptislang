@@ -270,6 +270,16 @@ def test_tcp_osl_properties(osl_server_process: OslServerProcess):
     tcp_osl_server = create_tcp_osl_server(osl_server_process)
     assert isinstance(tcp_osl_server.host, str)
     assert isinstance(tcp_osl_server.port, int)
+
+    osl_version = tcp_osl_server.osl_version
+    assert len(osl_version) == 4
+    assert isinstance(osl_version[0], int)
+    assert isinstance(osl_version[1], int)
+    assert isinstance(osl_version[2], int)
+    assert isinstance(osl_version[3], int)
+    osl_version_string = tcp_osl_server.osl_version_string
+    assert isinstance(osl_version_string, str)
+
     assert isinstance(tcp_osl_server.timeout, (int, float))
     assert tcp_osl_server.timeout == 10
     tcp_osl_server.timeout = 20
@@ -279,6 +289,56 @@ def test_tcp_osl_properties(osl_server_process: OslServerProcess):
         tcp_osl_server.timeout = -5
     with pytest.raises(TypeError):
         tcp_osl_server.timeout = "5"
+    tcp_osl_server.shutdown()
+    tcp_osl_server.dispose()
+
+
+def test_add_remove_set_criterion(osl_server_process: OslServerProcess):
+    """Test ``add_criterion``, ``remove_criterion/a``, ``set_criterion_property``."""
+    tcp_osl_server = create_tcp_osl_server(osl_server_process)
+    root_system_uid = (
+        tcp_osl_server.get_full_project_tree_with_properties()
+        .get("projects", [{}])[0]
+        .get("system", {})
+        .get("uid", None)
+    )
+    if not root_system_uid:
+        assert False
+    name = "my_crit_1"
+    expression = "1+1"
+    criterion_type = "greaterequal"
+    limit = "-1*5"
+    tcp_osl_server.add_criterion(
+        uid=root_system_uid,
+        criterion_type=criterion_type,
+        expression=expression,
+        name=name,
+        limit=limit,
+    )
+    tcp_osl_server.add_criterion(
+        uid=root_system_uid,
+        criterion_type="max",
+        expression="1+1",
+        name="my_crit_2",
+    )
+    criterion_dict = tcp_osl_server.get_criterion(uid=root_system_uid, name=name)
+    assert criterion_dict.get(name)
+    assert criterion_dict[name]["expression"] == expression
+    assert criterion_dict[name]["type"]["value"] == criterion_type
+    assert criterion_dict[name]["limit"] == limit
+
+    tcp_osl_server.set_criterion_property(
+        uid=root_system_uid, criterion_name="my_crit_2", name="expression", value="2+2"
+    )
+    criterion_dict = tcp_osl_server.get_criterion(uid=root_system_uid, name="my_crit_2")
+    assert criterion_dict["my_crit_2"]["expression"] == "2+2"
+
+    tcp_osl_server.remove_criterion(uid=root_system_uid, name="my_crit_2")
+    assert len(tcp_osl_server.get_criteria(root_system_uid)) == 1
+
+    tcp_osl_server.remove_criteria(root_system_uid)
+    assert len(tcp_osl_server.get_criteria(root_system_uid)) == 0
+
     tcp_osl_server.shutdown()
     tcp_osl_server.dispose()
 
@@ -326,31 +386,29 @@ def test_create_remove_node(osl_server_process: OslServerProcess):
     tcp_osl_server.dispose()
 
 
-def test_disconnect_slot(tmp_path: Path, tmp_example_project):
+def test_disconnect_slot(tmp_example_project):
     "Test ``disconnect_slot`` command."
     osl_server_process = create_osl_server_process(
         shutdown_on_finished=False, project_path=tmp_example_project("calculator_with_params")
     )
     tcp_osl_server = create_tcp_osl_server(osl_server_process)
-    osl_version = tcp_osl_server.osl_version
-    assert len(osl_version) == 4
-    assert isinstance(osl_version[0], int)
-    assert isinstance(osl_version[1], int)
-    assert isinstance(osl_version[2], int)
-    assert isinstance(osl_version[3], int)
-    osl_version_string = tcp_osl_server.osl_version_string
-    assert isinstance(osl_version_string, str)
+    UID = "3577cb69-15b9-4ad1-a53c-ac8af8aaea82"
+    INPUT_SLOT_NAME = "OVar"
+    OUTPUT_SLOT_NAME = "var"
+    # input slot
+    tcp_osl_server.disconnect_slot(UID, INPUT_SLOT_NAME, "sdInputs")
+    # output slot
+    tcp_osl_server.disconnect_slot(UID, OUTPUT_SLOT_NAME, "sdOutputs")
     tcp_osl_server.shutdown()
     tcp_osl_server.dispose()
 
 
-def test_evaluate_design(tmp_path: Path, tmp_example_project):
+def test_evaluate_design(tmp_example_project):
     "Test ``evaluate_design``."
     osl_server_process = create_osl_server_process(
         shutdown_on_finished=False, project_path=tmp_example_project("calculator_with_params")
     )
     tcp_osl_server = create_tcp_osl_server(osl_server_process)
-    tcp_osl_server.save_copy(file_path=tmp_path / "test_evaluate_design.opf")
     tcp_osl_server.reset()
     result = tcp_osl_server.evaluate_design({"a": 5, "b": 10})
     assert isinstance(result, list)
@@ -372,11 +430,41 @@ def test_get_actor_queries(tmp_example_project):
     assert isinstance(info, dict)
     with pytest.raises(errors.OslCommandError):
         info = tcp_osl_server.get_actor_info(INVALID_UID)
+    # internal variables
+    internal_variables = tcp_osl_server.get_actor_internal_variables(uid=UID)
+    assert len(internal_variables) == 3
+    assert isinstance(internal_variables[0], dict)
+    with pytest.raises(errors.OslCommandError):
+        internal_variables = tcp_osl_server.get_actor_internal_variables(uid=INVALID_UID)
     # properties
     properties = tcp_osl_server.get_actor_properties(UID)
     assert isinstance(properties, dict)
     with pytest.raises(errors.OslCommandError):
         properties = tcp_osl_server.get_actor_properties(INVALID_UID)
+    # registered input slots
+    registered_input_slots = tcp_osl_server.get_actor_registered_input_slots(uid=UID)
+    assert isinstance(registered_input_slots, list)
+    assert len(registered_input_slots) == 0
+    with pytest.raises(errors.OslCommandError):
+        tcp_osl_server.get_actor_registered_input_slots(uid=INVALID_UID)
+    # registered output slots
+    registered_output_slots = tcp_osl_server.get_actor_registered_output_slots(uid=UID)
+    assert len(registered_output_slots) == 1
+    assert isinstance(registered_output_slots[0], dict)
+    with pytest.raises(errors.OslCommandError):
+        tcp_osl_server.get_actor_registered_output_slots(uid=INVALID_UID)
+    # registered parameters
+    registered_parameters = tcp_osl_server.get_actor_registered_parameters(uid=UID)
+    assert isinstance(registered_parameters, list)
+    assert len(registered_parameters) == 0
+    with pytest.raises(errors.OslCommandError):
+        tcp_osl_server.get_actor_registered_parameters(uid=INVALID_UID)
+    # registered responses
+    registered_responses = tcp_osl_server.get_actor_registered_responses(uid=UID)
+    assert len(registered_responses) == 2
+    assert isinstance(registered_responses[0], dict)
+    with pytest.raises(errors.OslCommandError):
+        tcp_osl_server.get_actor_registered_responses(uid=INVALID_UID)
     # states
     states = tcp_osl_server.get_actor_states(UID)
     assert isinstance(states, dict)
@@ -394,6 +482,93 @@ def test_get_actor_queries(tmp_example_project):
     assert isinstance(supports, bool)
     with pytest.raises(errors.OslCommandError):
         supports = tcp_osl_server.get_actor_supports(INVALID_UID, "can_finalize")
+    tcp_osl_server.shutdown()
+    tcp_osl_server.dispose()
+
+
+def test_get_available_locations(tmp_example_project):
+    """Test `get_available_[input/output]_locations``."""
+    osl_server_process = create_osl_server_process(
+        shutdown_on_finished=False, project_path=tmp_example_project("omdb_files")
+    )
+    tcp_osl_server = create_tcp_osl_server(osl_server_process)
+    tcp_osl_server.reset()
+    tcp_osl_server.start()
+    properties = tcp_osl_server.get_full_project_tree_with_properties()
+    omdb_uid = tcp_osl_server.create_node(
+        type_="optislang_omdb", integration_type="python_based_integration_plugin"
+    )
+    omdb_path = Path(properties["projects"][0]["working_dir"]) / r"Sensitivity/Sensitivity.omdb"
+    path_value = {
+        "path": {
+            "base_path_mode": {"value": "ABSOLUTE_PATH"},
+            "split_path": {
+                "head": "",
+                "tail": str(omdb_path),
+            },
+        }
+    }
+    tcp_osl_server.set_actor_property(omdb_uid, "Path", path_value)
+
+    tcp_osl_server.load(omdb_uid)
+    input_locations = tcp_osl_server.get_available_input_locations(omdb_uid)
+    assert len(input_locations) == 1
+    assert isinstance(input_locations[0], dict)
+    output_locations = tcp_osl_server.get_available_output_locations(omdb_uid)
+    assert len(output_locations) == 1
+    assert isinstance(output_locations[0], dict)
+
+    tcp_osl_server.shutdown()
+    tcp_osl_server.dispose()
+
+
+def test_get_available_nodes(osl_server_process: OslServerProcess):
+    """Test ``get_available_nodes`` query."""
+    tcp_osl_server = create_tcp_osl_server(osl_server_process)
+    available_nodes = tcp_osl_server.get_available_nodes()
+    assert len(available_nodes) > 0
+    key, value = next(iter(available_nodes.items()))
+    assert isinstance(key, str)
+    assert isinstance(value, list)
+    builtins = available_nodes["builtin_nodes"]
+    assert len(builtins) > 0
+    assert isinstance(builtins[0], str)
+    tcp_osl_server.shutdown()
+    tcp_osl_server.dispose()
+
+
+def test_get_criteria(tmp_example_project):
+    """Test ``get_criterion/a``."""
+    osl_server_process = create_osl_server_process(
+        shutdown_on_finished=False, project_path=tmp_example_project("calculator_with_params")
+    )
+    tcp_osl_server = create_tcp_osl_server(osl_server_process)
+    root_system_uid = (
+        tcp_osl_server.get_full_project_tree_with_properties()
+        .get("projects", [{}])[0]
+        .get("system", {})
+        .get("uid", None)
+    )
+    criterion = tcp_osl_server.get_criterion(uid=root_system_uid, name="obj_c")
+    assert isinstance(criterion, dict)
+    criteria = tcp_osl_server.get_criteria(uid=root_system_uid)
+    assert len(criteria) == 1
+    assert isinstance(criteria[0], dict)
+    tcp_osl_server.shutdown()
+    tcp_osl_server.dispose()
+
+
+def test_get_doe_size(tmp_example_project):
+    """Test ``get_doe_size``."""
+    osl_server_process = create_osl_server_process(
+        shutdown_on_finished=False, project_path=tmp_example_project("omdb_files")
+    )
+    tcp_osl_server = create_tcp_osl_server(osl_server_process)
+    UID = "011097b5-380d-4726-a0d0-128ddee83a7a"
+    doe_size = tcp_osl_server.get_doe_size(
+        uid=UID, sampling_type="latinhyper", num_discrete_levels=1
+    )
+    assert isinstance(doe_size, int)
     tcp_osl_server.shutdown()
     tcp_osl_server.dispose()
 
@@ -535,6 +710,78 @@ def test_open(osl_server_process: OslServerProcess, tmp_example_project, path_ty
     tcp_osl_server.dispose()
 
 
+def test_register_locations(osl_server_process: OslServerProcess):
+    """Test ``register_location_as_[...]`` and ``get_registered_[...]``."""
+    tcp_osl_server = create_tcp_osl_server(osl_server_process)
+    sensitivity_uid = tcp_osl_server.create_node(type_="Sensitivity")
+    integration_uid = tcp_osl_server.create_node(
+        type_="optislang_node",
+        integration_type="integration_plugin",
+        parent_uid=sensitivity_uid,
+        design_flow="RECEIVE_SEND",
+    )
+
+    # input slot
+    tcp_osl_server.register_location_as_input_slot(
+        uid=integration_uid,
+        location="input_slot_1",
+        name="input_slot_1",
+        reference_value=10,
+    )
+    input_slots = tcp_osl_server.get_actor_registered_input_slots(uid=integration_uid)
+    assert len(input_slots) == 1
+    assert isinstance(input_slots[0], dict)
+
+    # TODO: internal variable
+    # tcp_osl_server.register_location_as_internal_variable(
+    #     uid=integration_uid,
+    #     location={
+    #         "settings": {"expression": "10", "id": "variable_1"},
+    #         "type": "derived_location",
+    #     },
+    #     name="internal_variable_1",
+    #     reference_value=10,
+    # )
+    # internal_variables = tcp_osl_server.get_actor_internal_variables(uid=integration_uid)
+
+    # output slot
+    tcp_osl_server.register_location_as_output_slot(
+        uid=integration_uid,
+        location="output_slot_1",
+        name="output_slot_1",
+        reference_value=10,
+    )
+    output_slots = tcp_osl_server.get_actor_registered_output_slots(uid=integration_uid)
+    assert len(output_slots) == 1
+    assert isinstance(output_slots[0], dict)
+
+    # parameter
+    tcp_osl_server.register_location_as_parameter(
+        uid=integration_uid,
+        location="parameter_1",
+        name="parameter1",
+        reference_value=10,
+    )
+    parameters = tcp_osl_server.get_actor_registered_parameters(uid=integration_uid)
+    assert len(parameters) == 1
+    assert isinstance(parameters[0], dict)
+
+    # response
+    tcp_osl_server.register_location_as_response(
+        uid=integration_uid,
+        location="response_1",
+        name="response_1",
+        reference_value=10,
+    )
+
+    responses = tcp_osl_server.get_actor_registered_responses(uid=integration_uid)
+    assert len(responses) == 1
+    assert isinstance(responses[0], dict)
+
+    tcp_osl_server.shutdown()
+    tcp_osl_server.dispose()
+
+
 def test_reset(osl_server_process: OslServerProcess):
     """Test ``reset``."""
     tcp_osl_server = create_tcp_osl_server(osl_server_process)
@@ -652,7 +899,7 @@ def test_save_copy(
     assert new_loc == old_loc
 
 
-def test_set_actor_property(tmp_path: Path, tmp_example_project):
+def test_set_actor_property(tmp_example_project):
     osl_server_process = create_osl_server_process(
         shutdown_on_finished=False, project_path=tmp_example_project("calculator_with_params")
     )
