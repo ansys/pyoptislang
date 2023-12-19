@@ -315,7 +315,7 @@ def test_tcp_osl_properties(osl_server_process: OslServerProcess):
     assert tcp_osl_server.timeout == 20
     with pytest.raises(ValueError):
         tcp_osl_server.timeout = -5
-    with pytest.raises(TypeError):
+    with pytest.raises(ValueError):
         tcp_osl_server.timeout = "5"
     tcp_osl_server.shutdown()
     tcp_osl_server.dispose()
