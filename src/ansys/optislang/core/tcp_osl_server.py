@@ -10,12 +10,11 @@ import re
 import signal
 import socket
 import struct
+import sys
 import threading
 import time
 from typing import Any, Callable, Dict, Iterable, List, Mapping, Optional, Sequence, Tuple, Union
 import uuid
-import sys
-import threading
 
 from deprecated.sphinx import deprecated
 
@@ -1190,7 +1189,7 @@ class TcpOslServer(OslServer):
 
         if executed_in_main_thread:
             signal.signal(signal.SIGINT, self.__signal_handler)
-        
+
         atexit.register(self.dispose)
 
         if self.__host is None or self.__port is None:
