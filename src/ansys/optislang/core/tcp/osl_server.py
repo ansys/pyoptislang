@@ -2173,7 +2173,7 @@ class TcpOslServer(OslServer):
             max_request_attempts=self.max_request_attempts_register.get_value(current_func_name),
         )
 
-    @deprecated(version="0.5.0", reason="Use :py:attr:`TcpOslServer.host` instead.")
+    @deprecated(version="0.6.0", reason="Use :py:attr:`TcpOslServer.host` instead.")
     def get_host(self) -> Union[str, None]:
         """Get optiSLang server address or domain name.
 
@@ -2330,7 +2330,7 @@ class TcpOslServer(OslServer):
         """
         return self._get_osl_version_string()
 
-    @deprecated(version="0.5.0", reason="Use :py:attr:`TcpOslServer.port` instead.")
+    @deprecated(version="0.6.0", reason="Use :py:attr:`TcpOslServer.port` instead.")
     def get_port(self) -> Union[int, None]:
         """Get the port the osl server is listening on.
 
@@ -2343,7 +2343,7 @@ class TcpOslServer(OslServer):
         return self.__port
 
     @deprecated(
-        version="0.5.0",
+        version="0.6.0",
         reason=(
             "This functionality was moved to "
             ":py:class:`Project <ansys.optislang.core.project.Project>`."
@@ -2375,7 +2375,7 @@ class TcpOslServer(OslServer):
         )
 
     @deprecated(
-        version="0.5.0",
+        version="0.6.0",
         reason=(
             "This functionality was moved to "
             ":py:class:`Project <ansys.optislang.core.project.Project>`."
@@ -2404,7 +2404,7 @@ class TcpOslServer(OslServer):
         return None if not project_path else Path(project_path)
 
     @deprecated(
-        version="0.5.0",
+        version="0.6.0",
         reason=(
             "This functionality was moved to "
             ":py:class:`Project <ansys.optislang.core.project.Project>`."
@@ -2434,7 +2434,7 @@ class TcpOslServer(OslServer):
         return project_info.get("projects", [{}])[0].get("name", None)
 
     @deprecated(
-        version="0.5.0",
+        version="0.6.0",
         reason=(
             "This functionality was moved to "
             ":py:class:`Project <ansys.optislang.core.project.Project>`."
@@ -2461,7 +2461,7 @@ class TcpOslServer(OslServer):
         return self.__get_project_status()
 
     @deprecated(
-        version="0.5.0",
+        version="0.6.0",
         reason=(
             "This functionality was moved to "
             ":py:class:`Project <ansys.optislang.core.project.Project>`."
@@ -2655,7 +2655,7 @@ class TcpOslServer(OslServer):
         return self.timeouts_register.default_value
 
     @deprecated(
-        version="0.5.0",
+        version="0.6.0",
         reason=(
             "This functionality was moved to "
             ":py:class:`Project <ansys.optislang.core.project.Project>`."

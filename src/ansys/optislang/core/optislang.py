@@ -348,7 +348,7 @@ class Optislang:
         return self.__application
 
     @property
-    @deprecated(version="0.5.0", reason="Use `Optislang.application.project is not None` instead.")
+    @deprecated(version="0.6.0", reason="Use `Optislang.application.project is not None` instead.")
     def has_active_project(self) -> bool:
         """
         Whether a project is loaded.
@@ -483,7 +483,7 @@ class Optislang:
         """
         self.__osl_server.dispose()
 
-    @deprecated(version="0.5.0", reason="Use :py:attr:`Optislang.osl_server` instead.")
+    @deprecated(version="0.6.0", reason="Use :py:attr:`Optislang.osl_server` instead.")
     def get_osl_server(self) -> Optional[OslServer]:
         """Get the currently used instance of the OslServer.
 
@@ -556,7 +556,7 @@ class Optislang:
         return self.osl_server.timeout
 
     @deprecated(
-        version="0.5.0",
+        version="0.6.0",
         reason=(
             "This functionality was moved to "
             ":py:class:`Project <ansys.optislang.core.project.Project>`."
@@ -583,7 +583,7 @@ class Optislang:
         return self.application.project.get_working_dir()
 
     @deprecated(
-        version="0.5.0",
+        version="0.6.0",
         reason=(
             "This functionality was moved to "
             ":py:class:`Application <ansys.optislang.core.application.Application>`."
@@ -604,7 +604,7 @@ class Optislang:
         self.application.new()
 
     @deprecated(
-        version="0.5.0",
+        version="0.6.0",
         reason=(
             "This functionality was moved to "
             ":py:class:`Application <ansys.optislang.core.application.Application>`."
@@ -647,7 +647,7 @@ class Optislang:
         self.application.open(file_path=file_path, force=force, restore=restore, reset=reset)
 
     @deprecated(
-        version="0.5.0",
+        version="0.6.0",
         reason=(
             "This functionality was moved to "
             ":py:class:`Project <ansys.optislang.core.project.Project>`."
@@ -668,7 +668,7 @@ class Optislang:
         self.application.project.reset()
 
     @deprecated(
-        version="0.5.0",
+        version="0.6.0",
         reason=(
             "This functionality was moved to "
             ":py:class:`Project <ansys.optislang.core.project.Project>`."
@@ -706,7 +706,7 @@ class Optislang:
         return self.application.project.run_python_script(script, args)
 
     @deprecated(
-        version="0.5.0",
+        version="0.6.0",
         reason=(
             "This functionality was moved to "
             ":py:class:`Project <ansys.optislang.core.project.Project>`."
@@ -745,7 +745,7 @@ class Optislang:
         return self.application.project.run_python_file(file_path, args)
 
     @deprecated(
-        version="0.5.0",
+        version="0.6.0",
         reason=(
             "This functionality was moved to "
             ":py:class:`Application <ansys.optislang.core.application.Application>`."
@@ -766,7 +766,7 @@ class Optislang:
         return self.application.save()
 
     @deprecated(
-        version="0.5.0",
+        version="0.6.0",
         reason=(
             "This functionality was moved to "
             ":py:class:`Application <ansys.optislang.core.application.Application>`."
@@ -811,7 +811,7 @@ class Optislang:
         )
 
     @deprecated(
-        version="0.5.0",
+        version="0.6.0",
         reason=(
             "This functionality was moved to "
             ":py:class:`Application <ansys.optislang.core.application.Application>`."
@@ -888,7 +888,7 @@ class Optislang:
         self.osl_server.shutdown(force)
 
     @deprecated(
-        version="0.5.0",
+        version="0.6.0",
         reason=(
             "This functionality was moved to "
             ":py:class:`Project <ansys.optislang.core.project.Project>`."
@@ -927,7 +927,7 @@ class Optislang:
         )
 
     @deprecated(
-        version="0.5.0",
+        version="0.6.0",
         reason=(
             "This functionality was moved to "
             ":py:class:`Project <ansys.optislang.core.project.Project>`."

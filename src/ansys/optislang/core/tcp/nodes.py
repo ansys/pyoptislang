@@ -563,7 +563,7 @@ class TcpNodeProxy(Node):
         actor_info = self._osl_server.get_actor_info(uid=self.__uid)
         return actor_info["status"]
 
-    @deprecated(version="0.5.0", reason="Use :py:attr:`TcpNodeProxy.type` instead.")
+    @deprecated(version="0.6.0", reason="Use :py:attr:`TcpNodeProxy.type` instead.")
     def get_type(self) -> NodeType:
         """Get the type of the node.
 
@@ -796,7 +796,7 @@ class TcpNodeProxy(Node):
         hids = self.get_states_ids()
         return tuple([self._osl_server.get_actor_status_info(self.uid, hid) for hid in hids])
 
-    @deprecated(version="0.5.0", reason="Not used anymore.")
+    @deprecated(version="0.6.0", reason="Not used anymore.")
     def _is_parametric_system(self, uid: str) -> bool:
         """Check if the system is parametric.
 
