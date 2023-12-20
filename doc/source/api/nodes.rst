@@ -5,7 +5,8 @@ These classes are specific to the :py:mod:`ansys.optislang.core.nodes <ansys.opt
 .. toctree::
    :maxdepth: 2
 
-   node_classes
+   base_node_classes
+   derived_node_classes
    nodes_connection
    nodes_enumerations
    node_types

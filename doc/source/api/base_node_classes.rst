@@ -11,14 +11,3 @@ Base node classes
    System
    ParametricSystem
    RootSystem
-
-
-Derived node classes
-====================
-.. currentmodule:: ansys.optislang.core.nodes
-
-.. autosummary::
-   :toctree: _autosummary
-   :template: class.rst
-
-   IntegrationNode

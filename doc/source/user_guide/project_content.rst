@@ -2,10 +2,10 @@
 
 Project
 -------
-You can access the :py:class:`Project <ansys.optislang.core.project.Project>` class
-from the :py:class:`Optislang <ansys.optislang.core.optislang.Optislang>` instance.
-This class provides methods for obtaining information about the loaded project and
-its content:
+The :py:class:`Project <ansys.optislang.core.project.Project>` class can be accessed
+through the :py:class:`Optislang <ansys.optislang.core.optislang.Optislang>` instance.
+This class provides methods for obtaining information about the loaded project,
+its content and to execute operations on it:
 
 .. code:: python
 
@@ -16,7 +16,7 @@ its content:
     example = examples.get_files("calculator_with_params")[1][0]
     osl = Optislang(project_path=example)
     osl.application.save_copy(Path.cwd() / "project_content.opf")
-    project = osl.project
+    project = osl.application.project
 
     # print project info
     print(project)
@@ -87,6 +87,46 @@ method  returns a tuple with only the names of the parameters:
     parameters = parameter_manager.get_parameters()
     parameters_names = parameter_manager.get_parameters_names()
 
+To add new parameter, use method 
+:py:meth:`add_parameter() <ansys.optislang.core.managers.ParameterManager.add_parameter>`:
+
+.. code:: python
+
+    # ...
+
+    from ansys.optislang.core.project_parametric import OptimizationParameter
+
+    new_parameter = OptimizationParameter(
+        name="new_parameter", reference_value=2.5, range=(-5, 10)
+    )
+    parameter_manager.add_parameter(new_parameter)
+
+To modify parameter, use method
+:py:meth:`modify_parameter() <ansys.optislang.core.managers.ParameterManager.modify_parameter>`,
+or modify directly parameter property via
+:py:meth:`modify_parameter_property() <ansys.optislang.core.managers.ParameterManager.modify_parameter_property>`.
+Parameter name is used as identifier in both cases:
+
+.. code:: python
+
+    # ...
+
+    # create new instance of parameter with modified properties
+    from ansys.optislang.core.project_parametric import MixedParameter
+
+    modified_parameter = MixedParameter(
+        name="new_parameter", reference_value=5, range=(0, 10)
+    )
+    parameter_manager.modify_parameter(modified_parameter)
+
+    # modify desired property directly
+    parameter_manager.modify_parameter_property(
+        parameter_name="new_parameter",
+        property_name="reference_value",
+        property_value=2,
+    )
+
+
 Criteria
 --------
 To obtain defined criteria of any parametric system, an instance of the
@@ -106,6 +146,51 @@ method for returning tuple with detailed information for instances of the
     criteria_manager = root_system.criteria_manager
     criteria = criteria_manager.get_criteria()
     criteria_names = criteria_manager.get_criteria_names()
+
+To add new criterion, use method 
+:py:meth:`add_criterion() <ansys.optislang.core.managers.CriteriaManager.add_criterion>`:
+
+.. code:: python
+
+    # ...
+
+    from ansys.optislang.core.project_parametric import ConstraintCriterion, ComparisonType
+
+    new_criterion = ConstraintCriterion(
+        name="new_criterion",
+        expression="1",
+        criterion=ComparisonType.LESSEQUAL,
+        limit_expression="2",
+    )
+    criteria_manager.add_criterion(new_criterion)
+
+To modify criterion, use method
+:py:meth:`modify_criterion() <ansys.optislang.core.managers.CriteriaManager.modify_criterion>`,
+or modify directly criterion property via
+:py:meth:`modify_criterion_property() <ansys.optislang.core.managers.CriteriaManager.modify_criterion_property>`.
+Criterion name is used as identifier in both cases:
+
+.. code:: python
+
+    # ...
+
+    # create new instance of criterion with modified properties
+    from ansys.optislang.core.project_parametric import LimitStateCriterion
+
+    modified_criterion = LimitStateCriterionCriterion(
+        name="new_criterion",
+        expression="2**2",
+        criterion=ComparisonType.LESSLIMITSTATE,
+        limit_expression="2^3",
+    )
+    criteria_manager.modify_criterion(modified_criterion)
+
+    # modify desired property directly
+    criteria_manager.modify_criterion_property(
+        criterion_name="new_criterion",
+        property_name="limit",
+        property_value="2^2+1",
+    )
 
 Responses
 ---------

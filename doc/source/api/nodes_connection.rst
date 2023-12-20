@@ -1,3 +1,5 @@
+.. _ref_slot_classes:
+
 Nodes connection
 ================
 .. currentmodule:: ansys.optislang.core.nodes

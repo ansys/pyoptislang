@@ -3,15 +3,39 @@
 ===========
 Basic usage
 ===========
+An instance of the :py:class:`Optislang <ansys.optislang.core.optislang.Optislang>` includes 
+a property :py:attr:`application <ansys.optislang.core.optislang.Optislang.application>`, 
+which encapsulates an instance 
+of the :py:class:`Application <ansys.optislang.core.application.Application>`
+class, equipped with functionalities to retrieve information about the employed server 
+and perform manipulations on the project.
+
+.. code:: python
+
+    from ansys.optislang.core import Optislang
+
+    osl = Optislang()
+    application = osl.application
+
+Within the context of the :py:class:`Application <ansys.optislang.core.application.Application>` 
+class instance, there is further
+property :py:attr:`project <ansys.optislang.core.application.Application.project>`, 
+which holds an instance of the :py:class:`Project <ansys.optislang.core.project.Project>` class
+(if any project is loaded). This instance groups functionality to get project information
+and execute operations on the active project.
+
+.. code:: python
+
+    project = osl.application.project
+
+
 To start a project, you use the :py:meth:`start() <ansys.optislang.core.project.Project.start>`
 method. This code starts the project for the :ref:`ref_simple_calculator` example:
 
 .. code:: python
 
-    from pathlib import Path
-    from ansys.optislang.core import Optislang, examples
+    from ansys.optislang.core import examples
 
-    osl = Optislang()
     path_to_file = examples.get_files("simple_calculator")[0]
     osl.application.project.run_python_file(file_path=path_to_file)
     osl.application.project.start()
@@ -25,6 +49,8 @@ method. This code uses the :py:meth:`save_as() <ansys.optislang.core.application
 method:
 
 .. code:: python
+
+    from pathlib import Path
 
     project_path = Path().cwd() / "test_project.opf"
     osl.application.save_as(project_path)
