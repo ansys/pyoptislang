@@ -1,0 +1,30 @@
+name: Integration Tests
+on:
+  workflow_dispatch:
+  pull_request:
+    types:
+      - closed
+
+jobs:
+  test-suite:
+    strategy:
+      matrix:
+        osl_version: [23.2.0, 24.1.0]
+    name: "optiSLang ${{ matrix.osl_version }}"
+    if: github.event.name != 'pull_request' || github.event.pull_request.merged == true
+    runs-on: public-ubuntu-latest-16-cores
+    container:
+      image: ${{ format('ghcr.io/ansys/optislang:{0}-jammy', matrix.osl_version) }}
+      credentials:
+        username: ansys-bot
+        password: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - name: "Pytest"
+        env:
+          PYOPTISLANG_DISABLE_OPTISLANG_OUTPUT: true
+          ANSYSLMD_LICENSE_FILE: ${{ format('1055@{0}', secrets.LICENSE_SERVER) }}
+        uses: ansys/actions/tests-pytest@v4
+        with:
+          python-version: "3.10"
+          pytest-extra-args: "--local_osl -k 'not examples.py'"
+          use-python-cache: false

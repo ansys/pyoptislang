@@ -6,7 +6,11 @@ import pytest
 from ansys.optislang.core import Optislang
 from ansys.optislang.core.io import File, FileOutputFormat, RegisteredFile
 from ansys.optislang.core.nodes import Node, ParametricSystem, RootSystem, System
-from ansys.optislang.core.project_parametric import ParameterManager
+from ansys.optislang.core.project_parametric import (
+    CriteriaManager,
+    ParameterManager,
+    ResponseManager,
+)
 
 pytestmark = pytest.mark.local_osl
 
@@ -21,7 +25,7 @@ def optislang(scope="function", autouse=False) -> Optislang:
         Connects to the optiSLang application and provides an API to control it.
     """
     osl = Optislang()
-    osl.set_timeout(20)
+    osl.timeout = 20
     return osl
 
 
@@ -212,25 +216,29 @@ def test_find_node_by_name(optislang: Optislang, tmp_example_project):
 
 
 # TEST PARAMETRIC SYSTEM
-def test_get_parameter_manager(optislang: Optislang, tmp_example_project):
-    """Test initialization and __str__ methods of both `ParametricSystem` and `ParameterManager`."""
+def test_get_managers(optislang: Optislang, tmp_example_project):
+    """Test initialization and __str__ methods of `ParametricSystem` and managers."""
     optislang.open(file_path=tmp_example_project("nested_systems"))
     project = optislang.project
     root_system = project.root_system
     parametric_system: ParametricSystem = root_system.find_nodes_by_name("Parametric System")[0]
-    with does_not_raise() as dnr:
-        print(parametric_system)
-        parameter_manager = parametric_system.parameter_manager
-        print(parameter_manager)
-        assert isinstance(parameter_manager, ParameterManager)
+    print(parametric_system)
+    parameter_manager = parametric_system.parameter_manager
+    print(parameter_manager)
+    assert isinstance(parameter_manager, ParameterManager)
+    criteria_manager = parametric_system.criteria_manager
+    print(criteria_manager)
+    assert isinstance(criteria_manager, CriteriaManager)
+    response_manager = parametric_system.response_manager
+    print(response_manager)
+    assert isinstance(response_manager, ResponseManager)
     optislang.dispose()
-    assert dnr is None
 
 
 def test_get_omdb_files(tmp_example_project):
     """Test `get_omdb_files()` method."""
     optislang = Optislang(project_path=tmp_example_project("omdb_files"))
-    optislang.set_timeout(30)
+    optislang.timeout = 30
     optislang.reset()
     optislang.start()
     project = optislang.project
@@ -253,7 +261,7 @@ def test_get_omdb_files(tmp_example_project):
 def test_save_designs_as(tmp_path: Path, tmp_example_project):
     """Test `save_designs_as` method."""
     optislang = Optislang(project_path=tmp_example_project("omdb_files"))
-    optislang.set_timeout(30)
+    optislang.timeout = 30
     optislang.reset()
     optislang.start()
     project = optislang.project
