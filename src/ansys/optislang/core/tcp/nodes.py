@@ -1151,15 +1151,13 @@ class TcpIntegrationNodeProxy(TcpNodeProxy, IntegrationNode):
             Raised when the timeout float value expires.
         """
         # TODO: test
-        registered_location_type = self.__class__.__parse_register_as_from_string(
-            register_as=registered_location_type
+        type_ = self.__class__.__parse_register_as_from_string(
+            register_as=registered_locations_type
         )
-        if registered_location_type == RegisteredLocationType.INTERNAL_VARIABLE:
+        if type_ == RegisteredLocationType.INTERNAL_VARIABLE:
             return tuple(self._get_info()["internal_variables"])
         else:
-            return tuple(
-                self._get_info()["registered_" + registered_location_type.name.lower() + "s"]
-            )
+            return tuple(self._get_info()["registered_" + type_.name.lower() + "s"])
 
     def load(self) -> None:
         """Explicitly load the node.

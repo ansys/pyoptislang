@@ -830,7 +830,7 @@ def test_open(osl_server_process: OslServerProcess, tmp_example_project, path_ty
     tcp_osl_server.dispose()
 
 
-def test_register_locations(osl_server_process: OslServerProcess):
+def test_register_location(osl_server_process: OslServerProcess):
     """Test ``register_location_as_[...]`` and ``get_registered_[...]``."""
     tcp_osl_server = create_tcp_osl_server(osl_server_process)
     sensitivity_uid = tcp_osl_server.create_node(type_="Sensitivity")
@@ -852,17 +852,14 @@ def test_register_locations(osl_server_process: OslServerProcess):
     assert len(input_slots) == 1
     assert isinstance(input_slots[0], dict)
 
-    # TODO: internal variable
-    # tcp_osl_server.register_location_as_internal_variable(
-    #     uid=integration_uid,
-    #     location={
-    #         "settings": {"expression": "10", "id": "variable_1"},
-    #         "type": "derived_location",
-    #     },
-    #     name="internal_variable_1",
-    #     reference_value=10,
-    # )
-    # internal_variables = tcp_osl_server.get_actor_internal_variables(uid=integration_uid)
+    #  internal variable
+    tcp_osl_server.register_location_as_internal_variable(
+        uid=integration_uid,
+        location={"expression": "10", "id": "variable_1"},
+        name="internal_variable_1",
+        reference_value=10,
+    )
+    internal_variables = tcp_osl_server.get_actor_internal_variables(uid=integration_uid)
 
     # output slot
     tcp_osl_server.register_location_as_output_slot(
