@@ -67,7 +67,7 @@ class DesignFlow(Enum):
 
 
 class NodeClassType(Enum):
-    """Provides ``LocationType`` options."""
+    """Provides types of pyOSL classes."""
 
     NODE = 0
     SYSTEM = 1
@@ -100,7 +100,7 @@ class NodeClassType(Enum):
 
 
 class RegisteredLocationType(Enum):
-    """Provides ``LocationType`` options."""
+    """Provides types to be registered at location."""
 
     INTERNAL_VARIABLE = 0
     PARAMETER = 1
@@ -134,7 +134,7 @@ class RegisteredLocationType(Enum):
 
 
 class SamplingType(Enum):
-    """Provides ``SamplingType`` options."""
+    """Provides sampling type options."""
 
     CENTERPOINT = 0
     FULLFACTORIAL = 1

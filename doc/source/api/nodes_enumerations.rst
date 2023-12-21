@@ -9,6 +9,7 @@ Enumerations
    DesignFlow
    NodeClassType
    RegisteredLocationType
+   SamplingType
    SlotType
 
 .. currentmodule:: ansys.optislang.core.node_types
