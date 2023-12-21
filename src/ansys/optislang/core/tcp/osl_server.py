@@ -12,6 +12,7 @@ import re
 import signal
 import socket
 import struct
+import sys
 import threading
 import time
 from typing import Any, Callable, Dict, Iterable, List, Mapping, Optional, Sequence, Tuple, Union
@@ -1175,7 +1176,16 @@ class TcpOslServer(OslServer):
         self.__opx_project_definition_file = opx_project_definition_file
         self.__additional_args = additional_args
 
-        signal.signal(signal.SIGINT, self.__signal_handler)
+        executed_in_main_thread = True
+
+        if sys.version_info[0] >= 3 and sys.version_info[1] >= 4:
+            executed_in_main_thread = threading.current_thread() is threading.main_thread()
+        else:
+            executed_in_main_thread = isinstance(threading.current_thread(), threading._MainThread)
+
+        if executed_in_main_thread:
+            signal.signal(signal.SIGINT, self.__signal_handler)
+
         atexit.register(self.dispose)
 
         if self.__host is None or self.__port is None:
