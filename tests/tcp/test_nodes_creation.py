@@ -37,21 +37,6 @@ def test_all_nodes_creation(optislang: Optislang):
     rs = optislang.application.project.root_system
     rs.delete_children_nodes()
     for node_type in NODE_TYPES:
-        if node_type in [
-            "AMOP",
-            "ARSM",
-            "AlgorithmSystemPlugin",
-            "BASS",
-            "CustomAlgorithm",
-            "DXAMO",
-            "DPF",
-            "DXMISQP",
-            "DXASO",
-            "DXUPEGO",
-            "EA",
-            "PIBO",
-        ]:
-            continue
         print(f"Creating {eval('node_types.' + node_type)}")
         node = rs.create_node(type_=eval("node_types." + node_type))
         nodes_in_rs = rs.get_nodes()

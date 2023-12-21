@@ -49,7 +49,7 @@ def test_optislang_properties(optislang: Optislang):
     version = optislang.osl_version_string
     assert isinstance(version, str)
 
-    major_version, minor_version, maintenance_version, revision = optislang.get_osl_version()
+    major_version, minor_version, maintenance_version, revision = optislang.osl_version
     assert isinstance(major_version, int)
     assert isinstance(minor_version, int)
     assert isinstance(maintenance_version, int)
@@ -64,7 +64,7 @@ def test_optislang_properties(optislang: Optislang):
     optislang.timeout = 30
     assert isinstance(timeout, (int, float))
     assert optislang.timeout == 30
-    with pytest.raises(TypeError):
+    with pytest.raises(ValueError):
         optislang.timeout = "20"
 
 
