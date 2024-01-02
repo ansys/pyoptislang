@@ -6,7 +6,6 @@ Nodes connection
 
 .. autosummary::
    :toctree: _autosummary
-   :template: class.rst
 
    InputSlot
    OutputSlot

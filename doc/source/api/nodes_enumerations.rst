@@ -4,7 +4,6 @@ Enumerations
 
 .. autosummary::
    :toctree: _autosummary
-   :template: class.rst
 
    DesignFlow
    NodeClassType
@@ -16,6 +15,5 @@ Enumerations
 
 .. autosummary::
    :toctree: _autosummary
-   :template: class.rst
 
    NodeType

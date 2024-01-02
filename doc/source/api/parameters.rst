@@ -5,7 +5,6 @@ Parameters
 
 .. autosummary::
    :toctree: _autosummary
-   :template: class.rst
 
    DependentParameter
    MixedParameter

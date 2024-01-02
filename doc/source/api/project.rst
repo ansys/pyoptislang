@@ -6,6 +6,5 @@ These classes are specific to the :py:mod:`ansys.optislang.core.project <ansys.o
 
 .. autosummary::
    :toctree: _autosummary
-   :template: class.rst
 
    Project

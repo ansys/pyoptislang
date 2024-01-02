@@ -5,7 +5,6 @@ Managers
    
 .. autosummary::
    :toctree: _autosummary
-   :template: class.rst
 
    CriteriaManager
    ParameterManager

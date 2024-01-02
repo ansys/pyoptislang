@@ -5,7 +5,6 @@ Base node classes
 
 .. autosummary::
    :toctree: _autosummary
-   :template: class.rst
 
    Node
    System

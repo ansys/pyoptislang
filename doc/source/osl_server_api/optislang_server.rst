@@ -7,6 +7,5 @@ They act as abstract base classes and are not intended to be used directly. Use 
 
 .. autosummary::
    :toctree: _autosummary
-   :template: class.rst
 
    OslServer

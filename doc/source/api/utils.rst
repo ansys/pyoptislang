@@ -11,7 +11,8 @@ These methods are specific to the :py:mod:`ansys.optislang.core.utils <ansys.opt
    find_all_osl_exec
 
 
-These classes are specific to the :py:mod:`ansys.optislang.core.io <ansys.optislang.core.io>` module:
+These classes and enumerations are specific 
+to the :py:mod:`ansys.optislang.core.io <ansys.optislang.core.io>` module:
 
 .. currentmodule:: ansys.optislang.core.io
 

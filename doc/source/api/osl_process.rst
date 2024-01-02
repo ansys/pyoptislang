@@ -7,6 +7,5 @@ They provide low-level API capability to start and manage optiSLang processes:
 
 .. autosummary::
    :toctree: _autosummary
-   :template: class.rst
 
    OslServerProcess
