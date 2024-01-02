@@ -100,7 +100,7 @@ jobs:
         with:
           python-version: ${{ env.MAIN_PYTHON_VERSION }}
           dependencies: "pandoc"
-          sphinx-opt: "-W -v"  # Add -v for increased verbosity
+          sphinxopts: "-v"  # Add -v for increased verbosity
 
   build-library:
     name: "Build library"
