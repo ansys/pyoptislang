@@ -259,7 +259,9 @@ Octave = NodeType(
     id="Octave", subtype=AddinType.BUILT_IN, osl_class_type=NodeClassType.INTEGRATION_NODE
 )
 OOCalc = NodeType(id="OOCalc", subtype=AddinType.BUILT_IN)
-Parameterize = NodeType(id="Parameterize", subtype=AddinType.BUILT_IN)
+Parameterize = NodeType(
+    id="Parameterize", subtype=AddinType.BUILT_IN, osl_class_type=NodeClassType.INTEGRATION_NODE
+)
 Path = NodeType(id="Path", subtype=AddinType.BUILT_IN)
 PDM = NodeType(id="PDM", subtype=AddinType.BUILT_IN, osl_class_type=NodeClassType.INTEGRATION_NODE)
 PDMReceive = NodeType(

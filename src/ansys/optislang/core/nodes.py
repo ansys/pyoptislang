@@ -774,7 +774,7 @@ class IntegrationNode(Node):
         pass
 
     @abstractmethod
-    def re_register_location(
+    def re_register_locations(
         self, registered_as: Union[RegisteredLocationType, str]
     ) -> None:  # pragma: no cover
         """Adjust locations with already registered objects of the given type.

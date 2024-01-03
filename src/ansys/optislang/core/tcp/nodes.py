@@ -1240,7 +1240,7 @@ class TcpIntegrationNodeProxy(TcpNodeProxy, IntegrationNode):
             self._osl_server, uid=self.uid
         )
 
-    def re_register_location(self, registered_as: Union[RegisteredLocationType, str]) -> None:
+    def re_register_locations(self, registered_as: Union[RegisteredLocationType, str]) -> None:
         """Adjust locations with already registered objects of the given type.
 
         Parameters
@@ -1260,7 +1260,7 @@ class TcpIntegrationNodeProxy(TcpNodeProxy, IntegrationNode):
         """
         # TODO: test
         registered_as = self.__class__.__parse_register_as_from_string(register_as=registered_as)
-        self.__class__._REGISTER_LOCATION_MAPPING.get(registered_as.name)(
+        self.__class__._RE_REGISTER_LOCATIONS_MAPPING.get(registered_as.name)(
             self._osl_server, uid=self.uid
         )
 

@@ -1454,6 +1454,80 @@ class TcpOslServer(OslServer):
             self._logger.error(f"``len(output) == {len(output)}``, but only 1 item was expected.")
         return output[0].get("result_data", {}).get("actor_uid")
 
+    def create_input_slot(
+        self, actor_uid: str, slot_name: Optional[str] = None, type_hint: Optional[str] = None
+    ) -> None:
+        """Create custom input slot.
+
+        Parameters
+        ----------
+        actor_uid : str
+            Uid of the actor.
+        slot_name : Optional[str], optional
+            Name of the slot to be created. By default ``None``.
+        type_hint: Optional[str], optional
+            Type of the slot. By default ``None``.
+
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        # TODO: test
+        current_func_name = self.connect_nodes.__name__
+        self.send_command(
+            command=commands.create_input_slot(
+                actor_uid=actor_uid,
+                slot_name=slot_name,
+                type_hint=type_hint,
+                password=self.__password,
+            ),
+            timeout=self.timeouts_register.get_value(current_func_name),
+            max_request_attempts=self.max_request_attempts_register.get_value(current_func_name),
+        )
+
+    def create_output_slot(
+        self, actor_uid: str, slot_name: Optional[str] = None, type_hint: Optional[str] = None
+    ) -> None:
+        """Create custom output slot.
+
+        Parameters
+        ----------
+        actor_uid : str
+            Uid of the actor.
+        slot_name : Optional[str], optional
+            Name of the slot to be created. By default ``None``.
+        type_hint: Optional[str], optional
+            Type of the slot. By default ``None``.
+
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        # TODO: test
+        current_func_name = self.connect_nodes.__name__
+        self.send_command(
+            command=commands.create_output_slot(
+                actor_uid=actor_uid,
+                slot_name=slot_name,
+                type_hint=type_hint,
+                password=self.__password,
+            ),
+            timeout=self.timeouts_register.get_value(current_func_name),
+            max_request_attempts=self.max_request_attempts_register.get_value(current_func_name),
+        )
+
     def disconnect_slot(self, uid: str, slot_name: str, direction: str) -> None:
         """Remove all connections for a given slot.
 
