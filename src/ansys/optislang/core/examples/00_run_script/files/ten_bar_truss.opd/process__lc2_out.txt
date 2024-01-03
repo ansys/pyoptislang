@@ -1,2 +1,0 @@
-
-SLang file: "ten_bar_truss2.s"
