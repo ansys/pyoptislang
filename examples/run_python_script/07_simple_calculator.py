@@ -8,7 +8,7 @@ This example demonstrates how to create a simple calculator flow.
 
 It uses the ``simple_calculator.py`` file to create and run
 a simple flow of four nodes. It then explains how you can optionally
-save a copy of the project to a desired location.
+save the project to a desired location.
 """
 
 ####################################################

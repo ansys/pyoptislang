@@ -8,7 +8,7 @@ This example demonstrates how to create and run parametric system for an oscilla
 
 It uses the ``oscillator_system_python.py`` file to create and run the
 parametric system for an oscillator. It then explains how you can optionally
-save a copy of the project to a desired location.
+save the project to a desired location.
 """
 
 ####################################################

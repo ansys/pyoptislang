@@ -9,7 +9,7 @@ This example demonstrates how to create and configure optimizer systems.
 It uses the ``optimizer_settings.py`` file to create,
 configure, and insert an EA (Evolutionary Algorithm) optimizer
 into the scenery. It then explains how you can optionally save
-a copy of the project to a desired location.
+the project to a desired location.
 """
 
 # Perform required imports

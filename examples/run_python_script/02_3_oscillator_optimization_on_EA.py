@@ -8,8 +8,8 @@ This example demonstrates how to create and run a direct optimization.
 
 It uses the ``oscillator_optimization_ea.py`` file to create and
 run a direct optimization for an oscillator with the EA (Evolutionary
-Algorithm) optimizer. It then explains how you can optionally save a copy
-of the project to a desired location.
+Algorithm) optimizer. It then explains how you can optionally save 
+the project to a desired location.
 """
 
 #########################################################

@@ -9,7 +9,7 @@ This example demonstrates how to create a basic text-based solver chain.
 This example uses the ``etk_abaqus.py`` file to set up a parametric system
 containing text input, the Abaqus process actor, and the Abaqus ETK output
 actor. It then explains how you can optionally save
-a copy of the project to a desired location.
+the project to a desired location.
 """
 
 #########################################################

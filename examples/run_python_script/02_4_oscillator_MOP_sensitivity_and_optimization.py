@@ -10,7 +10,7 @@ It uses the ``oscillator_sensitivity_mop.py`` file to create a
 sensitivity flow for an oscillator and then uses the
 ``oscillator_optimization_on_mop.py`` file to optimize the MOP
 (Metamodel of Optimal Prognosis) flow. It then runs these flows.
-Lastly, it explains how you can optionally save a copy of the project
+Lastly, it explains how you can optionally save the project
 to a desired location.
 """
 

@@ -8,7 +8,7 @@ This example demonstrates how to create and run a robustness flow for an oscilla
 
 It uses the ``oscillator_robustness_arsm.py`` file to create a robustness
 flow for an oscillator. It then explains how you can optionally save
-a copy of the project to a desired location.
+the project to a desired location.
 """
 
 #########################################################

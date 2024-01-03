@@ -15,7 +15,7 @@ and perform these tasks:
 
 It then uses the ``python_help.py`` file to print which nodes are
 available in the Python console. Lastly, it explains
-how you can optionally save a copy of the project to a desired location.
+how you can optionally save the project to a desired location.
 """
 
 #########################################################

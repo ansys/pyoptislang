@@ -4,12 +4,13 @@
 Ten bar truss
 -------------
 
-This example demonstrates how to to create an ARSM ten bar truss flow in batch mode.
+This example demonstrates how to to create an ARSM ten bar truss flow in batch mode
+using optiSLang python API.
 
 First, the ``arsm_ten_bar_truss.py`` file is used to create an ARSM ten bar
 truss flow. Then the ``ten_bar_modify_parameters.py`` and
 ``ten_bar_truss_lc2.py`` files are used to modify the flow. Lastly, the project is
-executed and a copy of the project is saved to a desired location.
+executed and a optionally the project is saved to a desired location.
 """
 
 #########################################################

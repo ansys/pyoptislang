@@ -11,7 +11,7 @@ It uses the ``oscillatorcalibration_system_python.py``
 and ``oscillatorcalibration_system_ascii.py`` files to create
 parametric systems for oscillator calibration and then runs
 these systems. Lastly, it explains how you can optionally save
-a copy of the project to a desired location.
+the project to a desired location.
 """
 
 #########################################################
