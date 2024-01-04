@@ -822,7 +822,7 @@ def register_location_as_internal_variable(
     Returns
     -------
     str
-        JSON string of ``register_location_as_internal_variable` command.
+        JSON string of ``register_location_as_internal_variable`` command.
     """
     args: CommandArgs = {
         "location": location,
@@ -867,7 +867,7 @@ def register_location_as_output_slot(
     Returns
     -------
     str
-        JSON string of ``register_location_as_output_slot` command.
+        JSON string of ``register_location_as_output_slot`` command.
     """
     args: CommandArgs = {
         "location": location,
@@ -912,7 +912,7 @@ def register_location_as_parameter(
     Returns
     -------
     str
-        JSON string of ``register_location_as_parameter` command.
+        JSON string of ``register_location_as_parameter`` command.
     """
     args: CommandArgs = {
         "location": location,
@@ -979,7 +979,7 @@ def register_location_as_response(
     Returns
     -------
     str
-        JSON string of ``register_location_as_response` command.
+        JSON string of ``register_location_as_response`` command.
     """
     args: CommandArgs = {
         "location": location,
