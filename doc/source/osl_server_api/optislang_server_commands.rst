@@ -23,6 +23,7 @@ and can be used to generate commands to the optiSLang server:
    export_designs
    finalize
    link_registered_file
+   load
    new
    open
    pause
@@ -30,7 +31,12 @@ and can be used to generate commands to the optiSLang server:
    refresh_listener_registration
    register_file
    register_listener
+   register_location_as_input_slot
+   register_location_as_internal_variable
+   register_location_as_output_slot
+   register_location_as_parameter
    register_locations_as_parameter
+   register_location_as_response
    register_locations_as_response
    remove_criteria
    remove_criterion

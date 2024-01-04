@@ -55,7 +55,7 @@ numpydoc_validation_checks = {
     "GL08",  # The object does not have a docstring
     "GL09",  # Deprecation warning should precede extended summary
     "GL10",  # reST directives {directives} must be followed by two colons
-    "SS01",  # No summary found
+    # "SS01",  # No summary found
     "SS02",  # Summary does not start with a capital letter
     # "SS03", # Summary does not end with a period
     "SS04",  # Summary contains heading whitespaces

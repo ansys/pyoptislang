@@ -5,11 +5,12 @@ logging architecture with global and local logging instances.
 
 For these two types of loggers, this is the default log message format:
 
-.. code:: pycon
+.. code:: python
 
-    >>> from ansys.optislang.core import Optislang
-    >>> osl = Optislang(loglevel="INFO")
-    >>> osl.log.info("This is an useful message")
+    from ansys.optislang.core import Optislang
+
+    osl = Optislang(loglevel="INFO")
+    osl.log.info("This is an useful message")
 
 .. code:: bash
 
