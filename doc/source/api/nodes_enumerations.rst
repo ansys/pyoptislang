@@ -7,7 +7,6 @@ Enumerations
 
    DesignFlow
    NodeClassType
-   RegisteredLocationType
    SamplingType
    SlotType
 

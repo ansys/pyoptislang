@@ -99,40 +99,6 @@ class NodeClassType(Enum):
         return enum_from_str(string=string, enum_class=__class__, replace=(" ", "_"))
 
 
-class RegisteredLocationType(Enum):
-    """Provides types to be registered at location."""
-
-    INTERNAL_VARIABLE = 0
-    PARAMETER = 1
-    RESPONSE = 2
-    INPUT_SLOT = 3
-    OUTPUT_SLOT = 4
-
-    @staticmethod
-    def from_str(string: str) -> RegisteredLocationType:
-        """Convert string to an instance of the ``LocationType`` class.
-
-        Parameters
-        ----------
-        string: str
-            String to be converted.
-
-        Returns
-        -------
-        LocationType
-            Instance of the ``LocationType`` class.
-
-        Raises
-        ------
-        TypeError
-            Raised when an invalid type of ``string`` is given.
-        ValueError
-            Raised when an invalid value of ``string`` is given.
-        """
-        # TODO: test
-        return enum_from_str(string=string, enum_class=__class__)
-
-
 class SamplingType(Enum):
     """Provides sampling type options."""
 
@@ -674,20 +640,128 @@ class IntegrationNode(Node):
         pass
 
     @abstractmethod
-    def get_registered_locations(
-        self, registered_locations_type: Union[RegisteredLocationType, str]
+    def get_internal_variables(
+        self, include_reference_values: Optional[bool] = True
     ) -> Tuple:  # pragma: no cover
-        """Get registered locations of the given type.
+        """Get internal variables.
 
         Parameters
         ----------
-        registered_locations_type : Union[RegisteredLocationType, str]
-            Type of the registered location.
+        include_reference_values: Optional[bool], optional
+            Whether reference values are to be included. By default ``True``.
 
         Returns
         -------
         Tuple
-            Registered locations of the given type.
+            Registered internal variables.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        pass
+
+    @abstractmethod
+    def get_registered_input_slots(
+        self, include_reference_values: Optional[bool] = True
+    ) -> Tuple:  # pragma: no cover
+        """Get registered input slots.
+
+        Parameters
+        ----------
+        include_reference_values: Optional[bool], optional
+            Whether reference values are to be included. By default ``True``.
+
+        Returns
+        -------
+        Tuple
+            Registered input slots.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        pass
+
+    @abstractmethod
+    def get_registered_output_slots(
+        self, include_reference_values: Optional[bool] = True
+    ) -> Tuple:  # pragma: no cover
+        """Get registered output slots.
+
+        Parameters
+        ----------
+        include_reference_values: Optional[bool], optional
+            Whether reference values are to be included. By default ``True``.
+
+        Returns
+        -------
+        Tuple
+            Registered output slots.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        pass
+
+    @abstractmethod
+    def get_registered_parameters(
+        self, include_reference_values: Optional[bool] = True
+    ) -> Tuple:  # pragma: no cover
+        """Get registered parameters.
+
+        Parameters
+        ----------
+        include_reference_values: Optional[bool], optional
+            Whether reference values are to be included. By default ``True``.
+
+        Returns
+        -------
+        Tuple
+            Registered parameters.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        pass
+
+    @abstractmethod
+    def get_registered_responses(
+        self, include_reference_values: Optional[bool] = True
+    ) -> Tuple:  # pragma: no cover
+        """Get registered responses.
+
+        Parameters
+        ----------
+        include_reference_values: Optional[bool], optional
+            Whether reference values are to be included. By default ``True``.
+
+        Returns
+        -------
+        Tuple
+            Registered responses.
 
         Raises
         ------
@@ -719,25 +793,22 @@ class IntegrationNode(Node):
         pass
 
     @abstractmethod
-    def register_location(
+    def register_location_as_input_slot(
         self,
-        register_as: Union[RegisteredLocationType, str],
         location: Any,
         name: Optional[str] = None,
         reference_value: Optional[Any] = None,
     ) -> None:  # pragma: no cover
-        """Register the given location as the given type.
+        """Register the given location as an input slot.
 
         Parameters
         ----------
-        register_as : Union[RegisteredLocationType, str]
-            Type of object that is to be created at the given location.
         location : Any
             Location to be registered.
         name : Optional[str], optional
-            Name of the registered object, by default ``None``.
+            Name of the registered input slot, by default ``None``.
         reference_value : Optional[Any], optional
-            Reference value of the registered object, by default ``None``.
+            Reference value of the registered input slot, by default ``None``.
 
         Raises
         ------
@@ -751,16 +822,22 @@ class IntegrationNode(Node):
         pass
 
     @abstractmethod
-    def register_locations(
-        self, register_as: Union[RegisteredLocationType, str]
+    def register_location_as_internal_variable(
+        self,
+        location: Any,
+        name: Optional[str] = None,
+        reference_value: Optional[Any] = None,
     ) -> None:  # pragma: no cover
-        """Register all available locations as the given type initially.
+        """Register the given location as an internal variable.
 
         Parameters
         ----------
-        register_as : Union[RegisteredLocationType, str]
-            Type of objects that are to be created. Supported for parameters (input locations)
-            and responses (output locations).
+        location : Any
+            Location to be registered.
+        name : Optional[str], optional
+            Name of the registered internal variable, by default ``None``.
+        reference_value : Optional[Any], optional
+            Reference value of the registered internal variable, by default ``None``.
 
         Raises
         ------
@@ -774,16 +851,140 @@ class IntegrationNode(Node):
         pass
 
     @abstractmethod
-    def re_register_locations(
-        self, registered_as: Union[RegisteredLocationType, str]
+    def register_location_as_output_slot(
+        self,
+        location: Any,
+        name: Optional[str] = None,
+        reference_value: Optional[Any] = None,
     ) -> None:  # pragma: no cover
-        """Adjust locations with already registered objects of the given type.
+        """Register the given location as an output slot.
 
         Parameters
         ----------
-        registered_as : Union[RegisteredLocationType, str]
-            Type of objects that are to be adjusted. Supported for parameters (input locations)
-            and responses (output locations).
+        location : Any
+            Location to be registered.
+        name : Optional[str], optional
+            Name of the registered output slot, by default ``None``.
+        reference_value : Optional[Any], optional
+            Reference value of the registered output slot, by default ``None``.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        pass
+
+    @abstractmethod
+    def register_location_as_parameter(
+        self,
+        location: Any,
+        name: Optional[str] = None,
+        reference_value: Optional[Any] = None,
+    ) -> None:  # pragma: no cover
+        """Register the given location as a parameter.
+
+        Parameters
+        ----------
+        location : Any
+            Location to be registered.
+        name : Optional[str], optional
+            Name of the registered parameter, by default ``None``.
+        reference_value : Optional[Any], optional
+            Reference value of the registered parameter, by default ``None``.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        pass
+
+    @abstractmethod
+    def register_location_as_response(
+        self,
+        location: Any,
+        name: Optional[str] = None,
+        reference_value: Optional[Any] = None,
+    ) -> None:  # pragma: no cover
+        """Register the given location as a response.
+
+        Parameters
+        ----------
+        location : Any
+            Location to be registered.
+        name : Optional[str], optional
+            Name of the registered response, by default ``None``.
+        reference_value : Optional[Any], optional
+            Reference value of the registered response, by default ``None``.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        pass
+
+    @abstractmethod
+    def register_locations_as_parameter(self) -> None:  # pragma: no cover
+        """Register all available locations as parameter initially.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        pass
+
+    @abstractmethod
+    def register_locations_as_response(self) -> None:  # pragma: no cover
+        """Register all available locations as response initially.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        pass
+
+    @abstractmethod
+    def re_register_locations_as_parameter(self) -> None:  # pragma: no cover
+        """Adjust all input locations with the already registered parameters.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        pass
+
+    @abstractmethod
+    def re_register_locations_as_response(self) -> None:  # pragma: no cover
+        """Adjust all input locations with the already registered responses.
 
         Raises
         ------

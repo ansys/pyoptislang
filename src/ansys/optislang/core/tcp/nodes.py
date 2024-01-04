@@ -28,7 +28,6 @@ from ansys.optislang.core.nodes import (
     NodeClassType,
     OutputSlot,
     ParametricSystem,
-    RegisteredLocationType,
     RootSystem,
     Slot,
     SlotType,
@@ -1041,24 +1040,6 @@ class TcpNodeProxy(Node):
 class TcpIntegrationNodeProxy(TcpNodeProxy, IntegrationNode):
     """Provides for creating and operating on integration nodes."""
 
-    _REGISTER_LOCATION_MAPPING = {
-        RegisteredLocationType.INTERNAL_VARIABLE.name: (
-            TcpOslServer.register_location_as_internal_variable
-        ),
-        RegisteredLocationType.PARAMETER.name: TcpOslServer.register_location_as_parameter,
-        RegisteredLocationType.RESPONSE.name: TcpOslServer.register_location_as_response,
-        RegisteredLocationType.INPUT_SLOT.name: TcpOslServer.register_location_as_input_slot,
-        RegisteredLocationType.OUTPUT_SLOT.name: TcpOslServer.register_location_as_output_slot,
-    }
-    _REGISTER_LOCATIONS_MAPPING = {
-        RegisteredLocationType.PARAMETER.name: TcpOslServer.register_locations_as_parameter,
-        RegisteredLocationType.RESPONSE.name: TcpOslServer.register_locations_as_response,
-    }
-    _RE_REGISTER_LOCATIONS_MAPPING = {
-        RegisteredLocationType.PARAMETER.name: TcpOslServer.re_register_locations_as_parameter,
-        RegisteredLocationType.RESPONSE.name: TcpOslServer.re_register_locations_as_response,
-    }
-
     def __init__(
         self,
         uid: str,
@@ -1126,20 +1107,18 @@ class TcpIntegrationNodeProxy(TcpNodeProxy, IntegrationNode):
         # TODO: test
         return self._osl_server.get_available_output_locations(self.uid)
 
-    def get_registered_locations(
-        self, registered_locations_type: Union[RegisteredLocationType, str]
-    ) -> Tuple:
-        """Get registered locations of the given type.
+    def get_internal_variables(self, include_reference_values: Optional[bool] = True) -> Tuple:
+        """Get internal variables.
 
         Parameters
         ----------
-        registered_locations_type : Union[RegisteredLocationType, str]
-            Type of the registered location.
+        include_reference_values: Optional[bool], optional
+            Whether reference values are to be included. By default ``True``.
 
         Returns
         -------
         Tuple
-            Registered locations of the given type.
+            Registered internal variables.
 
         Raises
         ------
@@ -1150,14 +1129,123 @@ class TcpIntegrationNodeProxy(TcpNodeProxy, IntegrationNode):
         TimeoutError
             Raised when the timeout float value expires.
         """
-        # TODO: test
-        type_ = self.__class__.__parse_register_as_from_string(
-            register_as=registered_locations_type
+        return tuple(
+            self._osl_server.get_actor_internal_variables(
+                uid=self.uid, include_reference_values=include_reference_values
+            )
         )
-        if type_ == RegisteredLocationType.INTERNAL_VARIABLE:
-            return tuple(self._get_info()["internal_variables"])
-        else:
-            return tuple(self._get_info()["registered_" + type_.name.lower() + "s"])
+
+    def get_registered_input_slots(self, include_reference_values: Optional[bool] = True) -> Tuple:
+        """Get registered input slots.
+
+        Parameters
+        ----------
+        include_reference_values: Optional[bool], optional
+            Whether reference values are to be included. By default ``True``.
+
+        Returns
+        -------
+        Tuple
+            Registered input slots.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        return tuple(
+            self._osl_server.get_actor_registered_input_slots(
+                uid=self.uid, include_reference_values=include_reference_values
+            )
+        )
+
+    def get_registered_output_slots(self, include_reference_values: Optional[bool] = True) -> Tuple:
+        """Get registered output slots.
+
+        Parameters
+        ----------
+        include_reference_values: Optional[bool], optional
+            Whether reference values are to be included. By default ``True``.
+
+        Returns
+        -------
+        Tuple
+            Registered output slots.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        return tuple(
+            self._osl_server.get_actor_registered_output_slots(
+                uid=self.uid, include_reference_values=include_reference_values
+            )
+        )
+
+    def get_registered_parameters(self, include_reference_values: Optional[bool] = True) -> Tuple:
+        """Get registered parameters.
+
+        Parameters
+        ----------
+        include_reference_values: Optional[bool], optional
+            Whether reference values are to be included. By default ``True``.
+
+        Returns
+        -------
+        Tuple
+            Registered parameters.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        return tuple(
+            self._osl_server.get_actor_registered_parameters(
+                uid=self.uid, include_reference_values=include_reference_values
+            )
+        )
+
+    def get_registered_responses(self, include_reference_values: Optional[bool] = True) -> Tuple:
+        """Get registered responses.
+
+        Parameters
+        ----------
+        include_reference_values: Optional[bool], optional
+            Whether reference values are to be included. By default ``True``.
+
+        Returns
+        -------
+        Tuple
+            Registered responses.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        return tuple(
+            self._osl_server.get_actor_registered_responses(
+                uid=self.uid, include_reference_values=include_reference_values
+            )
+        )
 
     def load(self) -> None:
         """Explicitly load the node.
@@ -1177,25 +1265,158 @@ class TcpIntegrationNodeProxy(TcpNodeProxy, IntegrationNode):
         # TODO: test
         self._osl_server.load(self.uid)
 
-    def register_location(
+    def register_location_as_input_slot(
         self,
-        register_as: Union[RegisteredLocationType, str],
         location: Any,
         name: Optional[str] = None,
         reference_value: Optional[Any] = None,
     ) -> None:
-        """Register the given location as the given type.
+        """Register the given location as an input slot.
 
         Parameters
         ----------
-        register_as : Union[RegisteredLocationType, str]
-            Type of object that is to be created at the given location.
         location : Any
             Location to be registered.
         name : Optional[str], optional
-            Name of the registered object, by default ``None``.
+            Name of the registered input slot, by default ``None``.
         reference_value : Optional[Any], optional
-            Reference value of the registered object, by default ``None``.
+            Reference value of the registered input slot, by default ``None``.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        self._osl_server.register_location_as_input_slot(
+            uid=self.uid, location=location, name=name, reference_value=reference_value
+        )
+
+    def register_location_as_internal_variable(
+        self,
+        location: Any,
+        name: Optional[str] = None,
+        reference_value: Optional[Any] = None,
+    ) -> None:
+        """Register the given location as an internal variable.
+
+        Parameters
+        ----------
+        location : Any
+            Location to be registered.
+        name : Optional[str], optional
+            Name of the registered internal variable, by default ``None``.
+        reference_value : Optional[Any], optional
+            Reference value of the registered internal variable, by default ``None``.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        self._osl_server.register_location_as_internal_variable(
+            uid=self.uid, location=location, name=name, reference_value=reference_value
+        )
+
+    def register_location_as_output_slot(
+        self,
+        location: Any,
+        name: Optional[str] = None,
+        reference_value: Optional[Any] = None,
+    ) -> None:
+        """Register the given location as an output slot.
+
+        Parameters
+        ----------
+        location : Any
+            Location to be registered.
+        name : Optional[str], optional
+            Name of the registered output slot, by default ``None``.
+        reference_value : Optional[Any], optional
+            Reference value of the registered output slot, by default ``None``.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        self._osl_server.register_location_as_output_slot(
+            uid=self.uid, location=location, name=name, reference_value=reference_value
+        )
+
+    def register_location_as_parameter(
+        self,
+        location: Any,
+        name: Optional[str] = None,
+        reference_value: Optional[Any] = None,
+    ) -> None:
+        """Register the given location as a parameter.
+
+        Parameters
+        ----------
+        location : Any
+            Location to be registered.
+        name : Optional[str], optional
+            Name of the registered parameter, by default ``None``.
+        reference_value : Optional[Any], optional
+            Reference value of the registered parameter, by default ``None``.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        self._osl_server.register_location_as_parameter(
+            uid=self.uid, location=location, name=name, reference_value=reference_value
+        )
+
+    def register_location_as_response(
+        self,
+        location: Any,
+        name: Optional[str] = None,
+        reference_value: Optional[Any] = None,
+    ) -> None:
+        """Register the given location as a response.
+
+        Parameters
+        ----------
+        location : Any
+            Location to be registered.
+        name : Optional[str], optional
+            Name of the registered response, by default ``None``.
+        reference_value : Optional[Any], optional
+            Reference value of the registered response, by default ``None``.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        self._osl_server.register_location_as_response(
+            uid=self.uid, location=location, name=name, reference_value=reference_value
+        )
+
+    def register_locations_as_parameter(self) -> None:
+        """Register all available locations as parameter initially.
 
         Raises
         ------
@@ -1207,23 +1428,10 @@ class TcpIntegrationNodeProxy(TcpNodeProxy, IntegrationNode):
             Raised when the timeout float value expires.
         """
         # TODO: test
-        register_as = self.__class__.__parse_register_as_from_string(register_as=register_as)
-        self.__class__._REGISTER_LOCATION_MAPPING.get(register_as.name)(
-            self._osl_server,
-            uid=self.uid,
-            location=location,
-            name=name,
-            reference_value=reference_value,
-        )
+        self._osl_server.register_locations_as_parameter(uid=self.uid)
 
-    def register_locations(self, register_as: Union[RegisteredLocationType, str]) -> None:
-        """Register all available locations as the given type initially.
-
-        Parameters
-        ----------
-        register_as : Union[RegisteredLocationType, str]
-            Type of objects that are to be created. Supported for parameters (input locations)
-            and responses (output locations).
+    def register_locations_as_response(self) -> None:
+        """Register all available locations as response initially.
 
         Raises
         ------
@@ -1235,19 +1443,10 @@ class TcpIntegrationNodeProxy(TcpNodeProxy, IntegrationNode):
             Raised when the timeout float value expires.
         """
         # TODO: test
-        register_as = self.__class__.__parse_register_as_from_string(register_as=register_as)
-        self.__class__._REGISTER_LOCATIONS_MAPPING.get(register_as.name)(
-            self._osl_server, uid=self.uid
-        )
+        self._osl_server.register_locations_as_response(uid=self.uid)
 
-    def re_register_locations(self, registered_as: Union[RegisteredLocationType, str]) -> None:
-        """Adjust locations with already registered objects of the given type.
-
-        Parameters
-        ----------
-        registered_as : Union[RegisteredLocationType, str]
-            Type of objects that are to be adjusted. Supported for parameters (input locations)
-            and responses (output locations).
+    def re_register_locations_as_parameter(self) -> None:
+        """Adjust all input locations with the already registered parameters.
 
         Raises
         ------
@@ -1259,37 +1458,22 @@ class TcpIntegrationNodeProxy(TcpNodeProxy, IntegrationNode):
             Raised when the timeout float value expires.
         """
         # TODO: test
-        registered_as = self.__class__.__parse_register_as_from_string(register_as=registered_as)
-        self.__class__._RE_REGISTER_LOCATIONS_MAPPING.get(registered_as.name)(
-            self._osl_server, uid=self.uid
-        )
+        self._osl_server.re_register_locations_as_parameter(uid=self.uid)
 
-    @staticmethod
-    def __parse_register_as_from_string(
-        register_as: Union[RegisteredLocationType, str]
-    ) -> RegisteredLocationType:
-        """Parse ``register_as`` argument from ``str`` to ``RegisteredLocationType``.
-
-        Parameters
-        ----------
-        register_as : Union[RegisteredLocationType, str]
-            Argument to be converted.
-
-        Returns
-        -------
-        RegisteredLocationType
-            Item of ``RegisteredLocationType`` enumeration.
+    def re_register_locations_as_response(self) -> None:
+        """Adjust all input locations with the already registered responses.
 
         Raises
         ------
-        TypeError
-            Raised when unsupported type of ``register_as`` argument was passed.
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
         """
-        if isinstance(register_as, str):
-            register_as = RegisteredLocationType.from_str(register_as)
-        if not isinstance(register_as, RegisteredLocationType):
-            raise TypeError(f"Registration type: `{type(register_as)}` is not supported.")
-        return register_as
+        # TODO: test
+        self._osl_server.re_register_locations_as_response(uid=self.uid)
 
 
 # endregion
@@ -1679,7 +1863,7 @@ class TcpSystemProxy(TcpNodeProxy, System):
 
         Returns
         -------
-        RegisteredLocationType
+        DesignFlow
             Item of ``DesignFlow`` enumeration.
 
         Raises

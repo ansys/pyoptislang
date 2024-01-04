@@ -5,7 +5,6 @@ import pytest
 from ansys.optislang.core import Optislang
 from ansys.optislang.core.io import File, FileOutputFormat, RegisteredFile
 from ansys.optislang.core.node_types import AddinType, NodeType, Sensitivity, optislang_node
-from ansys.optislang.core.nodes import RegisteredLocationType
 from ansys.optislang.core.tcp.managers import CriteriaManager, ParameterManager, ResponseManager
 from ansys.optislang.core.tcp.nodes import (
     DesignFlow,
@@ -209,68 +208,53 @@ def test_register_location(optislang: Optislang):
         design_flow=DesignFlow.RECEIVE_SEND,
     )
     # input slot
-    integration_node.register_location(
-        register_as=RegisteredLocationType.INPUT_SLOT,
+    integration_node.register_location_as_input_slot(
         location="input_slot_1",
         name="input_slot_1",
         reference_value=10,
     )
-    input_slots = integration_node.get_registered_locations(
-        registered_locations_type=RegisteredLocationType.INPUT_SLOT
-    )
+    input_slots = integration_node.get_registered_input_slots()
     assert len(input_slots) == 1
     assert isinstance(input_slots[0], dict)
 
     # internal variable
-    integration_node.register_location(
-        register_as=RegisteredLocationType.INTERNAL_VARIABLE,
+    integration_node.register_location_as_internal_variable(
         location={"expression": "10", "id": "variable_1"},
         name="variable_1",
         reference_value=10,
     )
-    internal_variables = integration_node.get_registered_locations(
-        registered_locations_type=RegisteredLocationType.INTERNAL_VARIABLE
-    )
+    internal_variables = integration_node.get_internal_variables()
     assert len(internal_variables) == 1
     assert isinstance(internal_variables[0], dict)
 
     # output slot
-    integration_node.register_location(
-        register_as=RegisteredLocationType.OUTPUT_SLOT,
+    integration_node.register_location_as_output_slot(
         location="output_slot_1",
         name="output_slot_1",
         reference_value=10,
     )
-    output_slots = integration_node.get_registered_locations(
-        registered_locations_type=RegisteredLocationType.OUTPUT_SLOT
-    )
+    output_slots = integration_node.get_registered_output_slots()
     assert len(output_slots) == 1
     assert isinstance(output_slots[0], dict)
 
     # parameter
-    integration_node.register_location(
-        register_as=RegisteredLocationType.PARAMETER,
+    integration_node.register_location_as_parameter(
         location="parameter_1",
         name="parameter1",
         reference_value=10,
     )
-    parameters = integration_node.get_registered_locations(
-        registered_locations_type=RegisteredLocationType.PARAMETER
-    )
+    parameters = integration_node.get_registered_parameters()
     assert len(parameters) == 1
     assert isinstance(parameters[0], dict)
 
     # response
-    integration_node.register_location(
-        register_as=RegisteredLocationType.RESPONSE,
+    integration_node.register_location_as_response(
         location="response_1",
         name="response_1",
         reference_value=10,
     )
 
-    responses = integration_node.get_registered_locations(
-        registered_locations_type=RegisteredLocationType.RESPONSE
-    )
+    responses = integration_node.get_registered_responses()
     assert len(responses) == 1
     assert isinstance(responses[0], dict)
 
