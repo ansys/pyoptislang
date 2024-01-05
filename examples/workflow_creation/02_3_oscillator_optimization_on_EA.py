@@ -1,5 +1,5 @@
 """
-.. _ref_oscillator_optimization_on_EA:
+.. _ref_oscillator_optimization_on_EA_create_workflow:
 
 Oscillator optimization using EA flow
 -------------------------------------
@@ -94,7 +94,7 @@ python_node.register_location_as_response(location="omega_damped", reference_val
 python_node.register_location_as_response(location="x_max", reference_value=0.62342)
 
 
-# Modify parameters
+# Modify registered parameters
 noa2.parameter_manager.modify_parameter(
     MixedParameter(
         name="k",
@@ -130,7 +130,7 @@ optimizer_settings = noa2.get_property("OptimizerSettings")
 optimizer_settings["settings"]["MaxGenerations"] = 20
 noa2.set_property("OptimizerSettings", optimizer_settings)
 
-# setup postprocessing
+# Setup postprocessing
 post_processing.set_property("PostprocessingMode", {"value": "automatic"})
 post_processing.set_property("ShowPostProcessingDuringRun", False)
 post_processing.set_property("WaitForPostprocessingToFinish", True)

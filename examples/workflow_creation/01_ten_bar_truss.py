@@ -1,5 +1,5 @@
 """
-.. _ref_ten_bar_truss:
+.. _ref_ten_bar_truss_create_workflow:
 
 Ten bar truss
 -------------
