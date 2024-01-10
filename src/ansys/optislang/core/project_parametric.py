@@ -1660,7 +1660,7 @@ class Parameter:
         self,
         name: str = "",
         reference_value: Optional[Union[bool, float, str]] = None,
-        id: str = "",
+        id: Optional[str] = None,
         const: bool = False,
         type_: Union[ParameterType, str] = ParameterType.DETERMINISTIC,
     ) -> None:
@@ -1673,7 +1673,8 @@ class Parameter:
         reference_value: Optional[Union[bool, float, str]], optional
             Parameter's reference value. By default ``None``.
         id: str, optional
-            Parameter's unique id. By default ``""``.
+            Parameter's unique id. By default ``None``.
+            A unique Id is automatically generated if not specified.
         const: bool, optional
             Determines whether is parameter constant. By default ``False``.
         type: Union[ParameterType, str], optional
@@ -1681,6 +1682,8 @@ class Parameter:
         """
         self.name = name
         self.reference_value = reference_value
+        if id is None:
+            id = str(uuid.uuid4())
         self.id = id
         self.const = const
         if isinstance(type_, str):
@@ -1769,7 +1772,7 @@ class Parameter:
         TypeError
             Raised when the type of the ID is invalid.
         """
-        if not isinstance(id, str):
+        if not isinstance(id, str) and not id is None:
             raise TypeError(f"Type of ``id`` must be ``str`` but type: ``{type(id)}`` was given.")
         self.__id = id
 
@@ -1977,7 +1980,7 @@ class DependentParameter(Parameter):
         name: str = "",
         operation: str = "0",
         reference_value: Optional[Union[bool, float, str, Tuple[Any, ParameterValueType]]] = None,
-        id: str = str(uuid.uuid4()),
+        id: Optional[str] = None,
         const: bool = False,
     ) -> None:
         """Create an instance of the ``DependentParameter`` class.
@@ -1991,7 +1994,7 @@ class DependentParameter(Parameter):
         reference_value: Optional[Union[bool, float, str, Tuple[Any, ParameterValueType]]], optional
             Reference value of the parameter. By default ``None``.
         id: str, optional
-            Unique ID of the parameter. Id is automatically created if not specified.
+            Unique ID of the parameter. A unique Id is automatically generated if not specified.
         const: bool, optional
             Whether the parameter is a constant. By default ``False``.
         """
@@ -2064,11 +2067,10 @@ class DependentParameter(Parameter):
             Input dictionary for the optiSLang server.
 
         """
-        return {
+        ret_dict = {
             "active": True,
             "const": self.const if self.const is not None else False,
             "dependency_expression": self.operation if self.operation is not None else "0",
-            "id": self.id,
             "modifiable": False,
             "name": self.name,
             "reference_value": None,
@@ -2076,6 +2078,11 @@ class DependentParameter(Parameter):
             "type": {"value": self.type.name.lower()},
             "unit": "",
         }
+
+        if self.id is not None:
+            ret_dict["id"] = self.id
+
+        return ret_dict
 
     def __str__(self) -> str:
         """Return information about the parameter."""
@@ -2096,7 +2103,7 @@ class MixedParameter(Parameter):
         self,
         name: str = "",
         reference_value: float = 0,
-        id: str = str(uuid.uuid4()),
+        id: Optional[str] = None,
         const: bool = False,
         deterministic_resolution: Union[ParameterResolution, str] = ParameterResolution.CONTINUOUS,
         range: Union[Sequence[float, float], Sequence[Sequence[float]]] = (-1, 1),
@@ -2117,7 +2124,7 @@ class MixedParameter(Parameter):
         reference_value: float, optional
             Parameter's reference value. By default ``0``.
         id: str, optional
-            Parameter's unique id. Id is automatically created if not specified.
+            Parameter's unique id. A unique Id is automatically generated if not specified.
         const: bool, optional
             Determines whether is parameter constant. By default ``False``.
         deterministic_resolution: Union[ParameterResolution, str], optional
@@ -2401,7 +2408,6 @@ class MixedParameter(Parameter):
                 "domain_type": {"value": self.reference_value_type.name.lower()},
                 "kind": {"value": self.deterministic_resolution.name.lower()},
             },
-            "id": self.id,
             "modifiable": False,
             "name": self.name,
             "reference_value": self.reference_value if self.reference_value else 0,
@@ -2410,6 +2416,9 @@ class MixedParameter(Parameter):
             "type": {"value": self.type.name.lower()},
             "unit": "",
         }
+
+        if self.id is not None:
+            output_dict["id"] = self.id
 
         output_dict["deterministic_property"].update(range_dict)
         return output_dict
@@ -2441,7 +2450,7 @@ class OptimizationParameter(Parameter):
         name: str = "",
         reference_value: Union[bool, float, str, None] = 0,
         reference_value_type: ParameterValueType = ParameterValueType.REAL,
-        id: str = str(uuid.uuid4()),
+        id: Optional[str] = None,
         const: bool = False,
         deterministic_resolution: Union[ParameterResolution, str] = ParameterResolution.CONTINUOUS,
         range: Union[Sequence[float, float], Sequence[Sequence[float]]] = (-1, 1),
@@ -2457,7 +2466,7 @@ class OptimizationParameter(Parameter):
         reference_value_type: ParameterValueType, optional
             Type of the reference value. By default ``ParameterValueType.REAL``.
         id: str, optional
-            Parameter's unique id. Id is automatically created if not specified.
+            Parameter's unique id. A unique Id is automatically generated if not specified.
         const: bool, optional
             Determines whether is parameter constant. By default ``False``.
         deterministic_resolution: Union[ParameterResolution, str], optional
@@ -2614,7 +2623,6 @@ class OptimizationParameter(Parameter):
                 "domain_type": {"value": self.reference_value_type.name.lower()},
                 "kind": {"value": self.deterministic_resolution.name.lower()},
             },
-            "id": self.id,
             "modifiable": False,
             "name": self.name,
             "reference_value": self.reference_value,
@@ -2622,6 +2630,8 @@ class OptimizationParameter(Parameter):
             "type": {"value": self.type.name.lower()},
             "unit": "",
         }
+        if self.id is not None:
+            output_dict["id"] = self.id
         output_dict["deterministic_property"].update(range_dict)
         return output_dict
 
@@ -2646,7 +2656,7 @@ class StochasticParameter(Parameter):
         self,
         name: str = "",
         reference_value: float = 0,
-        id: str = str(uuid.uuid4()),
+        id: Optional[str] = None,
         const: bool = False,
         stochastic_resolution: Union[
             ParameterResolution, str
@@ -2665,7 +2675,7 @@ class StochasticParameter(Parameter):
         reference_value: float, optional
             Parameter's reference value. By default ``0``.
         id: str, optional
-            Parameter's unique id. Id is automatically created if not specified.
+            Parameter's unique id. A unique Id is automatically generated if not specified.
         const: bool, optional
             Determines whether is parameter constant. By default ``False``.
         stochastic_resolution: Union[ParameterResolution, str], optional
@@ -2875,10 +2885,9 @@ class StochasticParameter(Parameter):
             stochastic_property["statistical_moments"] = self.statistical_moments
         if self.cov is not None:
             stochastic_property["cov"] = self.cov
-        return {
+        output_dict = {
             "active": True,
             "const": self.const if self.const is not None else False,
-            "id": self.id,
             "modifiable": False,
             "name": self.name,
             "reference_value": self.reference_value,
@@ -2887,6 +2896,9 @@ class StochasticParameter(Parameter):
             "type": {"value": self.type.name.lower()},
             "unit": "",
         }
+        if self.id is not None:
+            output_dict["id"] = self.id
+        return output_dict
 
     def __str__(self) -> str:
         """Return information about the parameter."""

@@ -357,6 +357,7 @@ class TcpParameterManagerProxy(ParameterManager):
         parameter_manager, container = self.__get_parameter_container()
         idx = self.__get_parameter_idx(container=container, parameter_name=parameter.name)
         if idx is not None:
+            parameter.id = container[idx]["id"]
             container[idx] = parameter.to_dict()
             parameter_manager["parameter_container"] = container
             self.__osl_server.set_actor_property(
@@ -394,7 +395,7 @@ class TcpParameterManagerProxy(ParameterManager):
         """
         parameter_manager, container = self.__get_parameter_container()
         idx = self.__get_parameter_idx(container=container, parameter_name=parameter_name)
-        if idx:
+        if idx is not None:
             container[idx][
                 self.__class__.__PROPERTY_MAPPING.get(property_name, property_name)
             ] = property_value
@@ -470,6 +471,7 @@ class TcpParameterManagerProxy(ParameterManager):
         for idx, parameter in enumerate(container):
             if parameter["name"] == parameter_name:
                 return idx
+        return None
 
 
 class TcpResponseManagerProxy(ResponseManager):
