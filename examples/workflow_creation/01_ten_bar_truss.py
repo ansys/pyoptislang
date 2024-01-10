@@ -4,10 +4,10 @@
 Ten bar truss
 -------------
 
-This example demonstrates how to to create an ARSM ten bar truss flow in batch mode 
+This example demonstrates how to to create an ARSM ten bar truss flow in batch mode
 using pyOptiSLang.
 
-First, the workflow is created, properties are set and project is executed. It explains then 
+First, the workflow is created, properties are set and project is executed. It explains then
 how you can save the project to a desired location.
 """
 
@@ -26,6 +26,7 @@ from ansys.optislang.core.project_parametric import (
     ComparisonType,
     ConstraintCriterion,
     ObjectiveCriterion,
+    OptimizationParameter,
 )
 from ansys.optislang.core.utils import get_osl_exec
 
@@ -95,6 +96,12 @@ for i in range(1, 11):
             "kind": {"value": "scalar"},
             "scalar": {"real": 10.0, "imag": 0.0},
         },
+    )
+
+# ARSM - Configure parameters
+for i in range(1, 11):
+    arsm.parameter_manager.modify_parameter(
+        OptimizationParameter(name=f"area{i:02}", reference_value=10.0, range=[0.1, 20])
     )
 
 # Process - set properties, input/output files
