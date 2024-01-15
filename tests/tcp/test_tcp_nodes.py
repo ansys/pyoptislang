@@ -208,7 +208,7 @@ def test_register_location(optislang: Optislang):
         design_flow=DesignFlow.RECEIVE_SEND,
     )
     # input slot
-    integration_node.register_location_as_input_slot(
+    actual_name = integration_node.register_location_as_input_slot(
         location="input_slot_1",
         name="input_slot_1",
         reference_value=10,
@@ -216,9 +216,10 @@ def test_register_location(optislang: Optislang):
     input_slots = integration_node.get_registered_input_slots()
     assert len(input_slots) == 1
     assert isinstance(input_slots[0], dict)
+    assert actual_name == "input_slot_1"
 
     # internal variable
-    integration_node.register_location_as_internal_variable(
+    actual_name = integration_node.register_location_as_internal_variable(
         location={"expression": "10", "id": "variable_1"},
         name="variable_1",
         reference_value=10,
@@ -226,9 +227,10 @@ def test_register_location(optislang: Optislang):
     internal_variables = integration_node.get_internal_variables()
     assert len(internal_variables) == 1
     assert isinstance(internal_variables[0], dict)
+    assert actual_name == "variable_1"
 
     # output slot
-    integration_node.register_location_as_output_slot(
+    actual_name = integration_node.register_location_as_output_slot(
         location="output_slot_1",
         name="output_slot_1",
         reference_value=10,
@@ -236,9 +238,10 @@ def test_register_location(optislang: Optislang):
     output_slots = integration_node.get_registered_output_slots()
     assert len(output_slots) == 1
     assert isinstance(output_slots[0], dict)
+    assert actual_name == "output_slot_1"
 
     # parameter
-    integration_node.register_location_as_parameter(
+    actual_name = integration_node.register_location_as_parameter(
         location="parameter_1",
         name="parameter1",
         reference_value=10,
@@ -246,9 +249,10 @@ def test_register_location(optislang: Optislang):
     parameters = integration_node.get_registered_parameters()
     assert len(parameters) == 1
     assert isinstance(parameters[0], dict)
+    assert actual_name == "parameter1"
 
     # response
-    integration_node.register_location_as_response(
+    actual_name = integration_node.register_location_as_response(
         location="response_1",
         name="response_1",
         reference_value=10,
@@ -257,6 +261,7 @@ def test_register_location(optislang: Optislang):
     responses = integration_node.get_registered_responses()
     assert len(responses) == 1
     assert isinstance(responses[0], dict)
+    assert actual_name == "response_1"
 
 
 # endregion

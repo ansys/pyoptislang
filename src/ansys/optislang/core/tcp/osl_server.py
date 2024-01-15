@@ -2935,7 +2935,7 @@ class TcpOslServer(OslServer):
         location: Any,
         name: Optional[str] = None,
         reference_value: Optional[Any] = None,
-    ) -> None:
+    ) -> str:
         """Register a certain (input) location as a input slot.
 
         Parameters
@@ -2949,6 +2949,11 @@ class TcpOslServer(OslServer):
         reference_value: Optional[Any], optional
             Input slot reference value.
 
+        Returns
+        -------
+        str
+            Name of the actual created input slot.
+
         Raises
         ------
         OslCommunicationError
@@ -2959,7 +2964,7 @@ class TcpOslServer(OslServer):
             Raised when the timeout float value expires.
         """
         current_func_name = self.register_location_as_input_slot.__name__
-        self.send_command(
+        server_response = self.send_command(
             command=commands.register_location_as_input_slot(
                 actor_uid=uid,
                 location=location,
@@ -2971,13 +2976,15 @@ class TcpOslServer(OslServer):
             max_request_attempts=self.max_request_attempts_register.get_value(current_func_name),
         )
 
+        return server_response[0]["actual_name"]
+
     def register_location_as_internal_variable(
         self,
         uid: str,
         location: Any,
         name: Optional[str] = None,
         reference_value: Optional[Any] = None,
-    ) -> None:
+    ) -> str:
         """Register a certain (output) location as an internal variable.
 
         Parameters
@@ -2991,6 +2998,11 @@ class TcpOslServer(OslServer):
         reference_value: Optional[Any], optional
             Variable reference value.
 
+        Returns
+        -------
+        str
+            Name of the actual created internal variable.
+
         Raises
         ------
         OslCommunicationError
@@ -3002,7 +3014,7 @@ class TcpOslServer(OslServer):
         """
         # TODO: create unit test
         current_func_name = self.register_location_as_internal_variable.__name__
-        self.send_command(
+        server_response = self.send_command(
             command=commands.register_location_as_internal_variable(
                 actor_uid=uid,
                 location=location,
@@ -3014,13 +3026,15 @@ class TcpOslServer(OslServer):
             max_request_attempts=self.max_request_attempts_register.get_value(current_func_name),
         )
 
+        return server_response[0]["actual_name"]
+
     def register_location_as_output_slot(
         self,
         uid: str,
         location: Any,
         name: Optional[str] = None,
         reference_value: Optional[Any] = None,
-    ) -> None:
+    ) -> str:
         """Register a certain (output) location as a output slot.
 
         Parameters
@@ -3034,6 +3048,11 @@ class TcpOslServer(OslServer):
         reference_value: Optional[Any], optional
             Output slot reference value.
 
+        Returns
+        -------
+        str
+            Name of the actual created output slot.
+
         Raises
         ------
         OslCommunicationError
@@ -3044,7 +3063,7 @@ class TcpOslServer(OslServer):
             Raised when the timeout float value expires.
         """
         current_func_name = self.register_location_as_output_slot.__name__
-        self.send_command(
+        server_response = self.send_command(
             command=commands.register_location_as_output_slot(
                 actor_uid=uid,
                 location=location,
@@ -3056,13 +3075,15 @@ class TcpOslServer(OslServer):
             max_request_attempts=self.max_request_attempts_register.get_value(current_func_name),
         )
 
+        return server_response[0]["actual_name"]
+
     def register_location_as_parameter(
         self,
         uid: str,
         location: Any,
         name: Optional[str] = None,
         reference_value: Optional[Any] = None,
-    ) -> None:
+    ) -> str:
         """Register a certain (input) location as a parameter.
 
         Parameters
@@ -3076,6 +3097,11 @@ class TcpOslServer(OslServer):
         reference_value: Optional[Any], optional
             Parameter reference value.
 
+        Returns
+        -------
+        str
+            Name of the actual created parameter.
+
         Raises
         ------
         OslCommunicationError
@@ -3086,7 +3112,7 @@ class TcpOslServer(OslServer):
             Raised when the timeout float value expires.
         """
         current_func_name = self.register_location_as_parameter.__name__
-        self.send_command(
+        server_response = self.send_command(
             command=commands.register_location_as_parameter(
                 actor_uid=uid,
                 location=location,
@@ -3097,6 +3123,8 @@ class TcpOslServer(OslServer):
             timeout=self.timeouts_register.get_value(current_func_name),
             max_request_attempts=self.max_request_attempts_register.get_value(current_func_name),
         )
+
+        return server_response[0]["actual_name"]
 
     def register_locations_as_parameter(
         self,
@@ -3135,7 +3163,7 @@ class TcpOslServer(OslServer):
         location: Any,
         name: Optional[str] = None,
         reference_value: Optional[Any] = None,
-    ) -> None:
+    ) -> str:
         """Register a certain (output) location as a response.
 
         Parameters
@@ -3149,6 +3177,11 @@ class TcpOslServer(OslServer):
         reference_value: Optional[Any], optional
             Response reference value.
 
+        Returns
+        -------
+        str
+            Name of the actual created response.
+
         Raises
         ------
         OslCommunicationError
@@ -3159,7 +3192,7 @@ class TcpOslServer(OslServer):
             Raised when the timeout float value expires.
         """
         current_func_name = self.register_location_as_response.__name__
-        self.send_command(
+        server_response = self.send_command(
             command=commands.register_location_as_response(
                 actor_uid=uid,
                 location=location,
@@ -3170,6 +3203,8 @@ class TcpOslServer(OslServer):
             timeout=self.timeouts_register.get_value(current_func_name),
             max_request_attempts=self.max_request_attempts_register.get_value(current_func_name),
         )
+
+        return server_response[0]["actual_name"]
 
     def register_locations_as_response(
         self,

@@ -1270,7 +1270,7 @@ class TcpIntegrationNodeProxy(TcpNodeProxy, IntegrationNode):
         location: Any,
         name: Optional[str] = None,
         reference_value: Optional[Any] = None,
-    ) -> None:
+    ) -> str:
         """Register the given location as an input slot.
 
         Parameters
@@ -1282,6 +1282,11 @@ class TcpIntegrationNodeProxy(TcpNodeProxy, IntegrationNode):
         reference_value : Optional[Any], optional
             Reference value of the registered input slot, by default ``None``.
 
+        Returns
+        -------
+        str
+            Name of the actual created input slot.
+
         Raises
         ------
         OslCommunicationError
@@ -1291,7 +1296,7 @@ class TcpIntegrationNodeProxy(TcpNodeProxy, IntegrationNode):
         TimeoutError
             Raised when the timeout float value expires.
         """
-        self._osl_server.register_location_as_input_slot(
+        return self._osl_server.register_location_as_input_slot(
             uid=self.uid, location=location, name=name, reference_value=reference_value
         )
 
@@ -1300,7 +1305,7 @@ class TcpIntegrationNodeProxy(TcpNodeProxy, IntegrationNode):
         location: Any,
         name: Optional[str] = None,
         reference_value: Optional[Any] = None,
-    ) -> None:
+    ) -> str:
         """Register the given location as an internal variable.
 
         Parameters
@@ -1312,6 +1317,11 @@ class TcpIntegrationNodeProxy(TcpNodeProxy, IntegrationNode):
         reference_value : Optional[Any], optional
             Reference value of the registered internal variable, by default ``None``.
 
+        Returns
+        -------
+        str
+            Name of the actual created internal variable.
+
         Raises
         ------
         OslCommunicationError
@@ -1321,7 +1331,7 @@ class TcpIntegrationNodeProxy(TcpNodeProxy, IntegrationNode):
         TimeoutError
             Raised when the timeout float value expires.
         """
-        self._osl_server.register_location_as_internal_variable(
+        return self._osl_server.register_location_as_internal_variable(
             uid=self.uid, location=location, name=name, reference_value=reference_value
         )
 
@@ -1330,7 +1340,7 @@ class TcpIntegrationNodeProxy(TcpNodeProxy, IntegrationNode):
         location: Any,
         name: Optional[str] = None,
         reference_value: Optional[Any] = None,
-    ) -> None:
+    ) -> str:
         """Register the given location as an output slot.
 
         Parameters
@@ -1342,6 +1352,11 @@ class TcpIntegrationNodeProxy(TcpNodeProxy, IntegrationNode):
         reference_value : Optional[Any], optional
             Reference value of the registered output slot, by default ``None``.
 
+        Returns
+        -------
+        str
+            Name of the actual created output slot.
+
         Raises
         ------
         OslCommunicationError
@@ -1351,7 +1366,7 @@ class TcpIntegrationNodeProxy(TcpNodeProxy, IntegrationNode):
         TimeoutError
             Raised when the timeout float value expires.
         """
-        self._osl_server.register_location_as_output_slot(
+        return self._osl_server.register_location_as_output_slot(
             uid=self.uid, location=location, name=name, reference_value=reference_value
         )
 
@@ -1360,7 +1375,7 @@ class TcpIntegrationNodeProxy(TcpNodeProxy, IntegrationNode):
         location: Any,
         name: Optional[str] = None,
         reference_value: Optional[Any] = None,
-    ) -> None:
+    ) -> str:
         """Register the given location as a parameter.
 
         Parameters
@@ -1372,6 +1387,11 @@ class TcpIntegrationNodeProxy(TcpNodeProxy, IntegrationNode):
         reference_value : Optional[Any], optional
             Reference value of the registered parameter, by default ``None``.
 
+        Returns
+        -------
+        str
+            Name of the actual created parameter.
+
         Raises
         ------
         OslCommunicationError
@@ -1381,7 +1401,7 @@ class TcpIntegrationNodeProxy(TcpNodeProxy, IntegrationNode):
         TimeoutError
             Raised when the timeout float value expires.
         """
-        self._osl_server.register_location_as_parameter(
+        return self._osl_server.register_location_as_parameter(
             uid=self.uid, location=location, name=name, reference_value=reference_value
         )
 
@@ -1390,7 +1410,7 @@ class TcpIntegrationNodeProxy(TcpNodeProxy, IntegrationNode):
         location: Any,
         name: Optional[str] = None,
         reference_value: Optional[Any] = None,
-    ) -> None:
+    ) -> str:
         """Register the given location as a response.
 
         Parameters
@@ -1402,6 +1422,11 @@ class TcpIntegrationNodeProxy(TcpNodeProxy, IntegrationNode):
         reference_value : Optional[Any], optional
             Reference value of the registered response, by default ``None``.
 
+        Returns
+        -------
+        str
+            Name of the actual created response.
+
         Raises
         ------
         OslCommunicationError
@@ -1411,7 +1436,7 @@ class TcpIntegrationNodeProxy(TcpNodeProxy, IntegrationNode):
         TimeoutError
             Raised when the timeout float value expires.
         """
-        self._osl_server.register_location_as_response(
+        return self._osl_server.register_location_as_response(
             uid=self.uid, location=location, name=name, reference_value=reference_value
         )
 

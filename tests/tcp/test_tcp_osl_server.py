@@ -842,7 +842,7 @@ def test_register_location(osl_server_process: OslServerProcess):
     )
 
     # input slot
-    tcp_osl_server.register_location_as_input_slot(
+    actual_name = tcp_osl_server.register_location_as_input_slot(
         uid=integration_uid,
         location="input_slot_1",
         name="input_slot_1",
@@ -851,9 +851,10 @@ def test_register_location(osl_server_process: OslServerProcess):
     input_slots = tcp_osl_server.get_actor_registered_input_slots(uid=integration_uid)
     assert len(input_slots) == 1
     assert isinstance(input_slots[0], dict)
+    assert actual_name == "input_slot_1"
 
     #  internal variable
-    tcp_osl_server.register_location_as_internal_variable(
+    actual_name = tcp_osl_server.register_location_as_internal_variable(
         uid=integration_uid,
         location={"expression": "10", "id": "variable_1"},
         name="internal_variable_1",
@@ -862,7 +863,7 @@ def test_register_location(osl_server_process: OslServerProcess):
     internal_variables = tcp_osl_server.get_actor_internal_variables(uid=integration_uid)
 
     # output slot
-    tcp_osl_server.register_location_as_output_slot(
+    actual_name = tcp_osl_server.register_location_as_output_slot(
         uid=integration_uid,
         location="output_slot_1",
         name="output_slot_1",
@@ -871,9 +872,10 @@ def test_register_location(osl_server_process: OslServerProcess):
     output_slots = tcp_osl_server.get_actor_registered_output_slots(uid=integration_uid)
     assert len(output_slots) == 1
     assert isinstance(output_slots[0], dict)
+    assert actual_name == "output_slot_1"
 
     # parameter
-    tcp_osl_server.register_location_as_parameter(
+    actual_name = tcp_osl_server.register_location_as_parameter(
         uid=integration_uid,
         location="parameter_1",
         name="parameter1",
@@ -882,9 +884,10 @@ def test_register_location(osl_server_process: OslServerProcess):
     parameters = tcp_osl_server.get_actor_registered_parameters(uid=integration_uid)
     assert len(parameters) == 1
     assert isinstance(parameters[0], dict)
+    assert actual_name == "parameter1"
 
     # response
-    tcp_osl_server.register_location_as_response(
+    actual_name = tcp_osl_server.register_location_as_response(
         uid=integration_uid,
         location="response_1",
         name="response_1",
@@ -894,6 +897,7 @@ def test_register_location(osl_server_process: OslServerProcess):
     responses = tcp_osl_server.get_actor_registered_responses(uid=integration_uid)
     assert len(responses) == 1
     assert isinstance(responses[0], dict)
+    assert actual_name == "response_1"
 
     tcp_osl_server.shutdown()
     tcp_osl_server.dispose()

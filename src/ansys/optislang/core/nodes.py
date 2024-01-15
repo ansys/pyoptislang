@@ -798,7 +798,7 @@ class IntegrationNode(Node):
         location: Any,
         name: Optional[str] = None,
         reference_value: Optional[Any] = None,
-    ) -> None:  # pragma: no cover
+    ) -> str:  # pragma: no cover
         """Register the given location as an input slot.
 
         Parameters
@@ -809,6 +809,11 @@ class IntegrationNode(Node):
             Name of the registered input slot, by default ``None``.
         reference_value : Optional[Any], optional
             Reference value of the registered input slot, by default ``None``.
+
+        Returns
+        -------
+        str
+            Name of the actual created input slot.
 
         Raises
         ------
@@ -827,7 +832,7 @@ class IntegrationNode(Node):
         location: Any,
         name: Optional[str] = None,
         reference_value: Optional[Any] = None,
-    ) -> None:  # pragma: no cover
+    ) -> str:  # pragma: no cover
         """Register the given location as an internal variable.
 
         Parameters
@@ -838,6 +843,11 @@ class IntegrationNode(Node):
             Name of the registered internal variable, by default ``None``.
         reference_value : Optional[Any], optional
             Reference value of the registered internal variable, by default ``None``.
+
+        Returns
+        -------
+        str
+            Name of the actual created internal variable.
 
         Raises
         ------
@@ -856,7 +866,7 @@ class IntegrationNode(Node):
         location: Any,
         name: Optional[str] = None,
         reference_value: Optional[Any] = None,
-    ) -> None:  # pragma: no cover
+    ) -> str:  # pragma: no cover
         """Register the given location as an output slot.
 
         Parameters
@@ -867,6 +877,11 @@ class IntegrationNode(Node):
             Name of the registered output slot, by default ``None``.
         reference_value : Optional[Any], optional
             Reference value of the registered output slot, by default ``None``.
+
+        Returns
+        -------
+        str
+            Name of the actual created output slot.
 
         Raises
         ------
@@ -885,7 +900,7 @@ class IntegrationNode(Node):
         location: Any,
         name: Optional[str] = None,
         reference_value: Optional[Any] = None,
-    ) -> None:  # pragma: no cover
+    ) -> str:  # pragma: no cover
         """Register the given location as a parameter.
 
         Parameters
@@ -896,6 +911,11 @@ class IntegrationNode(Node):
             Name of the registered parameter, by default ``None``.
         reference_value : Optional[Any], optional
             Reference value of the registered parameter, by default ``None``.
+
+        Returns
+        -------
+        str
+            Name of the actual created parameter.
 
         Raises
         ------
@@ -914,7 +934,7 @@ class IntegrationNode(Node):
         location: Any,
         name: Optional[str] = None,
         reference_value: Optional[Any] = None,
-    ) -> None:  # pragma: no cover
+    ) -> str:  # pragma: no cover
         """Register the given location as a response.
 
         Parameters
@@ -925,6 +945,11 @@ class IntegrationNode(Node):
             Name of the registered response, by default ``None``.
         reference_value : Optional[Any], optional
             Reference value of the registered response, by default ``None``.
+
+        Returns
+        -------
+        str
+            Name of the actual created response.
 
         Raises
         ------
