@@ -18,7 +18,7 @@ def optislang(scope="function", autouse=False) -> Optislang:
     Optislang:
         Connects to the optiSLang application and provides an API to control it.
     """
-    osl = Optislang()
+    osl = Optislang(ini_timeout=60)
     osl.timeout = 20
     yield osl
     osl.dispose()
@@ -26,7 +26,7 @@ def optislang(scope="function", autouse=False) -> Optislang:
 
 def test_dispose():
     "Test ``dispose``."
-    osl = Optislang()
+    osl = Optislang(ini_timeout=60)
     osl.dispose()
 
 
@@ -70,5 +70,5 @@ def test_optislang_properties(optislang: Optislang):
 
 def test_shutdown():
     "Test ``shutdown``."
-    osl = Optislang(shutdown_on_finished=False)
+    osl = Optislang(shutdown_on_finished=False, ini_timeout=60)
     osl.shutdown()

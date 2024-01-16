@@ -170,7 +170,7 @@ def test_remote_cm(send_dispose, send_shutdown, osl_none):
     ],
 )
 def test_local_default_wocm(send_dispose, send_shutdown):
-    osl = Optislang(shutdown_on_finished=True)
+    osl = Optislang(shutdown_on_finished=True, ini_timeout=60)
     osl.start()
     osl_port = osl._Optislang__osl_server._TcpOslServer__port
     if send_dispose:
@@ -199,7 +199,7 @@ def test_local_default_wocm(send_dispose, send_shutdown):
     ],
 )
 def test_local_shutdown_on_finished_false_wocm(send_dispose, send_shutdown):
-    osl = Optislang(shutdown_on_finished=False)
+    osl = Optislang(shutdown_on_finished=False, ini_timeout=60)
     osl.start()
     osl_port = osl._Optislang__osl_server._TcpOslServer__port
     if send_dispose:

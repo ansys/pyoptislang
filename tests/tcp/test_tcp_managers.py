@@ -31,7 +31,7 @@ def optislang(tmp_example_project, scope="function", autouse=False) -> Optislang
     Optislang:
         Connects to the optiSLang application and provides an API to control it.
     """
-    osl = Optislang(project_path=tmp_example_project("calculator_with_params"))
+    osl = Optislang(project_path=tmp_example_project("calculator_with_params"), ini_timeout=60)
     osl.timeout = 20
     yield osl
     osl.dispose()

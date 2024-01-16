@@ -62,7 +62,7 @@ def for_each_child_node(node, function, recursive=False):
 # ~~~~~~~~~~~~~~~~~~~~~~~~~
 # Create the optiSLang instance.
 
-osl = Optislang()
+osl = Optislang(ini_timeout=60)
 
 #########################################################
 # Get paths of example scripts and run them

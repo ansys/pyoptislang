@@ -38,7 +38,7 @@ example_files_path = Path(os.environ["OSL_EXAMPLES"]) / "00_run_script" / "oscil
 # ~~~~~~~~~~~~~~~~~~~~~~~~~
 # Create the optiSLang instance.
 
-osl = Optislang()
+osl = Optislang(ini_timeout=60)
 print(osl)
 
 #########################################################

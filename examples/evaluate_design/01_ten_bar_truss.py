@@ -59,7 +59,7 @@ example_path = examples.get_files("ten_bar_truss")[1][0]
 tmp_dir = Path(tempfile.mkdtemp())
 file_path = tmp_dir / "evaluate_design_example.opf"
 
-osl = Optislang(project_path=example_path)
+osl = Optislang(project_path=example_path, ini_timeout=60)
 application = osl.application
 application.save_as(file_path)
 project = application.project
