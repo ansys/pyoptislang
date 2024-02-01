@@ -21,6 +21,8 @@
 # SOFTWARE.
 
 """Contains classes for plain TCP/IP communication with server."""
+from __future__ import annotations
+
 import atexit
 from datetime import datetime
 import json
@@ -40,8 +42,6 @@ import uuid
 
 from deprecated.sphinx import deprecated
 
-from ansys.optislang.core import server_commands as commands
-from ansys.optislang.core import server_queries as queries
 from ansys.optislang.core.encoding import force_bytes, force_text
 from ansys.optislang.core.errors import (
     ConnectionEstablishedError,
@@ -54,6 +54,8 @@ from ansys.optislang.core.errors import (
 )
 from ansys.optislang.core.osl_process import OslServerProcess, ServerNotification
 from ansys.optislang.core.osl_server import OslServer, OslVersion
+from ansys.optislang.core.tcp import server_commands as commands
+from ansys.optislang.core.tcp import server_queries as queries
 
 
 def _get_current_timeout(initial_timeout: Union[float, None], start_time: float) -> Optional[float]:
@@ -686,11 +688,11 @@ class TcpOslListener:
         name: str
             Name of listener.
         host: Optional[str], optional
-            Local IPv6 address. Defaults to ``None``.
+            Local IPv6 address, by default ``None``.
         uid: Optional[str], optional
             Unique ID of listener, should be used only if listener is used for optiSLangs port
-            when started locally. Defaults to ``None``.
-        logger: OslLogger, optional
+            when started locally, by default ``None``.
+        logger: Optional[Any], optional
             Preferably OslLogger should be given. If not given, default logging.Logger is used.
 
     Raises
@@ -724,7 +726,7 @@ class TcpOslListener:
         name: str,
         host: Optional[str] = None,
         uid: Optional[str] = None,
-        logger=None,
+        logger: Optional[Any] = None,
     ):
         """Initialize a new instance of the ``TcpOslListener`` class."""
         self.__uid = uid
@@ -958,10 +960,10 @@ class TcpOslServer(OslServer):
 
     TcpOslServer class provides explicit methods for accessing specific optiSLang API endpoints.
     Additionally, the generic
-    :mod:`send_command <ansys.optislang.core.tcp_osl_server.TcpOslServer.send_command>` method
+    :py:mod:`send_command <ansys.optislang.core.tcp_osl_server.TcpOslServer.send_command>` method
     can be used in conjunction with the convenience functions from the
-    :ref:`ansys.optislang.core.server_queries <ref_osl_server_api_queries>` and
-    :ref:`ansys.optislang.core.server_commands <ref_osl_server_api_commands>` modules.
+    :ref:`ansys.optislang.core.tcp.tcp_server_queries <ref_osl_server_api_queries>` and
+    :ref:`ansys.optislang.core.tcp.tcp_server_commands <ref_osl_server_api_commands>` modules.
 
     For remote connection, it is assumed that the optiSLang server process is already running
     on remote (or local) host. In that case, the host and port must be specified and other
@@ -995,7 +997,7 @@ class TcpOslServer(OslServer):
 
         ..note:: Cannot be used in combination with batch mode.
 
-    port_range : Tuple[int, int], optional
+    port_range : Optional[Tuple[int, int]], optional
         Defines the port range for optiSLang server. Defaults to ``None``.
     no_run : Optional[bool], optional
         Determines whether not to run the specified project when started in batch mode.
@@ -1011,26 +1013,23 @@ class TcpOslServer(OslServer):
 
     force : bool, optional
         Determines whether to force opening/processing specified project when started in batch mode
-        even if issues occur.
-        Defaults to ``True``.
+        even if issues occur. Defaults to ``True``.
 
         .. note:: Only supported in batch mode.
 
     reset : bool, optional
-        Determines whether to reset specified project after load.
-        Defaults to ``False``.
+        Determines whether to reset specified project after load. Defaults to ``False``.
 
         .. note:: Only supported in batch mode.
 
     auto_relocate : bool, optional
-        Determines whether to automatically relocate missing file paths.
-        Defaults to ``False``.
+        Determines whether to automatically relocate missing file paths. Defaults to ``False``.
 
         .. note:: Only supported in batch mode.
 
     listener_id : Optional[str], optional
         Specific unique ID for the TCP listener. Defaults to ``None``.
-    multi_listener : Iterable[Tuple[str, int, Optional[str]]], optional
+    multi_listener : Optional[Iterable[Tuple[str, int, Optional[str]]]], optional
         Multiple remote listeners (plain TCP/IP based) to be registered at optiSLang server.
         Each listener is a combination of host, port and (optionally) listener ID.
         Defaults to ``None``.
@@ -1041,7 +1040,7 @@ class TcpOslServer(OslServer):
     password : Optional[str], optional
         The server password. Use when communication with the server requires the request
         to contain a password entry. Defaults to ``None``.
-    logger : Any, optional
+    logger : Optional[Any], optional
         Object for logging. If ``None``, standard logging object is used. Defaults to ``None``.
     shutdown_on_finished: bool, optional
         Shut down when execution is finished and there are not any listeners registered.
@@ -1101,7 +1100,7 @@ class TcpOslServer(OslServer):
     >>> osl_server = TcpOslServer()
     >>> osl_version = osl_server.osl_version_string
     >>> print(osl_version)
-    >>> osl_server.shutdown()
+    >>> osl_server.dispose()
 
     Connect to the remote optiSLang server, get optiSLang version and shutdown the server.
 
@@ -1111,7 +1110,7 @@ class TcpOslServer(OslServer):
     >>> osl_server = TcpOslServer(host, port)
     >>> osl_version = osl_server.osl_version_string
     >>> print(osl_version)
-    >>> osl_server.shutdown()
+    >>> osl_server.dispose()
     """
 
     _LOCALHOST = "127.0.0.1"
@@ -1148,7 +1147,7 @@ class TcpOslServer(OslServer):
         multi_listener: Optional[Iterable[Tuple[str, int, Optional[str]]]] = None,
         ini_timeout: float = 20,
         password: Optional[str] = None,
-        logger=None,
+        logger: Optional[Any] = None,
         shutdown_on_finished: bool = True,
         env_vars: Optional[Mapping[str, str]] = None,
         import_project_properties_file: Optional[Union[str, Path]] = None,
@@ -1168,10 +1167,7 @@ class TcpOslServer(OslServer):
         )
         self.__timeouts_register = self.__class__.__get_default_timeouts_register()
 
-        if logger is None:
-            self._logger = logging.getLogger(__name__)
-        else:
-            self._logger = logger
+        self._logger = logging.getLogger(__name__) if logger is None else logger
 
         self.__executable = Path(executable) if executable is not None else None
         self.__project_path = Path(project_path) if project_path is not None else None
@@ -1185,7 +1181,7 @@ class TcpOslServer(OslServer):
         self.__auto_relocate = auto_relocate
         self.__password = password
         self.__osl_process = None
-        self.__listeners = {}
+        self.__listeners: Dict[str, TcpOslListener] = {}
         self.__listeners_registration_thread = None
         self.__refresh_listeners = threading.Event()
         self.__listeners_refresh_interval = self.__class__._DEFAULT_LISTENERS_REFRESH_INTERVAL
@@ -1248,6 +1244,21 @@ class TcpOslServer(OslServer):
                 )
 
     @property
+    def host(self) -> Union[str, None]:
+        """Get optiSLang server address or domain name.
+
+        Get a string representation of an IPv4/v6 address or domain name
+        of the running optiSLang server.
+
+        Returns
+        -------
+        timeout: Union[int, None]
+            The IPv4/v6 address or domain name of the running optiSLang server, if applicable.
+            Defaults to ``None``.
+        """
+        return self.__host
+
+    @property
     def max_request_attempts_register(self) -> FunctionsAttributeRegister:
         """Register with maximum number of attempts to be executed for individual functions.
 
@@ -1277,6 +1288,18 @@ class TcpOslServer(OslServer):
             optiSLang version.
         """
         return self.__osl_version_string
+
+    @property
+    def port(self) -> Union[int, None]:
+        """Get the port the osl server is listening on.
+
+        Returns
+        -------
+        timeout: Union[int, None]
+            The port the osl server is listening on, if applicable.
+            Defaults to ``None``.
+        """
+        return self.__port
 
     @property
     def timeout(self) -> Optional[float]:
@@ -1315,7 +1338,7 @@ class TcpOslServer(OslServer):
     def add_criterion(
         self, uid: str, criterion_type: str, expression: str, name: str, limit: Optional[str] = None
     ) -> None:
-        """Set the properties of existing criterion for the system.
+        """Create criterion for the system.
 
         Parameters
         ----------
@@ -1332,14 +1355,9 @@ class TcpOslServer(OslServer):
 
         Raises
         ------
-        OslCommunicationError
-            Raised when an error occurs while communicating with server.
-        OslCommandError
-            Raised when the command or query fails.
         TimeoutError
             Raised when the timeout float value expires.
         """
-        # TODO: create unit test
         current_func_name = self.add_criterion.__name__
         self.send_command(
             command=commands.add_criterion(
@@ -1348,6 +1366,217 @@ class TcpOslServer(OslServer):
                 expression=expression,
                 name=name,
                 limit=limit,
+                password=self.__password,
+            ),
+            timeout=self.timeouts_register.get_value(current_func_name),
+            max_request_attempts=self.max_request_attempts_register.get_value(current_func_name),
+        )
+
+    def connect_nodes(
+        self, from_actor_uid: str, from_slot: str, to_actor_uid: str, to_slot: str
+    ) -> None:
+        """Connect 2 nodes.
+
+        Parameters
+        ----------
+        from_actor_uid : str
+            Uid of the sending actor.
+        from_slot : str
+            Slot of the sending actor.
+        to_actor_uid : str
+            Uid of the receiving actor.
+        to_slot : str
+            Slot of the receiving actor.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        current_func_name = self.connect_nodes.__name__
+        self.send_command(
+            command=commands.connect_nodes(
+                from_actor_uid=from_actor_uid,
+                from_slot=from_slot,
+                to_actor_uid=to_actor_uid,
+                to_slot=to_slot,
+                password=self.__password,
+            ),
+            timeout=self.timeouts_register.get_value(current_func_name),
+            max_request_attempts=self.max_request_attempts_register.get_value(current_func_name),
+        )
+
+    def create_node(
+        self,
+        type_: str,
+        name: Union[str, None] = None,
+        algorithm_type: str = None,
+        integration_type: str = None,
+        mop_node_type: str = None,
+        node_type: str = None,
+        parent_uid: Union[str, None] = None,
+        design_flow: Union[str, None] = None,
+    ) -> str:
+        """Create a new node of given type.
+
+        Parameters
+        ----------
+        type_ : str
+            Type of the node.
+        name : Union[str, None], optional
+            Node name, by default ``None``.
+        algorithm_type : str, optional
+            Algorithm type, e. g. 'algorithm_plugin', by default None.
+        integration_type : str, optional
+            Integration type, e. g. 'integration_plugin', by default None.
+        mop_node_type : str, optional
+            MOP node type, e. g. 'python_based_mop_node_plugin', by default None.
+        node_type: str, optional
+            Node type, e. g. 'python_based_node_plugin`, by default None.
+        parent_uid : Union[str, None], optional
+            Parent uid, by default ``None``.
+        design_flow : Union[str, None], optional
+            Design flow option, by default ``None``.
+
+        Returns
+        -------
+        str
+            Uid of the created node.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        current_func_name = self.create_node.__name__
+        output: List[dict] = self.send_command(
+            commands.create_node(
+                type_=type_,
+                name=name,
+                algorithm_type=algorithm_type,
+                integration_type=integration_type,
+                mop_node_type=mop_node_type,
+                node_type=node_type,
+                parent_uid=parent_uid,
+                design_flow=design_flow,
+                password=self.__password,
+            ),
+            timeout=self.timeouts_register.get_value(current_func_name),
+            max_request_attempts=self.max_request_attempts_register.get_value(current_func_name),
+        )
+        if len(output) > 1:
+            self._logger.error(f"``len(output) == {len(output)}``, but only 1 item was expected.")
+        return output[0].get("result_data", {}).get("actor_uid")
+
+    def create_input_slot(
+        self, actor_uid: str, slot_name: Optional[str] = None, type_hint: Optional[str] = None
+    ) -> None:
+        """Create custom input slot.
+
+        Parameters
+        ----------
+        actor_uid : str
+            Uid of the actor.
+        slot_name : Optional[str], optional
+            Name of the slot to be created. By default ``None``.
+        type_hint: Optional[str], optional
+            Type of the slot. By default ``None``.
+
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        # TODO: test
+        current_func_name = self.connect_nodes.__name__
+        self.send_command(
+            command=commands.create_input_slot(
+                actor_uid=actor_uid,
+                slot_name=slot_name,
+                type_hint=type_hint,
+                password=self.__password,
+            ),
+            timeout=self.timeouts_register.get_value(current_func_name),
+            max_request_attempts=self.max_request_attempts_register.get_value(current_func_name),
+        )
+
+    def create_output_slot(
+        self, actor_uid: str, slot_name: Optional[str] = None, type_hint: Optional[str] = None
+    ) -> None:
+        """Create custom output slot.
+
+        Parameters
+        ----------
+        actor_uid : str
+            Uid of the actor.
+        slot_name : Optional[str], optional
+            Name of the slot to be created. By default ``None``.
+        type_hint: Optional[str], optional
+            Type of the slot. By default ``None``.
+
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        # TODO: test
+        current_func_name = self.connect_nodes.__name__
+        self.send_command(
+            command=commands.create_output_slot(
+                actor_uid=actor_uid,
+                slot_name=slot_name,
+                type_hint=type_hint,
+                password=self.__password,
+            ),
+            timeout=self.timeouts_register.get_value(current_func_name),
+            max_request_attempts=self.max_request_attempts_register.get_value(current_func_name),
+        )
+
+    def disconnect_slot(self, uid: str, slot_name: str, direction: str) -> None:
+        """Remove all connections for a given slot.
+
+        Parameters
+        ----------
+        uid : str
+            Node uid.
+        slot_name : str
+            Slot name.
+        direction : str
+            String specifying direction, either 'sdInputs' <or> 'sdOuputs'.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        current_func_name = self.disconnect_slot.__name__
+        self.send_command(
+            command=commands.disconnect_slot(
+                actor_uid=uid,
+                slot_name=slot_name,
+                direction=direction,
                 password=self.__password,
             ),
             timeout=self.timeouts_register.get_value(current_func_name),
@@ -1458,7 +1687,6 @@ class TcpOslServer(OslServer):
         TimeoutError
             Raised when the timeout float value expires.
         """
-        # TODO: create unit test
         current_func_name = self.get_actor_internal_variables.__name__
         return self.send_command(
             command=queries.actor_internal_variables(
@@ -1495,7 +1723,7 @@ class TcpOslServer(OslServer):
             command=queries.actor_properties(uid=uid, password=self.__password),
             timeout=self.timeouts_register.get_value(current_func_name),
             max_request_attempts=self.max_request_attempts_register.get_value(current_func_name),
-        )
+        )["properties"]
 
     def get_actor_registered_input_slots(
         self, uid: str, include_reference_values: bool = True
@@ -1523,7 +1751,6 @@ class TcpOslServer(OslServer):
         TimeoutError
             Raised when the timeout float value expires.
         """
-        # TODO: create unit test
         current_func_name = self.get_actor_registered_input_slots.__name__
         return self.send_command(
             command=queries.actor_registered_input_slots(
@@ -1559,7 +1786,6 @@ class TcpOslServer(OslServer):
         TimeoutError
             Raised when the timeout float value expires.
         """
-        # TODO: create unit test
         current_func_name = self.get_actor_registered_output_slots.__name__
         return self.send_command(
             command=queries.actor_registered_output_slots(
@@ -1595,7 +1821,6 @@ class TcpOslServer(OslServer):
         TimeoutError
             Raised when the timeout float value expires.
         """
-        # TODO: create unit test
         current_func_name = self.get_actor_registered_parameters.__name__
         return self.send_command(
             command=queries.actor_registered_parameters(
@@ -1631,7 +1856,6 @@ class TcpOslServer(OslServer):
         TimeoutError
             Raised when the timeout float value expires.
         """
-        # TODO: create unit test
         current_func_name = self.get_actor_registered_responses.__name__
         return self.send_command(
             command=queries.actor_registered_responses(
@@ -1785,7 +2009,6 @@ class TcpOslServer(OslServer):
         TimeoutError
             Raised when the timeout float value expires.
         """
-        # TODO: create unit test
         current_func_name = self.get_available_input_locations.__name__
         return self.send_command(
             command=queries.available_input_locations(uid=uid, password=self.__password),
@@ -1810,7 +2033,6 @@ class TcpOslServer(OslServer):
         TimeoutError
             Raised when the timeout float value expires.
         """
-        # TODO: create unit test
         current_func_name = self.get_available_nodes.__name__
         available_nodes = self.send_command(
             command=queries.available_nodes(self.__password),
@@ -1843,7 +2065,6 @@ class TcpOslServer(OslServer):
         TimeoutError
             Raised when the timeout float value expires.
         """
-        # TODO: create unit test
         current_func_name = self.get_available_output_locations.__name__
         return self.send_command(
             command=queries.available_output_locations(uid=uid, password=self.__password),
@@ -1882,12 +2103,10 @@ class TcpOslServer(OslServer):
         ----------
         uid : str
             Actor uid.
-
         Returns
         -------
         List[dict]
             Criteria information.
-
         Raises
         ------
         OslCommunicationError
@@ -1897,13 +2116,17 @@ class TcpOslServer(OslServer):
         TimeoutError
             Raised when the timeout float value expires.
         """
-        # TODO: create unit test
         current_func_name = self.get_criteria.__name__
-        return self.send_command(
-            command=queries.get_criteria(uid=uid, password=self.__password),
-            timeout=self.timeouts_register.get_value(current_func_name),
-            max_request_attempts=self.max_request_attempts_register.get_value(current_func_name),
-        )["criteria"]
+        return (
+            self.send_command(
+                command=queries.get_criteria(uid=uid, password=self.__password),
+                timeout=self.timeouts_register.get_value(current_func_name),
+                max_request_attempts=self.max_request_attempts_register.get_value(
+                    current_func_name
+                ),
+            )["criteria"]
+            or []
+        )
 
     def get_criterion(self, uid: str, name: str) -> Dict:
         """Get existing criterion from the system.
@@ -1914,12 +2137,10 @@ class TcpOslServer(OslServer):
             Actor uid.
         name: str
             Criterion name.
-
         Returns
         -------
         Dict
             Criterion information.
-
         Raises
         ------
         OslCommunicationError
@@ -1929,7 +2150,6 @@ class TcpOslServer(OslServer):
         TimeoutError
             Raised when the timeout float value expires.
         """
-        # TODO: create unit test
         current_func_name = self.get_criterion.__name__
         return self.send_command(
             command=queries.get_criterion(uid=uid, name=name, password=self.__password),
@@ -1948,12 +2168,10 @@ class TcpOslServer(OslServer):
             Sampling type.
         num_discrete_levels: int
             Number of discrete levels.
-
         Returns
         -------
         int
             DOE size.
-
         Raises
         ------
         OslCommunicationError
@@ -1963,7 +2181,6 @@ class TcpOslServer(OslServer):
         TimeoutError
             Raised when the timeout float value expires.
         """
-        # TODO: create unit test
         current_func_name = self.add_criterion.__name__
         return self.send_command(
             command=queries.doe_size(
@@ -2061,6 +2278,21 @@ class TcpOslServer(OslServer):
             timeout=self.timeouts_register.get_value(current_func_name),
             max_request_attempts=self.max_request_attempts_register.get_value(current_func_name),
         )
+
+    @deprecated(version="0.6.0", reason="Use :py:attr:`TcpOslServer.host` instead.")
+    def get_host(self) -> Union[str, None]:
+        """Get optiSLang server address or domain name.
+
+        Get a string representation of an IPv4/v6 address or domain name
+        of the running optiSLang server.
+
+        Returns
+        -------
+        timeout: Union[int, None]
+            The IPv4/v6 address or domain name of the running optiSLang server, if applicable.
+            Defaults to ``None``.
+        """
+        return self.__host
 
     def get_hpc_licensing_forwarded_environment(self, uid: str) -> Dict:
         """Get hpc licensing forwarded environment for certain actor.
@@ -2204,12 +2436,31 @@ class TcpOslServer(OslServer):
         """
         return self._get_osl_version_string()
 
-    def get_project_description(self) -> str:
+    @deprecated(version="0.6.0", reason="Use :py:attr:`TcpOslServer.port` instead.")
+    def get_port(self) -> Union[int, None]:
+        """Get the port the osl server is listening on.
+
+        Returns
+        -------
+        timeout: Union[int, None]
+            The port the osl server is listening on, if applicable.
+            Defaults to ``None``.
+        """
+        return self.__port
+
+    @deprecated(
+        version="0.6.0",
+        reason=(
+            "This functionality was moved to "
+            ":py:class:`Project <ansys.optislang.core.project.Project>`."
+        ),
+    )
+    def get_project_description(self) -> Union[str, None]:
         """Get description of optiSLang project.
 
         Returns
         -------
-        str
+        Union[str, None]
             optiSLang project description. If no project is loaded in the optiSLang,
             returns ``None``.
 
@@ -2229,12 +2480,19 @@ class TcpOslServer(OslServer):
             project_info.get("projects", [{}])[0].get("settings", {}).get("short_description", None)
         )
 
-    def get_project_location(self) -> Path:
+    @deprecated(
+        version="0.6.0",
+        reason=(
+            "This functionality was moved to "
+            ":py:class:`Project <ansys.optislang.core.project.Project>`."
+        ),
+    )
+    def get_project_location(self) -> Union[Path, None]:
         """Get path to the optiSLang project file.
 
         Returns
         -------
-        pathlib.Path
+        Union[pathlib.Path, None]
             Path to the optiSLang project file. If no project is loaded in the optiSLang,
             returns ``None``.
 
@@ -2251,12 +2509,19 @@ class TcpOslServer(OslServer):
         project_path = project_info.get("projects", [{}])[0].get("location", None)
         return None if not project_path else Path(project_path)
 
-    def get_project_name(self) -> str:
+    @deprecated(
+        version="0.6.0",
+        reason=(
+            "This functionality was moved to "
+            ":py:class:`Project <ansys.optislang.core.project.Project>`."
+        ),
+    )
+    def get_project_name(self) -> Union[str, None]:
         """Get name of the optiSLang project.
 
         Returns
         -------
-        str
+        Union[str, None]
             Name of the optiSLang project. If no project is loaded in the optiSLang,
             returns ``None``.
 
@@ -2274,12 +2539,19 @@ class TcpOslServer(OslServer):
             return None
         return project_info.get("projects", [{}])[0].get("name", None)
 
-    def get_project_status(self) -> str:
+    @deprecated(
+        version="0.6.0",
+        reason=(
+            "This functionality was moved to "
+            ":py:class:`Project <ansys.optislang.core.project.Project>`."
+        ),
+    )
+    def get_project_status(self) -> Union[str, None]:
         """Get status of the optiSLang project.
 
         Returns
         -------
-        str
+        Union[str, None]
             optiSLang project status. If no project is loaded in the optiSLang,
             returns ``None``.
 
@@ -2292,11 +2564,15 @@ class TcpOslServer(OslServer):
         TimeoutError
             Raised when the timeout float value expires.
         """
-        project_info = self.get_basic_project_info()
-        if len(project_info.get("projects", [])) == 0:
-            return None
-        return project_info.get("projects", [{}])[0].get("state", None)
+        return self.__get_project_status()
 
+    @deprecated(
+        version="0.6.0",
+        reason=(
+            "This functionality was moved to "
+            ":py:class:`Project <ansys.optislang.core.project.Project>`."
+        ),
+    )
     def get_project_uid(self) -> str:
         """Get project uid.
 
@@ -2463,7 +2739,7 @@ class TcpOslServer(OslServer):
 
     @deprecated(
         version="0.5.0",
-        reason="Use :py:attr:`TcpOslServer.timeout_register.default_timeout` instead.",
+        reason="Use :py:attr:`TcpOslServer.timeouts_register.default_value` instead.",
     )
     def get_timeout(self) -> Union[float, None]:
         """Get current timeout value for execution of commands.
@@ -2482,8 +2758,15 @@ class TcpOslServer(OslServer):
         TimeoutError
             Raised when the timeout float value expires.
         """
-        return self.timeouts_register
+        return self.timeouts_register.default_value
 
+    @deprecated(
+        version="0.6.0",
+        reason=(
+            "This functionality was moved to "
+            ":py:class:`Project <ansys.optislang.core.project.Project>`."
+        ),
+    )
     def get_working_dir(self) -> Path:
         """Get path to the optiSLang project working directory.
 
@@ -2506,6 +2789,34 @@ class TcpOslServer(OslServer):
         if len(project_info.get("projects", [])) == 0:
             return None
         return Path(project_info.get("projects", [{}])[0].get("working_dir", None))
+
+    def load(self, uid: str) -> None:
+        """Explicit load of node.
+
+        Parameters
+        ----------
+        uid: str
+            Actor uid.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        # TODO: create unit test
+        current_func_name = self.load.__name__
+        self.send_command(
+            command=commands.load(
+                actor_uid=uid,
+                password=self.__password,
+            ),
+            timeout=self.timeouts_register.get_value(current_func_name),
+            max_request_attempts=self.max_request_attempts_register.get_value(current_func_name),
+        )
 
     def new(self) -> None:
         """Create a new project.
@@ -2584,6 +2895,370 @@ class TcpOslServer(OslServer):
             max_request_attempts=self.max_request_attempts_register.get_value(current_func_name),
         )
 
+    def re_register_locations_as_parameter(self, uid: str) -> None:
+        """Adjust all input locations with the already registered parameters.
+
+        Parameters
+        ----------
+        uid: str
+            Actor uid.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        # TODO: create unit test
+        current_func_name = self.re_register_locations_as_parameter.__name__
+        self.send_command(
+            command=commands.re_register_locations_as_parameter(
+                actor_uid=uid,
+                password=self.__password,
+            ),
+            timeout=self.timeouts_register.get_value(current_func_name),
+            max_request_attempts=self.max_request_attempts_register.get_value(current_func_name),
+        )
+
+    def re_register_locations_as_response(self, uid: str) -> None:
+        """Adjust all input locations with the already registered responses.
+
+        Parameters
+        ----------
+        uid: str
+            Actor uid.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        # TODO: create unit test
+        current_func_name = self.re_register_locations_as_response.__name__
+        self.send_command(
+            command=commands.re_register_locations_as_response(
+                actor_uid=uid,
+                password=self.__password,
+            ),
+            timeout=self.timeouts_register.get_value(current_func_name),
+            max_request_attempts=self.max_request_attempts_register.get_value(current_func_name),
+        )
+
+    def register_location_as_input_slot(
+        self,
+        uid: str,
+        location: Any,
+        name: Optional[str] = None,
+        reference_value: Optional[Any] = None,
+    ) -> str:
+        """Register a certain (input) location as a input slot.
+
+        Parameters
+        ----------
+        uid: str
+            Actor uid.
+        location: Any
+            Specification of location, depends on actor type.
+        name: Optional[str], optional
+            Input slot name.
+        reference_value: Optional[Any], optional
+            Input slot reference value.
+
+        Returns
+        -------
+        str
+            Name of the actual created input slot.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        current_func_name = self.register_location_as_input_slot.__name__
+        server_response = self.send_command(
+            command=commands.register_location_as_input_slot(
+                actor_uid=uid,
+                location=location,
+                name=name,
+                reference_value=reference_value,
+                password=self.__password,
+            ),
+            timeout=self.timeouts_register.get_value(current_func_name),
+            max_request_attempts=self.max_request_attempts_register.get_value(current_func_name),
+        )
+
+        return server_response[0]["actual_name"]
+
+    def register_location_as_internal_variable(
+        self,
+        uid: str,
+        location: Any,
+        name: Optional[str] = None,
+        reference_value: Optional[Any] = None,
+    ) -> str:
+        """Register a certain (output) location as an internal variable.
+
+        Parameters
+        ----------
+        uid: str
+            Actor uid.
+        location: Any
+            Specification of location, depends on actor type.
+        name: Optional[str], optional
+            Variable name.
+        reference_value: Optional[Any], optional
+            Variable reference value.
+
+        Returns
+        -------
+        str
+            Name of the actual created internal variable.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        # TODO: create unit test
+        current_func_name = self.register_location_as_internal_variable.__name__
+        server_response = self.send_command(
+            command=commands.register_location_as_internal_variable(
+                actor_uid=uid,
+                location=location,
+                name=name,
+                reference_value=reference_value,
+                password=self.__password,
+            ),
+            timeout=self.timeouts_register.get_value(current_func_name),
+            max_request_attempts=self.max_request_attempts_register.get_value(current_func_name),
+        )
+
+        return server_response[0]["actual_name"]
+
+    def register_location_as_output_slot(
+        self,
+        uid: str,
+        location: Any,
+        name: Optional[str] = None,
+        reference_value: Optional[Any] = None,
+    ) -> str:
+        """Register a certain (output) location as a output slot.
+
+        Parameters
+        ----------
+        uid: str
+            Actor uid.
+        location: Any
+            Specification of location, depends on actor type.
+        name: Optional[str], optional
+            Output slot name.
+        reference_value: Optional[Any], optional
+            Output slot reference value.
+
+        Returns
+        -------
+        str
+            Name of the actual created output slot.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        current_func_name = self.register_location_as_output_slot.__name__
+        server_response = self.send_command(
+            command=commands.register_location_as_output_slot(
+                actor_uid=uid,
+                location=location,
+                name=name,
+                reference_value=reference_value,
+                password=self.__password,
+            ),
+            timeout=self.timeouts_register.get_value(current_func_name),
+            max_request_attempts=self.max_request_attempts_register.get_value(current_func_name),
+        )
+
+        return server_response[0]["actual_name"]
+
+    def register_location_as_parameter(
+        self,
+        uid: str,
+        location: Any,
+        name: Optional[str] = None,
+        reference_value: Optional[Any] = None,
+    ) -> str:
+        """Register a certain (input) location as a parameter.
+
+        Parameters
+        ----------
+        uid: str
+            Actor uid.
+        location: Any
+            Specification of location, depends on actor type.
+        name: Optional[str], optional
+            Parameter name.
+        reference_value: Optional[Any], optional
+            Parameter reference value.
+
+        Returns
+        -------
+        str
+            Name of the actual created parameter.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        current_func_name = self.register_location_as_parameter.__name__
+        server_response = self.send_command(
+            command=commands.register_location_as_parameter(
+                actor_uid=uid,
+                location=location,
+                name=name,
+                reference_value=reference_value,
+                password=self.__password,
+            ),
+            timeout=self.timeouts_register.get_value(current_func_name),
+            max_request_attempts=self.max_request_attempts_register.get_value(current_func_name),
+        )
+
+        return server_response[0]["actual_name"]
+
+    def register_locations_as_parameter(
+        self,
+        uid: str,
+    ) -> None:
+        """Register all input locations as parameters initially.
+
+        Parameters
+        ----------
+        uid: str
+            Actor uid.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        # TODO: create unit test
+        current_func_name = self.register_locations_as_parameter.__name__
+        self.send_command(
+            command=commands.register_locations_as_parameter(
+                actor_uid=uid,
+                password=self.__password,
+            ),
+            timeout=self.timeouts_register.get_value(current_func_name),
+            max_request_attempts=self.max_request_attempts_register.get_value(current_func_name),
+        )
+
+    def register_location_as_response(
+        self,
+        uid: str,
+        location: Any,
+        name: Optional[str] = None,
+        reference_value: Optional[Any] = None,
+    ) -> str:
+        """Register a certain (output) location as a response.
+
+        Parameters
+        ----------
+        uid: str
+            Actor uid.
+        location: Any
+            Specification of location, depends on actor type.
+        name: Optional[str], optional
+            Response name.
+        reference_value: Optional[Any], optional
+            Response reference value.
+
+        Returns
+        -------
+        str
+            Name of the actual created response.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        current_func_name = self.register_location_as_response.__name__
+        server_response = self.send_command(
+            command=commands.register_location_as_response(
+                actor_uid=uid,
+                location=location,
+                name=name,
+                reference_value=reference_value,
+                password=self.__password,
+            ),
+            timeout=self.timeouts_register.get_value(current_func_name),
+            max_request_attempts=self.max_request_attempts_register.get_value(current_func_name),
+        )
+
+        return server_response[0]["actual_name"]
+
+    def register_locations_as_response(
+        self,
+        uid: str,
+    ) -> None:
+        """Registration of all input locations as responses initially.
+
+        Parameters
+        ----------
+        uid: str
+            Actor uid.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        # TODO: create unit test
+        current_func_name = self.register_locations_as_response.__name__
+        self.send_command(
+            command=commands.register_locations_as_response(
+                actor_uid=uid,
+                password=self.__password,
+            ),
+            timeout=self.timeouts_register.get_value(current_func_name),
+            max_request_attempts=self.max_request_attempts_register.get_value(current_func_name),
+        )
+
     def remove_criteria(self, uid: str) -> None:
         """Remove all criteria from the system.
 
@@ -2601,7 +3276,6 @@ class TcpOslServer(OslServer):
         TimeoutError
             Raised when the timeout float value expires.
         """
-        # TODO: create unit test
         current_func_name = self.remove_criteria.__name__
         self.send_command(
             command=commands.remove_criteria(actor_uid=uid, password=self.__password),
@@ -2628,7 +3302,6 @@ class TcpOslServer(OslServer):
         TimeoutError
             Raised when the timeout float value expires.
         """
-        # TODO: create unit test
         current_func_name = self.remove_criterion.__name__
         self.send_command(
             command=commands.remove_criterion(actor_uid=uid, name=name, password=self.__password),
@@ -2636,8 +3309,41 @@ class TcpOslServer(OslServer):
             max_request_attempts=self.max_request_attempts_register.get_value(current_func_name),
         )
 
-    def reset(self):
-        """Reset complete project.
+    def remove_node(self, actor_uid: str) -> None:
+        """Remove node specified by uid.
+
+        Parameters
+        ----------
+        actor_uid : str
+            Actor uid.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        current_func_name = self.remove_node.__name__
+        self.send_command(
+            command=commands.remove_node(actor_uid=actor_uid, password=self.__password),
+            timeout=self.timeouts_register.get_value(current_func_name),
+            max_request_attempts=self.max_request_attempts_register.get_value(current_func_name),
+        )
+
+    def reset(self, actor_uid: Optional[str] = None, hid: Optional[str] = None):
+        """Reset complete project or a specific actor state.
+
+        For a complete project reset, do not specify the actor_uid and hid entries.
+
+        Parameters
+        ----------
+        actor_uid: Optional[str], optional
+            Actor uid entry. A Hirearchical ID (hid) is required. By default ``None``.
+        hid: Optional[str], optional
+            Hid entry. The actor uid is required. By default ``None``.
 
         Raises
         ------
@@ -2650,7 +3356,7 @@ class TcpOslServer(OslServer):
         """
         current_func_name = self.reset.__name__
         self.send_command(
-            command=commands.reset(password=self.__password),
+            command=commands.reset(actor_uid=actor_uid, hid=hid, password=self.__password),
             timeout=self.timeouts_register.get_value(current_func_name),
             max_request_attempts=self.max_request_attempts_register.get_value(current_func_name),
         )
@@ -2833,6 +3539,120 @@ class TcpOslServer(OslServer):
             max_request_attempts=self.max_request_attempts_register.get_value(current_func_name),
         )
 
+    def send_command(self, command: str, **kwargs) -> Dict:
+        """Send command or query to the optiSLang server.
+
+        Parameters
+        ----------
+        command: str
+            Command or query to be executed on optiSLang server.
+        timeout: Union[float, None], optional
+            Timeout to execute command. If not provided,
+            `TcpOslServer.timeouts_register.default_value` is used.
+        max_request_attempts: int, optional
+            Maximum number of attempts to execute command. If not provided,
+            `TcpOslServer.max_request_attempts_register.default_value` is used.
+
+        Returns
+        -------
+        Dict
+            Response from the server.
+
+        Raises
+        ------
+        RuntimeError
+            Raised when the optiSLang server is not started.
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout expires.
+        """
+        timeout = (
+            kwargs.get("timeout")
+            if "timeout" in kwargs.keys()
+            else self.timeouts_register.default_value
+        )
+        max_request_attempts = (
+            kwargs.get("max_request_attempts")
+            if "max_request_attempts" in kwargs.keys()
+            else self.max_request_attempts_register.default_value
+        )
+        if self.__disposed:
+            raise OslDisposedError("Cannot send command, instance was already disposed.")
+        if self.__host is None or self.__port is None:
+            raise RuntimeError("optiSLang server is not started.")
+
+        self._logger.debug("Sending command or query to the server: %s", command)
+        client = TcpClient(logger=self._logger)
+
+        response_str = ""
+
+        for request_attempt in range(1, max_request_attempts + 1):
+            start_time = time.time()
+            try:
+                client.connect(
+                    self.__host,
+                    self.__port,
+                    timeout=_get_current_timeout(timeout, start_time),
+                )
+                client.send_msg(command, timeout=_get_current_timeout(timeout, start_time))
+                response_str = client.receive_msg(timeout=_get_current_timeout(timeout, start_time))
+                break
+            except TimeoutError:
+                if request_attempt == max_request_attempts:
+                    raise
+                else:
+                    pass
+            except Exception as ex:
+                raise OslCommunicationError(
+                    "An error occurred while communicating with the optiSLang server."
+                ) from ex
+            finally:
+                client.disconnect()
+
+        self._logger.debug("Response received: %s", response_str)
+        response = json.loads(response_str)
+
+        if isinstance(response, list):
+            for resp_elem in response:
+                self.__class__.__check_command_response(resp_elem)
+        else:
+            self.__class__.__check_command_response(response)
+
+        return response
+
+    def set_actor_property(self, actor_uid: str, name: str, value: Any) -> None:
+        """Set an actor property.
+
+        Parameters
+        ----------
+        actor_uid : str
+            Actor uid.
+        name : str
+            Property name.
+        value : Any
+            Property value.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        current_func_name = self.set_actor_property.__name__
+        self.send_command(
+            command=commands.set_actor_property(
+                actor_uid=actor_uid, name=name, value=value, password=self.__password
+            ),
+            timeout=self.timeouts_register.get_value(current_func_name),
+            max_request_attempts=self.max_request_attempts_register.get_value(current_func_name),
+        )
+
     def set_criterion_property(
         self,
         uid: str,
@@ -2853,7 +3673,6 @@ class TcpOslServer(OslServer):
         value: Any
             Property value.
 
-
         Raises
         ------
         OslCommunicationError
@@ -2863,7 +3682,6 @@ class TcpOslServer(OslServer):
         TimeoutError
             Raised when the timeout float value expires.
         """
-        # TODO: create unit test
         current_func_name = self.set_criterion_property.__name__
         self.send_command(
             command=commands.set_criterion_property(
@@ -2879,9 +3697,9 @@ class TcpOslServer(OslServer):
 
     @deprecated(
         version="0.5.0",
-        reason="Use :py:attr:`TcpOslServer.timeouts_register.default_timeout` instead.",
+        reason="Use :py:attr:`TcpOslServer.timeouts_register.default_value` instead.",
     )
-    def set_timeout(self, timeout: Union[float, None] = 30) -> None:
+    def set_timeout(self, timeout: Union[float, None] = None) -> None:
         """Set timeout value for execution of commands.
 
         Parameters
@@ -2895,10 +3713,6 @@ class TcpOslServer(OslServer):
 
         Raises
         ------
-        OslCommunicationError
-            Raised when an error occurs while communicating with server.
-        OslCommandError
-            Raised when the command or query fails.
         ValueError
             Raised when timeout <= 0.
         TypeError
@@ -2954,24 +3768,6 @@ class TcpOslServer(OslServer):
         if force and self.__osl_process is not None:
             self._force_shutdown_local_process()
 
-    def _force_shutdown_local_process(self):
-        """Force shutdown local optiSLang server process.
-
-        It waits a while and then terminates the process.
-        """
-        start_time = datetime.now()
-        while (
-            self.__osl_process.is_running()
-            and (datetime.now() - start_time).seconds < self.__class__._SHUTDOWN_WAIT
-        ):
-            time.sleep(0.5)
-
-        if self.__osl_process.is_running():
-            self.__osl_process.terminate()
-        self.__osl_process = None
-        self.__host = None
-        self.__port = None
-
     def start(self, wait_for_started: bool = True, wait_for_finished: bool = True) -> None:
         """Start project execution.
 
@@ -3004,7 +3800,7 @@ class TcpOslServer(OslServer):
         already_running = False
         current_func_name = self.start.__name__
 
-        if self.get_project_status() == "PROCESSING":
+        if self.__get_project_status() == "PROCESSING":
             already_running = True
             self._logger.debug("Status PROCESSING")
 
@@ -3115,7 +3911,7 @@ class TcpOslServer(OslServer):
             exec_finished_listener.start_listening()
             self._logger.debug("Wait for finished thread was created.")
 
-        status = self.get_project_status()
+        status = self.__get_project_status()
 
         # do not send stop request if project is already stopped or request
         # with higher or equal priority was already sent
@@ -3158,30 +3954,23 @@ class TcpOslServer(OslServer):
                 raise TimeoutError("Waiting for finished timed out.")
             self._logger.info(f"Successfully_finished: {successfully_finished}.")
 
-    def get_host(self) -> Union[str, None]:
-        """Get optiSLang server address or domain name.
+    def _force_shutdown_local_process(self):
+        """Force shutdown local optiSLang server process.
 
-        Get a string representation of an IPv4/v6 address or domain name
-        of the running optiSLang server.
-
-        Returns
-        -------
-        timeout: Union[int, None]
-            The IPv4/v6 address or domain name of the running optiSLang server, if applicable.
-            Defaults to ``None``.
+        It waits a while and then terminates the process.
         """
-        return self.__host
+        start_time = datetime.now()
+        while (
+            self.__osl_process.is_running()
+            and (datetime.now() - start_time).seconds < self.__class__._SHUTDOWN_WAIT
+        ):
+            time.sleep(0.5)
 
-    def get_port(self) -> Union[int, None]:
-        """Get the port the osl server is listening on.
-
-        Returns
-        -------
-        timeout: Union[int, None]
-            The port the osl server is listening on, if applicable.
-            Defaults to ``None``.
-        """
-        return self.__port
+        if self.__osl_process.is_running():
+            self.__osl_process.terminate()
+        self.__osl_process = None
+        self.__host = None
+        self.__port = None
 
     def _get_osl_version(self) -> OslVersion:
         """Get version of used optiSLang.
@@ -3347,10 +4136,25 @@ class TcpOslServer(OslServer):
         self.__listeners["main_listener"] = listener
         self.__start_listeners_registration_thread()
 
-    def __signal_handler(self, signum, frame):
-        self._logger.error("Interrupt from keyboard (CTRL + C), terminating execution.")
-        self.dispose()
-        raise KeyboardInterrupt
+    def _unregister_listener(self, listener: TcpOslListener) -> None:
+        """Unregister a listener.
+
+        Parameters
+        ----------
+        listener : TcpOslListener
+            Class with listener properties.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        self.send_command(commands.unregister_listener(str(listener.uid), self.__password))
+        listener.uid = None
 
     def __cast_to_path(self, file_path: Union[str, Path]) -> Path:
         """Cast path to Path."""
@@ -3497,23 +4301,58 @@ class TcpOslServer(OslServer):
             listener.dispose()
         self.__listeners = {}
 
-    def __start_listeners_registration_thread(self) -> None:
-        """Create new thread for refreshing of listeners registrations and start it."""
-        self.__listeners_registration_thread = threading.Thread(
-            target=self.__refresh_listeners_registration,
-            name="PyOptiSLang.ListenersRegistrationThread",
-            args=(),
-            daemon=True,
-        )
-        self.__refresh_listeners.set()
-        self.__listeners_registration_thread.start()
+    def __get_project_status(self) -> Union[str, None]:
+        """Get status of the optiSLang project.
 
-    def __stop_listeners_registration_thread(self) -> None:
-        """Stop listeners registration thread."""
-        if self.__listeners_registration_thread and self.__listeners_registration_thread.is_alive():
-            self.__refresh_listeners.clear()
-            self.__listeners_registration_thread.join()
-            self._logger.debug("Listener registration thread stopped.")
+        Returns
+        -------
+        Union[str, None]
+            optiSLang project status. If no project is loaded in the optiSLang,
+            returns ``None``.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        project_info = self.get_basic_project_info()
+        if len(project_info.get("projects", [])) == 0:
+            return None
+        return project_info.get("projects", [{}])[0].get("state", None)
+
+    def __refresh_listeners_registration(self) -> None:  # pragma: no cover
+        """Refresh listeners registration.
+
+        Raises
+        ------
+        RuntimeError
+            Raised when the optiSLang server is not started.
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout expires.
+        """
+        check_for_refresh = 0.5
+        counter = 0
+        while self.__refresh_listeners.is_set():
+            if counter >= self.__listeners_refresh_interval:
+                for listener in self.__listeners.values():
+                    if listener.refresh_listener_registration:
+                        response = self.send_command(
+                            commands.refresh_listener_registration(
+                                uid=listener.uid, password=self.__password
+                            )
+                        )
+                counter = 0
+            counter += check_for_refresh
+            time.sleep(check_for_refresh)
+        self._logger.debug("Stop refreshing listener registration, self.__refresh = False")
 
     def __register_listener(
         self,
@@ -3607,6 +4446,29 @@ class TcpOslServer(OslServer):
             time.sleep(check_for_refresh)
         self._logger.debug("Stop refreshing listener registration, self.__refresh = False")
 
+    def __signal_handler(self, signum, frame):
+        self._logger.error("Interrupt from keyboard (CTRL + C), terminating execution.")
+        self.dispose()
+        raise KeyboardInterrupt
+
+    def __start_listeners_registration_thread(self) -> None:
+        """Create new thread for refreshing of listeners registrations and start it."""
+        self.__listeners_registration_thread = threading.Thread(
+            target=self.__refresh_listeners_registration,
+            name="PyOptiSLang.ListenersRegistrationThread",
+            args=(),
+            daemon=True,
+        )
+        self.__refresh_listeners.set()
+        self.__listeners_registration_thread.start()
+
+    def __stop_listeners_registration_thread(self) -> None:
+        """Stop listeners registration thread."""
+        if self.__listeners_registration_thread and self.__listeners_registration_thread.is_alive():
+            self.__refresh_listeners.clear()
+            self.__listeners_registration_thread.join()
+            self._logger.debug("Listener registration thread stopped.")
+
     def __unregister_all_listeners(self) -> None:
         """Unregister all instance listeners."""
         for listener in self.__listeners.values():
@@ -3625,90 +4487,6 @@ class TcpOslServer(OslServer):
             )
         if not file_path.suffix == ".opf":
             raise ValueError('Invalid optiSLang project file, project must end with ".opf".')
-
-    def send_command(self, command: str, **kwargs) -> Dict:
-        """Send command or query to the optiSLang server.
-
-        Parameters
-        ----------
-        command: str
-            Command or query to be executed on optiSLang server.
-        timeout: Union[float, None], optional
-            Timeout to execute command. If not provided,
-            `TcpOslServer.timeouts_register.default_value` is used.
-        max_request_attempts: int, optional
-            Maximum number of attempts to execute command. If not provided,
-            `TcpOslServer.max_request_attempts_register.default_value` is used.
-
-        Returns
-        -------
-        Dict
-            Response from the server.
-
-        Raises
-        ------
-        RuntimeError
-            Raised when the optiSLang server is not started.
-        OslCommunicationError
-            Raised when an error occurs while communicating with server.
-        OslCommandError
-            Raised when the command or query fails.
-        TimeoutError
-            Raised when the timeout expires.
-        """
-        timeout = (
-            kwargs.get("timeout")
-            if "timeout" in kwargs.keys()
-            else self.timeouts_register.default_value
-        )
-        max_request_attempts = (
-            kwargs.get("max_request_attempts")
-            if "max_request_attempts" in kwargs.keys()
-            else self.max_request_attempts_register.default_value
-        )
-        if self.__disposed:
-            raise OslDisposedError("Cannot send command, instance was already disposed.")
-        if self.__host is None or self.__port is None:
-            raise RuntimeError("optiSLang server is not started.")
-
-        self._logger.debug("Sending command or query to the server: %s", command)
-        client = TcpClient(logger=self._logger)
-
-        response_str = ""
-
-        for request_attempt in range(1, max_request_attempts + 1):
-            start_time = time.time()
-            try:
-                client.connect(
-                    self.__host,
-                    self.__port,
-                    timeout=_get_current_timeout(timeout, start_time),
-                )
-                client.send_msg(command, timeout=_get_current_timeout(timeout, start_time))
-                response_str = client.receive_msg(timeout=_get_current_timeout(timeout, start_time))
-                break
-            except TimeoutError:
-                if request_attempt == max_request_attempts:
-                    raise
-                else:
-                    pass
-            except Exception as ex:
-                raise OslCommunicationError(
-                    "An error occurred while communicating with the optiSLang server."
-                ) from ex
-            finally:
-                client.disconnect()
-
-        self._logger.debug("Response received: %s", response_str)
-        response = json.loads(response_str)
-
-        if isinstance(response, list):
-            for resp_elem in response:
-                self.__class__.__check_command_response(resp_elem)
-        else:
-            self.__class__.__check_command_response(response)
-
-        return response
 
     # To be fixed in 2023R2:
     # close method doesn't work properly in optiSLang 2023R1, therefore it was commented out

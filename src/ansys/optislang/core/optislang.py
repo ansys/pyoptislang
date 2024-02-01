@@ -30,12 +30,14 @@ from deprecated.sphinx import deprecated
 from importlib_metadata import version
 
 from ansys.optislang.core import LOG
-from ansys.optislang.core.project import Project
-from ansys.optislang.core.tcp_osl_server import TcpOslServer
+from ansys.optislang.core.tcp.application import TcpApplicationProxy
+from ansys.optislang.core.tcp.osl_server import TcpOslServer
 
 if TYPE_CHECKING:
+    from ansys.optislang.core.application import Application
     from ansys.optislang.core.logging import OslCustomAdapter
     from ansys.optislang.core.osl_server import OslServer, OslVersion
+    from ansys.optislang.core.project import Project
 
 
 class Optislang:
@@ -264,10 +266,7 @@ class Optislang:
         self.__additional_args = additional_args
         self.__logger = LOG.add_instance_logger(self.name, self, loglevel)
         self.__osl_server: OslServer = self.__init_osl_server("tcp")
-        project_uid = self.__osl_server.get_project_uid()
-        self.__project = (
-            Project(osl_server=self.__osl_server, uid=project_uid) if project_uid else None
-        )
+        self.__application: Application = self.__init_application()
 
     def __init_osl_server(self, server_type: str) -> OslServer:
         """Initialize optiSLang server.
@@ -319,7 +318,15 @@ class Optislang:
                 additional_args=self.__additional_args,
             )
         else:
-            raise NotImplementedError(f'OptiSLang server of type "{server_type}" is not supported.')
+            raise NotImplementedError(
+                f"OptiSLang server of type ``{server_type}`` is not supported."
+            )
+
+    def __init_application(self) -> Application:
+        if isinstance(self.__osl_server, TcpOslServer):
+            return TcpApplicationProxy(osl_server=self.__osl_server, logger=self.log)
+        else:
+            raise NotImplementedError(f"Currently supported only for ``TcpOslServer``.")
 
     def __str__(self):
         """Return product name, version of optiSLang, and version of PyOptiSLang."""
@@ -352,21 +359,18 @@ class Optislang:
         self.dispose()
 
     @property
-    def name(self) -> str:
-        """Unique ID of the optiSLang instance."""
-        if not self.__name:
-            if self.__host or self.__port:
-                self.__name = f"optiSLang_{self.__host}:{self.__port}"
-            else:
-                self.__name = f"optiSLang_{id(self)}"
-        return self.__name
+    def application(self) -> Application:
+        """Instance of the ``Application`` class.
+
+        Returns
+        -------
+        Application
+            Instance of ``Application`` class for operating with project.
+        """
+        return self.__application
 
     @property
-    def log(self) -> OslCustomAdapter:
-        """Instance logger."""
-        return self.__logger
-
-    @property
+    @deprecated(version="0.6.0", reason="Use `Optislang.application.project is not None` instead.")
     def has_active_project(self) -> bool:
         """
         Whether a project is loaded.
@@ -385,7 +389,36 @@ class Optislang:
         TimeoutError
             Raised when the timeout float value expires.
         """
-        return self.__osl_server.get_project_uid() is not None
+        return self.application.project is not None
+
+    @property
+    def log(self) -> OslCustomAdapter:
+        """Instance logger."""
+        return self.__logger
+
+    @property
+    def name(self) -> str:
+        """Unique ID of the optiSLang instance."""
+        if not self.__name:
+            if self.__host or self.__port:
+                self.__name = f"optiSLang_{self.__host}:{self.__port}"
+            else:
+                self.__name = f"optiSLang_{id(self)}"
+        return self.__name
+
+    @property
+    def osl_server(self) -> Optional[OslServer]:
+        """Get the currently used instance of the OslServer.
+
+        This instance can be used to directly communicate with optiSLang using
+        the optiSLang server API.
+
+        Returns
+        -------
+        Optional[OslServer]
+            OptiSLang server object.
+        """
+        return self.__osl_server
 
     @property
     def osl_version(self) -> OslVersion:
@@ -419,7 +452,7 @@ class Optislang:
         Optional[Project]
             Loaded project. If no project is loaded, ``None`` is returned.
         """
-        return self.__project
+        return self.application.project
 
     @property
     def timeout(self) -> Union[float, None]:
@@ -437,14 +470,14 @@ class Optislang:
         return self.__osl_server.timeout
 
     @timeout.setter
-    def timeout(self, timeout: Union[float, None] = 30) -> None:
+    def timeout(self, timeout: Union[float, None] = None) -> None:
         """Set the timeout value for the executing commands.
 
         Parameters
         ----------
         timeout: Union[float, None]
             Timeout in seconds to perform commands. This value must be greater
-            than zero or ``None``. The default is ``30``. Another function
+            than zero or ``None``. The default is ``None``. Another function
             raises a timeout exception if the timeout value has elapsed before
             an operation has completed. If the timeout is ``None``, functions
             wait until they're finished, and no timeout exception is raised.
@@ -457,22 +490,6 @@ class Optislang:
             Raised when the timeout is not a Union[float, None].
         """
         self.__osl_server.timeout = timeout
-
-    # close method doesn't work properly in optiSLang 2023 R1, Thus, it was commented out
-    # def close(self) -> None:
-    #     """Close the current project.
-
-    #     Raises
-    #     ------
-    #     OslCommunicationError
-    #         Raised when an error occurs while communicating with the server.
-    #     OslCommandError
-    #         Raised when a command or query fails.
-    #     TimeoutError
-    #         Raised when the timeout float value expires.
-    #     """
-    #     self.__osl_server.close()
-    #     self.__project = None
 
     def dispose(self) -> None:
         """Close all local threads and unregister listeners.
@@ -487,6 +504,20 @@ class Optislang:
             Raised when the timeout float value expires.
         """
         self.__osl_server.dispose()
+
+    @deprecated(version="0.6.0", reason="Use :py:attr:`Optislang.osl_server` instead.")
+    def get_osl_server(self) -> Optional[OslServer]:
+        """Get the currently used instance of the OslServer.
+
+        This instance can be used to directly communicate with optiSLang using
+        the optiSLang server API.
+
+        Returns
+        -------
+        Optional[OslServer]
+            OptiSLang server object.
+        """
+        return self.osl_server
 
     @deprecated(version="0.5.0", reason="Use :py:attr:`Optislang.osl_version_string` instead.")
     def get_osl_version_string(self) -> str:
@@ -543,18 +574,16 @@ class Optislang:
             raises a timeout exception if the timeout value has elapsed before
             an operation has completed. If the timeout is ``None``, functions
             wait until they're finished, and no timeout exception is raised.
-
-        Raises
-        ------
-        OslCommunicationError
-            Raised when an error occurs while communicating with the server.
-        OslCommandError
-            Raised when a command or query fails.
-        TimeoutError
-            Raised when the timeout float value expires.
         """
-        return self.__osl_server.timeout
+        return self.osl_server.timeout
 
+    @deprecated(
+        version="0.6.0",
+        reason=(
+            "This functionality was moved to "
+            ":py:class:`Project <ansys.optislang.core.project.Project>`."
+        ),
+    )
     def get_working_dir(self) -> Path:
         """Get the path to the optiSLang project's working directory.
 
@@ -573,10 +602,17 @@ class Optislang:
         TimeoutError
             Raised when the timeout float value expires.
         """
-        return self.__osl_server.get_working_dir()
+        return self.application.project.get_working_dir()
 
+    @deprecated(
+        version="0.6.0",
+        reason=(
+            "This functionality was moved to "
+            ":py:class:`Application <ansys.optislang.core.application.Application>`."
+        ),
+    )
     def new(self) -> None:
-        """Create a project.
+        """Create and open a new project.
 
         Raises
         ------
@@ -587,11 +623,15 @@ class Optislang:
         TimeoutError
             Raised when the timeout float value expires.
         """
-        self.__osl_server.new()
-        self.__project = Project(
-            osl_server=self.__osl_server, uid=self.__osl_server.get_project_uid()
-        )
+        self.application.new()
 
+    @deprecated(
+        version="0.6.0",
+        reason=(
+            "This functionality was moved to "
+            ":py:class:`Application <ansys.optislang.core.application.Application>`."
+        ),
+    )
     def open(
         self,
         file_path: Union[str, Path],
@@ -626,11 +666,15 @@ class Optislang:
         TimeoutError
             Raised when the timeout float value expires.
         """
-        self.__osl_server.open(file_path=file_path, force=force, restore=restore, reset=reset)
-        self.__project = Project(
-            osl_server=self.__osl_server, uid=self.__osl_server.get_project_uid()
-        )
+        self.application.open(file_path=file_path, force=force, restore=restore, reset=reset)
 
+    @deprecated(
+        version="0.6.0",
+        reason=(
+            "This functionality was moved to "
+            ":py:class:`Project <ansys.optislang.core.project.Project>`."
+        ),
+    )
     def reset(self) -> None:
         """Reset the project.
 
@@ -643,8 +687,15 @@ class Optislang:
         TimeoutError
             Raised when the timeout float value expires.
         """
-        self.__osl_server.reset()
+        self.application.project.reset()
 
+    @deprecated(
+        version="0.6.0",
+        reason=(
+            "This functionality was moved to "
+            ":py:class:`Project <ansys.optislang.core.project.Project>`."
+        ),
+    )
     def run_python_script(
         self,
         script: str,
@@ -674,8 +725,15 @@ class Optislang:
         TimeoutError
             Raised when the timeout float value expires.
         """
-        return self.__osl_server.run_python_script(script, args)
+        return self.application.project.run_python_script(script, args)
 
+    @deprecated(
+        version="0.6.0",
+        reason=(
+            "This functionality was moved to "
+            ":py:class:`Project <ansys.optislang.core.project.Project>`."
+        ),
+    )
     def run_python_file(
         self,
         file_path: Union[str, Path],
@@ -706,8 +764,15 @@ class Optislang:
         TimeoutError
             Raised when the timeout float value expires.
         """
-        return self.__osl_server.run_python_file(file_path, args)
+        return self.application.project.run_python_file(file_path, args)
 
+    @deprecated(
+        version="0.6.0",
+        reason=(
+            "This functionality was moved to "
+            ":py:class:`Application <ansys.optislang.core.application.Application>`."
+        ),
+    )
     def save(self) -> None:
         """Save changes to the project data and settings.
 
@@ -720,8 +785,15 @@ class Optislang:
         TimeoutError
             Raised when the timeout float value expires.
         """
-        return self.__osl_server.save()
+        return self.application.save()
 
+    @deprecated(
+        version="0.6.0",
+        reason=(
+            "This functionality was moved to "
+            ":py:class:`Application <ansys.optislang.core.application.Application>`."
+        ),
+    )
     def save_as(
         self,
         file_path: Union[str, Path],
@@ -756,12 +828,19 @@ class Optislang:
         TimeoutError
             Raised when the timeout float value expires.
         """
-        return self.__osl_server.save_as(
+        return self.application.save_as(
             file_path=file_path, force=force, restore=restore, reset=reset
         )
 
+    @deprecated(
+        version="0.6.0",
+        reason=(
+            "This functionality was moved to "
+            ":py:class:`Application <ansys.optislang.core.application.Application>`."
+        ),
+    )
     def save_copy(self, file_path: Union[str, Path]) -> None:
-        """Save a copy of the project to a specified location.
+        """Save a copy of the project to a specified location..
 
         Parameters
         ----------
@@ -777,7 +856,7 @@ class Optislang:
         TimeoutError
             Raised when the timeout float value expires.
         """
-        self.__osl_server.save_copy(file_path)
+        self.application.save_copy(file_path)
 
     @deprecated(version="0.5.0", reason="Use :py:attr:`Optislang.timeout` instead.")
     def set_timeout(self, timeout: Union[float, None] = None) -> None:
@@ -794,16 +873,12 @@ class Optislang:
 
         Raises
         ------
-        OslCommunicationError
-            Raised when an error occurs while communicating with the server.
-        OslCommandError
-            Raised when a command or query fails.
         ValueError
             Raised when the timeout value is less than or equal to 0.
         TypeError
             Raised when the timeout is not a Union[float, None].
         """
-        self.__osl_server.timeout = timeout
+        self.osl_server.timeout = timeout
 
     def shutdown(self, force: bool = False) -> None:
         """Shut down the optiSLang server.
@@ -832,8 +907,15 @@ class Optislang:
         TimeoutError
             Raised when the ``force`` parameter is ``False`` and the timeout float value expires.
         """
-        self.__osl_server.shutdown(force)
+        self.osl_server.shutdown(force)
 
+    @deprecated(
+        version="0.6.0",
+        reason=(
+            "This functionality was moved to "
+            ":py:class:`Project <ansys.optislang.core.project.Project>`."
+        ),
+    )
     def start(self, wait_for_started: bool = True, wait_for_finished: bool = True) -> None:
         """Start project execution.
 
@@ -862,8 +944,17 @@ class Optislang:
         TimeoutError
             Raised when the timeout float value expires.
         """
-        self.__osl_server.start(wait_for_started, wait_for_finished)
+        self.application.project.start(
+            wait_for_started=wait_for_started, wait_for_finished=wait_for_finished
+        )
 
+    @deprecated(
+        version="0.6.0",
+        reason=(
+            "This functionality was moved to "
+            ":py:class:`Project <ansys.optislang.core.project.Project>`."
+        ),
+    )
     def stop(self, wait_for_finished: bool = True) -> None:
         """Stop project execution.
 
@@ -885,36 +976,4 @@ class Optislang:
         TimeoutError
             Raised when the timeout float value expires.
         """
-        self.__osl_server.stop(wait_for_finished)
-
-    def get_osl_server(self) -> Union[OslServer, None]:
-        """Get the currently used instance of the OslServer.
-
-        This instance can be used to directly communicate with optiSLang using
-        the optiSLang server API.
-        """
-        return self.__osl_server
-
-    # stop_gently method doesn't work properly in optiSLang 2023 R1. Thus, it was commented out
-    # def stop_gently(self, wait_for_finished: bool = True) -> None:
-    #     """Stop project execution after the design is finished.
-
-    #     Parameters
-    #     ----------
-    #     wait_for_finished : bool, optional
-    #         Whether this function call should wait for optiSLang to finish
-    #         the command execution. The default is ``True``, in which case the
-    #         function call does not continue on to the next line of the Python
-    #         script after the command is successfully sent to optiSLang but
-    #         rather waits for execution of the flow inside optiSLang to finish.
-
-    #     Raises
-    #     ------
-    #     OslCommunicationError
-    #         Raised when an error occurs while communicating with the server.
-    #     OslCommandError
-    #         Raised when a command or query fails.
-    #     TimeoutError
-    #         Raised when the timeout float value expires.
-    #     """
-    #     self.__osl_server.stop_gently(wait_for_finished)
+        self.application.project.stop(wait_for_finished=wait_for_finished)

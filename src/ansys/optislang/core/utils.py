@@ -36,7 +36,10 @@ VersionMapping = Dict[int, Path]
 
 
 def enum_from_str(
-    string: str, enum_class: EnumMeta, replace: Optional[Tuple[str, str]] = None
+    string: str,
+    enum_class: EnumMeta,
+    replace: Optional[Tuple[str, str]] = None,
+    upper_case: bool = True,
 ) -> Enum:
     """Convert string to enumeration.
 
@@ -50,6 +53,8 @@ def enum_from_str(
         Characters to be replaced in given ``string``.
             Tuple[0]: Replace from.
             Tuple[1]: Replace to.
+    upper_case: bool, optional
+        Whether string should be converted to upper_case. Defaults to `True`.
 
     Returns
     -------
@@ -67,9 +72,10 @@ def enum_from_str(
         raise TypeError(f"String was expected, but `{type(string)}` was given.")
     if not issubclass(enum_class, Enum):
         raise TypeError(f"Enumeration class was expected, but `{type(enum_class)}` was given.")
-    string = string.upper()
     if replace is not None:
         string = string.replace(replace[0], replace[1])
+    if upper_case:
+        string = string.upper()
     try:
         return enum_class[string]
     except:

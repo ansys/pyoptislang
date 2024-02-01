@@ -25,7 +25,7 @@ import json
 
 import pytest
 
-from ansys.optislang.core import server_queries as sq
+from ansys.optislang.core.tcp import server_queries as sq
 
 example_uid = "5cdfb20b-bef6-4412-9985-89f5ded5ee95"
 example_dict = {"feature": "CAN_FINALIZE"}

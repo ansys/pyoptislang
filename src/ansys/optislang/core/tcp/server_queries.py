@@ -64,7 +64,7 @@ def actor_info(uid: str, password: Optional[str] = None) -> str:
     uid: str
         Uid entry.
     password : Optional[str], optional
-        Password. Defaults to ``None``.
+        Password, by default ``None``.
 
     Returns
     -------
@@ -111,7 +111,7 @@ def actor_properties(uid: str, password: Optional[str] = None) -> str:
     uid: str
         Uid entry.
     password : Optional[str], optional
-        Password. Defaults to ``None``.
+        Password, by default ``None``.
 
     Returns
     -------
@@ -312,7 +312,7 @@ def actor_supports(uid: str, feature_name: str, password: Optional[str] = None) 
     feature_name: str
         Name of requested feature.
     password : Optional[str], optional
-        Password. Defaults to ``None``.
+        Password, by default ``None``.
 
     Returns
     -------
@@ -348,13 +348,13 @@ def available_input_locations(uid: str, password: Optional[str] = None) -> str:
     )
 
 
-def available_nodes(password=None) -> str:
+def available_nodes(password: Optional[str] = None) -> str:
     """Generate JSON string of available nodes query.
 
     Parameters
     ----------
-    password : str, opt
-        Password.
+    password : Optional[str], optional
+        Password, by default ``None``.
 
     Returns
     -------
@@ -394,7 +394,7 @@ def basic_project_info(password: Optional[str] = None) -> str:
     Parameters
     ----------
     password : Optional[str], optional
-        Password. Defaults to ``None``.
+        Password, by default ``None``.
 
     Returns
     -------
@@ -471,7 +471,7 @@ def full_project_tree(password: Optional[str] = None) -> str:
     Parameters
     ----------
     password : Optional[str], optional
-        Password. Defaults to ``None``.
+        Password, by default ``None``.
 
     Returns
     -------
@@ -487,7 +487,7 @@ def full_project_tree_with_properties(password: Optional[str] = None) -> str:
     Parameters
     ----------
     password : Optional[str], optional
-        Password. Defaults to ``None``.
+        Password, by default ``None``.
 
     Returns
     -------
@@ -544,12 +544,8 @@ def hpc_licensing_forwarded_environment(uid: str, password: Optional[str] = None
     ----------
     uid: str
         Uid entry.
-    hid: str
-        Hid entry.
-    slot_name: str
-        Slot name entry.
     password : Optional[str], optional
-        Password. Defaults to ``None``.
+        Password, by default ``None``.
 
     Returns
     -------
@@ -573,7 +569,7 @@ def input_slot_value(uid: str, hid: str, slot_name: str, password: Optional[str]
     slot_name: str
         Slot name entry.
     password : Optional[str], optional
-        Password. Defaults to ``None``.
+        Password, by default ``None``.
 
     Returns
     -------
@@ -597,7 +593,7 @@ def output_slot_value(uid: str, hid: str, slot_name: str, password: Optional[str
     slot_name: str
         Slot name entry.
     password : Optional[str], optional
-        Password. Defaults to ``None``.
+        Password, by default ``None``.
 
     Returns
     -------
@@ -617,7 +613,7 @@ def project_tree_systems(password: Optional[str] = None) -> str:
     Parameters
     ----------
     password : Optional[str], optional
-        Password. Defaults to ``None``.
+        Password, by default ``None``.
 
     Returns
     -------
@@ -633,7 +629,7 @@ def project_tree_systems_with_properties(password: Optional[str] = None) -> str:
     Parameters
     ----------
     password : Optional[str], optional
-        Password. Defaults to ``None``.
+        Password, by default ``None``.
 
     Returns
     -------
@@ -649,7 +645,7 @@ def server_info(password: Optional[str] = None) -> str:
     Parameters
     ----------
     password : Optional[str], optional
-        Password. Defaults to ``None``.
+        Password, by default ``None``.
 
     Returns
     -------
@@ -665,7 +661,7 @@ def server_is_alive(password: Optional[str] = None) -> str:
     Parameters
     ----------
     password : Optional[str], optional
-        Password. Defaults to ``None``.
+        Password, by default ``None``.
 
     Returns
     -------

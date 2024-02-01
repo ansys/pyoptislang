@@ -30,7 +30,7 @@ This example demonstrates how to create and run parametric system for an oscilla
 
 It uses the ``oscillator_system_python.py`` file to create and run the
 parametric system for an oscillator. It then explains how you can optionally
-save a copy of the project to a desired location.
+save the project to a desired location.
 """
 
 ####################################################
@@ -46,7 +46,7 @@ import ansys.optislang.core.examples as examples
 # ~~~~~~~~~~~~~~~~~~~~~~~~~
 # Create the optiSLang instance.
 
-osl = Optislang()
+osl = Optislang(ini_timeout=60)
 print(osl)
 
 #########################################################
@@ -56,14 +56,14 @@ print(osl)
 # this script.
 
 paths = examples.get_files("oscillator_system_python")
-osl.run_python_file(paths[0])
+osl.application.project.run_python_file(paths[0])
 
 #########################################################
 # Run workflow
 # ~~~~~~~~~~~~
 # Run the workflow created by the preceding script.
 
-osl.start()
+osl.application.project.start()
 
 #########################################################
 # Optionally save project
@@ -74,7 +74,7 @@ osl.start()
 # .. code:: python
 #
 #   path = r'<insert-desired-location>'
-#   osl.save_as(os.path.join(path, "test_project.opf"))
+#   osl.application.save_as(os.path.join(path, "test_project.opf"))
 #
 
 #########################################################

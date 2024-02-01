@@ -525,7 +525,7 @@ class OslServerProcess:
 
         Returns
         -------
-        :class:
+        Any
             Logger object.
         """
         return self._logger

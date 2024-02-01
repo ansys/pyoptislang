@@ -12,13 +12,13 @@ actor:
     from ansys.optislang.core import Optislang
 
     osl = Optislang()
-    print(osl.run_python_script("""help(actors.SensitivityActor)"""))
+    print(osl.application.project.run_python_script("""help(actors.SensitivityActor)"""))
     osl.dispose()
 
 
 .. note::
     Be aware that each time the
-    :func:`run_python_script() <ansys.optislang.core.optislang.Optislang.run_python_script>`
+    :py:meth:`run_python_script() <ansys.optislang.core.project.Project.run_python_script>`
     method is called, a new Python context is created inside optiSLang. This
     means that variables from previous calls won't be available.
 
@@ -35,5 +35,5 @@ example.
 
     osl = Optislang()
     path_to_file = examples.get_files("simple_calculator")[0]
-    osl.run_python_file(file_path=path_to_file)
+    osl.application.project.run_python_file(file_path=path_to_file)
     osl.dispose()

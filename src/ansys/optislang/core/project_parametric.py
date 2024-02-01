@@ -20,32 +20,18 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-"""Contains these classes: ``Parameter``, ``ParameterManager``, and ``Design``."""
+"""Contains ``Parameter``, ``Criterion``, ``Response``, it's child classes and enumerations."""
 from __future__ import annotations
 
 import copy
 from enum import Enum
-from typing import (
-    TYPE_CHECKING,
-    Any,
-    Dict,
-    Iterable,
-    List,
-    Mapping,
-    Optional,
-    Sequence,
-    Tuple,
-    Union,
-)
+from typing import Any, Dict, Iterable, List, Mapping, Optional, Sequence, Tuple, Union
 import uuid
 
 from ansys.optislang.core.utils import enum_from_str
 
-if TYPE_CHECKING:
-    from ansys.optislang.core.osl_server import OslServer
 
-
-# ENUMERATIONS:
+# region ENUMERATIONS:
 class CriterionType(Enum):
     """Available criteria types."""
 
@@ -394,10 +380,12 @@ class ResponseValueType(Enum):
         return enum_from_str(string=string, enum_class=__class__)
 
 
-# CLASSES:
+# endregion
+
+# region CLASSES:
 
 
-# Criteria
+# region Criteria
 class Criterion:
     """Stores criterion data."""
 
@@ -418,22 +406,24 @@ class Criterion:
 
         Parameters
         ----------
-        name: str
-            Criterion name.
-        type_: Union[CriterionKind, str]
-            Type of criterion, e. g. 'objective'.
-        expression: str
-            Criterion expression.
+        name: str, optional
+            Criterion name, by default ``""``.
+        type_: Union[CriterionKind, str], optional
+            Type of criterion, e. g. 'objective', by default ``CriterionType.VARIABLE``.
+        expression: str, optional
+            Criterion expression, by default ``"0"``.
         expression_value: Optional[Union[tuple, bool, float, complex, list, dict]], optional
-            Expression value.
+            Expression value, by default ``None``.
         expression_value_type: Optional[CriterionValueType], optional
-            Expression value type.
-        criterion: Union[CriterionType, str]
-            Type of comparison symbol, e. g. 'min'.
-        value: Optional[Union[tuple, bool, float, complex, list, dict]], optional
-            Value of the criterion.
+            Expression value type, by default ``None``.
+        criterion: Union[CriterionType, str], optional
+            Type of comparison symbol, e. g. 'min', by default ``ComparisonType.IGNORE``.
+        value: Optional[
+            Union[Tuple[CriterionValueType, str], bool, float, complex, list, dict]
+        ], optional
+            Value of the criterion, by default ``None``.
         value_type: Optional[CriterionValueType], optional
-            Type of the criterion value.
+            Type of the criterion value, by default ``None``.
         """
         self.name = name
         self.expression = expression
@@ -450,12 +440,11 @@ class Criterion:
             )
 
         if expression_value and isinstance(expression_value_type, CriterionValueType):
-            self.expression_value = (expression_value, expression_value_type)
+            self.expression_value = (expression_value_type, expression_value)
         else:
             self.expression_value = expression_value
-
         if value and isinstance(value_type, CriterionValueType):
-            self.value = (value, value_type)
+            self.value = (value_type, value)
         else:
             self.value = value
 
@@ -621,6 +610,174 @@ class Criterion:
         return self.__value_type
 
     @staticmethod
+    def from_dict(criterion_dict: dict) -> Criterion:
+        """Create an instance of the ``Criterion`` class from actor properties.
+
+        Parameters
+        ----------
+        criterion_dict : dict
+            Output from optiSLang server.
+
+        Returns
+        -------
+        Criterion
+            Instance of the ``Criterion`` class.
+
+        Raises
+        ------
+        TypeError
+            Raised when undefined type of criterion is given.
+        """
+        criterion_properties = __class__._extract_criterion_properties_from_dict(criterion_dict)
+        if criterion_properties["criterion"] == ComparisonType.IGNORE:
+            return VariableCriterion(
+                name=criterion_properties["name"],
+                expression=criterion_properties["limit_expression"],
+                expression_value=criterion_properties["limit_expression_value"],
+                expression_value_type=criterion_properties["limit_expression_value_type"],
+                value=criterion_properties["value"],
+                value_type=criterion_properties["value_type"],
+            )
+        elif criterion_properties["criterion"] in [ComparisonType.MIN, ComparisonType.MAX]:
+            return ObjectiveCriterion(
+                name=criterion_properties["name"],
+                expression=criterion_properties["limit_expression"],
+                expression_value=criterion_properties["limit_expression_value"],
+                expression_value_type=criterion_properties["limit_expression_value_type"],
+                criterion=criterion_properties["criterion"],
+                value=criterion_properties["value"],
+                value_type=criterion_properties["value_type"],
+            )
+        elif criterion_properties["criterion"] in [
+            ComparisonType.LESSEQUAL,
+            ComparisonType.EQUAL,
+            ComparisonType.GREATEREQUAL,
+        ]:
+            return ConstraintCriterion(
+                name=criterion_properties["name"],
+                expression=criterion_properties["expression"],
+                expression_value=criterion_properties["expression_value"],
+                expression_value_type=criterion_properties["expression_value_type"],
+                criterion=criterion_properties["criterion"],
+                limit_expression=criterion_properties["limit_expression"],
+                limit_expression_value=criterion_properties["limit_expression_value"],
+                limit_expression_value_type=criterion_properties["limit_expression_value_type"],
+                value=criterion_properties["value"],
+                value_type=criterion_properties["value_type"],
+            )
+        elif criterion_properties["criterion"] in [
+            ComparisonType.LESSLIMITSTATE,
+            ComparisonType.GREATERLIMITSTATE,
+        ]:
+            return LimitStateCriterion(
+                name=criterion_properties["name"],
+                expression=criterion_properties["expression"],
+                expression_value=criterion_properties["expression_value"],
+                expression_value_type=criterion_properties["expression_value_type"],
+                criterion=criterion_properties["criterion"],
+                limit_expression=criterion_properties["limit_expression"],
+                limit_expression_value=criterion_properties["limit_expression_value"],
+                limit_expression_value_type=criterion_properties["limit_expression_value_type"],
+                value=criterion_properties["value"],
+                value_type=criterion_properties["value_type"],
+            )
+
+    @staticmethod
+    def _extract_criterion_properties_from_dict(criterion_dict: dict) -> Dict[str, Any]:
+        """Get type of criterion from optiSLang output.
+
+        Parameters
+        ----------
+        criterion_dict : dict
+            Output from `get_actor_properties` query.
+
+        Returns
+        -------
+        Dict[str, Any]
+           name: str,
+           expression: str,
+           expression_value: Any,
+           expression_value_type: CriterionValueType,
+           criterion: ComparisonType,
+           limit_expression: Optional[str],
+           limit_expression_value: Optional[Any],
+           limit_expression_value_type: Optional[CriterionValueType],
+           value: Any,
+           value_type: CriterionValueType
+        """
+        if not ("First" in criterion_dict.keys() and "Second" in criterion_dict.keys()):
+            raise TypeError("Unsupported format of criterion dictionary.")
+        name = criterion_dict["First"]
+        criterion_dict = criterion_dict["Second"]
+        criterion = ComparisonType.from_str(criterion_dict["type"]["value"])
+        expression = criterion_dict["lhs"]
+        expression_value_type = (
+            CriterionValueType.from_str(
+                criterion_dict["lhs_value"].get("kind", {}).get("value", "UNINITIALIZED")
+            )
+            if criterion_dict.get("lhs_value")
+            else None
+        )
+        if expression_value_type in [CriterionValueType.SIGNAL, CriterionValueType.XYDATA]:
+            expression_value = (
+                criterion_dict["lhs_value"]["matrix"],
+                criterion_dict["lhs_value"]["vector"],
+            )
+        elif expression_value_type in [CriterionValueType.UNINITIALIZED, None]:
+            expression_value = None
+        else:
+            expression_value = criterion_dict["lhs_value"][expression_value_type.name.lower()]
+
+        limit_expression = criterion_dict.get("rhs")  # optional
+        limit_expression_value_type = (
+            CriterionValueType.from_str(
+                criterion_dict["rhs_value"].get("kind", {}).get("value", "UNINITIALIZED")
+            )
+            if criterion_dict.get("rhs_value")
+            else None
+        )
+        if limit_expression_value_type in [CriterionValueType.SIGNAL, CriterionValueType.XYDATA]:
+            limit_expression_value = (
+                criterion_dict["rhs_value"]["matrix"],
+                criterion_dict["rhs_value"]["vector"],
+            )
+        elif limit_expression_value_type in [CriterionValueType.UNINITIALIZED, None]:
+            limit_expression_value = None
+        else:
+            limit_expression_value = criterion_dict["rhs_value"][
+                limit_expression_value_type.name.lower()
+            ]
+
+        value_type = value_type = (
+            CriterionValueType.from_str(
+                criterion_dict["value"].get("kind", {}).get("value", "UNINITIALIZED")
+            )
+            if criterion_dict.get("value")
+            else None
+        )
+        if value_type in [CriterionValueType.SIGNAL, CriterionValueType.XYDATA]:
+            value = (
+                criterion_dict["value"]["matrix"],
+                criterion_dict["value"]["vector"],
+            )
+        elif value_type in [CriterionValueType.UNINITIALIZED, None]:
+            value = None
+        else:
+            value = criterion_dict["value"][value_type.name.lower()]
+        return {
+            "name": name,
+            "expression": expression,
+            "expression_value": expression_value,
+            "expression_value_type": expression_value_type,
+            "criterion": criterion,
+            "limit_expression": limit_expression,
+            "limit_expression_value": limit_expression_value,
+            "limit_expression_value_type": limit_expression_value_type,
+            "value": value,
+            "value_type": value_type,
+        }
+
+    @staticmethod
     def _get_value_type(value: Any) -> CriterionValueType:
         """Return type of the value.
 
@@ -754,42 +911,6 @@ class Criterion:
         return vector_list
 
     @staticmethod
-    def from_dict(criterion_dict: dict) -> Criterion:
-        """Create an instance of the ``Criterion`` class from optiSLang output.
-
-        Parameters
-        ----------
-        criterion_dict : dict
-            Output from optiSLang server.
-
-        Returns
-        -------
-        Criterion
-            Instance of the ``Criterion`` class.
-
-        Raises
-        ------
-        TypeError
-            Raised when undefined type of criterion is given.
-        """
-        criterion_type = ComparisonType.from_str(criterion_dict["Second"]["type"]["value"])
-        if criterion_type == ComparisonType.IGNORE:
-            return VariableCriterion.from_dict(criterion_dict)
-        elif criterion_type in [ComparisonType.MIN, ComparisonType.MAX]:
-            return ObjectiveCriterion.from_dict(criterion_dict)
-        elif criterion_type in [
-            ComparisonType.LESSEQUAL,
-            ComparisonType.EQUAL,
-            ComparisonType.GREATEREQUAL,
-        ]:
-            return ConstraintCriterion.from_dict(criterion_dict)
-        elif criterion_type in [
-            ComparisonType.LESSLIMITSTATE,
-            ComparisonType.GREATERLIMITSTATE,
-        ]:
-            return LimitStateCriterion.from_dict(criterion_dict)
-
-    @staticmethod
     def _lhs_rhs_value_to_dict(
         value: Union[bool, float, complex, list, dict, None], value_type: CriterionValueType
     ) -> dict:
@@ -862,26 +983,26 @@ class ConstraintCriterion(Criterion):
 
         Parameters
         ----------
-        name: str
-            Criterion name.
-        expression: str
-            Criterion expression.
+        name: str, optional
+            Criterion name. By default ``""``.
+        expression: str, optional
+            Criterion expression. By default ``"0"``.
         expression_value: Optional[Union[tuple, bool, float, complex, list, dict]], optional
-            Expression value.
+            Expression value. By default ``None``.
         expression_value_type: Optional[CriterionValueType], optional
-            Expression value type.
-        criterion: Union[CriterionType, str]
+            Expression value type. By default ``ComparisonType.LESSEQUAL``
+        criterion: Union[CriterionType, str], optional
             Comparison symbol type, e. g. 'lessequal'.
-        limit_expression: str
-            Limit expression.
+        limit_expression: str, optional
+            Limit expression. By default ``"0"``.
         limit_expression_value: Optional[Union[tuple, bool, float, complex, list, dict]], optional
-            Limit expression value.
+            Limit expression value. By default ``None``.
         limit_expression_value_type: Optional[CriterionValueType], optional
-            Limit expression value type.
+            Limit expression value type. By default ``None``.
         value: Optional[Union[tuple, bool, float, complex, list, dict]], optional
-            Criterion value.
+            Criterion value. By default ``None``.
         value_type: Optional[CriterionValueType], optional
-            Type of the criterion value.
+            Type of the criterion value. By default ``None``.
         """
         super().__init__(
             name=name,
@@ -900,10 +1021,7 @@ class ConstraintCriterion(Criterion):
         self.__limit_expression = limit_expression
 
         if limit_expression_value and isinstance(limit_expression_value_type, CriterionValueType):
-            self.limit_expression_value = (
-                limit_expression_value,
-                limit_expression_value_type,
-            )
+            self.limit_expression_value = (limit_expression_value_type, limit_expression_value)
         else:
             self.limit_expression_value = limit_expression_value
 
@@ -999,65 +1117,6 @@ class ConstraintCriterion(Criterion):
         """Return type of the limit value."""
         return self.__limit_expression_value_type
 
-    @staticmethod
-    def from_dict(criterion_dict: dict) -> ConstraintCriterion:
-        """Create an instance of the ``ConstraintCriterion`` class from optiSLang output.
-
-        Parameters
-        ----------
-        criterion_dict : dict
-            Output from optiSLang server.
-
-        Returns
-        -------
-        ConstraintCriterion
-            Instance of the ``ConstraintCriterion`` class.
-        """
-        name = criterion_dict["First"]
-        expression = criterion_dict["Second"]["lhs"]
-        limit_expression = criterion_dict["Second"]["rhs"]
-        criterion = ComparisonType.from_str(criterion_dict["Second"]["type"]["value"])
-        try:
-            value_type = CriterionValueType.from_str(
-                criterion_dict["Second"]["value"]["kind"]["value"]
-            )
-        except:
-            value_type = CriterionValueType.UNINITIALIZED
-        try:
-            limit_type = CriterionValueType.from_str(
-                criterion_dict["Second"]["rhs_value"]["kind"]["value"]
-            )
-        except:
-            limit_type = CriterionValueType.UNINITIALIZED
-        if value_type in [CriterionValueType.SIGNAL, CriterionValueType.XYDATA]:
-            value = (
-                criterion_dict["Second"]["lhs_value"]["matrix"],
-                criterion_dict["Second"]["lhs_value"]["vector"],
-            )
-        elif value_type == CriterionValueType.UNINITIALIZED:
-            value = None
-        else:
-            value = criterion_dict["Second"]["lhs_value"][value_type.name.lower()]
-
-        if limit_type in [CriterionValueType.SIGNAL, CriterionValueType.XYDATA]:
-            limit_value = (
-                criterion_dict["Second"]["rhs_value"]["matrix"],
-                criterion_dict["Second"]["rhs_value"]["vector"],
-            )
-        elif limit_type == CriterionValueType.UNINITIALIZED:
-            limit_value = None
-        else:
-            limit_value = criterion_dict["Second"]["rhs_value"][limit_type.name.lower()]
-
-        return ConstraintCriterion(
-            name=name,
-            expression=expression,
-            criterion=criterion,
-            value=(value_type, value),
-            limit_expression=limit_expression,
-            limit_expression_value=(limit_type, limit_value),
-        )
-
     def to_dict(self) -> dict:
         """Convert an instance of the ``ConstraintCriterion`` class to a dictionary.
 
@@ -1119,26 +1178,26 @@ class LimitStateCriterion(Criterion):
 
         Parameters
         ----------
-        name: str
-            Criterion name.
-        expression: str
-            Criterion expression.
+        name: str, optional
+            Criterion name. By default ``""``.
+        expression: str, optional
+            Criterion expression. By default ``"0"``.
         expression_value: Optional[Union[tuple, bool, float, complex, list, dict, None]], optional
             Expression value. Defaults to ``None``.
         expression_value_type: Optional[CriterionValueType], optional
             Expression value type. Defaults to ``None``.
-        criterion: Union[CriterionType, str]
-            Comparison symbol type, e. g. 'min'.
-        limit_expression: str
-            Limit expression.
+        criterion: Union[CriterionType, str], optional
+            Comparison symbol type, e. g. 'min'. By default ``ComparisonType.LESSLIMITSTATE``.
+        limit_expression: str, optional
+            Limit expression. By default ``"0"``.
         limit_expression_value: Optional[Union[tuple, bool, float, complex, list, dict]], optional
             Limit expression value. Defaults to ``None``.
         limit_expression_value_type: Optional[Union[CriterionValueType, None]], optional
             Limit expression value type. Defaults to ``None``.
         value: Optional[Union[tuple, bool, float, complex, list, dict]], optional
-            Criterion value.
+            Criterion value. By default ``None``.
         value_type: Optional[CriterionValueType], optional
-            Type of the criterion value.
+            Type of the criterion value. By default ``None``.
         """
         super().__init__(
             name=name,
@@ -1157,10 +1216,7 @@ class LimitStateCriterion(Criterion):
         self.__limit_expression = limit_expression
 
         if limit_expression_value and isinstance(limit_expression_value_type, CriterionValueType):
-            self.limit_expression_value = (
-                limit_expression_value,
-                limit_expression_value_type,
-            )
+            self.limit_expression_value = (limit_expression_value_type, limit_expression_value)
         else:
             self.limit_expression_value = limit_expression_value
 
@@ -1256,63 +1312,6 @@ class LimitStateCriterion(Criterion):
         """Return type of the limit value."""
         return self.__limit_expression_value_type
 
-    @staticmethod
-    def from_dict(criterion_dict: dict) -> LimitStateCriterion:
-        """Create an instance of the ``LimitStateCriterion`` class from optiSLang output.
-
-        Parameters
-        ----------
-        criterion_dict : dict
-            Output from optiSLang server.
-
-        Returns
-        -------
-        LimitStateCriterion
-            Instance of the ``LimitStateCriterion`` class.
-        """
-        name = criterion_dict["First"]
-        expression = criterion_dict["Second"]["lhs"]
-        criterion = ComparisonType.from_str(criterion_dict["Second"]["type"]["value"])
-        try:
-            value_type = CriterionValueType.from_str(
-                criterion_dict["Second"]["value"]["kind"]["value"]
-            )
-        except:
-            value_type = CriterionValueType.UNINITIALIZED
-        try:
-            limit_type = CriterionValueType.from_str(
-                criterion_dict["Second"]["rhs_value"]["kind"]["value"]
-            )
-        except:
-            limit_type = CriterionValueType.UNINITIALIZED
-        if value_type in [CriterionValueType.SIGNAL, CriterionValueType.XYDATA]:
-            value = (
-                criterion_dict["Second"]["lhs_value"]["matrix"],
-                criterion_dict["Second"]["lhs_value"]["vector"],
-            )
-        elif value_type == CriterionValueType.UNINITIALIZED:
-            value = None
-        else:
-            value = criterion_dict["Second"]["lhs_value"][value_type.name.lower()]
-
-        if limit_type in [CriterionValueType.SIGNAL, CriterionValueType.XYDATA]:
-            limit_value = (
-                criterion_dict["Second"]["rhs_value"]["matrix"],
-                criterion_dict["Second"]["rhs_value"]["vector"],
-            )
-        elif limit_type == CriterionValueType.UNINITIALIZED:
-            limit_value = None
-        else:
-            limit_value = criterion_dict["Second"]["rhs_value"][limit_type.name.lower()]
-
-        return LimitStateCriterion(
-            name=name,
-            expression=expression,
-            criterion=criterion,
-            value=(value_type, value),
-            limit_expression_value=(limit_type, limit_value),
-        )
-
     def to_dict(self) -> dict:
         """Convert an instance of the ``LimitStateCriterion`` class to a dictionary.
 
@@ -1373,20 +1372,20 @@ class ObjectiveCriterion(Criterion):
 
         Parameters
         ----------
-        name: str
-            Criterion name.
-        expression: str
-            Criterion expression.
+        name: str, optional
+            Criterion name. By default ``""``.
+        expression: str, optional
+            Criterion expression. By default ``"0"``.
         expression_value: Optional[Union[tuple, bool, float, complex, list, dict]], optional
-            Expression value.
+            Expression value. By default ``None``.
         expression_value_type: Optional[CriterionValueType], optional
-            Expression value type.
-        criterion: Union[CriterionType, str]
-            Comparison symbol type, e. g. 'min'.
+            Expression value type. By default ``None``.
+        criterion: Union[CriterionType, str], optional
+            Comparison symbol type, e. g. 'min'. By default ``ComparisonType.MIN``.
         value: Optional[Union[tuple, bool, float, complex, list, dict]], optional
-            Criterion value.
+            Criterion value. By default ``None``.
         value_type: Optional[CriterionValueType], optional
-            Type of the criterion value.
+            Type of the criterion value. By default ``None``.
         """
         super().__init__(
             name=name,
@@ -1434,45 +1433,6 @@ class ObjectiveCriterion(Criterion):
             criterion=self.criterion,
             value=copy.deepcopy(self.value),
             value_type=self.value_type,
-        )
-
-    @staticmethod
-    def from_dict(criterion_dict: dict) -> ObjectiveCriterion:
-        """Create an instance of the ``ObjectiveCriterion`` class from optiSLang output.
-
-        Parameters
-        ----------
-        criterion_dict : dict
-            Output from optiSLang server.
-
-        Returns
-        -------
-        ObjectiveCriterion
-            Instance of the ``ObjectiveCriterion`` class.
-        """
-        name = criterion_dict["First"]
-        expression = criterion_dict["Second"]["rhs"]
-        criterion = ComparisonType.from_str(criterion_dict["Second"]["type"]["value"])
-        try:
-            value_type = CriterionValueType.from_str(
-                criterion_dict["Second"]["value"]["kind"]["value"]
-            )
-        except:
-            value_type = CriterionValueType.UNINITIALIZED
-        if value_type in [CriterionValueType.SIGNAL, CriterionValueType.XYDATA]:
-            value = (
-                criterion_dict["Second"]["value"]["matrix"],
-                criterion_dict["Second"]["value"]["vector"],
-            )
-        elif value_type == CriterionValueType.UNINITIALIZED:
-            value = None
-        else:
-            value = criterion_dict["Second"]["value"][value_type.name.lower()]
-        return ObjectiveCriterion(
-            name=name,
-            expression=expression,
-            criterion=criterion,
-            value=(value_type, value),
         )
 
     def to_dict(self) -> dict:
@@ -1527,18 +1487,18 @@ class VariableCriterion(Criterion):
 
         Parameters
         ----------
-        name: str
-            Criterion name.
-        expression: str
-            Criterion expression.
+        name: str, optional
+            Criterion name. By default ``""``.
+        expression: str, optional
+            Criterion expression. By default ``"0"``.
         expression_value: Optional[Union[tuple, bool, float, complex, list, dict, None]], optional
-            Expression value.
+            Expression value. By default ``None``.
         expression_value_type: Optional[CriterionValueType], optional
-            Expression value type.
+            Expression value type. By default ``None``.
         value: Optional[Union[tuple, bool, float, complex, list, dict]], optional
-            Criterion value.
+            Criterion value. By default ``None``.
         value_type: Optional[CriterionValueType], optional
-            Type of the criterion value.
+            Type of the criterion value. By default ``None``.
         """
         super().__init__(
             name=name,
@@ -1587,43 +1547,6 @@ class VariableCriterion(Criterion):
             value_type=self.value_type,
         )
 
-    @staticmethod
-    def from_dict(criterion_dict: dict) -> VariableCriterion:
-        """Create an instance of the ``VariableCriterion`` class from optiSLang output.
-
-        Parameters
-        ----------
-        criterion_dict : dict
-            Output from optiSLang server.
-
-        Returns
-        -------
-        VariableCriterion
-            Instance of the ``VariableCriterion`` class.
-        """
-        name = criterion_dict["First"]
-        expression = criterion_dict["Second"]["rhs"]
-        try:
-            value_type = CriterionValueType.from_str(
-                criterion_dict["Second"]["value"]["kind"]["value"]
-            )
-        except:
-            value_type = CriterionValueType.UNINITIALIZED
-        if value_type in [CriterionValueType.SIGNAL, CriterionValueType.XYDATA]:
-            value = (
-                criterion_dict["Second"]["value"]["matrix"],
-                criterion_dict["Second"]["value"]["vector"],
-            )
-        elif value_type == CriterionValueType.UNINITIALIZED:
-            value = None
-        else:
-            value = criterion_dict["Second"]["value"][value_type.name.lower()]
-        return VariableCriterion(
-            name=name,
-            expression=expression,
-            value=(value_type, value),
-        )
-
     def to_dict(self) -> dict:
         """Convert an instance of the ``VariableCriterion`` class to a dictionary.
 
@@ -1660,7 +1583,10 @@ class VariableCriterion(Criterion):
         )
 
 
-# DesignVariable
+# endregion
+
+
+# region DesignVariable
 class DesignVariable:
     """Stores information about a design variable."""
 
@@ -1673,8 +1599,8 @@ class DesignVariable:
 
         Parameters
         ----------
-        name: str
-            Variable's name.
+        name: str, optional
+            Variable's name. By default ``""``.
         value: Optional[Union[bool, float, complex, list, dict]], optional
             Variable's value.
         """
@@ -1745,7 +1671,10 @@ class DesignVariable:
         return f"Name: {self.name}\n" f"Value: {self.value}\n"
 
 
-# Parameters
+# endregion
+
+
+# region Parameters
 class Parameter:
     """Stores parameter data."""
 
@@ -1753,7 +1682,7 @@ class Parameter:
         self,
         name: str = "",
         reference_value: Optional[Union[bool, float, str]] = None,
-        id: str = "",
+        id: Optional[str] = None,
         const: bool = False,
         type_: Union[ParameterType, str] = ParameterType.DETERMINISTIC,
     ) -> None:
@@ -1761,19 +1690,22 @@ class Parameter:
 
         Parameters
         ----------
-        name: str
-            Name of the parameter.
+        name: str, optional
+            Name of the parameter. By default ``""``.
         reference_value: Optional[Union[bool, float, str]], optional
-            Parameter's reference value.
-        id: str
-            Parameter's unique id.
-        const: bool
-            Determines whether is parameter constant.
-        type: Union[ParameterType, str]
-            Parameter's type.
+            Parameter's reference value. By default ``None``.
+        id: str, optional
+            Parameter's unique id. By default ``None``.
+            A unique Id is automatically generated if not specified.
+        const: bool, optional
+            Determines whether is parameter constant. By default ``False``.
+        type: Union[ParameterType, str], optional
+            Parameter's type. By default ``ParameterType.DETERMINISTIC``.
         """
         self.name = name
         self.reference_value = reference_value
+        if id is None:
+            id = str(uuid.uuid4())
         self.id = id
         self.const = const
         if isinstance(type_, str):
@@ -1862,7 +1794,7 @@ class Parameter:
         TypeError
             Raised when the type of the ID is invalid.
         """
-        if not isinstance(id, str):
+        if not isinstance(id, str) and not id is None:
             raise TypeError(f"Type of ``id`` must be ``str`` but type: ``{type(id)}`` was given.")
         self.__id = id
 
@@ -1948,18 +1880,118 @@ class Parameter:
         TypeError
             Raised when an undefined type of parameter is given.
         """
-        type = ParameterType.from_str(par_dict["type"]["value"])
+        parameter_properties = __class__._extract_parameter_properties_from_dict(par_dict=par_dict)
 
-        if type == ParameterType.DEPENDENT:
-            return DependentParameter.from_dict(par_dict=par_dict)
-        elif type == ParameterType.DETERMINISTIC:
-            return OptimizationParameter.from_dict(par_dict=par_dict)
-        elif type == ParameterType.STOCHASTIC:
-            return StochasticParameter.from_dict(par_dict=par_dict)
-        elif type == ParameterType.MIXED:
-            return MixedParameter.from_dict(par_dict=par_dict)
+        if parameter_properties["type"] == ParameterType.DEPENDENT:
+            return DependentParameter(
+                name=parameter_properties["name"],
+                operation=parameter_properties["operation"],
+                reference_value=parameter_properties["reference_value"],
+                id=parameter_properties["id"],
+                const=parameter_properties["const"],
+            )
+        elif parameter_properties["type"] == ParameterType.DETERMINISTIC:
+            return OptimizationParameter(
+                name=parameter_properties["name"],
+                reference_value=parameter_properties["reference_value"],
+                reference_value_type=parameter_properties["reference_value_type"],
+                id=parameter_properties["id"],
+                const=parameter_properties["const"],
+                deterministic_resolution=parameter_properties["deterministic_resolution"],
+                range=parameter_properties["range"],
+            )
+        elif parameter_properties["type"] == ParameterType.STOCHASTIC:
+            return StochasticParameter(
+                name=parameter_properties["name"],
+                reference_value=parameter_properties["reference_value"],
+                id=parameter_properties["id"],
+                const=parameter_properties["const"],
+                stochastic_resolution=parameter_properties["stochastic_resolution"],
+                distribution_type=parameter_properties["distribution_type"],
+                distribution_parameters=parameter_properties["distribution_parameters"],
+                statistical_moments=parameter_properties["statistical_moments"],
+                cov=parameter_properties["cov"],
+            )
+        elif parameter_properties["type"] == ParameterType.MIXED:
+            return MixedParameter(
+                name=parameter_properties["name"],
+                reference_value=parameter_properties["reference_value"],
+                id=parameter_properties["id"],
+                const=parameter_properties["const"],
+                deterministic_resolution=parameter_properties["deterministic_resolution"],
+                range=parameter_properties["range"],
+                stochastic_resolution=parameter_properties["stochastic_resolution"],
+                distribution_type=parameter_properties["distribution_type"],
+                distribution_parameters=parameter_properties["distribution_parameters"],
+                statistical_moments=parameter_properties["statistical_moments"],
+                cov=parameter_properties["cov"],
+            )
         else:
             raise TypeError("Undefined type of parameter.")
+
+    @staticmethod
+    def _extract_parameter_properties_from_dict(par_dict: dict) -> dict:
+        properties_dict = {
+            "name": par_dict["name"],
+            "reference_value": par_dict["reference_value"],
+            "reference_value_type": (
+                par_dict["deterministic_property"].get("domain_type", {}).get("value", None)
+                if par_dict.get("deterministic_property")
+                else None
+            ),
+            "id": par_dict["id"],
+            "const": par_dict["const"],
+            "type": ParameterType.from_str(par_dict["type"]["value"]),
+            "operation": par_dict.get("dependency_expression", None),
+            "deterministic_resolution": (
+                ParameterResolution.from_str(
+                    par_dict["deterministic_property"].get("kind", {}).get("value", None)
+                )
+                if par_dict.get("deterministic_property")
+                else None
+            ),
+            "stochastic_resolution": (
+                ParameterResolution.from_str(
+                    par_dict["stochastic_property"].get("kind", {}).get("value", None)
+                )
+                if par_dict.get("stochastic_property")
+                else None
+            ),
+            "distribution_type": (
+                DistributionType.from_str(
+                    par_dict.get("stochastic_property", {}).get("type", {}).get("value", None)
+                )
+                if par_dict.get("stochastic_property")
+                else None
+            ),
+            "distribution_parameters": (
+                tuple(par_dict["stochastic_property"]["distribution_parameters"])
+                if par_dict.get("stochastic_property", {}).get("distribution_parameters")
+                else None
+            ),
+            "statistical_moments": (
+                tuple(par_dict["stochastic_property"]["statistical_moments"])
+                if par_dict.get("stochastic_property", {}).get(
+                    "statistical_moments",
+                )
+                else None
+            ),
+            "cov": par_dict.get("stochastic_property", {}).get("cov", None),
+        }
+        # range for continuous parameters, stored as (val1, val2)
+        if properties_dict["deterministic_resolution"] == ParameterResolution.CONTINUOUS:
+            properties_dict["range"] = (
+                par_dict.get("deterministic_property", {}).get("lower_bound", None),
+                par_dict.get("deterministic_property", {}).get("upper_bound", None),
+            )
+        # discrete values otherwise, stored as ([val1, val2, val3 ..])
+        elif properties_dict["deterministic_resolution"] is not None:
+            properties_dict["range"] = (
+                tuple(par_dict.get("deterministic_property", {}).get("discrete_states", [])),
+            )
+        else:
+            properties_dict["range"] = None
+        return properties_dict
 
 
 class DependentParameter(Parameter):
@@ -1970,23 +2002,23 @@ class DependentParameter(Parameter):
         name: str = "",
         operation: str = "0",
         reference_value: Optional[Union[bool, float, str, Tuple[Any, ParameterValueType]]] = None,
-        id: str = str(uuid.uuid4()),
+        id: Optional[str] = None,
         const: bool = False,
     ) -> None:
         """Create an instance of the ``DependentParameter`` class.
 
         Parameters
         ----------
-        name: str
-            Name of the parameter.
+        name: str, optional
+            Name of the parameter. By default ``""``.
         operation: str, optional
-            Mathematic expression to evaluate.
+            Mathematic expression to evaluate. By default ``"0"``.
         reference_value: Optional[Union[bool, float, str, Tuple[Any, ParameterValueType]]], optional
-            Reference value of the parameter.
+            Reference value of the parameter. By default ``None``.
         id: str, optional
-            Unique ID of the parameter.
+            Unique ID of the parameter. A unique Id is automatically generated if not specified.
         const: bool, optional
-            Whether the parameter is a constant.
+            Whether the parameter is a constant. By default ``False``.
         """
         super().__init__(
             name=name,
@@ -2048,34 +2080,6 @@ class DependentParameter(Parameter):
             self.__operation = expression
             self.reference_value = None
 
-    @staticmethod
-    def from_dict(par_dict: dict) -> DependentParameter:
-        """Create an instance of the ``DependentParameter`` class from optiSLang output.
-
-        Parameters
-        ----------
-        par_dict : dict
-            Output from the optiSLang server.
-
-        Returns
-        -------
-        Parameter
-            Instance of the ``DependentParameter`` class.
-        """
-        name = par_dict["name"]
-        reference_value = par_dict["reference_value"]
-        id = par_dict["id"]
-        const = par_dict["const"]
-        operation = par_dict.get("dependency_expression")
-
-        return DependentParameter(
-            name=name,
-            reference_value=reference_value,
-            id=id,
-            const=const,
-            operation=operation,
-        )
-
     def to_dict(self) -> dict:
         """Convert an instance of the ``DependentParameter`` class to a dictionary.
 
@@ -2085,11 +2089,10 @@ class DependentParameter(Parameter):
             Input dictionary for the optiSLang server.
 
         """
-        return {
+        ret_dict = {
             "active": True,
             "const": self.const if self.const is not None else False,
-            "dependency_expression": self.operation if self.operation is not None else 0,
-            "id": self.id,
+            "dependency_expression": self.operation if self.operation is not None else "0",
             "modifiable": False,
             "name": self.name,
             "reference_value": None,
@@ -2097,6 +2100,11 @@ class DependentParameter(Parameter):
             "type": {"value": self.type.name.lower()},
             "unit": "",
         }
+
+        if self.id is not None:
+            ret_dict["id"] = self.id
+
+        return ret_dict
 
     def __str__(self) -> str:
         """Return information about the parameter."""
@@ -2116,8 +2124,8 @@ class MixedParameter(Parameter):
     def __init__(
         self,
         name: str = "",
-        reference_value: Union[bool, float, str, Tuple[Any, ParameterValueType]] = 0,
-        id: str = str(uuid.uuid4()),
+        reference_value: float = 0,
+        id: Optional[str] = None,
         const: bool = False,
         deterministic_resolution: Union[ParameterResolution, str] = ParameterResolution.CONTINUOUS,
         range: Union[Sequence[float, float], Sequence[Sequence[float]]] = (-1, 1),
@@ -2133,28 +2141,29 @@ class MixedParameter(Parameter):
 
         Parameters
         ----------
-        name: str
-            Name of the parameter.
-        reference_value: Union[bool, float, str, None, Tuple[Any, ParameterValueType]], optional
-            Parameter's reference value.
+        name: str, optional
+            Name of the parameter. By default ``""``.
+        reference_value: float, optional
+            Parameter's reference value. By default ``0``.
         id: str, optional
-            Parameter's unique id.
+            Parameter's unique id. A unique Id is automatically generated if not specified.
         const: bool, optional
-            Determines whether is parameter constant.
+            Determines whether is parameter constant. By default ``False``.
         deterministic_resolution: Union[ParameterResolution, str], optional
-            Parameter's deterministic resolution.
+            Parameter's deterministic resolution. By default ``ParameterResolution.CONTINUOUS``.
         range: Union[Sequence[float, float], Sequence[Sequence[float]]], optional
-            Either 2 values specifying range or list of discrete values.
+            Either 2 values specifying range or list of discrete values. By default ``(-1, 1)``.
         stochastic_resolution: Union[ParameterResolution, str], optional
             Parameter's stochastic resolution.
+            By default ``ParameterResolution.MARGINALDISTRIBUTION``.
         distribution_type: Union[DistributionType, str], optional
-            Parameter's distribution type.
+            Parameter's distribution type. By default ``DistributionType.NORMAL``.
         distribution_parameters: Optional[Sequence[float, ...]], optional
-            Distribution's parameters.
+            Distribution's parameters. By default ``None``.
         statistical_moments: Optional[Sequence[float, ...]], optional
-            Distribution's statistical moments.
+            Distribution's statistical moments. By default ``None``.
         cov: Optional[float], optional
-            Distribution's COV.
+            Distribution's COV. By default ``None``.
         """
         super().__init__(
             name=name,
@@ -2165,10 +2174,7 @@ class MixedParameter(Parameter):
         )
         self.__reference_value_type = ParameterValueType.REAL
         self.deterministic_resolution = deterministic_resolution
-        if not isinstance(range[0], (float, int)):
-            self.range = tuple(tuple(range[0]))
-        else:
-            self.range = tuple(range)
+        self.range = range
         self.stochastic_resolution = stochastic_resolution
         self.distribution_type = distribution_type
         self.distribution_parameters = (
@@ -2392,78 +2398,6 @@ class MixedParameter(Parameter):
         """
         self.__cov = cov
 
-    @staticmethod
-    def from_dict(par_dict: dict) -> MixedParameter:
-        """Create an instance of the ``MixedParameter`` class from optiSLang output.
-
-        Parameters
-        ----------
-        par_dict : dict
-            Output from the optiSLang server.
-
-        Returns
-        -------
-        MixedParameter
-            Instance of the ``MixedParameter`` class.
-        """
-        # create `Parameter` instance with mandatory parameters
-        name = par_dict["name"]
-        reference_value = par_dict["reference_value"]
-        id = par_dict["id"]
-        const = par_dict["const"]
-        deterministic_resolution = ParameterResolution.from_str(
-            par_dict.get("deterministic_property", {}).get("kind", {}).get("value", None)
-        )
-        stochastic_resolution = ParameterResolution.from_str(
-            par_dict.get("stochastic_property", {}).get("kind", {}).get("value", None)
-        )
-
-        # range for continuous parameters, stored as (val1, val2)
-        if deterministic_resolution == ParameterResolution.CONTINUOUS:
-            range = (
-                par_dict.get("deterministic_property", {}).get("lower_bound", None),
-                par_dict.get("deterministic_property", {}).get("upper_bound", None),
-            )
-        # discrete values otherwise, stored as ([val1, val2, val3 ..])
-        else:
-            range = (par_dict.get("deterministic_property", {}).get("discrete_states", None),)
-
-        distribution_type = DistributionType.from_str(
-            par_dict.get("stochastic_property", {}).get("type", {}).get("value", None)
-        )
-
-        distribution_parameters_from_dict = par_dict.get("stochastic_property", {}).get(
-            "distribution_parameters", None
-        )
-        if distribution_parameters_from_dict is not None:
-            distribution_parameters = tuple(distribution_parameters_from_dict)
-        else:
-            distribution_parameters = None
-
-        statistical_moments_from_dict = par_dict.get("stochastic_property", {}).get(
-            "statistical_moments", None
-        )
-        if statistical_moments_from_dict is not None:
-            statistical_moments = tuple(statistical_moments_from_dict)
-        else:
-            statistical_moments = None
-
-        cov = par_dict.get("stochastic_property", {}).get("cov", None)
-
-        return MixedParameter(
-            name=name,
-            reference_value=reference_value,
-            id=id,
-            const=const,
-            deterministic_resolution=deterministic_resolution,
-            stochastic_resolution=stochastic_resolution,
-            range=range,
-            distribution_type=distribution_type,
-            distribution_parameters=distribution_parameters,
-            statistical_moments=statistical_moments,
-            cov=cov,
-        )
-
     def to_dict(self) -> dict:
         """Convert an instance of the ``MixedParameter`` class to a dictionary.
 
@@ -2496,7 +2430,6 @@ class MixedParameter(Parameter):
                 "domain_type": {"value": self.reference_value_type.name.lower()},
                 "kind": {"value": self.deterministic_resolution.name.lower()},
             },
-            "id": self.id,
             "modifiable": False,
             "name": self.name,
             "reference_value": self.reference_value if self.reference_value else 0,
@@ -2505,6 +2438,9 @@ class MixedParameter(Parameter):
             "type": {"value": self.type.name.lower()},
             "unit": "",
         }
+
+        if self.id is not None:
+            output_dict["id"] = self.id
 
         output_dict["deterministic_property"].update(range_dict)
         return output_dict
@@ -2536,7 +2472,7 @@ class OptimizationParameter(Parameter):
         name: str = "",
         reference_value: Union[bool, float, str, None] = 0,
         reference_value_type: ParameterValueType = ParameterValueType.REAL,
-        id: str = str(uuid.uuid4()),
+        id: Optional[str] = None,
         const: bool = False,
         deterministic_resolution: Union[ParameterResolution, str] = ParameterResolution.CONTINUOUS,
         range: Union[Sequence[float, float], Sequence[Sequence[float]]] = (-1, 1),
@@ -2545,20 +2481,20 @@ class OptimizationParameter(Parameter):
 
         Parameters
         ----------
-        name: str
-            Name of the parameter.
+        name: str, optional
+            Name of the parameter. By default ``""``.
         reference_value: Union[bool, float, str, None], optional
-            Parameter's reference value.
+            Parameter's reference value. By default ``0``.
         reference_value_type: ParameterValueType, optional
-            Type of the reference value.
+            Type of the reference value. By default ``ParameterValueType.REAL``.
         id: str, optional
-            Parameter's unique id.
+            Parameter's unique id. A unique Id is automatically generated if not specified.
         const: bool, optional
-            Determines whether is parameter constant.
+            Determines whether is parameter constant. By default ``False``.
         deterministic_resolution: Union[ParameterResolution, str], optional
-            Parameter's deterministic resolution.
+            Parameter's deterministic resolution. By default ``ParameterResolution.CONTINUOUS``.
         range: Union[Sequence[float, float], Sequence[Sequence[float]]], optional
-            Either 2 values specifying range or list of discrete values.
+            Either 2 values specifying range or list of discrete values. By default ``(-1, 1)``.
         """
         super().__init__(
             name=name,
@@ -2569,10 +2505,7 @@ class OptimizationParameter(Parameter):
         )
         self.reference_value_type = reference_value_type
         self.deterministic_resolution = deterministic_resolution
-        if not isinstance(range[0], (float, int)):
-            self.range = tuple(tuple(range[0]))
-        else:
-            self.range = tuple(range)
+        self.range = range
 
     def __eq__(self, other) -> bool:
         r"""Compare properties of two instances of the ``OptimizationParameter`` class.
@@ -2685,53 +2618,10 @@ class OptimizationParameter(Parameter):
         range: Union[Sequence[float, float], Sequence[Sequence[float]]]
             Range of the optimization parameter.
         """
-        if not isinstance(range[0], (int, float, str, bool)):
+        if not isinstance(range[0], (float, int)):
             self.__range = (tuple(range[0]),)
         else:
             self.__range = tuple(range)
-
-    @staticmethod
-    def from_dict(par_dict: dict) -> OptimizationParameter:
-        """Create an instance of the ``OptimizationParameter`` class from optiSLang output.
-
-        Parameters
-        ----------
-        par_dict : dict
-            Output from optiSLang server.
-
-        Returns
-        -------
-        OptimizationParameter
-            Instance of the ``OptimizationParameter`` class.
-        """
-        name = par_dict["name"]
-        id = par_dict["id"]
-        const = par_dict["const"]
-        reference_value_type = ParameterValueType.from_str(
-            par_dict.get("deterministic_property", {}).get("domain_type", {}).get("value", None)
-        )
-        reference_value = par_dict["reference_value"]
-        deterministic_resolution = ParameterResolution.from_str(
-            par_dict.get("deterministic_property", {}).get("kind", {}).get("value", None)
-        )
-        # range for continuous parameters, stored as (val1, val2)
-        if deterministic_resolution == ParameterResolution.CONTINUOUS:
-            range = (
-                par_dict.get("deterministic_property", {}).get("lower_bound", None),
-                par_dict.get("deterministic_property", {}).get("upper_bound", None),
-            )
-        # discrete values otherwise, stored as ([val1, val2, val3 ..])
-        else:
-            range = (par_dict.get("deterministic_property", {}).get("discrete_states", None),)
-        return OptimizationParameter(
-            name=name,
-            reference_value=reference_value,
-            reference_value_type=reference_value_type,
-            id=id,
-            const=const,
-            deterministic_resolution=deterministic_resolution,
-            range=range,
-        )
 
     def to_dict(self) -> dict:
         """Convert an instance of the ``OptimizationParameter`` to a dictionary.
@@ -2755,7 +2645,6 @@ class OptimizationParameter(Parameter):
                 "domain_type": {"value": self.reference_value_type.name.lower()},
                 "kind": {"value": self.deterministic_resolution.name.lower()},
             },
-            "id": self.id,
             "modifiable": False,
             "name": self.name,
             "reference_value": self.reference_value,
@@ -2763,6 +2652,8 @@ class OptimizationParameter(Parameter):
             "type": {"value": self.type.name.lower()},
             "unit": "",
         }
+        if self.id is not None:
+            output_dict["id"] = self.id
         output_dict["deterministic_property"].update(range_dict)
         return output_dict
 
@@ -2786,8 +2677,8 @@ class StochasticParameter(Parameter):
     def __init__(
         self,
         name: str = "",
-        reference_value: Union[bool, float, str, None] = 0,
-        id: str = str(uuid.uuid4()),
+        reference_value: float = 0,
+        id: Optional[str] = None,
         const: bool = False,
         stochastic_resolution: Union[
             ParameterResolution, str
@@ -2801,18 +2692,19 @@ class StochasticParameter(Parameter):
 
         Parameters
         ----------
-        name: str
-            Name of the parameter.
-        reference_value: Union[bool, float, str, None, Tuple[Any, ParameterValueType]], optional
-            Parameter's reference value.
+        name: str, optional
+            Name of the parameter. By default ``""``.
+        reference_value: float, optional
+            Parameter's reference value. By default ``0``.
         id: str, optional
-            Parameter's unique id.
+            Parameter's unique id. A unique Id is automatically generated if not specified.
         const: bool, optional
-            Determines whether is parameter constant.
+            Determines whether is parameter constant. By default ``False``.
         stochastic_resolution: Union[ParameterResolution, str], optional
             Parameter's stochastic resolution.
+            By default ``ParameterResolution.MARGINALDISTRIBUTION``.
         distribution_type: Union[DistributionType, str], optional
-            Parameter's distribution type.
+            Parameter's distribution type. By default ``DistributionType.NORMAL``.
         distribution_parameters: Optional[Sequence[float, ...]], optional
             Distribution's parameters. Defaults to ``None``.
         statistical_moments: Optional[Sequence[float, ...]], optional
@@ -2997,57 +2889,6 @@ class StochasticParameter(Parameter):
         """
         self.__cov = cov
 
-    @staticmethod
-    def from_dict(par_dict: dict) -> StochasticParameter:
-        """Create an instance of the ``StochasticParameter`` class from the optiSLang server output.
-
-        Parameters
-        ----------
-        par_dict : dict
-            Output from the optiSLang server.
-
-        Returns
-        -------
-        StochasticParameter
-            Instance of the ``StochasticParameter`` class.
-        """
-        name = par_dict["name"]
-        reference_value = par_dict["reference_value"]
-        id = par_dict["id"]
-        const = par_dict["const"]
-        stochastic_resolution = ParameterResolution.from_str(
-            par_dict.get("stochastic_property", {}).get("kind", {}).get("value", None)
-        )
-        distribution_type = DistributionType.from_str(
-            par_dict.get("stochastic_property", {}).get("type", {}).get("value", None)
-        )
-        distribution_parameters_from_dict = par_dict.get("stochastic_property", {}).get(
-            "distribution_parameters", None
-        )
-        if distribution_parameters_from_dict is not None:
-            distribution_parameters = tuple(distribution_parameters_from_dict)
-        else:
-            distribution_parameters = None
-        statistical_moments_from_dict = par_dict.get("stochastic_property", {}).get(
-            "statistical_moments", None
-        )
-        if statistical_moments_from_dict is not None:
-            statistical_moments = tuple(statistical_moments_from_dict)
-        else:
-            statistical_moments = None
-        cov = par_dict.get("stochastic_property", {}).get("cov", None)
-        return StochasticParameter(
-            name=name,
-            reference_value=reference_value,
-            id=id,
-            const=const,
-            stochastic_resolution=stochastic_resolution,
-            distribution_type=distribution_type,
-            distribution_parameters=distribution_parameters,
-            statistical_moments=statistical_moments,
-            cov=cov,
-        )
-
     def to_dict(self) -> dict:
         """Convert an instance of the ``StochasticParameter`` to dictionary.
 
@@ -3066,10 +2907,9 @@ class StochasticParameter(Parameter):
             stochastic_property["statistical_moments"] = self.statistical_moments
         if self.cov is not None:
             stochastic_property["cov"] = self.cov
-        return {
+        output_dict = {
             "active": True,
             "const": self.const if self.const is not None else False,
-            "id": self.id,
             "modifiable": False,
             "name": self.name,
             "reference_value": self.reference_value,
@@ -3078,6 +2918,9 @@ class StochasticParameter(Parameter):
             "type": {"value": self.type.name.lower()},
             "unit": "",
         }
+        if self.id is not None:
+            output_dict["id"] = self.id
+        return output_dict
 
     def __str__(self) -> str:
         """Return information about the parameter."""
@@ -3096,7 +2939,10 @@ class StochasticParameter(Parameter):
         )
 
 
-# Response
+# endregion
+
+
+# region Response
 class Response:
     """Stores response data."""
 
@@ -3112,10 +2958,10 @@ class Response:
 
         Parameters
         ----------
-        name: str
-            Response name.
+        name: str, optional
+            Response name. By default ``""``.
         reference_value: Union[tuple, bool, float, complex, list, dict, None], optional
-            Reference value of the response.
+            Reference value of the response. By default ``None``.
         reference_value_type: Optional[ResponseValueType], optional
             Type of the response reference value. Defaults to ``None``.
         """
@@ -3318,213 +3164,10 @@ class Response:
         )
 
 
-# MANAGERS:
+# endregion
 
 
-class CriteriaManager:
-    """Contains methods for obtaining criteria."""
-
-    def __init__(self, uid: str, osl_server: OslServer) -> None:
-        """Initialize a new instance of the ``CriteriaManager`` class.
-
-        Parameters
-        ----------
-        uid: str
-            Unique ID of the instance.
-        osl_server: OslServer
-            Object providing access to the optiSLang server.
-        """
-        self.__uid = uid
-        self.__osl_server = osl_server
-
-    def __str__(self) -> str:
-        """Get the unique ID of the ``CriteriaManager`` instance."""
-        return f"CriteriaManager uid: {self.__uid}"
-
-    def get_criteria(self) -> Tuple[Criterion, ...]:
-        """Get the criteria of the system.
-
-        Returns
-        -------
-        Tuple[Criterion, ...]
-            Tuple of the criterion for the system.
-
-        Raises
-        ------
-        OslCommunicationError
-            Raised when an error occurs while communicating with the server.
-        OslCommandError
-            Raised when a command or query fails.
-        TimeoutError
-            Raised when the timeout float value expires.
-        """
-        props = self.__osl_server.get_actor_properties(uid=self.__uid)
-        container = props.get("properties", {}).get("Criteria", {}).get("sequence", [{}])
-        criteria = []
-        for criterion_dict in container:
-            criteria.append(Criterion.from_dict(criterion_dict))
-        return tuple(criteria)
-
-    def get_criteria_names(self) -> Tuple[str, ...]:
-        """Get all criteria names.
-
-        Returns
-        -------
-        Tuple[str, ...]
-            Tuple of all criteria names.
-
-        Raises
-        ------
-        OslCommunicationError
-            Raised when an error occurs while communicating with the server.
-        OslCommandError
-            Raised when a command or query fails.
-        TimeoutError
-            Raised when the timeout float value expires.
-        """
-        props = self.__osl_server.get_actor_properties(uid=self.__uid)
-        container = props.get("properties", {}).get("Criteria", {}).get("sequence", [{}])
-        criteria_list = []
-        for par in container:
-            criteria_list.append(par["First"])
-        return tuple(criteria_list)
-
-
-class ParameterManager:
-    """Contains methods for obtaining parameters."""
-
-    def __init__(self, uid: str, osl_server: OslServer) -> None:
-        """Initialize a new instance of the ``ParameterManager`` class.
-
-        Parameters
-        ----------
-        uid: str
-            Unique ID of the instance.
-        osl_server: OslServer
-            Object providing access to the optiSLang server.
-        """
-        self.__uid = uid
-        self.__osl_server = osl_server
-
-    def __str__(self) -> str:
-        """Get the unique ID of the ``ParameterManager`` instance."""
-        return f"ParameterManager uid: {self.__uid}"
-
-    def get_parameters(self) -> Tuple[Parameter, ...]:
-        """Get the parameters of the system.
-
-        Returns
-        -------
-        Tuple[Parameter, ...]
-            Tuple of the parameters for the system.
-
-        Raises
-        ------
-        OslCommunicationError
-            Raised when an error occurs while communicating with the server.
-        OslCommandError
-            Raised when a command or query fails.
-        TimeoutError
-            Raised when the timeout float value expires.
-        """
-        props = self.__osl_server.get_actor_properties(uid=self.__uid)
-        container = props["properties"].get("ParameterManager", {}).get("parameter_container", [])
-        parameters = []
-        for par_dict in container:
-            parameters.append(Parameter.from_dict(par_dict))
-        return tuple(parameters)
-
-    def get_parameters_names(self) -> Tuple[str, ...]:
-        """Get all parameter names.
-
-        Returns
-        -------
-        Tuple[str, ...]
-            Tuple of all parameter names.
-
-        Raises
-        ------
-        OslCommunicationError
-            Raised when an error occurs while communicating with the server.
-        OslCommandError
-            Raised when a command or query fails.
-        TimeoutError
-            Raised when the timeout float value expires.
-        """
-        props = self.__osl_server.get_actor_properties(uid=self.__uid)
-        container = props["properties"].get("ParameterManager", {}).get("parameter_container", [])
-        parameters_list = []
-        for par in container:
-            parameters_list.append(par["name"])
-        return tuple(parameters_list)
-
-
-class ResponseManager:
-    """Contains methods for obtaining responses."""
-
-    def __init__(self, uid: str, osl_server: OslServer) -> None:
-        """Initialize a new instance of the ``ResponseManager`` class.
-
-        Parameters
-        ----------
-        uid: str
-            Unique ID of the instance.
-        osl_server: OslServer
-            Object providing access to the optiSLang server.
-        """
-        self.__uid = uid
-        self.__osl_server = osl_server
-
-    def __str__(self) -> str:
-        """Get the unique ID of the ``ResponseManager`` instance."""
-        return f"ResponseManager uid: {self.__uid}"
-
-    def get_responses(self) -> Tuple[Response, ...]:
-        """Get the responses of the system.
-
-        Returns
-        -------
-        Tuple[Criterion, ...]
-            Tuple of the responses for the system.
-
-        Raises
-        ------
-        OslCommunicationError
-            Raised when an error occurs while communicating with the server.
-        OslCommandError
-            Raised when a command or query fails.
-        TimeoutError
-            Raised when the timeout float value expires.
-        """
-        info = self.__osl_server.get_actor_info(uid=self.__uid)
-        container = info.get("responses", {})
-        responses = []
-        for key, res_dict in container.items():
-            responses.append(Response.from_dict(key, res_dict))
-        return tuple(responses)
-
-    def get_responses_names(self) -> Tuple[str, ...]:
-        """Get all responses names.
-
-        Returns
-        -------
-        Tuple[str, ...]
-            Tuple of all responses names.
-
-        Raises
-        ------
-        OslCommunicationError
-            Raised when an error occurs while communicating with the server.
-        OslCommandError
-            Raised when a command or query fails.
-        TimeoutError
-            Raised when the timeout float value expires.
-        """
-        info = self.__osl_server.get_actor_info(uid=self.__uid)
-        container = info.get("responses", {})
-        return tuple(container.keys())
-
-
+# region Design
 class Design:
     """Stores information about the design point, exclusively for the root system.
 
@@ -3535,40 +3178,40 @@ class Design:
         Iterable[Union[Parameter, DesignVariable]],
     ], optional
         Dictionary of parameters and their values {'name': value, ...}
-        or an iterable of design variables or parameters.
+        or an iterable of design variables or parameters. By default ``[]``.
     constraints : Union[
         Mapping[str, Union[bool, str, float, None]],
         Iterable[Union[ConstraintCriterion, DesignVariable]],
     ], optional
         Dictionary of constraint criteria and their values {'name': value, ...}
-        or an iterable of design variables or constraint criteria.
+        or an iterable of design variables or constraint criteria. By default ``[]``.
     limit_states : Union[
         Mapping[str, Union[bool, str, float, None]],
         Iterable[Union[Criterion, DesignVariable]],
     ], optional
         Dictionary of limit state criteria and their values {'name': value, ...}
-        or an iterable of design variables or limist state criteria.
+        or an iterable of design variables or limist state criteria. By default ``[]``.
     objectives : Union[
         Mapping[str, Union[bool, str, float, None]],
         Iterable[Union[Criterion, DesignVariable]],
     ], optional
         Dictionary of objective criteria and their values {'name': value, ...}
-        or an iterable of design variables or objective criteria.
+        or an iterable of design variables or objective criteria. By default ``[]``.
     variables : Union[
         Mapping[str, Union[bool, str, float, None]],
         Iterable[Union[Criterion, DesignVariable]],
     ], optional
         Dictionary of variable criteria and their values {'name': value, ...}
-        or an iterable of design variables or variable criteria.
+        or an iterable of design variables or variable criteria. By default ``[]``.
     responses : Union[
         Mapping[str, Union[bool, str, float, None]],
         Iterable[Union[Response, DesignVariable]],
     ], optional
         Dictionary of responses and their values {'name': value, ...}
-        or an iterable of design variables or responses.
-    feasibility: Union[bool, None], optional
-        Determines whether design is feasible, defaults to `None` (no info about feasibility)
-    design_id: Union[int, None], optional
+        or an iterable of design variables or responses. By default `[]``.
+    feasibility: Optional[bool], optional
+        Determines whether design is feasible, defaults to `None` (no info about feasibility).
+    design_id: Optional[int], optional
         Design's id, defaults to `None`.
     status: DesignStatus, optional
         Design's status, defaults to `DesignStatus.IDLE`.
@@ -3612,8 +3255,8 @@ class Design:
             Mapping[str, Union[bool, str, float, None]],
             Iterable[Union[Response, DesignVariable]],
         ] = [],
-        feasibility: Union[bool, None] = None,
-        design_id: Union[int, None] = None,
+        feasibility: Optional[bool] = None,
+        design_id: Optional[int] = None,
         status: DesignStatus = DesignStatus.IDLE,
     ) -> None:
         """Initialize a new instance of the ``Design`` class."""
@@ -3642,35 +3285,6 @@ class Design:
         # responses
         if responses:
             self.__responses = self.__parse_responses_to_designvariables(responses=responses)
-
-    def __str__(self) -> str:
-        """Return information about the design."""
-        return (
-            f"ID: {self.id}\n"
-            f"Status: {self.__status.name}\n"
-            f"Feasibility: {self.__feasibility}\n"
-            f"Criteria:\n"
-            f"   constraints: {self.constraints_names}\n"
-            f"   objectives: {self.objectives_names}\n"
-            f"   limit_states: {self.limit_states_names}\n"
-            f"Parameters: {self.parameters_names}\n"
-            f"Responses: {self.responses_names}\n"
-            f"Variables: {self.variables_names}\n"
-        )
-
-    def __deepcopy__(self, memo) -> Design:
-        """Return deep copy of given Design."""
-        return Design(
-            parameters=copy.deepcopy(self.parameters),
-            constraints=copy.deepcopy(self.constraints),
-            limit_states=copy.deepcopy(self.limit_states),
-            objectives=copy.deepcopy(self.objectives),
-            variables=copy.deepcopy(self.variables),
-            responses=copy.deepcopy(self.responses),
-            feasibility=self.feasibility,
-            design_id=self.id,
-            status=self.status,
-        )
 
     @property
     def constraints(self) -> Tuple[DesignVariable, ...]:
@@ -3765,6 +3379,7 @@ class Design:
             limit_states=self.__reset_output_value(copy.deepcopy(self.limit_states)),
             objectives=self.__reset_output_value(copy.deepcopy(self.objectives)),
             variables=self.__reset_output_value(copy.deepcopy(self.variables)),
+            responses=self.__reset_output_value(copy.deepcopy(self.responses)),
         )
 
     def remove_parameter(self, name: str) -> None:
@@ -3780,14 +3395,14 @@ class Design:
             self.__parameters.pop(index)
 
     def __reset(self) -> None:
-        """Reset the status and feasibilit, clear output values."""
+        """Reset the status and feasibility, clear output values."""
         self.__status = DesignStatus.IDLE
         self.__feasibility = None
-        self.__constraints.clear()
-        self.__limit_states.clear()
-        self.__objectives.clear()
-        self.__responses.clear()
-        self.__variables.clear()
+        self.__reset_output_value(self.constraints)
+        self.__reset_output_value(self.limit_states)
+        self.__reset_output_value(self.objectives)
+        self.__reset_output_value(self.variables)
+        self.__reset_output_value(self.responses)
 
     def set_parameter(
         self,
@@ -3877,60 +3492,6 @@ class Design:
             self.__parameters[index].value = value
         else:
             self.__parameters.append(DesignVariable(name=name, value=value))
-
-    def _receive_results(self, results: Dict) -> None:
-        """Store received results.
-
-        Parameters
-        ----------
-        results: Dict
-            Output from the ``evaluate_design`` server command.
-        """
-        self.__reset()
-        self.__id = results["result_design"]["hid"]
-        self.__feasibility = results["result_design"]["feasible"]
-        self.__status = DesignStatus.from_str(results["result_design"]["status"])
-
-        # constraint
-        for position, constraint in enumerate(results["result_design"]["constraint_names"]):
-            self.__constraints.append(
-                DesignVariable(
-                    name=constraint,
-                    value=results["result_design"]["constraint_values"][position],
-                )
-            )
-        # limit state
-        for position, limit_state in enumerate(results["result_design"]["limit_state_names"]):
-            self.__limit_states.append(
-                DesignVariable(
-                    name=limit_state,
-                    value=results["result_design"]["limit_state_values"][position],
-                )
-            )
-        # objective
-        for position, objective in enumerate(results["result_design"]["objective_names"]):
-            self.__objectives.append(
-                DesignVariable(
-                    name=objective,
-                    value=results["result_design"]["objective_values"][position],
-                )
-            )
-        # responses
-        for position, response in enumerate(results["result_design"]["response_names"]):
-            self.__responses.append(
-                DesignVariable(
-                    name=response,
-                    value=results["result_design"]["response_values"][position],
-                )
-            )
-        # variables
-        for position, variable in enumerate(results["result_design"]["variable_names"]):
-            self.__variables.append(
-                DesignVariable(
-                    name=variable,
-                    value=results["result_design"]["variable_values"][position],
-                )
-            )
 
     def __find_name_index(self, name: str, type_: str) -> Union[int, None]:
         """Find the index of a criterion, parameter, response, or variable by name.
@@ -4115,13 +3676,13 @@ class Design:
                 responses_list.append(DesignVariable(name=name, value=value))
         else:
             for response in responses:
-                if isinstance(response, (Response, DesignVariable)):
+                if isinstance(response, Response):
                     value = response.reference_value
-                    responses_list.append(
-                        DesignVariable(name=response.name, value=response.reference_value)
-                    )
+                elif isinstance(response, DesignVariable):
+                    value = response.value
                 else:
                     raise TypeError(f"Response type: ``{type(response)}`` is not supported.")
+                responses_list.append(DesignVariable(name=response.name, value=value))
         return responses_list
 
     def __reset_output_value(self, output: Iterable[DesignVariable]) -> None:
@@ -4137,3 +3698,8 @@ class Design:
         else:
             for item in output:
                 item.value = None
+
+
+# endregion
+
+# endregion

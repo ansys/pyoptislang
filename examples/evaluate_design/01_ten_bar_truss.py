@@ -64,11 +64,13 @@ This image shows the workflow:
 
 from pathlib import Path
 import tempfile
+from typing import TYPE_CHECKING, List
 
 import matplotlib.pyplot as plt
 
 from ansys.optislang.core import Optislang
 import ansys.optislang.core.examples as examples
+from ansys.optislang.core.project_parametric import Design
 
 #########################################################
 # Create optiSLang instance
@@ -79,32 +81,34 @@ example_path = examples.get_files("ten_bar_truss")[1][0]
 tmp_dir = Path(tempfile.mkdtemp())
 file_path = tmp_dir / "evaluate_design_example.opf"
 
-osl = Optislang(project_path=example_path)
-osl.save_as(file_path)
-print(osl.get_working_dir())
+osl = Optislang(project_path=example_path, ini_timeout=60)
+application = osl.application
+application.save_as(file_path)
+project = application.project
+print(project.get_working_dir())
 
 #########################################################
 # Evaluate reference design
 # ~~~~~~~~~~~~~~~~~~~~~~~~~
 # Get the reference design, evaluate it, and extract the results.
 
-rs = osl.project.root_system
-parameters_count = len(rs.parameter_manager.get_parameters_names())
+root_system = project.root_system
+parameters_count = len(root_system.parameter_manager.get_parameters_names())
 try_decrease_param = [True for i in range(parameters_count)]
-successfull_designs = []
-unsuccessfull_designs = []
+successful_designs: List[Design] = []
+unsuccessful_designs: List[Design] = []
 
-design = rs.get_reference_design()
-rs.evaluate_design(design)
-if design.feasibility:
-    successfull_designs.append(design)
+design = root_system.get_reference_design()
+evaluated_design = root_system.evaluate_design(design)
+if evaluated_design.feasibility:
+    successful_designs.append(evaluated_design)
 else:
     raise ValueError("Constraints not satisfied for reference design, do not start example.")
 
-objectives = {obj.name: obj.value for obj in design.objectives}
-responses = {resp.name: resp.value for resp in design.responses}
-plot_mass_successfull = [(1, objectives["obj"])]
-plot_mass_unsuccessfull = []
+objectives = {obj.name: obj.value for obj in evaluated_design.objectives}
+responses = {resp.name: resp.value for resp in evaluated_design.responses}
+plot_mass_successful = [(1, objectives["obj"])]
+plot_mass_unsuccessful = []
 
 plot_max_stress_lc1 = [abs(max(responses["stress"], key=abs))]
 plot_max_stress_lc2 = [abs(max(responses["stress_lc2"], key=abs))]
@@ -123,7 +127,7 @@ while True in try_decrease_param:
         if not try_decrease_param[j]:
             continue
         design_count += 1
-        design = successfull_designs[-1].copy_unevaluated_design()
+        design = successful_designs[-1].copy_unevaluated_design()
         parameters = design.parameters
         parameter_value = parameters[j].value
         if parameter_value > 1:
@@ -131,18 +135,18 @@ while True in try_decrease_param:
         else:
             try_decrease_param[j] = False
             continue
-        rs.evaluate_design(design)
-        if design.feasibility:
-            successfull_designs.append(design)
-            objectives = {obj.name: obj.value for obj in design.objectives}
-            responses = {resp.name: resp.value for resp in design.responses}
-            plot_mass_successfull.append((design_count, objectives["obj"]))
+        evaluated_design = root_system.evaluate_design(design)
+        if evaluated_design.feasibility:
+            successful_designs.append(evaluated_design)
+            objectives = {obj.name: obj.value for obj in evaluated_design.objectives}
+            responses = {resp.name: resp.value for resp in evaluated_design.responses}
+            plot_mass_successful.append((design_count, objectives["obj"]))
         else:
-            unsuccessfull_designs.append(design)
-            objectives = {obj.name: obj.value for obj in design.objectives}
-            responses = {resp.name: resp.value for resp in design.responses}
+            unsuccessful_designs.append(evaluated_design)
+            objectives = {obj.name: obj.value for obj in evaluated_design.objectives}
+            responses = {resp.name: resp.value for resp in evaluated_design.responses}
             try_decrease_param[j] = False
-            plot_mass_unsuccessfull.append((design_count, objectives["obj"]))
+            plot_mass_unsuccessful.append((design_count, objectives["obj"]))
         plot_max_stress_lc1.append(abs(max(responses["stress"], key=abs)))
         plot_max_stress_lc2.append(abs(max(responses["stress_lc2"], key=abs)))
 
@@ -152,7 +156,7 @@ while True in try_decrease_param:
 # From the last successful design, extract cross sectional areas, objective,
 # and constraints.
 
-best_design = successfull_designs[-1]
+best_design = successful_designs[-1]
 print("*-----------BEST-DESIGN-PARAMETERS-------------*")
 for parameter in best_design.parameters:
     print(parameter.name, parameter.value)
@@ -176,14 +180,14 @@ fig, axs = plt.subplots(2)
 fig.suptitle("Optimization of ten bar truss cross section areas")
 
 s1 = axs[0].scatter(
-    [xy[0] for xy in plot_mass_successfull],
-    [xy[1] for xy in plot_mass_successfull],
+    [xy[0] for xy in plot_mass_successful],
+    [xy[1] for xy in plot_mass_successful],
     color="g",
     label="successful",
 )
 s2 = axs[0].scatter(
-    [xy[0] for xy in plot_mass_unsuccessfull],
-    [xy[1] for xy in plot_mass_unsuccessfull],
+    [xy[0] for xy in plot_mass_unsuccessful],
+    [xy[1] for xy in plot_mass_unsuccessful],
     color="r",
     label="unsuccessful",
 )

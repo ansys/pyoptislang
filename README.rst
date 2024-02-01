@@ -178,8 +178,8 @@ connection:
 
     osl = Optislang()
     file_path = r"C:\Users\Username\my_scripts\myscript.py"
-    osl.run_python_file(path=file_path)
-    osl.save_copy("MyNewProject.opf")
+    osl.application.project.run_python_file(path=file_path)
+    osl.application.save_copy("MyNewProject.opf")
     osl.dispose()
 
 

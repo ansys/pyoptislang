@@ -5,7 +5,6 @@ Criteria
 
 .. autosummary::
    :toctree: _autosummary
-   :template: class.rst
 
    ConstraintCriterion
    ObjectiveCriterion
