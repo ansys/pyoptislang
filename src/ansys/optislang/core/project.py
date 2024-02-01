@@ -20,65 +20,71 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-"""Contains class ProjectSystem."""
+"""Contains abstract ``Project`` class."""
 from __future__ import annotations
 
+from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import TYPE_CHECKING, Tuple
-
-from ansys.optislang.core.io import RegisteredFile, RegisteredFileUsage
-from ansys.optislang.core.nodes import RootSystem
+from typing import TYPE_CHECKING, Sequence, Tuple, Union
 
 if TYPE_CHECKING:
-    from ansys.optislang.core.osl_server import OslServer
-    from ansys.optislang.core.project_parametric import (
-        CriteriaManager,
-        Design,
-        ParameterManager,
-        ResponseManager,
-    )
+    from ansys.optislang.core.io import RegisteredFile
+    from ansys.optislang.core.nodes import RootSystem
+    from ansys.optislang.core.project_parametric import Design
 
 
-class Project:
-    """Provides the class containing the root system and queries related to the loaded project."""
+class Project(ABC):
+    """Base class for classes which operate with active project."""
 
-    def __init__(self, osl_server: OslServer, uid: str) -> None:
-        """Initialize an instance of the ``Project`` class.
+    @abstractmethod
+    def __init__(self):  # pragma: no cover
+        """``Project`` class is an abstract base class and cannot be instantiated."""
+        pass
 
-        Parameters
-        ----------
-        osl_server: OslServer
-            Instance of ``OslServer``.
-        uid: str
+    @property
+    @abstractmethod
+    def root_system(self) -> RootSystem:  # pragma: no cover
+        """Instance of the ``RootSystem`` class.
+
+        Returns
+        -------
+        RootSystem
+            Loaded project's root system.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        pass
+
+    @property
+    @abstractmethod
+    def uid(self) -> str:  # pragma: no cover
+        """Unique ID of the optiSLang project.
+
+        Returns
+        -------
+        str
             Unique ID of the loaded project.
         """
-        self.__osl_server = osl_server
-        self.__uid = uid
-        self.__root_system = RootSystem(
-            uid=uid,
-            osl_server=self.__osl_server,
-        )
+        pass
 
-    def __str__(self):
-        """Return formatted string."""
-        return (
-            f"Name: {self.get_name()}\n"
-            f"Description: {self.get_description()}\n"
-            f"Status: {self.get_status()}\n"
-            f"Location: {str(self.get_location())}"
-        )
-
-    def evaluate_design(self, design: Design, update_design: bool = True) -> Design:
+    @abstractmethod
+    def evaluate_design(
+        self,
+        design: Design,
+    ) -> Design:  # pragma: no cover
         """Evaluate a design.
 
         Parameters
         ----------
         design: Design
             Instance of a ``Design`` class with defined parameters.
-        update_design: bool, optional
-            Determines whether given design should be updated and returned or new instance
-            should be created. When ``True`` given design is updated and returned, otherwise
-            new ``Design`` is created. Defaults to ``True``.
 
         Returns
         -------
@@ -94,14 +100,15 @@ class Project:
         TimeoutError
             Raised when the timeout float value expires.
         """
-        return self.root_system.evaluate_design(design=design, update_design=update_design)
+        pass
 
-    def get_description(self) -> str:
+    @abstractmethod
+    def get_description(self) -> Union[str, None]:  # pragma: no cover
         """Get the description of the optiSLang project.
 
         Returns
         -------
-        str
+        Union[str, None]
             Description of the optiSLang project. If no project is loaded in optiSLang,
             ``None`` is returned.
 
@@ -114,9 +121,10 @@ class Project:
         TimeoutError
             Raised when the timeout float value expires.
         """
-        return self.__osl_server.get_project_description()
+        pass
 
-    def get_location(self) -> Path:
+    @abstractmethod
+    def get_location(self) -> Path:  # pragma: no cover
         """Get the path to the optiSLang project file.
 
         Returns
@@ -134,9 +142,10 @@ class Project:
         TimeoutError
             Raised when the timeout float value expires.
         """
-        return self.__osl_server.get_project_location()
+        pass
 
-    def get_name(self) -> str:
+    @abstractmethod
+    def get_name(self) -> str:  # pragma: no cover
         """Get the name of the optiSLang project.
 
         Returns
@@ -154,9 +163,10 @@ class Project:
         TimeoutError
             Raised when the timeout float value expires.
         """
-        return self.__osl_server.get_project_name()
+        pass
 
-    def get_reference_design(self) -> Design:
+    @abstractmethod
+    def get_reference_design(self) -> Design:  # pragma: no cover
         """Get a design with reference values of the parameters.
 
         Returns
@@ -173,14 +183,15 @@ class Project:
         TimeoutError
             Raised when the timeout float value expires.
         """
-        return self.root_system.get_reference_design()
+        pass
 
-    def get_registered_files(self) -> Tuple[RegisteredFile, ...]:
+    @abstractmethod
+    def get_registered_files(self) -> Tuple[RegisteredFile, ...]:  # pragma: no cover
         """Get all registered files in the current project.
 
         Returns
         -------
-        Tuple[RegisteredFile]
+        Tuple[RegisteredFile, ...]
             Tuple with registered files.
 
         Raises
@@ -192,28 +203,15 @@ class Project:
         TimeoutError
             Raised when the timeout float value expires.
         """
-        project_registered_files_dicts = self.__osl_server.get_basic_project_info()["projects"][0][
-            "registered_files"
-        ]
-        return tuple(
-            [
-                RegisteredFile(
-                    path=Path(file["local_location"]["split_path"]["head"]),
-                    id=file["ident"],
-                    comment=file["comment"],
-                    tag=file["tag"],
-                    usage=file["usage"],
-                )
-                for file in project_registered_files_dicts
-            ]
-        )
+        pass
 
-    def get_result_files(self) -> Tuple[RegisteredFile, ...]:
+    @abstractmethod
+    def get_result_files(self) -> Tuple[RegisteredFile, ...]:  # pragma: no cover
         """Get result files.
 
         Returns
         -------
-        Tuple[RegisteredFile]
+        Tuple[RegisteredFile, ...]
             Tuple with result files
 
         Raises
@@ -225,12 +223,10 @@ class Project:
         TimeoutError
             Raised when the timeout float value expires.
         """
-        registered_files = self.get_registered_files()
-        return tuple(
-            [file for file in registered_files if file.usage == RegisteredFileUsage.OUTPUT_FILE]
-        )
+        pass
 
-    def get_status(self) -> str:
+    @abstractmethod
+    def get_status(self) -> str:  # pragma: no cover
         """Get the status of the optiSLang project.
 
         Returns
@@ -248,103 +244,17 @@ class Project:
         TimeoutError
             Raised when the timeout float value expires.
         """
-        return self.__osl_server.get_project_status()
+        pass
 
-    def _get_project_tree(self) -> list:
-        """Return the project tree in a list format.
-
-        Returns
-        -------
-        List
-            List with all the nodes in the project tree.
-        """
-        full_project_tree = self.__osl_server.get_full_project_tree()
-        project_tree = [
-            {
-                "uid": full_project_tree["projects"][0]["system"]["uid"],
-                "name": full_project_tree["projects"][0]["system"]["name"],
-                "is_root": True,
-                "kind": full_project_tree["projects"][0]["system"]["kind"],
-                "level": 0,
-            }
-        ]
-        return self._get_child_nodes(
-            full_project_tree["projects"][0]["system"]["nodes"], project_tree
-        )
-
-    def _get_child_nodes(self, node_properties: dict, project_tree: list) -> list:
-        """Recursively walk throughout the full project tree and collect the nodes.
-
-        Parameters
-        ----------
-        node_properties : dict
-            Properties of the node from querying the full project tree.
-        project_tree: list
-           List with nodes collected from the full project tree.
+    @abstractmethod
+    def get_working_dir(self) -> Path:  # pragma: no cover
+        """Get the path to the optiSLang project's working directory.
 
         Returns
         -------
-        List
-            Updated list with collected nodes from the full project tree.
-        """
-        level = project_tree[-1]["level"]
-        for i, child_node_properties in enumerate(node_properties):
-            if i == 0:
-                level += 1
-            project_tree.append(
-                {
-                    "uid": child_node_properties["uid"],
-                    "name": child_node_properties["name"],
-                    "is_root": False,
-                    "kind": child_node_properties["kind"],
-                    "level": level,
-                }
-            )
-            if "nodes" in child_node_properties.keys():
-                project_tree = self._get_child_nodes(child_node_properties["nodes"], project_tree)
-        return project_tree
-
-    @property
-    def parameter_manager(self) -> ParameterManager:
-        """Instance of the ``ParameterManager`` class at the root system.
-
-        Returns
-        -------
-        ParameterManager
-            Parameter manager at the root system.
-        """
-        return self.__root_system.parameter_manager
-
-    @property
-    def response_manager(self) -> ResponseManager:
-        """Instance of the ``ResponseManager`` class at the root system.
-
-        Returns
-        -------
-        ResponseManager
-            Response manager at the root system.
-        """
-        return self.__root_system.response_manager
-
-    @property
-    def criteria_manager(self) -> CriteriaManager:
-        """Instance of the ``CriteriaManager`` class at the root system.
-
-        Returns
-        -------
-        CriteriaManager
-            Criteria manager at the root system.
-        """
-        return self.__root_system.criteria_manager
-
-    @property
-    def root_system(self) -> RootSystem:
-        """Instance of the ``RootSystem`` class.
-
-        Returns
-        -------
-        RootSystem
-            Loaded project's root system.
+        pathlib.Path
+            Path to the optiSLang project's working directory. If no project is loaded
+            in optiSLang, ``None`` is returned.
 
         Raises
         ------
@@ -355,15 +265,165 @@ class Project:
         TimeoutError
             Raised when the timeout float value expires.
         """
-        return self.__root_system
+        pass
 
-    @property
-    def uid(self) -> str:
-        """Unique ID of the optiSLang project.
+    @abstractmethod
+    def reset(self) -> None:  # pragma: no cover
+        """Reset the project.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        pass
+
+    @abstractmethod
+    def run_python_file(
+        self,
+        file_path: Union[str, Path],
+        args: Union[Sequence[object], None] = None,
+    ) -> Tuple[str, str]:  # pragma: no cover
+        """Read a Python script from a file, load it in a project context, and run it.
+
+        Parameters
+        ----------
+        file_path : Union[str, pathlib.Path]
+            Path to the Python script file with the content to execute on the server.
+        args : Sequence[object], None, optional
+            Sequence of arguments to use in the Python script. The default is ``None``.
 
         Returns
         -------
-        str
-            Unique ID of the loaded project.
+        Tuple[str, str]
+            STDOUT and STDERR from the executed Python script.
+
+        Raises
+        ------
+        FileNotFoundError
+            Raised when the specified Python script file does not exist.
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
         """
-        return self.__uid
+        pass
+
+    @abstractmethod
+    def run_python_script(
+        self,
+        script: str,
+        args: Union[Sequence[object], None] = None,
+    ) -> Tuple[str, str]:  # pragma: no cover
+        """Load a Python script in a project context and run it.
+
+        Parameters
+        ----------
+        script : str
+            Python commands to execute on the server.
+        args : Sequence[object], None, optional
+            Sequence of arguments used in the Python script. The default
+            is ``None``.
+
+        Returns
+        -------
+        Tuple[str, str]
+            STDOUT and STDERR from the executed Python script.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        pass
+
+    @abstractmethod
+    def start(
+        self, wait_for_started: bool = True, wait_for_finished: bool = True
+    ) -> None:  # pragma: no cover
+        """Start project execution.
+
+        Parameters
+        ----------
+        wait_for_started : bool, optional
+            Determines whether this function call should wait on the optiSlang to start
+            the command execution. I.e. don't continue on next line of python script
+            after command was successfully sent to optiSLang but wait for execution of
+            flow inside optiSLang to start.
+            Defaults to ``True``.
+        wait_for_finished : bool, optional
+            Determines whether this function call should wait on the optiSlang to finish
+            the command execution. I.e. don't continue on next line of python script
+            after command was successfully sent to optiSLang but wait for execution of
+            flow inside optiSLang to finish.
+            This implicitly interprets wait_for_started as True.
+            Defaults to ``True``.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        pass
+
+    @abstractmethod
+    def stop(self, wait_for_finished: bool = True) -> None:  # pragma: no cover
+        """Stop project execution.
+
+        Parameters
+        ----------
+        wait_for_finished : bool, optional
+            Determines whether this function call should wait on the optiSlang to finish
+            the command execution. I.e. don't continue on next line of python script after command
+            was successfully sent to optiSLang but wait for execution of command inside optiSLang.
+            Defaults to ``True``.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        pass
+
+    # FUTURES:
+    # @abstractmethod
+    # TODO: Add this after it's fixed on optiSLang server side.
+    # stop_gently method doesn't work properly in optiSLang 2023R1, therefore it was commented out
+    # def stop_gently(self, wait_for_finished: bool = True) -> None:
+    #     """Stop project execution after the current design is finished.
+
+    #     Parameters
+    #     ----------
+    #     wait_for_finished : bool, optional
+    #         Determines whether this function call should wait on the optiSlang to finish
+    #         the command execution. I.e. don't continue on next line of python script after command
+    #         was successfully sent to optiSLang but wait for execution of command inside optiSLang.
+    #         Defaults to ``True``.
+
+    #     Raises
+    #     ------
+    #     OslCommunicationError
+    #         Raised when an error occurs while communicating with server.
+    #     OslCommandError
+    #         Raised when the command or query fails.
+    #     TimeoutError
+    #         Raised when the timeout float value expires.
+    #     """

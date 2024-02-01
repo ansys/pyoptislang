@@ -5,7 +5,6 @@ Enumerations
 
 .. autosummary::
    :toctree: _autosummary
-   :template: class.rst
 
    ComparisonType
    CriterionType

@@ -30,7 +30,7 @@ This example demonstrates how to create and run a robustness flow for an oscilla
 
 It uses the ``oscillator_robustness_arsm.py`` file to create a robustness
 flow for an oscillator. It then explains how you can optionally save
-a copy of the project to a desired location.
+the project to a desired location.
 """
 
 #########################################################
@@ -46,7 +46,7 @@ import ansys.optislang.core.examples as examples
 # ~~~~~~~~~~~~~~~~~~~~~~~~~
 # Create the optiSLang instance.
 
-osl = Optislang()
+osl = Optislang(ini_timeout=60)
 print(osl)
 
 #########################################################
@@ -56,13 +56,13 @@ print(osl)
 # script.
 
 paths = examples.get_files("oscillator_robustness_arsm")
-osl.run_python_file(paths[0])
+osl.application.project.run_python_file(paths[0])
 
 # Run workflow
 # ~~~~~~~~~~~~
 # Run the workflow created by the preceding script.
 
-osl.start()
+osl.application.project.start()
 
 #########################################################
 # Optionally save project

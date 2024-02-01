@@ -3,10 +3,10 @@
 ==================
 Design evaluation
 ==================
-You use the :class:`RootSystem() <ansys.optislang.core.nodes.RootSystem>` class to
+You use the :py:class:`RootSystem <ansys.optislang.core.nodes.RootSystem>` class to
 create and evaluate designs. To access this class from the
-:class:`Optislang() <ansys.optislang.core.optislang.Optislang>` instance,
-you use the :func:`project <ansys.optislang.core.project.Project>` method:
+:py:class:`Optislang <ansys.optislang.core.optislang.Optislang>` instance,
+you use the :py:attr:`Project.root_system <ansys.optislang.core.project.Project.root_system>` property:
 
 .. code:: python
 
@@ -20,10 +20,10 @@ you use the :func:`project <ansys.optislang.core.project.Project>` method:
     osl = Optislang(project_path=parametric_project)
 
     # do not modify original file
-    osl.save_as(Path.cwd() / "parametric_project.opf")
+    osl.application.save_as(Path.cwd() / "parametric_project.opf")
 
     # get root system
-    root_system = osl.project.root_system
+    root_system = osl.application.project.root_system
 
 
 .. note::
@@ -47,19 +47,19 @@ you use the :func:`project <ansys.optislang.core.project.Project>` method:
 
 Create a design
 ---------------
-To create an instance of the :class:`Design() <ansys.optislang.core.project_parametric.Design>`
+To create an instance of the :py:class:`Design <ansys.optislang.core.project_parametric.Design>`
 class, you can obtain a design with reference values from the
-:class:`RootSystem() <ansys.optislang.core.nodes.RootSystem>` class
+:py:class:`RootSystem <ansys.optislang.core.nodes.RootSystem>` class
 and either modify its parameters or specify design parameters from scratch.
 
 
 Create a design from reference values
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 If a design has all parameters specified in the project, you can use the
-:func:`get_reference_design() <ansys.optislang.core.nodes.RootSystem.create_design>`
+:py:meth:`get_reference_design() <ansys.optislang.core.nodes.RootSystem.get_reference_design>`
 method to obtain the design's reference values. You can then modify
 parameter values using methods in the
-:class:`Design() <ansys.optislang.core.project_parametric.Design>` class.
+:py:class:`Design <ansys.optislang.core.project_parametric.Design>` class.
 
 .. code:: python
 
@@ -80,7 +80,7 @@ parameter values using methods in the
 Create a design from scratch
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 You can create a design from scratch by directly creating an instance of the
-:class:`Design() <ansys.optislang.core.project_parametric.Design>` class.
+:py:class:`Design <ansys.optislang.core.project_parametric.Design>` class.
 You do not have to provide parameters when initializing a new design.
 
 .. code:: python
@@ -91,7 +91,7 @@ You do not have to provide parameters when initializing a new design.
     # create empty design and add parameters afterward
     empty_design = Design()
     empty_design.set_parameter_by_name(name="a", value=3)
-    empty_design.set_parameter_by_name(name="q", value=4)
+    empty_design.set_parameter_by_name(name="c", value=4)
 
     # Remove a parameter if desired
     empty_design.remove_parameter(name="c")
@@ -104,10 +104,10 @@ Verify design parameters
 ~~~~~~~~~~~~~~~~~~~~~~~~
 To verify if the design contains all parameters defined in the
 project, you use the
-:func:`get_missing_parameters_names() <ansys.optislang.core.nodes.RootSystem.get_missing_parameters_names>`
+:py:meth:`get_missing_parameters_names() <ansys.optislang.core.nodes.RootSystem.get_missing_parameters_names>`
 method. To verify if the design contains parameters that are not defined
 in the project, you use the
-:func:`get_undefined_parameters_names() <ansys.optislang.core.nodes.RootSystem.get_undefined_parameters_names>`
+:py:meth:`get_undefined_parameters_names() <ansys.optislang.core.nodes.RootSystem.get_undefined_parameters_names>`
 method. Running these verifications are not necessary though, because they
 always run internally while evaluating the design.
 
@@ -122,8 +122,8 @@ always run internally while evaluating the design.
 Evaluate the design
 -------------------
 To evaluate a design, you use the
-:func:`evaluate_design() <ansys.optislang.core.nodes.RootSystem.evaluate_design>` method.
-This method returns the same :class:`Design() <ansys.optislang.core.project_parametric.Design>`
+:py:meth:`evaluate_design() <ansys.optislang.core.nodes.RootSystem.evaluate_design>` method.
+This method returns the same :py:class:`Design <ansys.optislang.core.project_parametric.Design>`
 instance with updated results.
 
 .. code:: python
@@ -138,10 +138,10 @@ instance with updated results.
     optiSLang retains only the last evaluated design at the project root system.
     If results of previous designs are required for later usage, you must store
     them locally. For example, you can store results as an instance of
-    the :class:`Design() <ansys.optislang.core.project_parametric.Design>` class.
+    the :py:class:`Design <ansys.optislang.core.project_parametric.Design>` class.
 
-Finally, when you are done using this :class:`Optislang() <ansys.optislang.core.optislang.Optislang>`
-instance, use the :func:`dispose() <ansys.optislang.core.optislang.Optislang.dispose>` method
+Finally, when you are done using this :py:class:`Optislang <ansys.optislang.core.optislang.Optislang>`
+instance, use the :py:meth:`dispose() <ansys.optislang.core.optislang.Optislang.dispose>` method
 to close it:
 
 .. code:: python

@@ -13,6 +13,7 @@ API documentation.
 
    optislang
    osl_process
+   application
    project
    nodes
    project_parametric

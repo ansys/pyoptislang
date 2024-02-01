@@ -1,6 +1,7 @@
 Project parametric
 ==================
-These classes are specific to the :mod:`ansys.optislang.core.project_parametric <ansys.optislang.core.project_parametric>` module:
+These classes are specific to the :py:mod:`ansys.optislang.core.project_parametric <ansys.optislang.core.project_parametric>` 
+and :py:mod:`ansys.optislang.core.managers <ansys.optislang.core.managers>` module:
 
 .. toctree::
    :maxdepth: 2
@@ -10,4 +11,4 @@ These classes are specific to the :mod:`ansys.optislang.core.project_parametric 
    criteria
    parameters
    responses
-   enumerations
+   project_parametric_enumerations

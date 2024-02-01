@@ -30,8 +30,8 @@ This example demonstrates how to create and run a direct optimization.
 
 It uses the ``oscillator_optimization_ea.py`` file to create and
 run a direct optimization for an oscillator with the EA (Evolutionary
-Algorithm) optimizer. It then explains how you can optionally save a copy
-of the project to a desired location.
+Algorithm) optimizer. It then explains how you can optionally save 
+the project to a desired location.
 """
 
 #########################################################
@@ -47,7 +47,7 @@ import ansys.optislang.core.examples as examples
 # ~~~~~~~~~~~~~~~~~~~~~~~~~
 # Create the optiSLang instance.
 
-osl = Optislang()
+osl = Optislang(ini_timeout=60)
 print(osl)
 
 #########################################################
@@ -57,14 +57,14 @@ print(osl)
 # these scripts.
 
 paths = examples.get_files("oscillator_optimization_ea")
-osl.run_python_file(paths[0])
+osl.application.project.run_python_file(paths[0])
 
 #########################################################
 # Run workflow
 # ~~~~~~~~~~~~
 # Run the workflow created by the preceding scripts.
 
-osl.start()
+osl.application.project.start()
 
 #########################################################
 # Optionally save project
@@ -75,7 +75,7 @@ osl.start()
 # .. code:: python
 #
 #   path = r'<insert-desired-location>'
-#   osl.save_as(os.path.join(path, "test_project.opf"))
+#   osl.application.save_as(os.path.join(path, "test_project.opf"))
 #
 
 #########################################################

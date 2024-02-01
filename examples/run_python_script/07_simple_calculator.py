@@ -30,7 +30,7 @@ This example demonstrates how to create a simple calculator flow.
 
 It uses the ``simple_calculator.py`` file to create and run
 a simple flow of four nodes. It then explains how you can optionally
-save a copy of the project to a desired location.
+save the project to a desired location.
 """
 
 ####################################################
@@ -45,7 +45,7 @@ import ansys.optislang.core.examples as examples
 # ~~~~~~~~~~~~~~~~~~~~~~~~~
 # Create the optiSLang instance.
 
-osl = Optislang()
+osl = Optislang(ini_timeout=60)
 paths = examples.get_files("simple_calculator")
 
 #########################################################
@@ -54,14 +54,14 @@ paths = examples.get_files("simple_calculator")
 # Get the path of the example script and then run this
 # script.
 
-osl.run_python_file(paths[0])
+osl.application.project.run_python_file(paths[0])
 
 #########################################################
 # Run workflow
 # ~~~~~~~~~~~~
 # Run the workflow created by the preceding script.
 
-osl.start()
+osl.application.project.start()
 
 #########################################################
 # Optionally save project
@@ -72,7 +72,7 @@ osl.start()
 # .. code:: python
 #
 #   path = r'<insert-desired-location>'
-#   osl.save_as(os.path.join(path, "test_project.opf"))
+#   osl.application.save_as(os.path.join(path, "test_project.opf"))
 #
 
 #########################################################

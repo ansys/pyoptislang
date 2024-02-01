@@ -32,7 +32,7 @@ It uses the ``oscillator_sensitivity_mop.py`` file to create a
 sensitivity flow for an oscillator and then uses the
 ``oscillator_optimization_on_mop.py`` file to optimize the MOP
 (Metamodel of Optimal Prognosis) flow. It then runs these flows.
-Lastly, it explains how you can optionally save a copy of the project
+Lastly, it explains how you can optionally save the project
 to a desired location.
 """
 
@@ -49,7 +49,7 @@ import ansys.optislang.core.examples as examples
 # ~~~~~~~~~~~~~~~~~~~~~~~~~
 # Create the optiSLang instance.
 
-osl = Optislang()
+osl = Optislang(ini_timeout=60)
 print(osl)
 
 #########################################################
@@ -61,15 +61,15 @@ print(osl)
 paths1 = examples.get_files("oscillator_sensitivity_mop")
 paths2 = examples.get_files("oscillator_optimization_on_mop")
 
-osl.run_python_file(paths1[0])
-osl.run_python_file(paths2[0])
+osl.application.project.run_python_file(paths1[0])
+osl.application.project.run_python_file(paths2[0])
 
 #########################################################
 # Run workflow
 # ~~~~~~~~~~~~
 # Run the workflow created by the preceding scripts.
 
-osl.start()
+osl.application.project.start()
 
 #########################################################
 # Optionally save project
@@ -80,7 +80,7 @@ osl.start()
 # .. code:: python
 #
 #   path = r'<insert-desired-location>'
-#   osl.save_as(os.path.join(path, "test_project.opf"))
+#   osl.application.save_as(os.path.join(path, "test_project.opf"))
 #
 
 #########################################################

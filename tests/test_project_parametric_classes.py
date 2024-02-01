@@ -22,7 +22,6 @@
 
 from __future__ import annotations
 
-from contextlib import nullcontext as does_not_raise
 import copy
 from typing import TYPE_CHECKING, Any
 
@@ -56,6 +55,7 @@ from ansys.optislang.core.project_parametric import (
 if TYPE_CHECKING:
     from enum import Enum
 
+# region DICTIONARIES AND EXPECTED RESULTS
 DEPENDENT_PARAMETER = DependentParameter(
     name="dependent",
     id="aaba5b78-4b8c-4cc3-a308-4e122e2af665",
@@ -180,7 +180,9 @@ MIXED_PARAMETER_DICT = {
 CONSTRAINT_CRITERION = ConstraintCriterion(
     name="constr",
     expression="0",
+    expression_value=0,
     criterion=ComparisonType.LESSEQUAL,
+    limit_expression="0",
     limit_expression_value=0,
     value=0,
 )
@@ -221,7 +223,7 @@ CONSTRAINT_CRITERION_DICT = {
     },
 }
 OBJECTIVE_CRITERION = ObjectiveCriterion(
-    name="obj", expression="0", criterion=ComparisonType.MIN, value=0
+    name="obj", expression="0", expression_value=0, criterion=ComparisonType.MIN, value=0
 )
 OBJECTIVE_CRITERION_DICT = {
     "First": "obj",
@@ -262,10 +264,13 @@ OBJECTIVE_CRITERION_DICT = {
 LIMIT_STATE_CRITERION = LimitStateCriterion(
     name="lim_st",
     expression="0",
+    expression_value=0,
     criterion=ComparisonType.LESSLIMITSTATE,
+    limit_expression="0",
     limit_expression_value=0,
     value=0,
 )
+
 LIMIT_STATE_CRITERION_DICT = {
     "First": "lim_st",
     "Second": {
@@ -308,7 +313,7 @@ LIMIT_STATE_CRITERION_DICT = {
         },
     },
 }
-VARIABLE_CRITERION = VariableCriterion(name="var", expression="0", value=0)
+VARIABLE_CRITERION = VariableCriterion(name="var", expression="0", expression_value=0, value=0)
 VARIABLE_CRITERION_DICT = {
     "First": "var",
     "Second": {
@@ -358,9 +363,10 @@ VARIABLE_CRITERION_DICT = {
 }
 RESPONSE = Response(name="variable_1", reference_value=0)
 RESPONSE_DICT = {"variable_1": 0}
+# endregion
 
 
-# TEST ENUMERATION METHODS:
+# region TEST ENUMERATION METHODS:
 def enumeration_test_method(enumeration_class: Enum, enumeration_name: str):
     """Test instance creation, method `from_str` and spelling."""
     mixed_name = ""
@@ -595,7 +601,10 @@ def test_invalid_inputs(enumeration_class: Enum, invalid_value: str, invalid_val
     )
 
 
-# TEST DESIGNVARIABLE
+# endregion
+
+
+# region TEST PARAMETERS:
 def test_design_variable():
     """Test `DesignVariable`."""
     design_variable = DesignVariable(name="par1", value=12)
@@ -615,8 +624,7 @@ def test_design_variable():
     design_variable_copy = copy.deepcopy(design_variable)
     assert design_variable_copy == design_variable
 
-    with does_not_raise() as dnr:
-        print(design_variable)
+    print(design_variable)
 
 
 # TEST PARAMETERS:
@@ -671,7 +679,7 @@ def test_parameter():
     assert isinstance(stochastic_parameter_from_dict, StochasticParameter)
     mixed_parameter_from_dict = Parameter.from_dict(MIXED_PARAMETER_DICT)
     assert isinstance(mixed_parameter_from_dict, MixedParameter)
-    with pytest.raises(ValueError):
+    with pytest.raises((ValueError, KeyError)):
         Parameter.from_dict({"type": {"value": "invalid"}})
 
 
@@ -714,8 +722,7 @@ def test_optimization_parameter():
     optimization_parameter_copy.range = [1, 2]
     assert optimization_parameter_copy.range == (1, 2)
 
-    with does_not_raise() as dnr:
-        print(optimization_parameter_from_dict)
+    print(optimization_parameter_from_dict)
 
 
 def test_stochastic_parameter():
@@ -766,8 +773,7 @@ def test_stochastic_parameter():
     stochastic_parameter_copy.statistical_moments = [1]
     assert stochastic_parameter_copy.statistical_moments == (1,)
 
-    with does_not_raise() as dnr:
-        print(stochastic_parameter_from_dict)
+    print(stochastic_parameter_from_dict)
 
 
 def test_stochastic_parameter_2():
@@ -818,8 +824,7 @@ def test_stochastic_parameter_2():
     stochastic_parameter_copy.statistical_moments = [1]
     assert stochastic_parameter_copy.statistical_moments == (1,)
 
-    with does_not_raise() as dnr:
-        print(stochastic_parameter_from_dict)
+    print(stochastic_parameter_from_dict)
 
 
 def test_stochastic_parameter_3():
@@ -870,8 +875,7 @@ def test_stochastic_parameter_3():
     stochastic_parameter_copy.distribution_parameters = [1]
     assert stochastic_parameter_copy.distribution_parameters == (1,)
 
-    with does_not_raise() as dnr:
-        print(stochastic_parameter_from_dict)
+    print(stochastic_parameter_from_dict)
 
 
 def test_mixed_parameter():
@@ -931,8 +935,7 @@ def test_mixed_parameter():
     mixed_parameter_copy.distribution_parameters = [1]
     assert mixed_parameter_copy.distribution_parameters == (1,)
 
-    with does_not_raise() as dnr:
-        print(mixed_parameter_from_dict)
+    print(mixed_parameter_from_dict)
 
 
 def test_dependent_parameter():
@@ -954,11 +957,13 @@ def test_dependent_parameter():
     dependent_parameter_copy.operation = "10+Parameter_1"
     assert dependent_parameter_copy.operation == "10+Parameter_1"
 
-    with does_not_raise() as dnr:
-        print(dependent_parameter_from_dict)
+    print(dependent_parameter_from_dict)
 
 
-# TEST CRITERIA:
+# endregion
+
+
+# region TEST CRITERIA:
 def test_criterion():
     """Test `Criterion`."""
     criterion = Criterion(
@@ -1003,7 +1008,7 @@ def test_criterion():
     variable_criterion_from_dict = Criterion.from_dict(criterion_dict=VARIABLE_CRITERION_DICT)
     assert isinstance(variable_criterion_from_dict, VariableCriterion)
 
-    with pytest.raises(ValueError):
+    with pytest.raises(TypeError):
         Criterion.from_dict({"Second": {"type": {"value": "invalid"}}})
 
     with pytest.raises(AttributeError):
@@ -1063,7 +1068,7 @@ def test_criterion():
         criterion.value = (1, 2, 3)
 
 
-def test_contraint_criterion():
+def test_constraint_criterion():
     """Test ``ConstraintCriterion``."""
     constraint_criterion_dict = CONSTRAINT_CRITERION.to_dict()
     assert isinstance(constraint_criterion_dict, dict)
@@ -1088,8 +1093,7 @@ def test_contraint_criterion():
     assert constraint_criterion_copy.limit_expression_value == 10
     assert constraint_criterion_copy.limit_expression_value_type == CriterionValueType.SCALAR
 
-    with does_not_raise() as dnr:
-        print(constraint_criterion_from_dict)
+    print(constraint_criterion_from_dict)
 
 
 def test_limit_state_criterion():
@@ -1117,8 +1121,7 @@ def test_limit_state_criterion():
     assert limit_state_criterion_copy.limit_expression_value == 10
     assert limit_state_criterion_copy.limit_expression_value_type == CriterionValueType.SCALAR
 
-    with does_not_raise() as dnr:
-        print(limit_state_criterion_from_dict)
+    print(limit_state_criterion_from_dict)
 
 
 def test_objective_criterion():
@@ -1134,8 +1137,7 @@ def test_objective_criterion():
     objective_criterion_copy = copy.deepcopy(OBJECTIVE_CRITERION)
     assert OBJECTIVE_CRITERION == objective_criterion_copy
 
-    with does_not_raise() as dnr:
-        print(objective_criterion_from_dict)
+    print(objective_criterion_from_dict)
 
 
 def test_variable_criterion():
@@ -1151,11 +1153,13 @@ def test_variable_criterion():
     variable_criterion_copy = copy.deepcopy(VARIABLE_CRITERION)
     assert VARIABLE_CRITERION == variable_criterion_copy
 
-    with does_not_raise() as dnr:
-        print(variable_criterion_from_dict)
+    print(variable_criterion_from_dict)
 
 
-# TEST RESPONSES:
+# endregion
+
+
+# region TEST RESPONSES:
 def test_response():
     """Test `Response`."""
     response = Response(name="variable_1", reference_value=0)
@@ -1207,11 +1211,13 @@ def test_response():
     with pytest.raises(TypeError):
         response.reference_value = (1, 2, 3)
 
-    with does_not_raise() as dnr:
-        print(response)
+    print(response)
 
 
-# TEST DESIGN:
+# endregion
+
+
+# region TEST DESIGN:
 @pytest.fixture()
 def design(scope="function", autouse=False) -> Design:
     """Create an instance of Design class."""
@@ -1247,8 +1253,7 @@ def test_design_properties(design: Design):
     for parameter in design.parameters:
         assert isinstance(parameter, DesignVariable)
 
-    with does_not_raise() as dnr:
-        print(design)
+    print(design)
 
 
 def test_clear_parameters(design: Design):
@@ -1294,3 +1299,6 @@ def test_set_parameter_value(design: Design):
         assert isinstance(parameter, DesignVariable)
         assert parameter.name in ["par1", "par2"]
         assert parameter.value in [15, 20]
+
+
+# endregion

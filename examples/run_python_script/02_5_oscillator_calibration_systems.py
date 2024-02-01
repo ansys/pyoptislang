@@ -33,7 +33,7 @@ It uses the ``oscillatorcalibration_system_python.py``
 and ``oscillatorcalibration_system_ascii.py`` files to create
 parametric systems for oscillator calibration and then runs
 these systems. Lastly, it explains how you can optionally save
-a copy of the project to a desired location.
+the project to a desired location.
 """
 
 #########################################################
@@ -49,7 +49,7 @@ import ansys.optislang.core.examples as examples
 # ~~~~~~~~~~~~~~~~~~~~~~~~~
 # Create the optiSLang instance.
 
-osl = Optislang()
+osl = Optislang(ini_timeout=60)
 print(osl)
 
 #########################################################
@@ -61,15 +61,15 @@ print(osl)
 paths1 = examples.get_files("oscillatorcalibration_system_python")
 paths2 = examples.get_files("oscillatorcalibration_system_ascii")
 
-osl.run_python_file(paths1[0])
-osl.run_python_file(paths2[0])
+osl.application.project.run_python_file(paths1[0])
+osl.application.project.run_python_file(paths2[0])
 
 #########################################################
 # Run workflow
 # ~~~~~~~~~~~~
 # Run the workflow created by the preceding scripts.
 
-osl.start()
+osl.application.project.start()
 
 #########################################################
 # Optionally save project
@@ -80,7 +80,7 @@ osl.start()
 # .. code:: python
 #
 #   path = r'<insert-desired-location>'
-#   osl.save_as(os.path.join(path, "test_project.opf"))
+#   osl.application.save_as(os.path.join(path, "test_project.opf"))
 #
 
 #########################################################

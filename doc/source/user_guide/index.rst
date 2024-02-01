@@ -13,12 +13,13 @@ This section provides an overview of how you use PyOptiSLang.
    functions
    project_content
    design_evaluation
+   create_workflow
    run_python
    osl_server_usage
    troubleshooting
 
 
-With the :class:`Optislang <ansys.optislang.core.optislang.Optislang>` class
+With the :py:class:`Optislang <ansys.optislang.core.optislang.Optislang>` class
 in PyOptiSLang, you can launch optiSLang as a server and then control and query
 optiSLang projects.
 
@@ -40,9 +41,9 @@ For more information, see :ref:`ref_launch`.
         print(osl)
 
 
-The :class:`Optislang <ansys.optislang.core.Optislang>` class provides several methods for
+The :py:class:`Optislang <ansys.optislang.core.Optislang>` class provides several methods for
 controlling or querying the project. This code shows how to open an existing project
-and run it using the :func:`start() <ansys.optislang.core.optislang.Optislang.start>` method.
+and run it using the :py:meth:`start() <ansys.optislang.core.project.Project.start>` method.
 
 .. code:: python
 
@@ -51,16 +52,16 @@ and run it using the :func:`start() <ansys.optislang.core.optislang.Optislang.st
 
   project_path = examples.get_files("simple_calculator")[1][0]
   with Optislang(project_path=project_path) as osl:
-      osl.start()
+      osl.application.project.start()
 
 
 While the current capabilities provided by PyOptiSLang are limited, you can
-use the :func:`run_python_script() <ansys.optislang.core.optislang.Optislang.run_python_script>`
-or :func:`run_python_file() <ansys.optislang.core.optislang.Optislang.run_python_file>`
-method in the :class:`Optislang <ansys.optislang.core.optislang.Optislang>` class
+use the :py:meth:`run_python_script() <ansys.optislang.core.project.Project.run_python_script>`
+or :py:meth:`run_python_file() <ansys.optislang.core.project.Project.run_python_file>`
+method in the :py:class:`Project <ansys.optislang.core.project.Project>` class
 to overcome its limitations. For example, you can run optiSLang Python API commands
 to create and edit nodes, parameters, and more. For more information, see :ref:`ref_run_python`.
 
 Another possibility is to use direct communication with the optiSLang server API using the
-:class:`TcpOslServer <ansys.optislang.core.tcp_osl_server.TcpOslServer>` wrapper class.
+:py:class:`TcpOslServer <ansys.optislang.core.tcp.osl_server.TcpOslServer>` wrapper class.
 For more information, see :ref:`ref_osl_server_usage`.

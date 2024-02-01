@@ -9,15 +9,15 @@ You can either launch optiSLang locally or connect to a remote optiSLang instanc
 
 .. note::
     When you are done using an optiSLang instance, you should always use the
-    :func:`dispose() <ansys.optislang.core.optislang.Optislang.dispose>` method to
+    :py:meth:`dispose() <ansys.optislang.core.optislang.Optislang.dispose>` method to
     shut down the instance gracefully. If you use the
-    :class:`Optislang <ansys.optislang.core.optislang.Optislang>` class as a
-    context manager, it executes the :func:`dispose() <ansys.optislang.core.optislang.Optislang.dispose>`
+    :py:class:`Optislang <ansys.optislang.core.optislang.Optislang>` class as a
+    context manager, it executes the :py:meth:`dispose() <ansys.optislang.core.optislang.Optislang.dispose>`
     method automatically, even when an exception is raised.
 
 Launch optiSLang locally
 ------------------------
-The :class:`Optislang <ansys.optislang.core.optislang.Optislang>` class must know 
+The :py:class:`Optislang <ansys.optislang.core.optislang.Optislang>` class must know 
 the location of the optiSLang executable file to run. By default, the latest installed
 version of optiSLang is launched. To initialize an optiSLang instance and start it
 locally as a server, run this code:
@@ -31,7 +31,7 @@ locally as a server, run this code:
     osl.dispose()
 
 
-Calling the :func:`dispose() <ansys.optislang.core.optislang.Optislang.dispose>` method 
+Calling the :py:meth:`dispose() <ansys.optislang.core.optislang.Optislang.dispose>` method 
 closes the connection with the optiSLang server. If an optiSLang instance is started with the
 ``shutdown_on_finished`` parameter set to ``True``, which is the default, the server shuts down
 automatically. For information on how to keep the server running after disposing the optiSLang
@@ -97,63 +97,61 @@ This code initializes optiSLang and connects to a remote optiSLang server:
      osl.dispose()
 
 
-Calling the :func:`dispose() <ansys.optislang.core.optislang.Optislang.dispose>` method 
+Calling the :py:meth:`dispose() <ansys.optislang.core.optislang.Optislang.dispose>` method 
 closes the connection with the remote optiSLang server. However, if this server was
 started with the ``shutdown_on_finished`` parameter set to ``False``, the server won't
-shut down. You must use the :func:`shutdown() <ansys.optislang.core.optislang.Optislang.shutdown>`
+shut down. You must use the :py:meth:`shutdown() <ansys.optislang.core.optislang.Optislang.shutdown>`
 method to shut down the server before disposing the 
-:class:`Optislang <ansys.optislang.core.optislang.Optislang>` instance. For more information,
+:py:class:`Optislang <ansys.optislang.core.optislang.Optislang>` instance. For more information,
 see :ref:`optislang-termination`.
 
 .. _optislang-termination:
 
 Optislang instance disposal and optional optiSLang server shutdown
 ------------------------------------------------------------------
-As mentioned earlier, when an :class:`Optislang <ansys.optislang.core.optislang.Optislang>`
+As mentioned earlier, when an :py:class:`Optislang <ansys.optislang.core.optislang.Optislang>`
 instance is no longer in use, you should always use the
-:func:`dispose() <ansys.optislang.core.optislang.Optislang.dispose>` method to shut
+:py:meth:`dispose() <ansys.optislang.core.optislang.Optislang.dispose>` method to shut
 down the instance gracefully.
 
-Optionally, you can use the :func:`shutdown() <ansys.optislang.core.optislang.Optislang.shutdown>`
+Optionally, you can use the :py:meth:`shutdown() <ansys.optislang.core.optislang.Optislang.shutdown>`
 method to shut down the OptiSLang server. However, you must call this method before the
-:func:`dispose() <ansys.optislang.core.optislang.Optislang.dispose>`
-method. If you set the ``shutdown_on_finished`` parameter on the
-:func:`dispose() <ansys.optislang.core.optislang.Optislang.dispose>` method to
-``True``, you do not need to use the :func:`shutdown() <ansys.optislang.core.optislang.Optislang.shutdown>`
-method.
+:py:meth:`dispose() <ansys.optislang.core.optislang.Optislang.dispose>`
+method and only if the server is not set to shutdown automatically when finished.
 
 
 Differences in the termination methods mentioned earlier follow:
 
-* The :func:`dispose() <ansys.optislang.core.optislang.Optislang.dispose>` method only closes
+* The :py:meth:`dispose() <ansys.optislang.core.optislang.Optislang.dispose>` method only closes
   the connection with the optiSLang server.
-* The :func:`shutdown() <ansys.optislang.core.optislang.Optislang.shutdown>` method sends a
+* The :py:meth:`shutdown() <ansys.optislang.core.optislang.Optislang.shutdown>` method sends a
   command to shut down the optiSLang server, which is necessary when termination of the
   server is requested and either of these situations exist:
   
   * The server is started locally by an optiSLang instance with the
     ``shutdown_on_finished`` parameter set to ``False``.
-  * The optiSLang instance is connected to a remote optiSLang server. 
+  * The optiSLang instance is connected to a remote optiSLang server, that is not set to shutdown
+    automatically when finished (``--shutdown-on-finished`` post argument was not used).
 
 
 To specify whether to automatically shut down the optiSLang server, you can use the
-``shutdown_on_finished`` parameter in the :class:`Optislang <ansys.optislang.core.optislang.Optislang>`
+``shutdown_on_finished`` parameter in the :py:class:`Optislang <ansys.optislang.core.optislang.Optislang>`
 instance constructor. The default value for this parameter is ``True``. This means that
 the optiSLang server is shut down automatically after the
-:func:`dispose() <ansys.optislang.core.optislang.Optislang.dispose>` method is called.
+:py:meth:`dispose() <ansys.optislang.core.optislang.Optislang.dispose>` method is called.
 
 To keep a locally started optiSLang server running even after disposing the
-:class:`Optislang <ansys.optislang.core.optislang.Optislang>` instance, you must set the
+:py:class:`Optislang <ansys.optislang.core.optislang.Optislang>` instance, you must set the
 ``shutdown_on_finished`` parameter to ``False`` when creating the instance. In
 this case, to shut down the optiSLang server, you must call the
-:func:`shutdown() <ansys.optislang.core.optislang.Optislang.shutdown>` method before
-disposing the :class:`Optislang <ansys.optislang.core.optislang.Optislang>` instance.
+:py:meth:`shutdown() <ansys.optislang.core.optislang.Optislang.shutdown>` method before
+disposing the :py:class:`Optislang <ansys.optislang.core.optislang.Optislang>` instance.
 
 The following examples show possible termination cases of the optiSLang instance
 initialized with the ``shutdown_on_finished`` parameter set to ``False``.
 
 * To keep the optiSLang server running, use only the
-  :func:`dispose() <ansys.optislang.core.optislang.Optislang.dispose>` method:
+  :py:meth:`dispose() <ansys.optislang.core.optislang.Optislang.dispose>` method:
 
   .. code:: python
 
@@ -165,8 +163,8 @@ initialized with the ``shutdown_on_finished`` parameter set to ``False``.
 
 
 * To shut down the optiSLang server, use both the
-   :func:`shutdown() <ansys.optislang.core.optislang.Optislang.shutdown>` and
-   :func:`dispose() <ansys.optislang.core.optislang.Optislang.dispose>` methods: 
+   :py:meth:`shutdown() <ansys.optislang.core.optislang.Optislang.shutdown>` and
+   :py;meth:`dispose() <ansys.optislang.core.optislang.Optislang.dispose>` methods: 
    
    .. code:: python
 
@@ -201,10 +199,10 @@ You can use the same approach when connected to a remote optiSLang server.
 
 Context manager
 ---------------
-You should use the :class:`Optislang() <ansys.optislang.core.optislang.Optislang>` class as a context
+You should use the :py:class:`Optislang <ansys.optislang.core.optislang.Optislang>` class as a context
 manager. The main advantage of this approach is that the optiSLang instance and connection to
 the optiSLang server automatically shut down gracefully, even if an error occurs when calling
-the :func:`dispose() <ansys.optislang.core.optislang.Optislang.dispose>` method.
+the :py:meth:`dispose() <ansys.optislang.core.optislang.Optislang.dispose>` method.
 
 .. code:: python
 
@@ -212,7 +210,7 @@ the :func:`dispose() <ansys.optislang.core.optislang.Optislang.dispose>` method.
 
     with Optislang() as osl:
         print(osl)
-        osl.start()
+        osl.application.project.start()
 
 
 .. note::
@@ -221,7 +219,7 @@ the :func:`dispose() <ansys.optislang.core.optislang.Optislang.dispose>` method.
     to ``False``, or if the instance is connected to an optiSLang server started with this
     setting, the default behavior is to close the connection and keep the optiSLang server
     running. To stop the optiSLang server, you must use the
-    :func:`shutdown() <ansys.optislang.core.optislang.Optislang.shutdown>` method.
+    :py:meth:`shutdown() <ansys.optislang.core.optislang.Optislang.shutdown>` method.
 
     .. code:: python
 

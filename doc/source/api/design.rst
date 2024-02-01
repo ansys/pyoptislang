@@ -5,7 +5,6 @@ Design
 
 .. autosummary::
    :toctree: _autosummary
-   :template: class.rst
 
    Design
    DesignVariable

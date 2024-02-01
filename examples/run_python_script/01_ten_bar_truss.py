@@ -26,12 +26,13 @@
 Ten bar truss
 -------------
 
-This example demonstrates how to to create an ARSM ten bar truss flow in batch mode.
+This example demonstrates how to to create an ARSM ten bar truss flow in batch mode
+using optiSLang python API.
 
 First, the ``arsm_ten_bar_truss.py`` file is used to create an ARSM ten bar
 truss flow. Then the ``ten_bar_modify_parameters.py`` and
 ``ten_bar_truss_lc2.py`` files are used to modify the flow. Lastly, the project is
-executed and a copy of the project is saved to a desired location.
+executed and a optionally the project is saved to a desired location.
 """
 
 #########################################################
@@ -47,7 +48,7 @@ import ansys.optislang.core.examples as examples
 # ~~~~~~~~~~~~~~~~~~~~~~~~~
 # Create the optiSLang instance.
 
-osl = Optislang()
+osl = Optislang(ini_timeout=60)
 print(osl)
 
 #########################################################
@@ -60,16 +61,16 @@ paths1 = examples.get_files("arsm_ten_bar_truss")
 paths2 = examples.get_files("ten_bar_modify_parameters")
 paths3 = examples.get_files("ten_bar_truss_lc2")
 
-osl.run_python_file(paths1[0])
-osl.run_python_file(paths2[0])
-osl.run_python_file(paths3[0])
+osl.application.project.run_python_file(paths1[0])
+osl.application.project.run_python_file(paths2[0])
+osl.application.project.run_python_file(paths3[0])
 
 #########################################################
 # Run workflow
 # ~~~~~~~~~~~~
 # Run the workflow created by the preceding scripts.
 
-osl.start()
+osl.application.project.start()
 
 #########################################################
 # Optionally save project
@@ -80,7 +81,7 @@ osl.start()
 # .. code:: python
 #
 #   path = r'<insert-desired-location>'
-#   osl.save_as(os.path.join(path, "test_project.opf"))
+#   osl.application.save_as(os.path.join(path, "test_project.opf"))
 #
 
 #########################################################

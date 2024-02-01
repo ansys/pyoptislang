@@ -5,6 +5,5 @@ Responses
 
 .. autosummary::
    :toctree: _autosummary
-   :template: class.rst
 
    Response

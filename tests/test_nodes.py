@@ -20,291 +20,136 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from contextlib import nullcontext as does_not_raise
-from pathlib import Path
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, Any
 
 import pytest
 
-from ansys.optislang.core import Optislang
-from ansys.optislang.core.io import File, FileOutputFormat, RegisteredFile
-from ansys.optislang.core.nodes import Node, ParametricSystem, RootSystem, System
-from ansys.optislang.core.project_parametric import (
-    CriteriaManager,
-    ParameterManager,
-    ResponseManager,
+from ansys.optislang.core.nodes import DesignFlow, NodeClassType, SamplingType, SlotType
+
+if TYPE_CHECKING:
+    from enum import Enum
+
+
+# TEST ENUMERATION METHODS:
+def enumeration_test_method(enumeration_class: Enum, enumeration_name: str) -> Enum:
+    """Test instance creation, method `from_str` and spelling."""
+    mixed_name = ""
+    for index, char in enumerate(enumeration_name):
+        if index % 2 == 1:
+            mixed_name += char.lower()
+        else:
+            mixed_name += char
+    try:
+        enumeration_from_str = enumeration_class.from_str(string=mixed_name)
+    except:
+        assert False
+    assert isinstance(enumeration_from_str, enumeration_class)
+    assert isinstance(enumeration_from_str.name, str)
+    assert enumeration_from_str.name == enumeration_name
+    return enumeration_from_str
+
+
+def from_str_invalid_inputs_method(
+    enumeration_class: Enum, invalid_value: str, invalid_value_type: float
+):
+    """Test passing incorrect inputs to enuration classes `from_str` method."""
+    with pytest.raises(TypeError):
+        enumeration_class.from_str(invalid_value_type)
+
+    with pytest.raises(ValueError):
+        enumeration_class.from_str(invalid_value)
+
+
+@pytest.mark.parametrize(
+    "design_flow, name",
+    [
+        (DesignFlow, "NONE"),
+        (DesignFlow, "RECEIVE"),
+        (DesignFlow, "SEND"),
+        (DesignFlow, "RECEIVE_SEND"),
+    ],
 )
-
-pytestmark = pytest.mark.local_osl
-
-
-@pytest.fixture()
-def optislang(scope="function", autouse=False) -> Optislang:
-    """Create instance of Optislang class.
-
-    Returns
-    -------
-    Optislang:
-        Connects to the optiSLang application and provides an API to control it.
-    """
-    osl = Optislang()
-    osl.timeout = 20
-    return osl
+def test_design_flow(design_flow: DesignFlow, name: str):
+    """Test `DesignFlow`."""
+    enumeration_test_method(enumeration_class=design_flow, enumeration_name=name)
 
 
-# TEST NODE
-def test_node_initialization(optislang: Optislang, tmp_example_project):
-    """Test `Node` initialization."""
-    optislang.open(file_path=tmp_example_project("calculator_with_params"))
-    project = optislang.project
-    root_system = project.root_system
-    node = root_system.get_nodes()[0]
-    assert isinstance(node, Node)
-    optislang.dispose()
+@pytest.mark.parametrize(
+    "node_class_type, name",
+    [
+        (NodeClassType, "NODE"),
+        (NodeClassType, "SYSTEM"),
+        (NodeClassType, "PARAMETRIC_SYSTEM"),
+        (NodeClassType, "ROOT_SYSTEM"),
+        (NodeClassType, "INTEGRATION_NODE"),
+    ],
+)
+def test_node_class_type(node_class_type: NodeClassType, name: str):
+    """Test `NodeClassType`."""
+    enumeration_test_method(enumeration_class=node_class_type, enumeration_name=name)
 
 
-def test_node_properties(optislang: Optislang, tmp_example_project):
-    """Test properties of the instance of `Node` class."""
-    optislang.open(file_path=tmp_example_project("calculator_with_params"))
-    project = optislang.project
-    root_system = project.root_system
-    node = root_system.get_nodes()[0]
-    assert isinstance(node, Node)
-    assert isinstance(node.uid, str)
-    optislang.dispose()
+@pytest.mark.parametrize(
+    "sampling_type, name",
+    [
+        (SamplingType, "CENTERPOINT"),
+        (SamplingType, "FULLFACTORIAL"),
+        (SamplingType, "AXIAL"),
+        (SamplingType, "STARPOINTS"),
+        (SamplingType, "KOSHAL"),
+        (SamplingType, "CENTRALCOMPOSITE"),
+        (SamplingType, "MIXEDTERMS"),
+        (SamplingType, "LATINHYPER"),
+        (SamplingType, "LATINHYPERDETEMINISTIC"),
+        (SamplingType, "OPTIMIZEDLATINHYPER"),
+        (SamplingType, "ORTHOLATINHYPERDETEMINISTIC"),
+        (SamplingType, "SOBOLSEQUENCES"),
+        (SamplingType, "PLAINMONTECARLO"),
+        (SamplingType, "DOPTIMAL"),
+        (SamplingType, "DOPTIMALLINEAR"),
+        (SamplingType, "DOPTIMALQUADRATIC"),
+        (SamplingType, "DOPTIMALQUADRATICNOMIXED"),
+        (SamplingType, "KOSHALLINEAR"),
+        (SamplingType, "KOSHALQUADRATIC"),
+        (SamplingType, "FEKETE"),
+        (SamplingType, "BOXBEHNKEN"),
+        (SamplingType, "FULLCOMBINATORIAL"),
+        (SamplingType, "ADVANCEDLATINHYPER"),
+    ],
+)
+def test_sampling_type(sampling_type: SamplingType, name: str):
+    """Test `SamplingType`."""
+    enumeration_test_method(enumeration_class=sampling_type, enumeration_name=name)
 
 
-def test_node_queries(optislang: Optislang, tmp_example_project):
-    """Test get methods of the instance of `Node` class."""
-    optislang.open(file_path=tmp_example_project("calculator_with_params"))
-    project = optislang.project
-    root_system = project.root_system
-    node = root_system.find_nodes_by_name("Calculator")[0]
-
-    info = node._get_info()
-    assert isinstance(info, dict)
-
-    name = node.get_name()
-    assert isinstance(name, str)
-    assert name == "Calculator"
-
-    parent_name = node.get_parent_name()
-    assert isinstance(name, str)
-
-    parent = node.get_parent()
-    assert isinstance(parent, RootSystem)
-    assert parent_name == parent.get_name()
-
-    properties = node.get_properties()
-    assert isinstance(properties, dict)
-
-    reg_files = node.get_registered_files()
-    assert len(reg_files) == 1
-    assert isinstance(reg_files[0], RegisteredFile)
-
-    res_files = node.get_result_files()
-    assert len(res_files) == 1
-    assert isinstance(res_files[0], RegisteredFile)
-
-    states_ids = node.get_states_ids()
-    assert len(states_ids) == 1
-    assert isinstance(states_ids[0], str)
-
-    status = node.get_status()
-    assert isinstance(status, str)
-
-    type = node.get_type()
-    assert isinstance(type, str)
-    assert type == "CalculatorSet"
-
-    with does_not_raise() as dnr:
-        print(node)
-    assert dnr is None
-
-    optislang.dispose()
+@pytest.mark.parametrize(
+    "slot_type, name, direction",
+    [
+        (SlotType, "INPUT", "receiving"),
+        (SlotType, "OUTPUT", "sending"),
+        (SlotType, "INNER_INPUT", "receiving"),
+        (SlotType, "INNER_OUTPUT", "sending"),
+    ],
+)
+def test_slot_type(slot_type: SlotType, name: str, direction: str):
+    """Test `SlotType`."""
+    output = enumeration_test_method(enumeration_class=slot_type, enumeration_name=name)
+    assert slot_type.to_dir_str(output) == direction
 
 
-def test_control(optislang: Optislang, tmp_example_project):
-    """Test control methods of the instance of `Node` class."""
-    optislang.open(file_path=tmp_example_project("calculator_with_params"))
-    project = optislang.project
-    root_system = project.root_system
-    node = root_system.find_nodes_by_name("Calculator")[0]
-
-    for command in ["start", "restart", "stop_gently", "stop", "reset"]:
-        output = node.control(command, wait_for_completion=False)
-        assert output is None
-        output = node.control(command, timeout=3)
-        assert isinstance(output, bool)
-
-    optislang.dispose()
-
-
-# TEST SYSTEM
-def test_find_node_by_uid(optislang: Optislang, tmp_example_project):
-    """Test `find_node_by_uid`."""
-    optislang.open(file_path=tmp_example_project("nested_systems"))
-    project = optislang.project
-    root_system = project.root_system
-
-    # level 1
-    level0_node = root_system.find_node_by_uid(
-        uid="8854b2c4-fd8a-4e07-839e-1f36553e2d40", search_depth=1
+@pytest.mark.parametrize(
+    "enumeration_class, invalid_value, invalid_value_type",
+    [
+        (DesignFlow, "invalid", 1),
+        (NodeClassType, "invalid", 1),
+        (SlotType, "invalid", 1),
+    ],
+)
+def test_invalid_inputs(enumeration_class: Enum, invalid_value: str, invalid_value_type: Any):
+    from_str_invalid_inputs_method(
+        enumeration_class=enumeration_class,
+        invalid_value=invalid_value,
+        invalid_value_type=invalid_value_type,
     )
-    assert isinstance(level0_node, Node)
-    with does_not_raise() as dnr:
-        print(level0_node)
-    assert dnr is None
-
-    level0_system = root_system.find_node_by_uid(
-        uid="a8375c1f-0e39-4901-aa29-56d88f693b54", search_depth=1
-    )
-    assert isinstance(level0_system, System)
-    with does_not_raise() as dnr:
-        print(level0_system)
-    assert dnr is None
-
-    higher_level = root_system.find_node_by_uid(
-        uid="051ba887-cd72-4fe1-a676-2d75a8a843e9", search_depth=1
-    )
-    assert higher_level is None
-
-    # level 2
-    level1_node = root_system.find_node_by_uid(
-        uid="051ba887-cd72-4fe1-a676-2d75a8a843e9", search_depth=2
-    )
-    assert isinstance(level1_node, Node)
-
-    higher_level = root_system.find_node_by_uid(
-        uid="ab7d50e2-b031-4c75-b701-fd9fcadf779c", search_depth=2
-    )
-    assert higher_level is None
-
-    # level 3
-    level2_node = root_system.find_node_by_uid(
-        uid="ab7d50e2-b031-4c75-b701-fd9fcadf779c", search_depth=3
-    )
-    assert isinstance(level2_node, Node)
-
-    higher_level = root_system.find_node_by_uid(
-        uid="161992fc-d1ee-487f-8bab-0b9897e641e8", search_depth=3
-    )
-    assert higher_level is None
-
-    # level 4
-    level3_node = root_system.find_node_by_uid(
-        uid="161992fc-d1ee-487f-8bab-0b9897e641e8", search_depth=4
-    )
-    assert isinstance(level3_node, Node)
-
-    optislang.dispose()
-
-
-def test_find_node_by_name(optislang: Optislang, tmp_example_project):
-    """Test `find_node_by_name`."""
-    optislang.open(file_path=tmp_example_project("nested_systems"))
-    project = optislang.project
-    root_system = project.root_system
-
-    # level 1
-    level0_node = root_system.find_nodes_by_name(name="Calculator", search_depth=1)[0]
-    assert isinstance(level0_node, Node)
-
-    level0_system = root_system.find_nodes_by_name(name="System", search_depth=1)[0]
-    assert isinstance(level0_system, System)
-
-    higher_level = root_system.find_nodes_by_name(name="Calculator_inSystem", search_depth=1)
-    assert isinstance(higher_level, tuple)
-    assert len(higher_level) == 0
-
-    # level 2
-    level1_node = root_system.find_nodes_by_name(name="Calculator_inSensitivity", search_depth=2)[0]
-    assert isinstance(level1_node, Node)
-
-    higher_level = root_system.find_nodes_by_name(
-        name="System_inSystem_inSensitivity", search_depth=2
-    )
-    assert isinstance(higher_level, tuple)
-    assert len(higher_level) == 0
-
-    # level 3
-    level2_nodes = root_system.find_nodes_by_name(name="Calculator_inSystem", search_depth=3)
-    assert len(level2_nodes) == 2
-
-    # level 4
-    level3_nodes = root_system.find_nodes_by_name(name="Calculator_inSystem", search_depth=4)
-    assert len(level3_nodes) == 3
-
-    optislang.dispose()
-
-
-# TEST PARAMETRIC SYSTEM
-def test_get_managers(optislang: Optislang, tmp_example_project):
-    """Test initialization and __str__ methods of `ParametricSystem` and managers."""
-    optislang.open(file_path=tmp_example_project("nested_systems"))
-    project = optislang.project
-    root_system = project.root_system
-    parametric_system: ParametricSystem = root_system.find_nodes_by_name("Parametric System")[0]
-    print(parametric_system)
-    parameter_manager = parametric_system.parameter_manager
-    print(parameter_manager)
-    assert isinstance(parameter_manager, ParameterManager)
-    criteria_manager = parametric_system.criteria_manager
-    print(criteria_manager)
-    assert isinstance(criteria_manager, CriteriaManager)
-    response_manager = parametric_system.response_manager
-    print(response_manager)
-    assert isinstance(response_manager, ResponseManager)
-    optislang.dispose()
-
-
-def test_get_omdb_files(tmp_example_project):
-    """Test `get_omdb_files()` method."""
-    optislang = Optislang(project_path=tmp_example_project("omdb_files"))
-    optislang.timeout = 30
-    optislang.reset()
-    optislang.start()
-    project = optislang.project
-    root_system = project.root_system
-
-    sensitivity: ParametricSystem = root_system.find_nodes_by_name("Sensitivity")[0]
-    s_omdb_file = sensitivity.get_omdb_files()
-    assert len(s_omdb_file) > 0
-    assert isinstance(s_omdb_file[0], File)
-
-    most_inner_sensitivity: ParametricSystem = root_system.find_nodes_by_name(
-        "MostInnerSensitivity", search_depth=3
-    )[0]
-    mis_omdb_file = most_inner_sensitivity.get_omdb_files()
-    assert len(mis_omdb_file) > 0
-    assert isinstance(mis_omdb_file[0], File)
-    optislang.dispose()
-
-
-def test_save_designs_as(tmp_path: Path, tmp_example_project):
-    """Test `save_designs_as` method."""
-    optislang = Optislang(project_path=tmp_example_project("omdb_files"))
-    optislang.timeout = 30
-    optislang.reset()
-    optislang.start()
-    project = optislang.project
-    root_system = project.root_system
-
-    sensitivity: ParametricSystem = root_system.find_nodes_by_name("Sensitivity")[0]
-    s_hids = sensitivity.get_states_ids()
-    s_file = sensitivity.save_designs_as(s_hids[0], "FirstDesign", FileOutputFormat.CSV, tmp_path)
-    assert isinstance(s_file, File)
-    assert s_file.exists
-    assert s_file.path.suffix == ".csv"
-
-    most_inner_sensitivity: ParametricSystem = root_system.find_nodes_by_name(
-        "MostInnerSensitivity", 3
-    )[0]
-    mis_hids = most_inner_sensitivity.get_states_ids()
-    mis_file = most_inner_sensitivity.save_designs_as(mis_hids[0], "InnerDesign")
-    assert isinstance(mis_file, File)
-    assert mis_file.exists
-    assert mis_file.path.suffix == ".json"
-    mis_file.path.unlink()
-    assert not mis_file.exists
-
-    optislang.dispose()

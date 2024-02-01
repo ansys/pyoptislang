@@ -30,7 +30,7 @@ This example demonstrates how to create and configure sensitivity systems.
 
 It creates a system named "Sensitivity". It then finds this system and uses
 the ``sensitivity_settings.py`` file to change some of the settings. Lastly, it
-explains how you can optionally save a copy of the project to a desired location.
+explains how you can optionally save the project to a desired location.
 """
 
 #########################################################
@@ -46,7 +46,7 @@ import ansys.optislang.core.examples as examples
 # ~~~~~~~~~~~~~~~~~~~~~~~~~
 # Create the optiSLang instance.
 
-osl = Optislang()
+osl = Optislang(ini_timeout=60)
 print(osl)
 
 #########################################################
@@ -56,7 +56,7 @@ print(osl)
 # script.
 
 paths = examples.get_files("sensitivity_settings")
-osl.run_python_file(paths[0])
+osl.application.project.run_python_file(paths[0])
 
 #########################################################
 # Optionally save project
@@ -67,7 +67,7 @@ osl.run_python_file(paths[0])
 # .. code:: python
 #
 #   path = r'<insert-desired-location>'
-#   osl.save_as(os.path.join(path, "test_project.opf"))
+#   osl.application.save_as(os.path.join(path, "test_project.opf"))
 #
 
 #########################################################

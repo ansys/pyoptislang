@@ -31,7 +31,7 @@ This example demonstrates how to create a basic text-based solver chain.
 This example uses the ``etk_abaqus.py`` file to set up a parametric system
 containing text input, the Abaqus process actor, and the Abaqus ETK output
 actor. It then explains how you can optionally save
-a copy of the project to a desired location.
+the project to a desired location.
 """
 
 #########################################################
@@ -47,7 +47,7 @@ import ansys.optislang.core.examples as examples
 # ~~~~~~~~~~~~~~~~~~~~~~~~~
 # Create the optiSLang instance.
 
-osl = Optislang()
+osl = Optislang(ini_timeout=60)
 print(osl)
 
 #########################################################
@@ -57,7 +57,7 @@ print(osl)
 # script.
 
 paths = examples.get_files("etk_abaqus")
-osl.run_python_file(paths[0])
+osl.application.project.run_python_file(paths[0])
 
 #########################################################
 # Optionally save project
@@ -68,7 +68,7 @@ osl.run_python_file(paths[0])
 # .. code:: python
 #
 #   path = r'<insert-desired-location>'
-#   osl.save_as(os.path.join(path, "test_project.opf"))
+#   osl.application.save_as(os.path.join(path, "test_project.opf"))
 #
 
 #########################################################

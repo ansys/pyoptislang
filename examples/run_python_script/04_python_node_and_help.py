@@ -37,7 +37,7 @@ and perform these tasks:
 
 It then uses the ``python_help.py`` file to print which nodes are
 available in the Python console. Lastly, it explains
-how you can optionally save a copy of the project to a desired location.
+how you can optionally save the project to a desired location.
 """
 
 #########################################################
@@ -53,7 +53,7 @@ import ansys.optislang.core.examples as examples
 # ~~~~~~~~~~~~~~~~~~~~~~~~~
 # Create the optiSLang instance.
 
-osl = Optislang()
+osl = Optislang(ini_timeout=60)
 print(osl)
 
 #########################################################
@@ -64,8 +64,8 @@ print(osl)
 
 paths1 = examples.get_files("python_node")
 paths2 = examples.get_files("python_help")
-osl.run_python_file(paths1[0])
-print(osl.run_python_file(paths2[0]))
+osl.application.project.run_python_file(paths1[0])
+print(osl.application.project.run_python_file(paths2[0]))
 
 #########################################################
 # Optionally save project
@@ -76,7 +76,7 @@ print(osl.run_python_file(paths2[0]))
 # .. code:: python
 #
 #   path = r'<insert-desired-location>'
-#   osl.save_as(os.path.join(path, "test_project.opf"))
+#   osl.application.save_as(os.path.join(path, "test_project.opf"))
 #
 
 #########################################################

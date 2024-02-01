@@ -5,11 +5,12 @@ logging architecture with global and local logging instances.
 
 For these two types of loggers, this is the default log message format:
 
-.. code:: pycon
+.. code:: python
 
-    >>> from ansys.optislang.core import Optislang
-    >>> osl = Optislang(loglevel="INFO")
-    >>> osl.log.info("This is an useful message")
+    from ansys.optislang.core import Optislang
+
+    osl = Optislang(loglevel="INFO")
+    osl.log.info("This is an useful message")
 
 .. code:: bash
 
@@ -28,12 +29,11 @@ of the tools provided in this module to extend or modify these loggers.
 
 Logging API
 -----------
-These classes are specific to the :mod:`ansys.optislang.core.logging <ansys.optislang.core.logging>` module:
+These classes are specific to the :py:mod:`ansys.optislang.core.logging <ansys.optislang.core.logging>` module:
 
 .. currentmodule:: ansys.optislang.core.logging
 
 .. autosummary::
     :toctree: _autosummary
-    :template: class.rst
 
     OslLogger
