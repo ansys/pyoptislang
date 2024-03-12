@@ -86,7 +86,6 @@ def tcp_listener():
         port_range=(49152, 65535),
         timeout=30,
         name="GeneralListener",
-        host="127.0.0.1",
         uid=str(uuid.uuid4()),
         logger=logging.getLogger(__name__),
     )
@@ -261,7 +260,7 @@ def test_is_initialized(osl_server_process: OslServerProcess, tcp_listener: tos.
 def test_listener_properties(
     osl_server_process: OslServerProcess, tcp_listener: tos.TcpOslListener
 ):
-    """Test `name`, `uid`, `timeout`, `host`, `port`, `refresh_listener..`."""
+    """Test `name`, `uid`, `timeout`, `host_addresses`, `port`, `refresh_listener..`."""
     assert isinstance(tcp_listener.uid, str)
     new_uid = str(uuid.uuid4())
     tcp_listener.uid = new_uid
@@ -276,7 +275,8 @@ def test_listener_properties(
     new_timeout = tcp_listener.timeout
     assert isinstance(new_timeout, (float, int))
     assert new_timeout == 15
-    assert isinstance(tcp_listener.host, str)
+    assert isinstance(tcp_listener.host_addresses, list)
+    assert all(isinstance(elem, str) for elem in tcp_listener.host_addresses)
     assert isinstance(tcp_listener.port, int)
     refresh = tcp_listener.refresh_listener_registration
     assert isinstance(refresh, bool)
