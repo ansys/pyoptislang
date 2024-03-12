@@ -767,7 +767,7 @@ class OslServerProcess:
             args.append(f"--tcp-listener-id={self.__listener_id}")
 
         if self.__multi_listener is not None:
-            if len(self.__multi_listener) >= 2:
+            if len(self.__multi_listener) >= 1:
                 args.append("--register-multi-tcp-listeners")
             for listener in self.__multi_listener:
                 if len(listener) >= 3 and listener[2] is not None:
