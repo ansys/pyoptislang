@@ -282,7 +282,7 @@ def test_remote_wocm(send_dispose, send_shutdown):
 
 def test_local_and_remote_simultaneously():
     """Test connection to locally started server, dispose locally started instance."""
-    osl_local = Optislang()
+    osl_local = Optislang(ini_timeout=60)
     osl_remote = Optislang(port=osl_local.osl_server.port, host=osl_local.osl_server.host)
     osl_local.dispose()
     time.sleep(30)
