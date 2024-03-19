@@ -766,7 +766,10 @@ class TcpOslListener:
     @property
     def host_addresses(self) -> List[str]:
         """Local IP addresses associated with self.__listener_socket."""
-        return socket.gethostbyname_ex(socket.getfqdn())[2]
+        addresses = [i[4][0] for i in socket.getaddrinfo(socket.gethostname(), None)]
+        # Explicitly add localhost  to workaround potential networking issues
+        addresses.append("127.0.0.1")
+        return addresses
 
     @property
     def port(self) -> int:
