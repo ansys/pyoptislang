@@ -277,7 +277,7 @@ class OslServerProcess:
 
         self.__project_path = self.__class__.__validated_path(project_path, "project_path")
 
-        if self.__project_path.suffix != ".opf":
+        if self.__project_path is not None and self.__project_path.suffix != ".opf":
             raise ValueError("Invalid optiSLang project file.")
 
         self.__server_info = self.__class__.__validated_path(server_info, "server_info")
