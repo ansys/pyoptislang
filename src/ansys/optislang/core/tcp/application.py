@@ -109,6 +109,7 @@ class TcpApplicationProxy(Application):
         force: bool = True,
         restore: bool = False,
         reset: bool = False,
+        project_properties_file: Optional[str] = None,
     ) -> None:
         """Open a project.
 
@@ -127,6 +128,8 @@ class TcpApplicationProxy(Application):
             Whether to restore the project from the last (auto) save point (if present).
         reset : bool, optional
             Whether to reset the project after loading it.
+        project_properties_file : Optional[str], optional
+            Project properties file to import, by default ``None``.
 
         Raises
         ------
@@ -137,7 +140,13 @@ class TcpApplicationProxy(Application):
         TimeoutError
             Raised when the timeout float value expires.
         """
-        self.__osl_server.open(file_path=file_path, force=force, restore=restore, reset=reset)
+        self.__osl_server.open(
+            file_path=file_path,
+            force=force,
+            restore=restore,
+            reset=reset,
+            project_properties_file=project_properties_file,
+        )
         self.__project = TcpProjectProxy(
             osl_server=self.__osl_server,
             uid=self.__get_project_uid(),
@@ -229,8 +238,11 @@ class TcpApplicationProxy(Application):
         TimeoutError
             Raised when the timeout float value expires.
         """
-        project_tree = self.__osl_server.get_full_project_tree_with_properties()
-        return project_tree.get("projects", [{}])[0].get("system", {}).get("uid", None)
+        try:
+            project_tree = self.__osl_server.get_full_project_tree_with_properties()
+            return project_tree.get("projects", [{}])[0].get("system", {}).get("uid", None)
+        except:
+            return None
 
     # FUTURES:
 

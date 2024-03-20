@@ -753,7 +753,7 @@ class TcpOslListener:
         if port_range[0] > port_range[1]:
             raise ValueError("First number is higher.")
 
-        self.__init_listener_socket(host=host, port_range=port_range)
+        self.__init_listener_socket(host=host if host is not None else "", port_range=port_range)
 
     def is_initialized(self) -> bool:
         """Return True if listener was initialized."""
@@ -788,9 +788,12 @@ class TcpOslListener:
         self.__timeout = timeout
 
     @property
-    def host(self) -> str:
-        """Local IPv6 address associated with self.__listener_socket."""
-        return self.__listener_socket.getsockname()[0]
+    def host_addresses(self) -> List[str]:
+        """Local IP addresses associated with self.__listener_socket."""
+        addresses = [i[4][0] for i in socket.getaddrinfo(socket.gethostname(), None)]
+        # Explicitly add localhost  to workaround potential networking issues
+        addresses.append("127.0.0.1")
+        return addresses
 
     @property
     def port(self) -> int:
@@ -1222,7 +1225,7 @@ class TcpOslServer(OslServer):
                 uid=self.__listener_id,
             )
             listener.uid = self.__register_listener(
-                host=listener.host,
+                host_addresses=listener.host_addresses,
                 port=listener.port,
                 notifications=[
                     ServerNotification.SERVER_UP,
@@ -2843,6 +2846,7 @@ class TcpOslServer(OslServer):
         force: bool = True,
         restore: bool = False,
         reset: bool = False,
+        project_properties_file: Optional[str] = None,
     ) -> None:
         """Open a new project.
 
@@ -2859,6 +2863,8 @@ class TcpOslServer(OslServer):
             Whether to restore project from last (auto) save point (if present).
         reset : bool, optional
             Whether to reset project after load.
+        project_properties_file : Optional[str], optional
+            Project properties file to import, by default ``None``.
 
         Raises
         ------
@@ -2890,6 +2896,7 @@ class TcpOslServer(OslServer):
                 do_restore=restore,
                 do_reset=reset,
                 password=self.__password,
+                project_properties_file=project_properties_file,
             ),
             timeout=self.timeouts_register.get_value(current_func_name),
             max_request_attempts=self.max_request_attempts_register.get_value(current_func_name),
@@ -4084,14 +4091,19 @@ class TcpOslServer(OslServer):
         try:
             listener.start_listening(timeout=ini_timeout)
 
+            multi_listener = (
+                list(self.__multi_listener) if self.__multi_listener is not None else []
+            )
+
+            for host_address in listener.host_addresses:
+                multi_listener.append((host_address, listener.port, listener.uid))
+
             self.__osl_process = OslServerProcess(
                 executable=self.__executable,
                 project_path=self.__project_path,
                 no_save=self.__no_save,
                 password=self.__password,
-                listener=(listener.host, listener.port),
-                listener_id=listener.uid,
-                multi_listener=self.__multi_listener,
+                multi_listener=multi_listener,
                 notifications=[
                     ServerNotification.SERVER_UP,
                     ServerNotification.SERVER_DOWN,
@@ -4193,7 +4205,6 @@ class TcpOslServer(OslServer):
             port_range=self.__class__._PRIVATE_PORTS_RANGE,
             timeout=timeout,
             name=name,
-            host=self.__host,
             uid=uid,
             logger=self._logger,
         )
@@ -4228,7 +4239,7 @@ class TcpOslServer(OslServer):
             name="ExecStarted",
         )
         exec_started_listener.uid = self.__register_listener(
-            host=exec_started_listener.host,
+            host_addresses=exec_started_listener.host_addresses,
             port=exec_started_listener.port,
             notifications=[
                 ServerNotification.PROCESSING_STARTED,
@@ -4266,7 +4277,7 @@ class TcpOslServer(OslServer):
             name="ExecFinished",
         )
         exec_finished_listener.uid = self.__register_listener(
-            host=exec_finished_listener.host,
+            host_addresses=exec_finished_listener.host_addresses,
             port=exec_finished_listener.port,
             notifications=[
                 ServerNotification.EXECUTION_FINISHED,
@@ -4356,7 +4367,7 @@ class TcpOslServer(OslServer):
 
     def __register_listener(
         self,
-        host: str,
+        host_addresses: Iterable[str],
         port: int,
         timeout: int = 60000,
         notifications: Optional[List[ServerNotification]] = None,
@@ -4365,8 +4376,8 @@ class TcpOslServer(OslServer):
 
         Parameters
         ----------
-        host: str
-            A string representation of an IPv4/v6 address or domain name.
+        host_addresses: Iterable[str]
+            String representations of IPv4/v6 addresses.
         port: int
             A numeric port number of listener.
         timeout: float
@@ -4397,19 +4408,23 @@ class TcpOslServer(OslServer):
             Raised when the timeout float value expires.
         """
         current_func_name = self.__register_listener.__name__
-        msg = self.send_command(
-            command=commands.register_listener(
-                host=host,
-                port=port,
-                timeout=timeout,
-                notifications=[ntf.name for ntf in notifications],
-                password=self.__password,
-                listener_uid=self.__listener_id,
-            ),
-            timeout=self.timeouts_register.get_value(current_func_name),
-            max_request_attempts=self.max_request_attempts_register.get_value(current_func_name),
-        )
-        return msg[0]["uid"]
+        listener_id = self.__listener_id if self.__listener_id is not None else str(uuid.uuid4())
+        for host_address in host_addresses:
+            self.send_command(
+                command=commands.register_listener(
+                    host=host_address,
+                    port=port,
+                    timeout=timeout,
+                    notifications=[ntf.name for ntf in notifications],
+                    password=self.__password,
+                    listener_uid=listener_id,
+                ),
+                timeout=self.timeouts_register.get_value(current_func_name),
+                max_request_attempts=self.max_request_attempts_register.get_value(
+                    current_func_name
+                ),
+            )
+        return listener_id
 
     def __refresh_listeners_registration(self) -> None:  # pragma: no cover
         """Refresh listeners registration.

@@ -582,7 +582,12 @@ def new(password: Optional[str] = None) -> str:
 
 
 def open(
-    path: str, do_force: bool, do_restore: bool, do_reset: bool, password: Optional[str] = None
+    path: str,
+    do_force: bool,
+    do_restore: bool,
+    do_reset: bool,
+    password: Optional[str] = None,
+    project_properties_file: Optional[str] = None,
 ) -> str:
     """Generate JSON string of ``open`` command.
 
@@ -598,6 +603,8 @@ def open(
         True/False.
     password : Optional[str], optional
         Password, by default ``None``.
+    project_properties_file : Optional[str], optional
+        Project properties file to import, by default ``None``.
 
     Returns
     -------
@@ -609,6 +616,8 @@ def open(
     args["do_force"] = do_force
     args["do_restore"] = do_restore
     args["do_reset"] = do_reset
+    if project_properties_file is not None:
+        args["project_properties_file"] = project_properties_file
 
     return _to_json(_gen_server_command(command=_OPEN, args=args, password=password))
 

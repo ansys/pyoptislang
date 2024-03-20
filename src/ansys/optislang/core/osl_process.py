@@ -277,7 +277,7 @@ class OslServerProcess:
 
         self.__project_path = self.__class__.__validated_path(project_path, "project_path")
 
-        if self.__project_path.suffix != ".opf":
+        if self.__project_path is not None and self.__project_path.suffix != ".opf":
             raise ValueError("Invalid optiSLang project file.")
 
         self.__server_info = self.__class__.__validated_path(server_info, "server_info")
@@ -789,7 +789,7 @@ class OslServerProcess:
             args.append(f"--tcp-listener-id={self.__listener_id}")
 
         if self.__multi_listener is not None:
-            if len(self.__multi_listener) >= 2:
+            if len(self.__multi_listener) >= 1:
                 args.append("--register-multi-tcp-listeners")
             for listener in self.__multi_listener:
                 if len(listener) >= 3 and listener[2] is not None:
