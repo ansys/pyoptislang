@@ -25,7 +25,7 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import TYPE_CHECKING, Union
+from typing import TYPE_CHECKING, Optional, Union
 
 if TYPE_CHECKING:
     from ansys.optislang.core.osl_server import OslVersion
@@ -99,6 +99,7 @@ class Application(ABC):
         force: bool = True,
         restore: bool = False,
         reset: bool = False,
+        project_properties_file: Optional[str] = None,
     ) -> None:  # pragma: no cover
         """Open a project.
 
@@ -117,6 +118,8 @@ class Application(ABC):
             Whether to restore the project from the last (auto) save point (if present).
         reset : bool, optional
             Whether to reset the project after loading it.
+        project_properties_file : Optional[str], optional
+            Project properties file to import, by default ``None``.
 
         Raises
         ------

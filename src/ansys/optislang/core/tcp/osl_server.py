@@ -2846,6 +2846,7 @@ class TcpOslServer(OslServer):
         force: bool = True,
         restore: bool = False,
         reset: bool = False,
+        project_properties_file: Optional[str] = None,
     ) -> None:
         """Open a new project.
 
@@ -2862,6 +2863,8 @@ class TcpOslServer(OslServer):
             Whether to restore project from last (auto) save point (if present).
         reset : bool, optional
             Whether to reset project after load.
+        project_properties_file : Optional[str], optional
+            Project properties file to import, by default ``None``.
 
         Raises
         ------
@@ -2893,6 +2896,7 @@ class TcpOslServer(OslServer):
                 do_restore=restore,
                 do_reset=reset,
                 password=self.__password,
+                project_properties_file=project_properties_file,
             ),
             timeout=self.timeouts_register.get_value(current_func_name),
             max_request_attempts=self.max_request_attempts_register.get_value(current_func_name),
