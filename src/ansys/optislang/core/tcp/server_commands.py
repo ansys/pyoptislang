@@ -1729,7 +1729,7 @@ def show_node_dialog(
     )
 
 
-def shutdown(password: Optional[str] = None) -> str:
+def shutdown(force: bool = False, password: Optional[str] = None) -> str:
     """Generate JSON string of ``shutdown`` command.
 
     Parameters
@@ -1742,7 +1742,10 @@ def shutdown(password: Optional[str] = None) -> str:
     str
         JSON string of ``shutdown`` command.
     """
-    return _to_json(_gen_server_command(command=_SHUTDOWN, password=password))
+    args: CommandArgs = {}
+    args["force"] = force
+
+    return _to_json(_gen_server_command(command=_SHUTDOWN, args=args, password=password))
 
 
 def shutdown_when_finished(password: Optional[str] = None) -> str:

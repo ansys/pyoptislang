@@ -1462,7 +1462,8 @@ def test_shutdown():
     json_string = sc.shutdown()
     dictionary = json.loads(json_string)
     requiered_string = json.loads(
-        '{ "projects": [ { "commands": [ { "type": "builtin", "command": "SHUTDOWN" } ] } ] }'
+        '{ "projects": [ { "commands": [ { "type": "builtin", "command": "SHUTDOWN", '
+        '"args": { "force": false } } ] } ] }'
     )
     assert type(json_string) == str
     assert sorted(dictionary.items()) == sorted(requiered_string.items())

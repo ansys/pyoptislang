@@ -3757,19 +3757,18 @@ class TcpOslServer(OslServer):
         self.__unregister_all_listeners()
         self.__dispose_all_listeners()
 
-        if self.__shutdown_on_finished in (False, None):
-            try:
-                current_func_name = self.shutdown.__name__
-                self.send_command(
-                    command=commands.shutdown(self.__password),
-                    timeout=self.timeouts_register.get_value(current_func_name),
-                    max_request_attempts=self.max_request_attempts_register.get_value(
-                        current_func_name
-                    ),
-                )
-            except Exception:
-                if not force or self.__osl_process is None:
-                    raise
+        try:
+            current_func_name = self.shutdown.__name__
+            self.send_command(
+                command=commands.shutdown(force=force, password=self.__password),
+                timeout=self.timeouts_register.get_value(current_func_name),
+                max_request_attempts=self.max_request_attempts_register.get_value(
+                    current_func_name
+                ),
+            )
+        except Exception:
+            if not force or self.__osl_process is None:
+                raise
 
         # If desired actively force osl process to terminate
         if force and self.__osl_process is not None:
