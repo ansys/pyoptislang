@@ -25,7 +25,7 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import TYPE_CHECKING, Sequence, Tuple, Union
+from typing import TYPE_CHECKING, Optional, Sequence, Tuple, Union
 
 if TYPE_CHECKING:
     from ansys.optislang.core.io import RegisteredFile
@@ -103,12 +103,12 @@ class Project(ABC):
         pass
 
     @abstractmethod
-    def get_description(self) -> Union[str, None]:  # pragma: no cover
+    def get_description(self) -> Optional[str]:  # pragma: no cover
         """Get the description of the optiSLang project.
 
         Returns
         -------
-        Union[str, None]
+        Optional[str]
             Description of the optiSLang project. If no project is loaded in optiSLang,
             ``None`` is returned.
 

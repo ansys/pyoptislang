@@ -1057,8 +1057,8 @@ class System(Node):
     def create_node(
         self,
         type_: NodeType,
-        name: Union[str, None] = None,
-        design_flow: Union[DesignFlow, None] = None,
+        name: Optional[str] = None,
+        design_flow: Optional[DesignFlow] = None,
     ) -> Node:  # pragma: no cover
         """Create a new node in current system in active project.
 
@@ -1066,9 +1066,9 @@ class System(Node):
         ----------
         type_ : NodeType
             Type of created node.
-        name : Union[str, None], optional
+        name : Optional[str], optional
             Name of created node, by default None.
-        design_flow : Union[DesignFlow, None], optional
+        design_flow : Optional[DesignFlow], optional
             Design flow, by default None.
 
         Returns
@@ -1103,7 +1103,7 @@ class System(Node):
     @abstractmethod
     def find_node_by_uid(
         self, uid: str, search_depth: int = 1
-    ) -> Union[Node, None]:  # pragma: no cover
+    ) -> Optional[Node]:  # pragma: no cover
         """Find a node in the system with a specified unique ID.
 
         This method searches only in the descendant nodes for the current system.
@@ -1119,7 +1119,7 @@ class System(Node):
 
         Returns
         -------
-        Union[Node, None]
+        Optional[Node]
             ``Node`` with the specified unique ID. If this ID isn't located in any
             descendant node, ``None`` is returned.
 
@@ -1532,12 +1532,12 @@ class Slot(ABC):
 
     @property
     @abstractmethod
-    def type_hint(self) -> Union[str, None]:  # pragma: no cover
+    def type_hint(self) -> Optional[str]:  # pragma: no cover
         """Get type hint.
 
         Returns
         -------
-        Union[str, None]
+        Optional[str]
             Data type of the current slot, ``None`` if not specified.
         """
         pass
@@ -1580,7 +1580,7 @@ class Slot(ABC):
         node: Node,
         name: str,
         type_: SlotType,
-        type_hint: Union[str, None] = None,
+        type_hint: Optional[str] = None,
     ) -> Slot:  # pragma: no cover
         """Create instance of new slot.
 
@@ -1594,7 +1594,7 @@ class Slot(ABC):
             Slot name.
         type_ : SlotType
             Slot type.
-        type_hint : Union[str, None], optional
+        type_hint : Optional[str], optional
             Slot's expected data type, by default None.
 
         Returns

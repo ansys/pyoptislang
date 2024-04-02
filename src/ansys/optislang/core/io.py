@@ -26,7 +26,7 @@ from __future__ import annotations
 from enum import Enum
 from pathlib import Path
 import time
-from typing import Union
+from typing import Optional, Union
 
 from ansys.optislang.core.utils import enum_from_str
 
@@ -94,12 +94,12 @@ class File:
         return self.path.name
 
     @property
-    def last_modified_seconds(self) -> Union[float, None]:
+    def last_modified_seconds(self) -> Optional[float]:
         """Last modified time as a timestamp.
 
         Returns
         -------
-        Union[float, None]
+        Optional[float]
             Last modified time in seconds since the Epoch, `None` if file doesn't exist.
         """
         if self.exists:
@@ -108,12 +108,12 @@ class File:
             return None
 
     @property
-    def last_modified_str(self) -> Union[str, None]:
+    def last_modified_str(self) -> Optional[str]:
         """Last modified time as a datetime.
 
         Returns
         -------
-        Union[str, None]
+        Optional[str]
             Last modified time as string, `None` if file doesn't exist.
         """
         if self.exists:
@@ -133,12 +133,12 @@ class File:
         return self.__path
 
     @property
-    def size(self) -> Union[int, None]:
+    def size(self) -> Optional[int]:
         """File size in bytes.
 
         Returns
         -------
-        Union[int, None]
+        Optional[int]
             File size in bytes, `None` in file doesn't exist.
         """
         if self.exists:
