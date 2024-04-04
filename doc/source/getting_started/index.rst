@@ -2,7 +2,7 @@ Getting started
 ===============
 To run PyOptiSLang, you must have access to a licensed copy of optiSLang. The first
 supported version of optiSLang is 2023 R1. For more information on optiSLang, see the
-`Ansys optiSLang <https://www.ansys.com/products/connect/ansys-optislang>`_ page
+`Ansys optiSLang <https://www.ansys.com/products/connect/ansys-optislang/>`_ page
 on the Ansys website.
 
 ************
