@@ -900,8 +900,7 @@ class Optislang:
         ----------
         force : bool, optional
             Whether to forcibly shut down a local optiSLang server. The default is
-            ``False``. This parameter has no effect when the connection established
-            is to a remote optiSLang server. In all cases, an attempt is made to
+            ``False``. In all cases, an attempt is made to
             shut down the optiSLang server in the proper way. However, if the
             ``force`` parameter is ``True``, after a while, the process is forcibly
             shut down without an exception being raised.
