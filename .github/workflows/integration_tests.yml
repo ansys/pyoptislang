@@ -9,7 +9,7 @@ jobs:
   test-suite:
     strategy:
       matrix:
-        osl_version: [23.2.0, 24.1.0]
+        osl_version: [23.2.0, 24.1.0, 24.2.0]
     name: "optiSLang ${{ matrix.osl_version }}"
     if: github.event.name != 'pull_request' || github.event.pull_request.merged == true
     runs-on: public-ubuntu-latest-16-cores
