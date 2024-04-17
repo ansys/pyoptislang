@@ -455,12 +455,12 @@ class Optislang:
         return self.application.project
 
     @property
-    def timeout(self) -> Union[float, None]:
+    def timeout(self) -> Optional[float]:
         """Get the timeout value for executing commands.
 
         Returns
         -------
-        timeout: Union[float, None]
+        timeout: Optional[float]
             Timeout in seconds to perform commands. This value must be greater
             than zero or ``None``. The default is ``None``. Another function
             raises a timeout exception if the timeout value has elapsed before
@@ -470,12 +470,12 @@ class Optislang:
         return self.__osl_server.timeout
 
     @timeout.setter
-    def timeout(self, timeout: Union[float, None] = None) -> None:
+    def timeout(self, timeout: Optional[float] = None) -> None:
         """Set the timeout value for the executing commands.
 
         Parameters
         ----------
-        timeout: Union[float, None]
+        timeout: Optional[float], optional
             Timeout in seconds to perform commands. This value must be greater
             than zero or ``None``. The default is ``None``. Another function
             raises a timeout exception if the timeout value has elapsed before
@@ -487,7 +487,7 @@ class Optislang:
         ValueError
             Raised when the timeout value is less than or equal to 0.
         TypeError
-            Raised when the timeout is not a Union[float, None].
+            Raised when the timeout is not a type of ``float`` or  ``None``.
         """
         self.__osl_server.timeout = timeout
 
@@ -563,12 +563,12 @@ class Optislang:
         return self.__osl_server.osl_version
 
     @deprecated(version="0.5.0", reason="Use :py:attr:`Optislang.timeout` instead.")
-    def get_timeout(self) -> Union[float, None]:
+    def get_timeout(self) -> Optional[float]:
         """Get the timeout value for executing commands.
 
         Returns
         -------
-        timeout: Union[float, None]
+        timeout: Optional[float]
             Timeout in seconds to perform commands. This value must be greater
             than zero or ``None``. The default is ``None``. Another function
             raises a timeout exception if the timeout value has elapsed before
@@ -868,12 +868,12 @@ class Optislang:
         self.application.save_copy(file_path)
 
     @deprecated(version="0.5.0", reason="Use :py:attr:`Optislang.timeout` instead.")
-    def set_timeout(self, timeout: Union[float, None] = None) -> None:
+    def set_timeout(self, timeout: Optional[float] = None) -> None:
         """Set the timeout value for the executing commands.
 
         Parameters
         ----------
-        timeout: Union[float, None]
+        timeout: Optional[float]
             Timeout in seconds to perform commands. This value must be greater
             than zero or ``None``. The default is ``None``. Another function
             raises a timeout exception if the timeout value has elapsed before
@@ -885,7 +885,7 @@ class Optislang:
         ValueError
             Raised when the timeout value is less than or equal to 0.
         TypeError
-            Raised when the timeout is not a Union[float, None].
+            Raised when the timeout is not type of ``float`` or ``None``.
         """
         self.osl_server.timeout = timeout
 

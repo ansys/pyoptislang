@@ -1192,7 +1192,7 @@ class LimitStateCriterion(Criterion):
             Limit expression. By default ``"0"``.
         limit_expression_value: Optional[Union[tuple, bool, float, complex, list, dict]], optional
             Limit expression value. Defaults to ``None``.
-        limit_expression_value_type: Optional[Union[CriterionValueType, None]], optional
+        limit_expression_value_type: Optional[CriterionValueType], optional
             Limit expression value type. Defaults to ``None``.
         value: Optional[Union[tuple, bool, float, complex, list, dict]], optional
             Criterion value. By default ``None``.
@@ -2364,17 +2364,17 @@ class MixedParameter(Parameter):
             self.__distribution_parameters = None
 
     @property
-    def statistical_moments(self) -> Union[Tuple[float], None]:
+    def statistical_moments(self) -> Optional[Tuple[float]]:
         """Statistical moments of the distribution."""
         return self.__statistical_moments
 
     @statistical_moments.setter
-    def statistical_moments(self, moments: Union[Sequence[float], None]):
+    def statistical_moments(self, moments: Optional[Sequence[float]]):
         """Set the statistical moments of the distribution.
 
         Parameters
         ----------
-        moments : Sequence[float]
+        moments : Optional[Sequence[float]]
             Statistical moments of the distribution.
         """
         if moments is not None:
@@ -2383,18 +2383,18 @@ class MixedParameter(Parameter):
             self.__statistical_moments = None
 
     @property
-    def cov(self) -> Union[float, None]:
+    def cov(self) -> Optional[float]:
         """COV of the distribution."""
         return self.__cov
 
     @cov.setter
-    def cov(self, cov: Union[float, None]):
-        """Set the statistical moments of the distribution.
+    def cov(self, cov: Optional[float]):
+        """Set the COV of the distribution.
 
         Parameters
         ----------
-        moments : Sequence[float]
-            Statistical moments of the distribution.
+        cov : Optional[float]
+            COV of the distribution.
         """
         self.__cov = cov
 
@@ -2874,18 +2874,18 @@ class StochasticParameter(Parameter):
             self.__statistical_moments = None
 
     @property
-    def cov(self) -> Union[float, None]:
+    def cov(self) -> Optional[float]:
         """COV of the distribution."""
         return self.__cov
 
     @cov.setter
-    def cov(self, cov: Union[float, None]):
-        """Set the statistical moments of the distribution.
+    def cov(self, cov: Optional[float]):
+        """Set the COV of the distribution.
 
         Parameters
         ----------
-        moments : Sequence[float]
-            Statistical moments of the distribution.
+        cov : Optional[float]
+            COV of the distribution.
         """
         self.__cov = cov
 
@@ -3261,8 +3261,8 @@ class Design:
     ) -> None:
         """Initialize a new instance of the ``Design`` class."""
         self.__constraints: List[DesignVariable] = []
-        self.__feasibility: Union[bool, None] = feasibility
-        self.__id: Union[int, None] = design_id
+        self.__feasibility: Optional[bool] = feasibility
+        self.__id: Optional[int] = design_id
         self.__limit_states: List[DesignVariable] = []
         self.__objectives: List[DesignVariable] = []
         self.__parameters: List[DesignVariable] = []
@@ -3297,12 +3297,12 @@ class Design:
         return tuple([constraint.name for constraint in self.__constraints])
 
     @property
-    def feasibility(self) -> Union[bool, None]:
+    def feasibility(self) -> Optional[bool]:
         """Feasibility of the design. If the design is not evaluated, ``None`` is returned."""
         return self.__feasibility
 
     @property
-    def id(self) -> Union[int, None]:
+    def id(self) -> Optional[int]:
         """ID of the design. If no ID is assigned, ``None`` is returned."""
         return self.__id
 
@@ -3493,7 +3493,7 @@ class Design:
         else:
             self.__parameters.append(DesignVariable(name=name, value=value))
 
-    def __find_name_index(self, name: str, type_: str) -> Union[int, None]:
+    def __find_name_index(self, name: str, type_: str) -> Optional[int]:
         """Find the index of a criterion, parameter, response, or variable by name.
 
         Parameters
@@ -3505,7 +3505,7 @@ class Design:
 
         Returns
         -------
-        Union[int, None]
+        Optional[int]
             Position of the name in the list. If the name is not found, ``None`` is returned.
 
         Raises
