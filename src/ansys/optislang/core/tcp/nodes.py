@@ -748,15 +748,15 @@ class TcpNodeProxy(Node):
         )
 
     def _get_slots(
-        self, type_: Union[SlotType, None] = None, name: Union[str, None] = None
+        self, type_: Optional[SlotType] = None, name: Optional[str] = None
     ) -> Tuple[TcpSlotProxy, ...]:
         """Get current node's slots of given type and name.
 
         Parameters
         ----------
-        type_: Union[SlotType, None], optional
+        type_: Optional[SlotType], optional
             Type of slots to be returned, by default ``None``.
-        name : Union[str, None], optional
+        name : Optional[str], optional
             Slot name, by default ``None``.
 
         Returns
@@ -1560,7 +1560,7 @@ class TcpSystemProxy(TcpNodeProxy, System):
     def create_node(
         self,
         type_: Union[NodeType, str],
-        name: Union[str, None] = None,
+        name: Optional[str] = None,
         design_flow: Optional[Union[DesignFlow, str]] = None,
     ) -> TcpNodeProxy:
         """Create a new node in current system in active project.
@@ -1569,7 +1569,7 @@ class TcpSystemProxy(TcpNodeProxy, System):
         ----------
         type_ : Union[NodeType, str]
             Type of created node.
-        name : Union[str, None], optional
+        name : Optional[str], optional
             Name of created node, by default None.
         design_flow : Optional[Union[DesignFlow, str]], optional
             Design flow, by default ``None``.
@@ -1639,7 +1639,7 @@ class TcpSystemProxy(TcpNodeProxy, System):
         for node in nodes:
             node.delete()
 
-    def find_node_by_uid(self, uid: str, search_depth: int = 1) -> Union[TcpNodeProxy, None]:
+    def find_node_by_uid(self, uid: str, search_depth: int = 1) -> Optional[TcpNodeProxy]:
         """Find a node in the system with a specified unique ID.
 
         This method searches only in the descendant nodes for the current system.
@@ -1655,7 +1655,7 @@ class TcpSystemProxy(TcpNodeProxy, System):
 
         Returns
         -------
-        Union[TcpNodeProxy, None]
+        Optional[TcpNodeProxy]
             ``TcpNodeProxy`` with the specified unique ID. If this ID isn't located in any
             descendant node, ``None`` is returned.
 
@@ -1863,7 +1863,7 @@ class TcpSystemProxy(TcpNodeProxy, System):
     @staticmethod
     def _get_subtypes(
         addin_type: AddinType,
-    ) -> Tuple[Union[str, None], Union[str, None], Union[str, None], Union[str, None]]:
+    ) -> Tuple[Optional[str], Optional[str], Optional[str], Optional[str]]:
         """Get subtypes in tcp server input format.
 
         Parameters
@@ -1873,7 +1873,7 @@ class TcpSystemProxy(TcpNodeProxy, System):
 
         Returns
         -------
-        Tuple[Union[str, None], Union[str, None], Union[str, None], Union[str, None]]
+        Tuple[Optional[str], Optional[str], Optional[str], Optional[str]]
             algorithm_type, integration_type, mop_node_type, node_type
         """
         if not isinstance(addin_type, AddinType):
@@ -2673,7 +2673,7 @@ class TcpSlotProxy(Slot):
         node: TcpNodeProxy,
         name: str,
         type_: SlotType,
-        type_hint: Union[str, None] = None,
+        type_hint: Optional[str] = None,
     ) -> None:
         """Create an ``TcpSlotProxy`` instance.
 
@@ -2687,7 +2687,7 @@ class TcpSlotProxy(Slot):
            Slot name.
         type_ : SlotType
             Slot type.
-        type_hint : Union[str, None], optional
+        type_hint : Optional[str], optional
             Description, by default None.
         """
         self._osl_server = osl_server
@@ -2734,12 +2734,12 @@ class TcpSlotProxy(Slot):
         return self.__type
 
     @property
-    def type_hint(self) -> Union[str, None]:
+    def type_hint(self) -> Optional[str]:
         """Get type hint.
 
         Returns
         -------
-        Union[str, None]
+        Optional[str]
             Data type of the current slot, ``None`` if not specified.
         """
         return self.__type_hint
@@ -2911,7 +2911,7 @@ class TcpInputSlotProxy(TcpSlotProxy, InputSlot):
         node: TcpNodeProxy,
         name: str,
         type_: SlotType,
-        type_hint: Union[str, None] = None,
+        type_hint: Optional[str] = None,
     ) -> None:
         """Create an ``TcpInputSlotProxy`` instance.
 
@@ -2925,7 +2925,7 @@ class TcpInputSlotProxy(TcpSlotProxy, InputSlot):
            Slot name.
         type_ : SlotType
             Slot type.
-        type_hint : Union[str, None], optional
+        type_hint : Optional[str], optional
             Description, by default None.
         """
         super().__init__(
@@ -2998,7 +2998,7 @@ class TcpOutputSlotProxy(TcpSlotProxy, OutputSlot):
         node: TcpNodeProxy,
         name: str,
         type_: SlotType,
-        type_hint: Union[str, None] = None,
+        type_hint: Optional[str] = None,
     ) -> None:
         """Create an ``OutputSlotProxy`` instance.
 
@@ -3012,7 +3012,7 @@ class TcpOutputSlotProxy(TcpSlotProxy, OutputSlot):
            Slot name.
         type_ : SlotType
             Slot type.
-        type_hint : Union[str, None], optional
+        type_hint : Optional[str], optional
             Description, by default None.
         """
         super().__init__(
@@ -3085,7 +3085,7 @@ class TcpInnerInputSlotProxy(TcpSlotProxy, InnerInputSlot):
         node: TcpNodeProxy,
         name: str,
         type_: SlotType,
-        type_hint: Union[str, None] = None,
+        type_hint: Optional[str] = None,
     ) -> None:
         """Create a ``InnerInputSlotProxy`` instance.
 
@@ -3099,7 +3099,7 @@ class TcpInnerInputSlotProxy(TcpSlotProxy, InnerInputSlot):
            Slot name.
         type_ : SlotType
             Slot type.
-        type_hint : Union[str, None], optional
+        type_hint : Optional[str], optional
             Description, by default None.
         """
         super().__init__(
@@ -3156,7 +3156,7 @@ class TcpInnerOutputSlotProxy(TcpSlotProxy, InnerOutputSlot):
         node: TcpNodeProxy,
         name: str,
         type_: SlotType,
-        type_hint: Union[str, None] = None,
+        type_hint: Optional[str] = None,
     ) -> None:
         """Create a ``InnerOutputSlotProxy`` instance.
 
@@ -3170,7 +3170,7 @@ class TcpInnerOutputSlotProxy(TcpSlotProxy, InnerOutputSlot):
            Slot name.
         type_ : SlotType
             Slot type.
-        type_hint : Union[str, None], optional
+        type_hint : Optional[str], optional
             Description, by default None.
         """
         super().__init__(

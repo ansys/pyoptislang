@@ -42,12 +42,12 @@ class Application(ABC):
 
     @property
     @abstractmethod
-    def project(self) -> Union[Project, None]:
+    def project(self) -> Optional[Project]:
         """Instance of the ``Project`` class.
 
         Returns
         -------
-        Union[Project, None]
+        Optional[Project]
             Loaded project. If no project is loaded, ``None`` is returned.
         """
         pass

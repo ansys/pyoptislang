@@ -25,7 +25,7 @@ from __future__ import annotations
 
 import logging
 from pathlib import Path
-from typing import TYPE_CHECKING, Union
+from typing import TYPE_CHECKING, Optional, Union
 
 from ansys.optislang.core.application import Application
 from ansys.optislang.core.tcp.project import TcpProjectProxy
@@ -51,12 +51,12 @@ class TcpApplicationProxy(Application):
         )
 
     @property
-    def project(self) -> Union[TcpProjectProxy, None]:
+    def project(self) -> Optional[TcpProjectProxy]:
         """Instance of the ``TcpProjectProxy`` class.
 
         Returns
         -------
-        Union[TcpProjectProxy, None]
+        Optional[TcpProjectProxy]
             Loaded project. If no project is loaded, ``None`` is returned.
         """
         return self.__project
@@ -221,12 +221,12 @@ class TcpApplicationProxy(Application):
         """
         self.__osl_server.save_copy(file_path=file_path)
 
-    def __get_project_uid(self) -> Union[str, None]:
+    def __get_project_uid(self) -> Optional[str]:
         """Get project uid.
 
         Returns
         -------
-        Union[str, None]
+        Optional[str]
             Project uid. If no project is loaded in the optiSLang, returns `None`.
 
         Raises

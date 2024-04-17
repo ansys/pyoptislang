@@ -438,12 +438,12 @@ class OslServerProcess:
         return self.__enable_tcp_server
 
     @property
-    def server_info(self) -> Union[Path, None]:
+    def server_info(self) -> Optional[Path]:
         """Path to the server information file.
 
         Returns
         -------
-        Union[pathlib.Path, None]
+        Optional[pathlib.Path]
             Path to the server information file, if defined; ``None`` otherwise.
         """
         return self.__server_info
@@ -566,12 +566,12 @@ class OslServerProcess:
         return self.__additional_args
 
     @property
-    def pid(self) -> Union[int, None]:
+    def pid(self) -> Optional[int]:
         """Process ID.
 
         Returns
         -------
-        Union[int, None]
+        Optional[int]
             Process ID, if exists; ``None`` otherwise.
         """
         return None if self.__process is None else self.__process.pid
@@ -588,79 +588,79 @@ class OslServerProcess:
         return self.__shutdown_on_finished
 
     @property
-    def import_project_properties_file(self) -> Union[Path, None]:
+    def import_project_properties_file(self) -> Optional[Path]:
         """Path to the project properties import file.
 
         Returns
         -------
-        Union[pathlib.Path, None]
+        Optional[pathlib.Path]
             Path to the project properties import file, if defined; ``None`` otherwise.
         """
         return self.__import_project_properties_file
 
     @property
-    def export_project_properties_file(self) -> Union[Path, None]:
+    def export_project_properties_file(self) -> Optional[Path]:
         """Path to the project properties export file.
 
         Returns
         -------
-        Union[pathlib.Path, None]
+        Optional[pathlib.Path]
             Path to the project properties export file, if defined; ``None`` otherwise.
         """
         return self.__export_project_properties_file
 
     @property
-    def import_placeholders_file(self) -> Union[Path, None]:
+    def import_placeholders_file(self) -> Optional[Path]:
         """Path to the placeholders import file.
 
         Returns
         -------
-        Union[pathlib.Path, None]
+        Optional[pathlib.Path]
             Path to the placeholders import file, if defined; ``None`` otherwise.
         """
         return self.__import_placeholders_file
 
     @property
-    def export_placeholders_file(self) -> Union[Path, None]:
+    def export_placeholders_file(self) -> Optional[Path]:
         """Path to the placeholders export file.
 
         Returns
         -------
-        Union[pathlib.Path, None]
+        Optional[pathlib.Path, None]
             Path to the placeholders export file, if defined; ``None`` otherwise.
         """
         return self.__export_placeholders_file
 
     @property
-    def output_file(self) -> Union[Path, None]:
+    def output_file(self) -> Optional[Path]:
         """Path to the output file for writing project run results to.
 
         Returns
         -------
-        Union[pathlib.Path, None]
+        Optional[pathlib.Path]
             Path to the output file for writing project run results to, if defined;
             ``None`` otherwise.
         """
         return self.__output_file
 
     @property
-    def dump_project_state(self) -> Union[Path, None]:
+    def dump_project_state(self) -> Optional[Path]:
         """Path to a project state dump file to export.
 
         Returns
         -------
-        Union[pathlib.Path, None]
+        Optional[pathlib.Path]
             Path to a project state dump file to export, if defined; ``None`` otherwise.
         """
         return self.__dump_project_state
 
     @property
-    def opx_project_definition_file(self) -> Union[Path, None]:
+    def opx_project_definition_file(self) -> Optional[Path]:
         """Path to the OPX project definition file.
 
         Returns
         -------
-        Union[pathlib.Path, None]
+        Optional[pathlib.Path]
             Path to the OPX project definition file, if defined;
             ``None`` otherwise.
         """
