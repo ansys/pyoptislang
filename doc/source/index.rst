@@ -48,6 +48,8 @@ The ``ansys-optislang-core`` package provides these features:
   see :ref:`ref_run_python`.
 - Evaluate designs on root project level. For more information,
   see :ref:`ref_design_evaluation`.
+- Create and connect nodes. For more information,
+  see :ref:`ref_create_workflow`.
 
 
 Documentation and issues

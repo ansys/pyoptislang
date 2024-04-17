@@ -47,6 +47,7 @@ The latest ``ansys-optislang`` package provides these capabilities:
 - Save Ansys optiSLang project
 - Execute classic Ansys optiSLang Python API script on backend side
 - Evaluate designs on root project level
+- Create and connect nodes
 
 
 Documentation and issues
