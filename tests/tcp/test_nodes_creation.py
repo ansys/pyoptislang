@@ -23,6 +23,7 @@
 import pytest
 
 from ansys.optislang.core import Optislang, node_types
+from ansys.optislang.core.osl_server import OslVersion
 from ansys.optislang.core.tcp.nodes import System
 
 pytestmark = pytest.mark.local_osl
@@ -56,6 +57,9 @@ def optislang(scope="function", autouse=False) -> Optislang:
 
 def test_all_nodes_creation(optislang: Optislang):
     """Test creation of all available nodes."""
+    if optislang.osl_version < OslVersion(24, 1, 2, 0):
+        pytest.skip(f"Not compatible with {optislang.osl_version_string}")
+
     rs = optislang.application.project.root_system
     rs.delete_children_nodes()
     for node_type in NODE_TYPES:
