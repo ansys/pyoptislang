@@ -28,17 +28,6 @@ from ansys.optislang.core.tcp.nodes import System
 
 pytestmark = pytest.mark.local_osl
 
-NODE_TYPES_MODULE = dir(node_types)
-NODE_TYPES = [
-    node_type
-    for node_type in NODE_TYPES_MODULE
-    if not (
-        callable(getattr(node_types, node_type))
-        or node_type.startswith("__")
-        or node_type == "annotations"
-    )
-]
-
 
 @pytest.fixture()
 def optislang(scope="function", autouse=False) -> Optislang:
@@ -62,9 +51,16 @@ def test_all_nodes_creation(optislang: Optislang):
 
     rs = optislang.application.project.root_system
     rs.delete_children_nodes()
-    for node_type in NODE_TYPES:
-        print(f"Creating {eval('node_types.' + node_type)}")
-        node = rs.create_node(type_=eval("node_types." + node_type))
+
+    all_nodes = (
+        node_type
+        for node_type in node_types.__dict__.values()
+        if isinstance(node_type, node_types.NodeType)
+    )
+
+    for node_type in all_nodes:
+        print(f"Creating node {node_type.id}")
+        node = rs.create_node(type_=node_type)
         nodes_in_rs = rs.get_nodes()
         assert node.uid == nodes_in_rs[0].uid
         assert node.type == nodes_in_rs[0].type
