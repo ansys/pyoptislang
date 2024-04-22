@@ -8,6 +8,7 @@ on:
 jobs:
   test-suite:
     strategy:
+      fail-fast: false
       matrix:
         osl_version: [23.2.0, 24.1.0, 24.2.0]
     name: "optiSLang ${{ matrix.osl_version }}"
