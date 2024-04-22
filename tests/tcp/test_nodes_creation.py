@@ -52,19 +52,14 @@ def test_all_nodes_creation(optislang: Optislang):
     rs = optislang.application.project.root_system
     rs.delete_children_nodes()
 
-    all_nodes = (
-        node_type
-        for node_type in node_types.__dict__.values()
-        if isinstance(node_type, node_types.NodeType)
-    )
-
-    for node_type in all_nodes:
-        print(f"Creating node {node_type.id}")
-        node = rs.create_node(type_=node_type)
-        nodes_in_rs = rs.get_nodes()
-        assert node.uid == nodes_in_rs[0].uid
-        assert node.type == nodes_in_rs[0].type
-        node.delete()
+    for node_group in optislang.osl_server.get_available_nodes().values():
+        for node in node_group:
+            print(f"Creating node {node}")
+            node = rs.create_node(type_=node_types.get_node_type_from_str(node))
+            nodes_in_rs = rs.get_nodes()
+            assert node.uid == nodes_in_rs[0].uid
+            assert node.type == nodes_in_rs[0].type
+            node.delete()
 
 
 def test_create_node_in_system(optislang: Optislang):
