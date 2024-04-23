@@ -42,8 +42,6 @@ LOG.logger.debug("Loaded logging module as LOG")
 __version__ = importlib_metadata.version(__name__.replace(".", "-"))
 
 IRON_PYTHON = sys.platform == "cli"
-WINDOWS = os.name == "nt"
-LINUX = os.name == "posix"
 PY3 = sys.version_info[0] >= 3
 # First supported version of optiSLang: 2023R1
 FIRST_SUPPORTED_VERSION = 231
@@ -52,19 +50,20 @@ from ansys.optislang.core.optislang import Optislang
 from ansys.optislang.core.osl_process import OslServerProcess, ServerNotification
 
 # Setup data directory
-USER_DATA_PATH = None
-LOCAL_DOWNLOADED_EXAMPLES_PATH = None
 try:
-    import pkgutil
+    import importlib.util
 
-    spec = pkgutil.get_loader("ansys.optislang.core")
-    USER_DATA_PATH = os.path.dirname(spec.get_filename())
-    if not os.path.exists(USER_DATA_PATH):  # pragma: no cover
-        os.makedirs(USER_DATA_PATH)
+    if spec := importlib.util.find_spec("ansys.optislang.core"):
+        if spec.origin:
+            user_data_path = os.path.dirname(spec.origin)
+            if not os.path.exists(user_data_path):
+                os.makedirs(user_data_path)
 
-    LOCAL_DOWNLOADED_EXAMPLES_PATH = os.path.join(USER_DATA_PATH, "examples")
-    if not os.path.exists(LOCAL_DOWNLOADED_EXAMPLES_PATH):  # pragma: no cover
-        os.makedirs(LOCAL_DOWNLOADED_EXAMPLES_PATH)
-    os.environ["OSL_EXAMPLES"] = LOCAL_DOWNLOADED_EXAMPLES_PATH
-except:  # pragma: no cover
+            local_examples_path = os.path.join(user_data_path, "examples")
+            if not os.path.exists(local_examples_path):
+                os.makedirs(local_examples_path)
+
+            os.environ["OSL_EXAMPLES"] = local_examples_path
+except Exception as e:
+    LOG.logger.warning(f"Could not set up path to examples: {e}")
     pass
