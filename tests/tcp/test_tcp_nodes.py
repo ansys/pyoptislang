@@ -27,6 +27,7 @@ import pytest
 from ansys.optislang.core import Optislang
 from ansys.optislang.core.io import File, FileOutputFormat, RegisteredFile
 from ansys.optislang.core.node_types import AddinType, NodeType, Sensitivity, optislang_node
+from ansys.optislang.core.osl_server import OslVersion
 from ansys.optislang.core.tcp.managers import CriteriaManager, ParameterManager, ResponseManager
 from ansys.optislang.core.tcp.nodes import (
     DesignFlow,
@@ -422,6 +423,9 @@ def test_get_inner_slots(optislang: Optislang, tmp_example_project):
 
 def test_get_omdb_files(optislang: Optislang, tmp_example_project):
     """Test `get_omdb_files()` method."""
+    if optislang.osl_version < OslVersion(24, 1, 0, 0):
+        pytest.xfail("Project start method doesn't return with 23R2")
+
     optislang.application.open(file_path=tmp_example_project("omdb_files"))
     optislang.timeout = 30
     optislang.application.project.reset()
