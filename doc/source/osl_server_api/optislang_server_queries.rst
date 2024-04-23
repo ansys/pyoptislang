@@ -28,6 +28,7 @@ and can be used to generate queries to the optiSLang server:
    full_project_status_info
    full_project_tree
    full_project_tree_with_properties
+   full_subtree_status_info
    get_criteria
    get_criterion
    hpc_licensing_forwarded_environment
@@ -35,6 +36,7 @@ and can be used to generate queries to the optiSLang server:
    output_slot_value
    project_tree_systems
    project_tree_systems_with_properties
+   result_design_values
    server_info
    server_is_alive
    systems_status_info

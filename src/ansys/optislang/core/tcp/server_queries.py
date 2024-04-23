@@ -51,18 +51,23 @@ _INPUT_SLOT_VALUE = "INPUT_SLOT_VALUE"
 _OUTPUT_SLOT_VALUE = "OUTPUT_SLOT_VALUE"
 _PROJECT_TREE_SYSTEMS = "PROJECT_TREE_SYSTEMS"
 _PROJECT_TREE_SYSTEMS_WITH_PROPERTIES = "PROJECT_TREE_SYSTEMS_WITH_PROPERTIES"
+_RESULT_DESIGN_VALUES = "RESULT_DESIGN_VALUES"
 _SERVER_INFO = "SERVER_INFO"
 _SERVER_IS_ALIVE = "SERVER_IS_ALIVE"
 _SYSTEMS_STATUS_INFO = "SYSTEMS_STATUS_INFO"
+_FULL_SUBTREE_STATUS_INFO = "FULL_SUBTREE_STATUS_INFO"
 
-
-def actor_info(uid: str, password: Optional[str] = None) -> str:
+def actor_info(uid: str, include_log_messages: bool = True, include_integrations_registered_locations: bool = True, password: Optional[str] = None) -> str:
     """Generate JSON string of actor_info query.
 
     Parameters
     ----------
     uid: str
         Uid entry.
+    include_log_messages: bool, optional
+        Whether actor log messages are to be included.
+    include_integrations_registered_locations: bool, optional
+        Whether registered integration locations are to be included.
     password : Optional[str], optional
         Password, by default ``None``.
 
@@ -71,7 +76,10 @@ def actor_info(uid: str, password: Optional[str] = None) -> str:
     str
         JSON string of actor_info query.
     """
-    return _to_json(_gen_query(what=_ACTOR_INFO, uid=uid, password=password))
+    args: QueryArgs = {}
+    args["include_log_messages"] = include_log_messages
+    args["include_integrations_registered_locations"] = include_integrations_registered_locations
+    return _to_json(_gen_query(what=_ACTOR_INFO, uid=uid, args=args, password=password))
 
 
 def actor_internal_variables(
@@ -267,6 +275,7 @@ def actor_status_info(
     uid: str,
     hid: str,
     include_designs: bool = True,
+    include_design_values: bool = True,
     include_non_scalar_design_values: bool = False,
     include_algorithm_info: bool = False,
     password: Optional[str] = None,
@@ -281,6 +290,8 @@ def actor_status_info(
         Hid entry.
     include_designs: bool
         Include (result) designs in status info response.
+    include_design_values: bool
+        Include values in (result) designs.
     include_non_scalar_design_values: bool
         Include non scalar values in (result) designs.
     include_algorithm_info: bool
@@ -295,6 +306,7 @@ def actor_status_info(
     """
     args: QueryArgs = {}
     args["include_designs"] = include_designs
+    args["include_design_values"] = include_design_values
     args["include_non_scalar_design_values"] = include_non_scalar_design_values
     args["include_algorithm_info"] = include_algorithm_info
     return _to_json(
@@ -497,6 +509,44 @@ def full_project_tree_with_properties(password: Optional[str] = None) -> str:
     return _to_json(_gen_query(what=_FULL_PROJECT_TREE_WITH_PROPERTIES, password=password))
 
 
+def full_subtree_status_info(
+    uid: str,
+    include_designs: bool = True,
+    include_design_values: bool = True,
+    include_non_scalar_design_values: bool = False,
+    include_algorithm_info: bool = False,
+    password: Optional[str] = None,
+) -> str:
+    """Generate JSON string of full_subtree_status_info query.
+
+    Parameters
+    ----------
+    uid: str
+        Uid entry.
+    include_designs: bool
+        Include (result) designs in status info response.
+    include_design_values: bool
+        Include values in (result) designs.
+    include_non_scalar_design_values: bool
+        Include non scalar values in (result) designs.
+    include_algorithm_info: bool
+        Include algorithm result info in status info response.
+    password : Optional[str], optional
+        Password. Defaults to ``None``.
+
+    Returns
+    -------
+    str
+        JSON string of systems_status_info query.
+    """
+    args: QueryArgs = {}
+    args["include_designs"] = include_designs
+    args["include_design_values"] = include_design_values
+    args["include_non_scalar_design_values"] = include_non_scalar_design_values
+    args["include_algorithm_info"] = include_algorithm_info
+    return _to_json(_gen_query(what=_FULL_SUBTREE_STATUS_INFO, uid=uid, args=args, password=password))
+
+
 def get_criteria(uid: str, password: Optional[str] = None) -> str:
     """Generate JSON string of get_criteria query.
 
@@ -639,6 +689,32 @@ def project_tree_systems_with_properties(password: Optional[str] = None) -> str:
     return _to_json(_gen_query(what=_PROJECT_TREE_SYSTEMS_WITH_PROPERTIES, password=password))
 
 
+def result_design_values(
+    uid: str,
+    design_id: str,
+    password: Optional[str] = None,
+) -> str:
+    """Generate JSON string of result_design_values query.
+
+    Parameters
+    ----------
+    uid: str
+        Uid entry.
+    design_id: str
+        Design ID entry.
+    password : Optional[str], optional
+        Password. Defaults to ``None``.
+
+    Returns
+    -------
+    str
+        JSON string of result_design_values query.
+    """
+    return _to_json(
+        _gen_query(what=_RESULT_DESIGN_VALUES, uid=uid, design_id=design_id, password=password)
+    )
+
+
 def server_info(password: Optional[str] = None) -> str:
     """Generate JSON string of server_info query.
 
@@ -673,6 +749,7 @@ def server_is_alive(password: Optional[str] = None) -> str:
 
 def systems_status_info(
     include_designs: bool = True,
+    include_design_values: bool = True,
     include_non_scalar_design_values: bool = False,
     include_algorithm_info: bool = False,
     password: Optional[str] = None,
@@ -683,6 +760,8 @@ def systems_status_info(
     ----------
     include_designs: bool
         Include (result) designs in status info response.
+    include_design_values: bool
+        Include values in (result) designs.
     include_non_scalar_design_values: bool
         Include non scalar values in (result) designs.
     include_algorithm_info: bool
@@ -697,6 +776,7 @@ def systems_status_info(
     """
     args: QueryArgs = {}
     args["include_designs"] = include_designs
+    args["include_design_values"] = include_design_values
     args["include_non_scalar_design_values"] = include_non_scalar_design_values
     args["include_algorithm_info"] = include_algorithm_info
     return _to_json(_gen_query(what=_SYSTEMS_STATUS_INFO, args=args, password=password))
@@ -709,6 +789,7 @@ def _gen_query(
     hid: Optional[str] = None,
     args: Optional[QueryArgs] = None,
     slot_name: Optional[str] = None,
+    design_id: Optional[str] = None,
 ) -> Dict:
     """Generate query in desired format.
 
@@ -726,6 +807,8 @@ def _gen_query(
         Dictionary of features, e.g. "feature": "FEATURE_NAME".
     slot_name: Optional[str], optional
         Slot name. Defaults to ``None``.
+    design_id: Optional[str], optional
+        Design ID. Defaults to ``None``.
 
     Returns
     -------
@@ -742,6 +825,8 @@ def _gen_query(
         query["args"] = args
     if slot_name is not None:
         query["slot_name"] = slot_name
+    if design_id is not None:
+        query["design_id"] = design_id
     if password is not None:
         query["Password"] = password
     return query

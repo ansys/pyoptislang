@@ -1635,13 +1635,17 @@ class TcpOslServer(OslServer):
             max_request_attempts=self.max_request_attempts_register.get_value(current_func_name),
         )
 
-    def get_actor_info(self, uid: str) -> Dict:
+    def get_actor_info(self, uid: str, include_log_messages: bool = True, include_integrations_registered_locations: bool = True) -> Dict:
         """Get info about actor defined by uid.
 
         Parameters
         ----------
         uid : str
             Actor uid.
+        include_log_messages: bool, optional
+            Whether actor log messages are to be included.
+        include_integrations_registered_locations: bool, optional
+            Whether registered integration locations are to be included.        
 
         Returns
         -------
@@ -1659,7 +1663,7 @@ class TcpOslServer(OslServer):
         """
         current_func_name = self.get_actor_info.__name__
         return self.send_command(
-            command=queries.actor_info(uid=uid, password=self.__password),
+            command=queries.actor_info(uid=uid, include_log_messages=include_log_messages, include_integrations_registered_locations=include_integrations_registered_locations, password=self.__password),
             timeout=self.timeouts_register.get_value(current_func_name),
             max_request_attempts=self.max_request_attempts_register.get_value(current_func_name),
         )
@@ -1913,6 +1917,7 @@ class TcpOslServer(OslServer):
         uid: str,
         hid: str,
         include_designs: bool = True,
+        include_design_values: bool = True,
         include_non_scalar_design_values: bool = False,
         include_algorithm_info: bool = False,
     ) -> Dict:
@@ -1926,6 +1931,8 @@ class TcpOslServer(OslServer):
             State/Design hierarchical id.
         include_designs: bool
             Include (result) designs in status info response.
+        include_design_values: bool
+            Include values in (result) designs.
         include_non_scalar_design_values: bool
             Include non scalar values in (result) designs.
         include_algorithm_info: bool
@@ -1949,6 +1956,7 @@ class TcpOslServer(OslServer):
                 uid=uid,
                 hid=hid,
                 include_designs=include_designs,
+                include_design_values=include_design_values,
                 include_non_scalar_design_values=include_non_scalar_design_values,
                 include_algorithm_info=include_algorithm_info,
                 password=self.__password,
@@ -2278,6 +2286,56 @@ class TcpOslServer(OslServer):
         current_func_name = self.get_full_project_tree_with_properties.__name__
         return self.send_command(
             command=queries.full_project_tree_with_properties(password=self.__password),
+            timeout=self.timeouts_register.get_value(current_func_name),
+            max_request_attempts=self.max_request_attempts_register.get_value(current_func_name),
+        )
+    
+    def get_full_subtree_status_info(
+        self,
+        uid: str,
+        include_designs: bool = True,
+        include_design_values: bool = True,
+        include_non_scalar_design_values: bool = False,
+        include_algorithm_info: bool = False,
+    ) -> Dict:
+        """Get full status info for a sub tree.
+
+        Parameters
+        ----------
+        uid : str
+            Actor uid.
+        include_designs: bool
+            Include (result) designs in status info response.
+        include_design_values: bool
+            Include values in (result) designs.
+        include_non_scalar_design_values: bool
+            Include non scalar values in (result) designs.
+        include_algorithm_info: bool
+            Include algorithm result info in status info response.
+        Returns
+        -------
+        Dict
+            Status info for the specified sub tree.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        current_func_name = self.get_full_subtree_status_info.__name__
+        return self.send_command(
+            command=queries.full_subtree_status_info(
+                uid=uid,
+                include_designs=include_designs,
+                include_design_values=include_design_values,
+                include_non_scalar_design_values=include_non_scalar_design_values,
+                include_algorithm_info=include_algorithm_info,
+                password=self.__password,
+            ),
             timeout=self.timeouts_register.get_value(current_func_name),
             max_request_attempts=self.max_request_attempts_register.get_value(current_func_name),
         )
@@ -2644,6 +2702,45 @@ class TcpOslServer(OslServer):
             timeout=self.timeouts_register.get_value(current_func_name),
             max_request_attempts=self.max_request_attempts_register.get_value(current_func_name),
         )
+    
+
+    def get_result_design_values(
+        self,
+        uid: str,
+        design_id: str,        
+    ) -> Dict:
+        """Get specific result design values defined by actor uid and design ID.
+
+        Parameters
+        ----------
+        uid : str
+            Actor uid.
+        design_id: str
+            Design ID.
+        Returns
+        -------
+        Dict
+            Result design values.
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        current_func_name = self.get_result_design_values.__name__
+        return self.send_command(
+            command=queries.result_design_values(
+                uid=uid,
+                design_id=design_id,                
+                password=self.__password,
+            ),
+            timeout=self.timeouts_register.get_value(current_func_name),
+            max_request_attempts=self.max_request_attempts_register.get_value(current_func_name),
+        )
+
 
     def get_server_info(self) -> Dict:
         """Get information about the application, the server configuration and the open projects.
@@ -2701,6 +2798,7 @@ class TcpOslServer(OslServer):
     def get_systems_status_info(
         self,
         include_designs: bool = True,
+        include_design_values: bool = True,
         include_non_scalar_design_values: bool = False,
         include_algorithm_info: bool = False,
     ) -> Dict:
@@ -2710,6 +2808,8 @@ class TcpOslServer(OslServer):
         ----------
         include_designs: bool
             Include (result) designs in status info response.
+        include_design_values: bool
+            Include values in (result) designs.
         include_non_scalar_design_values: bool
             Include non scalar values in (result) designs.
         include_algorithm_info: bool
@@ -2732,6 +2832,7 @@ class TcpOslServer(OslServer):
         return self.send_command(
             command=queries.systems_status_info(
                 include_designs=include_designs,
+                include_design_values=include_design_values,
                 include_non_scalar_design_values=include_non_scalar_design_values,
                 include_algorithm_info=include_algorithm_info,
                 password=self.__password,

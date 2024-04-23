@@ -230,7 +230,7 @@ class TcpNodeProxy(Node):
             Raised when the timeout float value expires.
         """
         try:
-            self._osl_server.get_actor_info(self.uid)
+            self._osl_server.get_actor_info(self.uid, include_log_messages=False, include_integrations_registered_locations=False)
             return True
         except Exception as e:
             if isinstance(e, OslCommandError) and "No such actor" in str(e):
@@ -372,7 +372,7 @@ class TcpNodeProxy(Node):
         TimeoutError
             Raised when the timeout float value expires.
         """
-        actor_info = self._osl_server.get_actor_info(uid=self.__uid)
+        actor_info = self._osl_server.get_actor_info(uid=self.__uid, include_log_messages=False, include_integrations_registered_locations=False)
         return actor_info["name"]
 
     def get_output_slots(self, name: Optional[str] = None) -> Tuple[TcpOutputSlotProxy, ...]:
@@ -581,7 +581,7 @@ class TcpNodeProxy(Node):
         TimeoutError
             Raised when the timeout float value expires.
         """
-        actor_info = self._osl_server.get_actor_info(uid=self.__uid)
+        actor_info = self._osl_server.get_actor_info(uid=self.__uid, include_log_messages=False, include_integrations_registered_locations=False)
         return actor_info["status"]
 
     @deprecated(version="0.6.0", reason="Use :py:attr:`TcpNodeProxy.type` instead.")
@@ -602,7 +602,7 @@ class TcpNodeProxy(Node):
         TimeoutError
             Raised when the timeout float value expires.
         """
-        actor_info = self._osl_server.get_actor_info(uid=self.__uid)
+        actor_info = self._osl_server.get_actor_info(uid=self.__uid, include_log_messages=False, include_integrations_registered_locations=False)
         return get_node_type_from_str(node_id=actor_info["type"])
 
     def set_property(self, name: str, value: Any) -> None:
@@ -691,7 +691,7 @@ class TcpNodeProxy(Node):
                         continue
                 # `[receiving_slot, sending_slot]_is_inner` key not included in connection dict
                 else:
-                    info = self._osl_server.get_actor_info(connection[uid_keys[0]])
+                    info = self._osl_server.get_actor_info(connection[uid_keys[0]], include_log_messages=False, include_integrations_registered_locations=False)
                     if True in [
                         item["name"] == connection[slot_name_keys[0]]
                         for item in info[slot_type.name.lower() + "_slots"]
@@ -1617,7 +1617,7 @@ class TcpSystemProxy(TcpNodeProxy, System):
             parent_uid=self.uid,
             design_flow=design_flow_name,
         )
-        info = self._osl_server.get_actor_info(uid=uid)
+        info = self._osl_server.get_actor_info(uid=uid, include_log_messages=False, include_integrations_registered_locations=False)
         info["is_parametric_system"] = "estimated_designs" in info.keys()
         return create_nodes_from_properties_dicts(
             osl_server=self._osl_server, properties_dicts_list=[info], logger=self._logger
@@ -3268,7 +3268,7 @@ def create_edge_from_dict(
         else None
     )
     if rec_slot_type is None:
-        info = osl_server.get_actor_info(connection["receiving_uuid"])
+        info = osl_server.get_actor_info(connection["receiving_uuid"], include_log_messages=False, include_integrations_registered_locations=False)
         if True in [item["name"] == rec_slot_name for item in info["input_slots"]]:
             rec_slot_type = SlotType.INPUT
         elif True in [item["name"] == rec_slot_name for item in info.get("inner_input_slots", [])]:
@@ -3295,7 +3295,7 @@ def create_edge_from_dict(
         else None
     )
     if sen_slot_type is None:
-        info = osl_server.get_actor_info(connection["sending_uuid"])
+        info = osl_server.get_actor_info(connection["sending_uuid"], include_log_messages=False, include_integrations_registered_locations=False)
         if True in [item["name"] == sen_slot_name for item in info["output_slots"]]:
             sen_slot_type = SlotType.OUTPUT
         elif True in [item["name"] == sen_slot_name for item in info.get("inner_output_slots", [])]:
