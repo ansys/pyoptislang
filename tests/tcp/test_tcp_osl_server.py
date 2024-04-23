@@ -32,7 +32,6 @@ import uuid
 import pytest
 
 from ansys.optislang.core import OslServerProcess, errors
-from ansys.optislang.core.osl_server import OslVersion
 import ansys.optislang.core.tcp.osl_server as tos
 
 _host = socket.gethostbyname(socket.gethostname())
@@ -1021,9 +1020,6 @@ def test_save_copy(
     path_type,
 ):
     """Test ``save_copy``."""
-    if optislang.osl_version < OslVersion(24, 1, 0, 0):
-        pytest.skip(f"Not compatible with {optislang.osl_version_string}")
-
     copy_path = tmp_path / "test_save_copy.opf"
     arg_path = path_type(copy_path)
 
