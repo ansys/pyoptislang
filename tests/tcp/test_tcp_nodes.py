@@ -424,7 +424,7 @@ def test_get_inner_slots(optislang: Optislang, tmp_example_project):
 def test_get_omdb_files(optislang: Optislang, tmp_example_project):
     """Test `get_omdb_files()` method."""
     if optislang.osl_version < OslVersion(24, 1, 0, 0):
-        pytest.xfail("Project start method doesn't return with 23R2")
+        pytest.skip(f"Not compatible with {optislang.osl_version_string}")
 
     optislang.application.open(file_path=tmp_example_project("omdb_files"))
     optislang.timeout = 30
