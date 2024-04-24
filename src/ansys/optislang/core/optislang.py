@@ -27,7 +27,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Iterable, Mapping, Optional, Sequence, Tuple, Union
 
 from deprecated.sphinx import deprecated
-from importlib_metadata import version
+from importlib.metadata import version
 
 from ansys.optislang.core import LOG
 from ansys.optislang.core.tcp.application import TcpApplicationProxy
