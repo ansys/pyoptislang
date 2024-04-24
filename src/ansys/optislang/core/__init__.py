@@ -27,6 +27,7 @@ core
 """
 
 import importlib.metadata
+import importlib.util
 import os
 import sys
 
@@ -45,21 +46,7 @@ FIRST_SUPPORTED_VERSION = 231
 from ansys.optislang.core.optislang import Optislang
 from ansys.optislang.core.osl_process import OslServerProcess, ServerNotification
 
-# Setup data directory
-try:
-    import importlib.util
-
-    if spec := importlib.util.find_spec("ansys.optislang.core"):
-        if spec.origin:
-            user_data_path = os.path.dirname(spec.origin)
-            if not os.path.exists(user_data_path):
-                os.makedirs(user_data_path)
-
-            local_examples_path = os.path.join(user_data_path, "examples")
-            if not os.path.exists(local_examples_path):
-                os.makedirs(local_examples_path)
-
-            os.environ["OSL_EXAMPLES"] = local_examples_path
-except Exception as e:
-    LOG.logger.warning(f"Could not set up path to examples: {e}")
-    pass
+# Provide examples directory path
+if spec := importlib.util.find_spec("ansys.optislang.core.examples"):
+    if spec.origin:
+        os.environ["OSL_EXAMPLES"] = os.path.dirname(spec.origin)
