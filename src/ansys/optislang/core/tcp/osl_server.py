@@ -2704,7 +2704,7 @@ class TcpOslServer(OslServer):
         )
     
 
-    def get_result_design_values(
+    def get_result_design(
         self,
         uid: str,
         design_id: str,        
@@ -2730,9 +2730,9 @@ class TcpOslServer(OslServer):
         TimeoutError
             Raised when the timeout float value expires.
         """
-        current_func_name = self.get_result_design_values.__name__
+        current_func_name = self.get_result_design.__name__
         return self.send_command(
-            command=queries.result_design_values(
+            command=queries.result_design(
                 uid=uid,
                 design_id=design_id,                
                 password=self.__password,

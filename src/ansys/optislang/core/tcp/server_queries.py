@@ -51,7 +51,7 @@ _INPUT_SLOT_VALUE = "INPUT_SLOT_VALUE"
 _OUTPUT_SLOT_VALUE = "OUTPUT_SLOT_VALUE"
 _PROJECT_TREE_SYSTEMS = "PROJECT_TREE_SYSTEMS"
 _PROJECT_TREE_SYSTEMS_WITH_PROPERTIES = "PROJECT_TREE_SYSTEMS_WITH_PROPERTIES"
-_RESULT_DESIGN_VALUES = "RESULT_DESIGN_VALUES"
+_RESULT_DESIGN = "RESULT_DESIGN"
 _SERVER_INFO = "SERVER_INFO"
 _SERVER_IS_ALIVE = "SERVER_IS_ALIVE"
 _SYSTEMS_STATUS_INFO = "SYSTEMS_STATUS_INFO"
@@ -689,12 +689,12 @@ def project_tree_systems_with_properties(password: Optional[str] = None) -> str:
     return _to_json(_gen_query(what=_PROJECT_TREE_SYSTEMS_WITH_PROPERTIES, password=password))
 
 
-def result_design_values(
+def result_design(
     uid: str,
     design_id: str,
     password: Optional[str] = None,
 ) -> str:
-    """Generate JSON string of result_design_values query.
+    """Generate JSON string of result_design query.
 
     Parameters
     ----------
@@ -708,10 +708,10 @@ def result_design_values(
     Returns
     -------
     str
-        JSON string of result_design_values query.
+        JSON string of result_design query.
     """
     return _to_json(
-        _gen_query(what=_RESULT_DESIGN_VALUES, uid=uid, design_id=design_id, password=password)
+        _gen_query(what=_RESULT_DESIGN, uid=uid, design_id=design_id, password=password)
     )
 
 

@@ -36,7 +36,7 @@ and can be used to generate queries to the optiSLang server:
    output_slot_value
    project_tree_systems
    project_tree_systems_with_properties
-   result_design_values
+   result_design
    server_info
    server_is_alive
    systems_status_info
