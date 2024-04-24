@@ -23,11 +23,12 @@
 """Contains Optislang class, which provides the Python API for the optiSLang app."""
 from __future__ import annotations
 
+from importlib.metadata import version
 from pathlib import Path
 from typing import TYPE_CHECKING, Iterable, Mapping, Optional, Sequence, Tuple, Union
 
 from deprecated.sphinx import deprecated
-from importlib.metadata import version
+
 
 from ansys.optislang.core import LOG
 from ansys.optislang.core.tcp.application import TcpApplicationProxy
