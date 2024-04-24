@@ -32,6 +32,7 @@ import uuid
 import pytest
 
 from ansys.optislang.core import OslServerProcess, errors
+from ansys.optislang.core.osl_server import OslVersion
 import ansys.optislang.core.tcp.osl_server as tos
 
 _host = socket.gethostbyname(socket.gethostname())
@@ -1024,6 +1025,10 @@ def test_save_copy(
     arg_path = path_type(copy_path)
 
     tcp_osl_server = create_tcp_osl_server(osl_server_process)
+
+    if tcp_osl_server.osl_version < OslVersion(24, 1, 0, 0):
+        pytest.skip(f"Not compatible with {tcp_osl_server.osl_version_string}")
+
     old_wdir = Path(
         tcp_osl_server.get_basic_project_info().get("projects", [{}])[0].get("working_dir", None)
     )
