@@ -57,7 +57,13 @@ _SERVER_IS_ALIVE = "SERVER_IS_ALIVE"
 _SYSTEMS_STATUS_INFO = "SYSTEMS_STATUS_INFO"
 _FULL_SUBTREE_STATUS_INFO = "FULL_SUBTREE_STATUS_INFO"
 
-def actor_info(uid: str, include_log_messages: bool = True, include_integrations_registered_locations: bool = True, password: Optional[str] = None) -> str:
+
+def actor_info(
+    uid: str,
+    include_log_messages: bool = True,
+    include_integrations_registered_locations: bool = True,
+    password: Optional[str] = None,
+) -> str:
     """Generate JSON string of actor_info query.
 
     Parameters
@@ -544,7 +550,9 @@ def full_subtree_status_info(
     args["include_design_values"] = include_design_values
     args["include_non_scalar_design_values"] = include_non_scalar_design_values
     args["include_algorithm_info"] = include_algorithm_info
-    return _to_json(_gen_query(what=_FULL_SUBTREE_STATUS_INFO, uid=uid, args=args, password=password))
+    return _to_json(
+        _gen_query(what=_FULL_SUBTREE_STATUS_INFO, uid=uid, args=args, password=password)
+    )
 
 
 def get_criteria(uid: str, password: Optional[str] = None) -> str:

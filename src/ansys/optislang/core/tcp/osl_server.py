@@ -1635,7 +1635,12 @@ class TcpOslServer(OslServer):
             max_request_attempts=self.max_request_attempts_register.get_value(current_func_name),
         )
 
-    def get_actor_info(self, uid: str, include_log_messages: bool = True, include_integrations_registered_locations: bool = True) -> Dict:
+    def get_actor_info(
+        self,
+        uid: str,
+        include_log_messages: bool = True,
+        include_integrations_registered_locations: bool = True,
+    ) -> Dict:
         """Get info about actor defined by uid.
 
         Parameters
@@ -1645,7 +1650,7 @@ class TcpOslServer(OslServer):
         include_log_messages: bool, optional
             Whether actor log messages are to be included.
         include_integrations_registered_locations: bool, optional
-            Whether registered integration locations are to be included.        
+            Whether registered integration locations are to be included.
 
         Returns
         -------
@@ -1663,7 +1668,12 @@ class TcpOslServer(OslServer):
         """
         current_func_name = self.get_actor_info.__name__
         return self.send_command(
-            command=queries.actor_info(uid=uid, include_log_messages=include_log_messages, include_integrations_registered_locations=include_integrations_registered_locations, password=self.__password),
+            command=queries.actor_info(
+                uid=uid,
+                include_log_messages=include_log_messages,
+                include_integrations_registered_locations=include_integrations_registered_locations,
+                password=self.__password,
+            ),
             timeout=self.timeouts_register.get_value(current_func_name),
             max_request_attempts=self.max_request_attempts_register.get_value(current_func_name),
         )
@@ -2289,7 +2299,7 @@ class TcpOslServer(OslServer):
             timeout=self.timeouts_register.get_value(current_func_name),
             max_request_attempts=self.max_request_attempts_register.get_value(current_func_name),
         )
-    
+
     def get_full_subtree_status_info(
         self,
         uid: str,
@@ -2702,12 +2712,11 @@ class TcpOslServer(OslServer):
             timeout=self.timeouts_register.get_value(current_func_name),
             max_request_attempts=self.max_request_attempts_register.get_value(current_func_name),
         )
-    
 
     def get_result_design(
         self,
         uid: str,
-        design_id: str,        
+        design_id: str,
     ) -> Dict:
         """Get specific result design values defined by actor uid and design ID.
 
@@ -2734,13 +2743,12 @@ class TcpOslServer(OslServer):
         return self.send_command(
             command=queries.result_design(
                 uid=uid,
-                design_id=design_id,                
+                design_id=design_id,
                 password=self.__password,
             ),
             timeout=self.timeouts_register.get_value(current_func_name),
             max_request_attempts=self.max_request_attempts_register.get_value(current_func_name),
         )
-
 
     def get_server_info(self) -> Dict:
         """Get information about the application, the server configuration and the open projects.
