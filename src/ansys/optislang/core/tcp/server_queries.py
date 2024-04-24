@@ -457,18 +457,30 @@ def doe_size(
 
 
 def full_project_status_info(
+    include_designs: bool = True,
+    include_design_values: bool = True,
     include_non_scalar_design_values: bool = False,
     include_algorithm_info: bool = False,
+    include_log_messages: bool = True,
+    include_integrations_registered_locations: bool = True,
     password: Optional[str] = None,
 ) -> str:
     """Generate JSON string of full_project_status_info query.
 
     Parameters
     ----------
+    include_designs: bool
+        Include (result) designs in status info response.
+    include_design_values: bool
+        Include values in (result) designs.
     include_non_scalar_design_values: bool
         Include non scalar values in (result) designs.
     include_algorithm_info: bool
         Include algorithm result info in status info response.
+    include_log_messages: bool, optional
+        Whether actor log messages are to be included.
+    include_integrations_registered_locations: bool, optional
+        Whether registered integration locations are to be included.
     password : Optional[str], optional
         Password. Defaults to ``None``.
 
@@ -478,8 +490,12 @@ def full_project_status_info(
         JSON string of full_project_status_info query.
     """
     args: QueryArgs = {}
+    args["include_designs"] = include_designs
+    args["include_design_values"] = include_design_values
     args["include_non_scalar_design_values"] = include_non_scalar_design_values
     args["include_algorithm_info"] = include_algorithm_info
+    args["include_log_messages"] = include_log_messages
+    args["include_integrations_registered_locations"] = include_integrations_registered_locations
     return _to_json(_gen_query(what=_FULL_PROJECT_STATUS_INFO, args=args, password=password))
 
 
@@ -521,6 +537,8 @@ def full_subtree_status_info(
     include_design_values: bool = True,
     include_non_scalar_design_values: bool = False,
     include_algorithm_info: bool = False,
+    include_log_messages: bool = True,
+    include_integrations_registered_locations: bool = True,
     password: Optional[str] = None,
 ) -> str:
     """Generate JSON string of full_subtree_status_info query.
@@ -537,6 +555,10 @@ def full_subtree_status_info(
         Include non scalar values in (result) designs.
     include_algorithm_info: bool
         Include algorithm result info in status info response.
+    include_log_messages: bool, optional
+        Whether actor log messages are to be included.
+    include_integrations_registered_locations: bool, optional
+        Whether registered integration locations are to be included.
     password : Optional[str], optional
         Password. Defaults to ``None``.
 
@@ -550,6 +572,8 @@ def full_subtree_status_info(
     args["include_design_values"] = include_design_values
     args["include_non_scalar_design_values"] = include_non_scalar_design_values
     args["include_algorithm_info"] = include_algorithm_info
+    args["include_log_messages"] = include_log_messages
+    args["include_integrations_registered_locations"] = include_integrations_registered_locations
     return _to_json(
         _gen_query(what=_FULL_SUBTREE_STATUS_INFO, uid=uid, args=args, password=password)
     )
@@ -760,6 +784,8 @@ def systems_status_info(
     include_design_values: bool = True,
     include_non_scalar_design_values: bool = False,
     include_algorithm_info: bool = False,
+    include_log_messages: bool = True,
+    include_integrations_registered_locations: bool = True,
     password: Optional[str] = None,
 ) -> str:
     """Generate JSON string of systems_status_info query.
@@ -774,6 +800,10 @@ def systems_status_info(
         Include non scalar values in (result) designs.
     include_algorithm_info: bool
         Include algorithm result info in status info response.
+    include_log_messages: bool, optional
+        Whether actor log messages are to be included.
+    include_integrations_registered_locations: bool, optional
+        Whether registered integration locations are to be included.
     password : Optional[str], optional
         Password. Defaults to ``None``.
 
@@ -787,6 +817,8 @@ def systems_status_info(
     args["include_design_values"] = include_design_values
     args["include_non_scalar_design_values"] = include_non_scalar_design_values
     args["include_algorithm_info"] = include_algorithm_info
+    args["include_log_messages"] = include_log_messages
+    args["include_integrations_registered_locations"] = include_integrations_registered_locations
     return _to_json(_gen_query(what=_SYSTEMS_STATUS_INFO, args=args, password=password))
 
 

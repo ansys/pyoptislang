@@ -302,8 +302,12 @@ def test_full_project_status_info():
     dictionary = json.loads(json_string)
     requiered_string = json.loads(
         '{ "What": "FULL_PROJECT_STATUS_INFO", "args": {'
+        ' "include_designs": true,'
+        ' "include_design_values": true,'
         ' "include_non_scalar_design_values": false,'
-        ' "include_algorithm_info": false } }',
+        ' "include_algorithm_info": false,'
+        ' "include_log_messages": true,'
+        ' "include_integrations_registered_locations": true } }',
     )
     assert type(json_string) == str
     assert sorted(dictionary.items()) == sorted(requiered_string.items())
@@ -534,7 +538,9 @@ def test_systems_status_info():
         ' "include_designs": true,'
         ' "include_design_values": true,'
         ' "include_non_scalar_design_values": false,'
-        ' "include_algorithm_info": false } }',
+        ' "include_algorithm_info": false,'
+        ' "include_log_messages": true,'
+        ' "include_integrations_registered_locations": true } }',
     )
     assert type(json_string) == str
     assert sorted(dictionary.items()) == sorted(requiered_string.items())

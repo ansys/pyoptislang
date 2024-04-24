@@ -2216,17 +2216,29 @@ class TcpOslServer(OslServer):
 
     def get_full_project_status_info(
         self,
+        include_designs: bool = True,
+        include_design_values: bool = True,
         include_non_scalar_design_values: bool = False,
         include_algorithm_info: bool = False,
+        include_log_messages: bool = True,
+        include_integrations_registered_locations: bool = True,
     ) -> Dict:
         """Get full project status info.
 
         Parameters
         ----------
+        include_designs: bool
+            Include (result) designs in status info response.
+        include_design_values: bool
+            Include values in (result) designs.
         include_non_scalar_design_values: bool
             Include non scalar values in (result) designs.
         include_algorithm_info: bool
             Include algorithm result info in status info response.
+        include_log_messages: bool, optional
+            Whether actor log messages are to be included.
+        include_integrations_registered_locations: bool, optional
+            Whether registered integration locations are to be included.
         Returns
         -------
         Dict
@@ -2244,8 +2256,12 @@ class TcpOslServer(OslServer):
         current_func_name = self.get_full_project_status_info.__name__
         return self.send_command(
             command=queries.full_project_status_info(
+                include_designs=include_designs,
+                include_design_values=include_design_values,
                 include_non_scalar_design_values=include_non_scalar_design_values,
                 include_algorithm_info=include_algorithm_info,
+                include_log_messages=include_log_messages,
+                include_integrations_registered_locations=include_integrations_registered_locations,
                 password=self.__password,
             ),
             timeout=self.timeouts_register.get_value(current_func_name),
@@ -2307,6 +2323,8 @@ class TcpOslServer(OslServer):
         include_design_values: bool = True,
         include_non_scalar_design_values: bool = False,
         include_algorithm_info: bool = False,
+        include_log_messages: bool = True,
+        include_integrations_registered_locations: bool = True,
     ) -> Dict:
         """Get full status info for a sub tree.
 
@@ -2322,6 +2340,11 @@ class TcpOslServer(OslServer):
             Include non scalar values in (result) designs.
         include_algorithm_info: bool
             Include algorithm result info in status info response.
+        include_log_messages: bool, optional
+            Whether actor log messages are to be included.
+        include_integrations_registered_locations: bool, optional
+            Whether registered integration locations are to be included.
+
         Returns
         -------
         Dict
@@ -2344,6 +2367,8 @@ class TcpOslServer(OslServer):
                 include_design_values=include_design_values,
                 include_non_scalar_design_values=include_non_scalar_design_values,
                 include_algorithm_info=include_algorithm_info,
+                include_log_messages=include_log_messages,
+                include_integrations_registered_locations=include_integrations_registered_locations,
                 password=self.__password,
             ),
             timeout=self.timeouts_register.get_value(current_func_name),
@@ -2809,6 +2834,8 @@ class TcpOslServer(OslServer):
         include_design_values: bool = True,
         include_non_scalar_design_values: bool = False,
         include_algorithm_info: bool = False,
+        include_log_messages: bool = True,
+        include_integrations_registered_locations: bool = True,
     ) -> Dict:
         """Get project status info, including systems only.
 
@@ -2822,6 +2849,10 @@ class TcpOslServer(OslServer):
             Include non scalar values in (result) designs.
         include_algorithm_info: bool
             Include algorithm result info in status info response.
+        include_log_messages: bool, optional
+            Whether actor log messages are to be included.
+        include_integrations_registered_locations: bool, optional
+            Whether registered integration locations are to be included.
         Returns
         -------
         Dict
@@ -2843,6 +2874,8 @@ class TcpOslServer(OslServer):
                 include_design_values=include_design_values,
                 include_non_scalar_design_values=include_non_scalar_design_values,
                 include_algorithm_info=include_algorithm_info,
+                include_log_messages=include_log_messages,
+                include_integrations_registered_locations=include_integrations_registered_locations,
                 password=self.__password,
             ),
             timeout=self.timeouts_register.get_value(current_func_name),
