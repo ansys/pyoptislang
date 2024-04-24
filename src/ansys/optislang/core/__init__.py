@@ -26,20 +26,16 @@ optiSLang.
 core
 """
 
+import importlib.metadata
 import os
 import sys
-
-try:
-    import importlib.metadata as importlib_metadata
-except ModuleNotFoundError:
-    import importlib_metadata
 
 from ansys.optislang.core.logging import OslLogger
 
 LOG = OslLogger(loglevel="ERROR", log_to_file=False, log_to_stdout=True)
 LOG.logger.debug("Loaded logging module as LOG")
 
-__version__ = importlib_metadata.version(__name__.replace(".", "-"))
+__version__ = importlib.metadata.version(__name__.replace(".", "-"))
 
 IRON_PYTHON = sys.platform == "cli"
 PY3 = sys.version_info[0] >= 3
