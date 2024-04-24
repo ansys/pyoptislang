@@ -29,7 +29,6 @@ from typing import TYPE_CHECKING, Iterable, Mapping, Optional, Sequence, Tuple, 
 
 from deprecated.sphinx import deprecated
 
-
 from ansys.optislang.core import LOG
 from ansys.optislang.core.tcp.application import TcpApplicationProxy
 from ansys.optislang.core.tcp.osl_server import TcpOslServer
