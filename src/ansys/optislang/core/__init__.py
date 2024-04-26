@@ -47,6 +47,11 @@ from ansys.optislang.core.optislang import Optislang
 from ansys.optislang.core.osl_process import OslServerProcess, ServerNotification
 
 # Provide examples directory path
-if spec := importlib.util.find_spec("ansys.optislang.core.examples"):
+examples = "ansys.optislang.core.examples"
+if spec := importlib.util.find_spec(examples):
     if spec.origin:
         os.environ["OSL_EXAMPLES"] = os.path.dirname(spec.origin)
+    else:
+        LOG.logger.warning(f"Could not set path to examples. Missing spec for module {examples}.")
+else:
+    LOG.logger.warning(f"Could not set path to examples. Missing origin for module {examples}.")
