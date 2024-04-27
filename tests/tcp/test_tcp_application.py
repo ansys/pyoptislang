@@ -25,6 +25,7 @@ from pathlib import Path
 import pytest
 
 from ansys.optislang.core import Optislang
+from ansys.optislang.core.osl_server import OslVersion
 from ansys.optislang.core.tcp.project import TcpProjectProxy
 
 pytestmark = pytest.mark.local_osl
@@ -117,6 +118,8 @@ def test_save_as(optislang: Optislang, tmp_path: Path, path_type):
 @pytest.mark.parametrize("path_type", [str, Path])
 def test_save_copy(optislang: Optislang, tmp_path: Path, path_type):
     "Test ``save_copy()`` command."
+    if optislang.osl_version < OslVersion(24, 1, 0, 0):
+        pytest.skip(f"Not compatible with {optislang.osl_version_string}")
     application = optislang.application
     copy_path = tmp_path / "test_save_copy.opf"
     if path_type == str:

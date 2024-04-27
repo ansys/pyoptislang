@@ -83,7 +83,7 @@ pytestmark = pytest.mark.local_osl
 def test_local_default_cm(send_dispose, send_shutdown, osl_none):
     osl_port = None
     with Optislang(shutdown_on_finished=True) as osl:
-        osl.start()
+        osl.project.start()
         osl_port = osl._Optislang__osl_server._TcpOslServer__port
         if send_dispose:
             osl.dispose()
@@ -117,7 +117,7 @@ def test_local_default_cm(send_dispose, send_shutdown, osl_none):
 def test_local_shutdown_on_finished_false_cm(send_dispose, send_shutdown, osl_none):
     osl_port = None
     with Optislang(shutdown_on_finished=False) as osl:
-        osl.start()
+        osl.project.start()
         osl_port = osl._Optislang__osl_server._TcpOslServer__port
         if send_dispose:
             osl.dispose()
@@ -156,7 +156,7 @@ def test_remote_cm(send_dispose, send_shutdown, osl_none):
     osl_server_process = create_osl_server_process(shutdown_on_finished=False)
     # connect to running optiSLang server
     with Optislang(host=_host, port=osl_server_process.port_range[0]) as osl:
-        osl.start()
+        osl.project.start()
         if send_dispose:
             osl.dispose()
         if send_shutdown:
@@ -193,7 +193,7 @@ def test_remote_cm(send_dispose, send_shutdown, osl_none):
 )
 def test_local_default_wocm(send_dispose, send_shutdown):
     osl = Optislang(shutdown_on_finished=True, ini_timeout=60)
-    osl.start()
+    osl.project.start()
     osl_port = osl._Optislang__osl_server._TcpOslServer__port
     if send_dispose:
         osl.dispose()
@@ -222,7 +222,7 @@ def test_local_default_wocm(send_dispose, send_shutdown):
 )
 def test_local_shutdown_on_finished_false_wocm(send_dispose, send_shutdown):
     osl = Optislang(shutdown_on_finished=False, ini_timeout=60)
-    osl.start()
+    osl.project.start()
     osl_port = osl._Optislang__osl_server._TcpOslServer__port
     if send_dispose:
         osl.dispose()
@@ -258,7 +258,7 @@ def test_remote_wocm(send_dispose, send_shutdown):
     osl_server_process = create_osl_server_process(shutdown_on_finished=False)
     # connect to running optiSLang server
     osl = Optislang(host=_host, port=osl_server_process.port_range[0])
-    osl.start()
+    osl.project.start()
     if send_dispose:
         osl.dispose()
     if send_shutdown:
