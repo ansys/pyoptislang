@@ -31,7 +31,6 @@ classifiers = [
     "Topic :: Scientific/Engineering",
 ]
 dependencies = [
-    "importlib-metadata>=4.0,<8",
     "psutil>=5.9",
     "Deprecated>=1.2.14",
 ]
