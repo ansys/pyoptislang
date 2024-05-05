@@ -5,4 +5,4 @@ optislang
 PyOptiSLang
 osl
 Pythonic
-(?!)ansys
+ansys
