@@ -23,9 +23,10 @@ repos:
     exclude: "examples/"
 
 - repo: https://github.com/codespell-project/codespell
-  rev: v2.2.2
+  rev: v2.2.6
   hooks:
   - id: codespell
+    args: ["--ignore-words", "doc/styles/config/vocabularies/ANSYS/accept.txt"]
 
 - repo: https://github.com/pycqa/pydocstyle
   rev: 6.3.0
