@@ -3020,9 +3020,6 @@ class TcpOslServer(OslServer):
         file_path = self.__cast_to_path(file_path=file_path)
         self.__validate_path(file_path=file_path)
 
-        if not file_path.is_file():
-            raise FileNotFoundError(f'File "{file_path}" doesn\'t exist.')
-
         current_func_name = self.open.__name__
 
         if self.__osl_version[0] < 24:
