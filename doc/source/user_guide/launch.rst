@@ -164,7 +164,7 @@ initialized with the ``shutdown_on_finished`` parameter set to ``False``.
 
 * To shut down the optiSLang server, use both the
    :py:meth:`shutdown() <ansys.optislang.core.optislang.Optislang.shutdown>` and
-   :py;meth:`dispose() <ansys.optislang.core.optislang.Optislang.dispose>` methods: 
+   :py:meth:`dispose() <ansys.optislang.core.optislang.Optislang.dispose>` methods: 
    
    .. code:: python
 
