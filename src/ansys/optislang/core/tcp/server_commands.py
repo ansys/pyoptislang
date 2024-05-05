@@ -1168,7 +1168,7 @@ def reset(
     Parameters
     ----------
     actor_uid: Optional[str], optional
-        Actor uid entry. A Hirearchical ID (hid) is required. By default ``None``.
+        Actor uid entry. A Hierarchical ID (hid) is required. By default ``None``.
     hid: Optional[str], optional
         Hid entry. The actor uid is required. By default ``None``.
     password : Optional[str], optional
@@ -1180,7 +1180,7 @@ def reset(
         JSON string of ``reset`` command.
     """
     if actor_uid and hid is None:
-        raise ValueError("The Hirearchical ID (hid) is required.")
+        raise ValueError("The Hierarchical ID (hid) is required.")
     elif actor_uid is None and hid:
         raise ValueError("The actor uid is required.")
     return _to_json(
@@ -1196,7 +1196,7 @@ def restart(
     Parameters
     ----------
     actor_uid: Optional[str], optional
-        Actor uid entry. A Hirearchical ID (hid) is required. By default ``None``.
+        Actor uid entry. A Hierarchical ID (hid) is required. By default ``None``.
     hid: Optional[str], optional
         Hid entry. The actor uid is required. By default ``None``.
     password : Optional[str], optional
@@ -1208,7 +1208,7 @@ def restart(
         JSON string of ``restart`` command.
     """
     if actor_uid and hid is None:
-        raise ValueError("The Hirearchical ID (hid) is required.")
+        raise ValueError("The Hierarchical ID (hid) is required.")
     elif actor_uid is None and hid:
         raise ValueError("The actor uid is required.")
     return _to_json(
@@ -1772,7 +1772,7 @@ def start(
     Parameters
     ----------
     actor_uid: Optional[str], optional
-        Actor uid entry. A Hirearchical ID (hid) is required. By default ``None``.
+        Actor uid entry. A Hierarchical ID (hid) is required. By default ``None``.
     hid: Optional[str], optional
         Hid entry. The actor uid is required. By default ``None``.
     password : Optional[str], optional
@@ -1784,7 +1784,7 @@ def start(
         JSON string of ``start`` command.
     """
     if actor_uid and hid is None:
-        raise ValueError("The Hirearchical ID (hid) is required.")
+        raise ValueError("The Hierarchical ID (hid) is required.")
     elif actor_uid is None and hid:
         raise ValueError("The actor uid is required.")
 
@@ -1801,7 +1801,7 @@ def stop(
     Parameters
     ----------
     actor_uid: Optional[str], optional
-        Actor uid entry. A Hirearchical ID (hid) is required. By default ``None``.
+        Actor uid entry. A Hierarchical ID (hid) is required. By default ``None``.
     hid: Optional[str], optional
         Hid entry. The actor uid is required. By default ``None``.
     password : Optional[str], optional
@@ -1813,7 +1813,7 @@ def stop(
         JSON string of ``stop`` command.
     """
     if actor_uid and hid is None:
-        raise ValueError("The Hirearchical ID (hid) is required.")
+        raise ValueError("The Hierarchical ID (hid) is required.")
     elif actor_uid is None and hid:
         raise ValueError("The actor uid is required.")
 
@@ -1830,7 +1830,7 @@ def stop_gently(
     Parameters
     ----------
     actor_uid: Optional[str], optional
-        Actor uid entry. A Hirearchical ID (hid) is required. By default ``None``.
+        Actor uid entry. A Hierarchical ID (hid) is required. By default ``None``.
     hid: Optional[str], optional
         Hid entry. The actor uid is required. By default ``None``.
     password : Optional[str], optional
@@ -1842,7 +1842,7 @@ def stop_gently(
         JSON string of ``stop_gently`` command.
     """
     if actor_uid and hid is None:
-        raise ValueError("The Hirearchical ID (hid) is required.")
+        raise ValueError("The Hierarchical ID (hid) is required.")
     elif actor_uid is None and hid:
         raise ValueError("The actor uid is required.")
     return _to_json(
