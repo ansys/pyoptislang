@@ -5,4 +5,6 @@ optislang
 PyOptiSLang
 osl
 Pythonic
-ansys
+Ansys
+design_flow
+integration_plugins
