@@ -28,7 +28,7 @@ with types of most of the available nodes are declared in
 Type of the created node can be also created manually using
 :py:class:`NodeType <ansys.optislang.core.node_types.NodeType>` if constant is not available.
 Code below shows value of constant 
-:py:const:`Sensitivity <ansys.optislang.core.node_types.Sensitivity>` from snippet above:
+:py:const:`Sensitivity <ansys.optislang.core.node_types.Sensitivity>` from the preceding snippet:
 
 .. code:: python
 

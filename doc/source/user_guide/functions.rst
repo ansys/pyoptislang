@@ -21,7 +21,7 @@ Within the context of the :py:class:`Application <ansys.optislang.core.applicati
 class instance, there is further
 property :py:attr:`project <ansys.optislang.core.application.Application.project>`, 
 which holds an instance of the :py:class:`Project <ansys.optislang.core.project.Project>` class
-(if any project is loaded). This instance groups functionality to get project information
+(if any project is loaded). This instance groups features to get project information
 and execute operations on the active project.
 
 .. code:: python

@@ -2,7 +2,10 @@ optiSLang
 OptiSLang
 Optislang
 optislang
+optiSLang TCP
 PyOptiSLang
 osl
 Pythonic
-(?!)ansys
+Ansys
+design_flow
+integration_plugins

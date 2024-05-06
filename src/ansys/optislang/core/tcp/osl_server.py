@@ -3487,7 +3487,7 @@ class TcpOslServer(OslServer):
         Parameters
         ----------
         actor_uid: Optional[str], optional
-            Actor uid entry. A Hirearchical ID (hid) is required. By default ``None``.
+            Actor uid entry. A Hierarchical ID (hid) is required. By default ``None``.
         hid: Optional[str], optional
             Hid entry. The actor uid is required. By default ``None``.
 
