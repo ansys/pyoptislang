@@ -1,4 +1,4 @@
-Parametric Systems
+Parametric systems
 ==================
 .. currentmodule:: ansys.optislang.core.node_types
 
