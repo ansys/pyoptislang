@@ -1,4 +1,5 @@
 """Sphinx documentation configuration file."""
+
 from datetime import datetime
 import os
 
@@ -39,7 +40,7 @@ intersphinx_mapping = {
     "pandas": ("https://pandas.pydata.org/pandas-docs/stable", None),
     "pytest": ("https://docs.pytest.org/en/stable", None),
 }
-suppress_warnings = ["label.*"]
+suppress_warnings = ["label.*", "config.cache"]
 
 # numpydoc configuration
 numpydoc_use_plots = True
