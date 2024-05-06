@@ -2,6 +2,7 @@ optiSLang
 OptiSLang
 Optislang
 optislang
+optiSLang TCP
 PyOptiSLang
 osl
 Pythonic
