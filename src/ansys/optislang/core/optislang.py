@@ -326,7 +326,7 @@ class Optislang:
         if isinstance(self.__osl_server, TcpOslServer):
             return TcpApplicationProxy(osl_server=self.__osl_server, logger=self.log)
         else:
-            raise NotImplementedError(f"Currently supported only for ``TcpOslServer``.")
+            raise NotImplementedError("Currently supported only for ``TcpOslServer``.")
 
     def __str__(self):
         """Return product name, version of optiSLang, and version of PyOptiSLang."""
@@ -407,7 +407,7 @@ class Optislang:
         return self.__name
 
     @property
-    def osl_server(self) -> Optional[OslServer]:
+    def osl_server(self) -> OslServer:
         """Get the currently used instance of the OslServer.
 
         This instance can be used to directly communicate with optiSLang using
