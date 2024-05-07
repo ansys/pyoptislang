@@ -398,7 +398,7 @@ def create_start_designs(
     args: CommandArgs = {}
     args["sampling_type"] = sampling_type
     if (number_of_levels is not None) and (number_of_samples is not None):
-        raise TypeError(f"Please specify either ``number_of_levels`` or ``number of samples``.")
+        raise TypeError("Please specify either ``number_of_levels`` or ``number of samples``.")
     elif number_of_levels is not None:
         args["number_of_levels"] = number_of_levels
     elif number_of_samples is not None:
@@ -2035,7 +2035,7 @@ def write_monitoring_database(
 
 def _gen_server_command(
     command: str,
-    password: str,
+    password: Optional[str] = None,
     args: Optional[CommandArgs] = None,
     actor_uid: Optional[str] = None,
     hid: Optional[str] = None,
@@ -2061,15 +2061,15 @@ def _gen_server_command(
         Dictionary of server command.
 
     """
-    scmd = {
+    server_command: Dict[str, Any] = {
         "projects": [
             {"commands": [_gen_command(command=command, args=args, actor_uid=actor_uid, hid=hid)]}
         ]
     }
 
     if password:
-        scmd["Password"] = password
-    return scmd
+        server_command["Password"] = password
+    return server_command
 
 
 def _gen_command(
