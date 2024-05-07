@@ -1323,7 +1323,7 @@ class TcpOslServer(OslServer):
         ----------
         timeout: Optional[float]
             Timeout in seconds to perform commands, it must be greater than zero or ``None``.
-            Another functions will raise a timeout exception if the timeout period value has
+            Certain functions will raise a timeout exception if the timeout period value has
             elapsed before the operation has completed.
             If ``None`` is given, functions will wait until they're finished (no timeout
             exception is raised). Defaults to ``30``.
