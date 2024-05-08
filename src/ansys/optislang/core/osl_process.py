@@ -358,7 +358,7 @@ class OslServerProcess:
         return self.__batch
 
     @property
-    def port_range(self) -> Tuple[int, int]:
+    def port_range(self) -> Optional[Tuple[int, int]]:
         """Port range for optiSLang server execution.
 
         Returns
@@ -369,7 +369,7 @@ class OslServerProcess:
         return self.__port_range
 
     @property
-    def password(self) -> str:
+    def password(self) -> Optional[str]:
         """Server password.
 
         Returns
@@ -380,7 +380,7 @@ class OslServerProcess:
         return self.__password
 
     @property
-    def no_run(self) -> bool:
+    def no_run(self) -> Optional[bool]:
         """Get whether not to run the specified project when started in batch mode .
 
         Returns
@@ -461,7 +461,7 @@ class OslServerProcess:
         return self.__log_server_events
 
     @property
-    def listener(self) -> Tuple[str, int]:
+    def listener(self) -> Optional[Tuple[str, int]]:
         """Host and port of the remote listener.
 
         The listener (plain TCP/IP based) is registered at optiSLang server.
@@ -474,7 +474,7 @@ class OslServerProcess:
         return self.__listener
 
     @property
-    def listener_id(self) -> str:
+    def listener_id(self) -> Optional[str]:
         """Specific unique ID for the TCP listener.
 
         Returns
@@ -561,9 +561,11 @@ class OslServerProcess:
         Returns
         -------
         Tuple[str, ...]
-            Additional command line arguments, if defined; ``None`` otherwise.
+            Additional command line arguments.
         """
-        return self.__additional_args
+        if self.__additional_args is not None:
+            return tuple(self.__additional_args)
+        return ()
 
     @property
     def pid(self) -> Optional[int]:
@@ -574,15 +576,17 @@ class OslServerProcess:
         Optional[int]
             Process ID, if exists; ``None`` otherwise.
         """
-        return None if self.__process is None else self.__process.pid
+        if self.__process is not None:
+            return self.__process.pid
+        return None
 
     @property
-    def shutdown_on_finished(self) -> str:
+    def shutdown_on_finished(self) -> bool:
         """Whether to shut down when execution is finished.
 
         Returns
         -------
-        str
+        bool
             Whether to shut down when execution is finished.
         """
         return self.__shutdown_on_finished
