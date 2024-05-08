@@ -1993,6 +1993,10 @@ class Parameter:
             properties_dict["range"] = None
         return properties_dict
 
+    def to_dict(self) -> dict:
+        """Convert to dictionary."""
+        raise NotImplementedError
+
 
 class DependentParameter(Parameter):
     """Stores dependent parameter data."""
