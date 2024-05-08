@@ -734,7 +734,7 @@ class TcpOslListener:
         self.__timeout = timeout
         self.__listener_socket = None
         self.__thread = None
-        self.__callbacks = []
+        self.__callbacks: List[Tuple[Callable, Any]] = []
         self.__run_listening_thread = False
         self.__refresh_listener_registration = False
 
@@ -3954,7 +3954,7 @@ class TcpOslServer(OslServer):
                 timeout=self.timeouts_register.get_value(self.__class__.start)
             )
             exec_started_listener.cleanup_notifications()
-            wait_for_started_queue = Queue()
+            wait_for_started_queue: Queue = Queue()
             exec_started_listener.add_callback(
                 self.__class__.__terminate_listener_thread,
                 (
@@ -3974,7 +3974,7 @@ class TcpOslServer(OslServer):
                 self.timeouts_register.get_value(self.__class__.start)
             )
             exec_finished_listener.cleanup_notifications()
-            wait_for_finished_queue = Queue()
+            wait_for_finished_queue: Queue = Queue()
             exec_finished_listener.add_callback(
                 self.__class__.__terminate_listener_thread,
                 (
@@ -4041,7 +4041,7 @@ class TcpOslServer(OslServer):
                 timeout=self.timeouts_register.get_value(self.__class__.stop)
             )
             exec_finished_listener.cleanup_notifications()
-            wait_for_finished_queue = Queue()
+            wait_for_finished_queue: Queue = Queue()
             exec_finished_listener.add_callback(
                 self.__class__.__terminate_listener_thread,
                 (
@@ -4223,7 +4223,7 @@ class TcpOslServer(OslServer):
             timeout=None,
             name="Main",
         )
-        port_queue = Queue()
+        port_queue: Queue = Queue()
         listener.add_callback(self.__class__.__port_on_listended, (port_queue, self._logger))
 
         try:
