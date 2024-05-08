@@ -89,26 +89,11 @@ class NodeType:
         """Return formatted string."""
         return f"type: {self.id}, subtype: {self.subtype}"
 
-    def __eq__(self, other: NodeType) -> bool:
-        """Compare properties of two instances of the ``NodeType`` class.
-
-        Parameters
-        ----------
-        other: NodeType
-            Criterion for comparison.
-
-        Returns
-        -------
-        bool
-            ``True`` if all properties match; ``False`` otherwise.
-        """
-        if type(self) == type(other):
-            checks = {}
-            checks["id"] = self.id == other.id
-            checks["subtype"] = self.subtype == other.subtype
-            return False not in checks.values()
-        else:
-            return False
+    def __eq__(self, other: object) -> bool:
+        """Object comparison."""
+        if not isinstance(other, NodeType):
+            return NotImplemented
+        return self.id == other.id and self.subtype == other.subtype
 
     @property
     def id(self) -> str:

@@ -97,20 +97,21 @@ def test_invalid_inputs(enumeration_class: Enum, invalid_value: str, invalid_val
 
 
 # region TEST CLASSES
-def test_node_type():
+def test_node_type_class():
     """Test initialization and properties of `NodeType` class."""
     node_type = NodeType(id="name", subtype=AddinType.BUILT_IN)
     assert isinstance(node_type.id, str)
     assert isinstance(node_type.subtype, AddinType)
     assert node_type.id == "name"
     assert node_type.subtype == AddinType.BUILT_IN
+
     node_type_eq = NodeType(id="name", subtype=AddinType.BUILT_IN)
     node_type_neq1 = NodeType(id="another_name", subtype=AddinType.BUILT_IN)
     node_type_neq2 = NodeType(id="name", subtype=AddinType.ALGORITHM_PLUGIN)
     assert node_type == node_type_eq
     assert not node_type == node_type_neq1
     assert not node_type == node_type_neq2
-    print(node_type)
+    assert node_type != "foo"
 
 
 # endregion
