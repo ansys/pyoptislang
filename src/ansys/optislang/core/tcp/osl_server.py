@@ -1165,10 +1165,8 @@ class TcpOslServer(OslServer):
         """Initialize a new instance of the ``TcpOslServer`` class."""
         self.__host = host
         self.__port = port
-        self.__max_request_attempts_register = (
-            self.__class__.__get_default_max_request_attempts_register()
-        )
-        self.__timeouts_register = self.__class__.__get_default_timeouts_register()
+        self.__max_request_attempts_register = self.__get_default_max_request_attempts_register()
+        self.__timeouts_register = self.__get_default_timeouts_register()
 
         self._logger = logging.getLogger(__name__) if logger is None else logger
 
@@ -4749,38 +4747,36 @@ class TcpOslServer(OslServer):
                 message = "Command error: " + str(response)
             raise OslCommandError(message)
 
-    @staticmethod
-    def __get_default_max_request_attempts_register() -> FunctionsAttributeRegister:
+    def __get_default_max_request_attempts_register(self) -> FunctionsAttributeRegister:
         max_requests_register = FunctionsAttributeRegister(
-            default_value=2, validator=__class__.__validate_max_request_attempts_value
+            default_value=2, validator=self.__class__.__validate_max_request_attempts_value
         )
-        max_requests_register.register(__class__.evaluate_design, 1)
-        max_requests_register.register(__class__.get_full_project_status_info, 1)
-        max_requests_register.register(__class__.open, 1)
-        max_requests_register.register(__class__.reset, 1)
-        max_requests_register.register(__class__.run_python_script, 1)
-        max_requests_register.register(__class__.save, 1)
-        max_requests_register.register(__class__.save_as, 1)
-        max_requests_register.register(__class__.save_copy, 1)
-        max_requests_register.register(__class__.start, 1)
-        max_requests_register.register(__class__.stop, 1)
+        max_requests_register.register(self.__class__.evaluate_design, 1)
+        max_requests_register.register(self.__class__.get_full_project_status_info, 1)
+        max_requests_register.register(self.__class__.open, 1)
+        max_requests_register.register(self.__class__.reset, 1)
+        max_requests_register.register(self.__class__.run_python_script, 1)
+        max_requests_register.register(self.__class__.save, 1)
+        max_requests_register.register(self.__class__.save_as, 1)
+        max_requests_register.register(self.__class__.save_copy, 1)
+        max_requests_register.register(self.__class__.start, 1)
+        max_requests_register.register(self.__class__.stop, 1)
         return max_requests_register
 
-    @staticmethod
-    def __get_default_timeouts_register() -> FunctionsAttributeRegister:
+    def __get_default_timeouts_register(self) -> FunctionsAttributeRegister:
         timeout_register = FunctionsAttributeRegister(
-            default_value=30, validator=__class__.__validate_timeout_value
+            default_value=30, validator=self.__class__.__validate_timeout_value
         )
-        timeout_register.register(__class__.evaluate_design, None)
-        timeout_register.register(__class__.get_full_project_status_info, None)
-        timeout_register.register(__class__.open, None)
-        timeout_register.register(__class__.reset, None)
-        timeout_register.register(__class__.run_python_script, None)
-        timeout_register.register(__class__.save, None)
-        timeout_register.register(__class__.save_as, None)
-        timeout_register.register(__class__.save_copy, None)
-        timeout_register.register(__class__.start, None)
-        timeout_register.register(__class__.stop, None)
+        timeout_register.register(self.__class__.evaluate_design, None)
+        timeout_register.register(self.__class__.get_full_project_status_info, None)
+        timeout_register.register(self.__class__.open, None)
+        timeout_register.register(self.__class__.reset, None)
+        timeout_register.register(self.__class__.run_python_script, None)
+        timeout_register.register(self.__class__.save, None)
+        timeout_register.register(self.__class__.save_as, None)
+        timeout_register.register(self.__class__.save_copy, None)
+        timeout_register.register(self.__class__.start, None)
+        timeout_register.register(self.__class__.stop, None)
         return timeout_register
 
     @staticmethod
