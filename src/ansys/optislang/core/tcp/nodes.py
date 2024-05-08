@@ -2988,9 +2988,7 @@ class TcpInputSlotProxy(TcpSlotProxy, InputSlot):
                 to_slot=self.name,
             )
         else:
-            python_script = self.__class__._create_connection_script(
-                from_slot=from_slot, to_slot=self
-            )
+            python_script = self._create_connection_script(from_slot=from_slot, to_slot=self)
             self._osl_server.run_python_script(script=python_script)
         return Edge(from_slot=from_slot, to_slot=self)
 
@@ -3075,9 +3073,7 @@ class TcpOutputSlotProxy(TcpSlotProxy, OutputSlot):
                 to_slot=to_slot.name,
             )
         else:
-            python_script = self.__class__._create_connection_script(
-                from_slot=self, to_slot=to_slot
-            )
+            python_script = self._create_connection_script(from_slot=self, to_slot=to_slot)
             self._osl_server.run_python_script(script=python_script)
         return Edge(from_slot=self, to_slot=to_slot)
 
@@ -3162,9 +3158,7 @@ class TcpInnerInputSlotProxy(TcpSlotProxy, InnerInputSlot):
                 to_slot=self.name,
             )
         else:
-            python_script = self.__class__._create_connection_script(
-                from_slot=from_slot, to_slot=self
-            )
+            python_script = self._create_connection_script(from_slot=from_slot, to_slot=self)
             self._osl_server.run_python_script(script=python_script)
         return Edge(from_slot=from_slot, to_slot=self)
 
@@ -3233,9 +3227,7 @@ class TcpInnerOutputSlotProxy(TcpSlotProxy, InnerOutputSlot):
                 to_slot=to_slot.name,
             )
         else:
-            python_script = self.__class__._create_connection_script(
-                from_slot=self, to_slot=to_slot
-            )
+            python_script = self._create_connection_script(from_slot=self, to_slot=to_slot)
             self._osl_server.run_python_script(script=python_script)
         return Edge(from_slot=self, to_slot=to_slot)
 
