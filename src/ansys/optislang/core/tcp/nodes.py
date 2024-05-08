@@ -3458,20 +3458,20 @@ def _get_node_class_type(node_dict: dict, type_: NodeType) -> NodeClassType:
             AddinType.INTEGRATION_PLUGIN,
         ]:
             return NodeClassType.INTEGRATION_NODE
-        else:
-            return NodeClassType.NODE
-    elif node_dict["kind"] == "system":
+        return NodeClassType.NODE
+
+    if node_dict["kind"] == "system":
         if node_dict["is_parametric_system"]:
             return NodeClassType.PARAMETRIC_SYSTEM
-        else:
-            return NodeClassType.SYSTEM
-    elif node_dict["kind"] == "root_system":
+        return NodeClassType.SYSTEM
+
+    if node_dict["kind"] == "root_system":
         return NodeClassType.ROOT_SYSTEM
-    else:
-        TypeError(
-            f'Unknown kind of component: "{node_dict["kind"]}", '
-            '"node", "system" or "root_system" were expected.'
-        )
+
+    raise TypeError(
+        f'Unknown kind of component: "{node_dict["kind"]}", '
+        '"node", "system" or "root_system" were expected.'
+    )
 
 
 def _create_node_instance(
