@@ -3999,7 +3999,7 @@ class TcpOslServer(OslServer):
             )
 
         if not already_running and (wait_for_started or wait_for_finished):
-            self._logger.info(f"Waiting for started")
+            self._logger.info("Waiting for started")
             successfully_started = wait_for_started_queue.get()
             self.__delete_exec_started_listener()
             if successfully_started == "Terminate":
@@ -4007,7 +4007,7 @@ class TcpOslServer(OslServer):
             self._logger.info(f"Successfully started: {successfully_started}.")
 
         if wait_for_finished and (successfully_started or already_running):
-            self._logger.info(f"Waiting for finished")
+            self._logger.info("Waiting for finished")
             successfully_finished = wait_for_finished_queue.get()
             self.__delete_exec_finished_listener()
             if successfully_finished == "Terminate":
@@ -4092,7 +4092,7 @@ class TcpOslServer(OslServer):
             )
 
         if wait_for_finished:
-            self._logger.info(f"Waiting for finished")
+            self._logger.info("Waiting for finished")
             successfully_finished = wait_for_finished_queue.get()
             self.__delete_exec_finished_listener()
             if successfully_finished == "Terminate":
