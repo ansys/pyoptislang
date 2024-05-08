@@ -3388,7 +3388,7 @@ def create_slot_from_project_tree(
     uid: str,
     slot_name: str,
     slot_type: SlotType,
-    node: TcpNodeProxy = None,
+    node: Optional[TcpNodeProxy] = None,
     logger: Optional[Any] = None,
 ) -> TcpSlotProxy:
     """Create slot from project tree.
