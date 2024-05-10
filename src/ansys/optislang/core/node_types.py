@@ -42,8 +42,8 @@ class AddinType(Enum):
     PYTHON_BASED_MOP_NODE_PLUGIN = 5
     PYTHON_BASED_NODE_PLUGIN = 6
 
-    @staticmethod
-    def from_str(string: str) -> AddinType:
+    @classmethod
+    def from_str(cls, string: str) -> AddinType:
         """Convert string to an instance of the ``AddinType`` class.
 
         Parameters
@@ -63,7 +63,7 @@ class AddinType(Enum):
         ValueError
             Raised when an invalid value of ``string`` is given.
         """
-        return enum_from_str(string=string, enum_class=__class__, replace=(" ", "_"))
+        return enum_from_str(string=string, enum_class=cls, replace=(" ", "_"))
 
 
 class NodeType:

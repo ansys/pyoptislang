@@ -40,8 +40,8 @@ class CriterionType(Enum):
     OBJECTIVE = 2
     VARIABLE = 3
 
-    @staticmethod
-    def from_str(string: str) -> CriterionType:
+    @classmethod
+    def from_str(cls, string: str) -> CriterionType:
         """Convert string to CriterionType.
 
         Parameters
@@ -61,7 +61,7 @@ class CriterionType(Enum):
         ValueError
             Raised when the value for the ``string`` is invalid.
         """
-        return enum_from_str(string=string, enum_class=__class__, replace=(" ", "_"))
+        return enum_from_str(string=string, enum_class=cls, replace=(" ", "_"))
 
 
 class ComparisonType(Enum):
@@ -76,8 +76,8 @@ class ComparisonType(Enum):
     LESSLIMITSTATE = 6
     GREATERLIMITSTATE = 7
 
-    @staticmethod
-    def from_str(string: str) -> ComparisonType:
+    @classmethod
+    def from_str(cls, string: str) -> ComparisonType:
         """Convert string to ComparisonType.
 
         Parameters
@@ -97,7 +97,7 @@ class ComparisonType(Enum):
         ValueError
             Raised when the value for the ``string`` is invalid.
         """
-        return enum_from_str(string=string, enum_class=__class__)
+        return enum_from_str(string=string, enum_class=cls)
 
 
 class CriterionValueType(Enum):
@@ -111,8 +111,8 @@ class CriterionValueType(Enum):
     SIGNAL = 5
     XYDATA = 6
 
-    @staticmethod
-    def from_str(string: str) -> CriterionValueType:
+    @classmethod
+    def from_str(cls, string: str) -> CriterionValueType:
         """Convert string to CriterionValueType.
 
         Parameters
@@ -132,7 +132,7 @@ class CriterionValueType(Enum):
         ValueError
             Raised when the value for the ``string`` is invalid.
         """
-        return enum_from_str(string=string, enum_class=__class__)
+        return enum_from_str(string=string, enum_class=cls)
 
 
 class DesignStatus(Enum):
@@ -144,8 +144,8 @@ class DesignStatus(Enum):
     NOT_SUCCEEDED = 3
     FAILED = 4
 
-    @staticmethod
-    def from_str(string: str) -> DesignStatus:
+    @classmethod
+    def from_str(cls, string: str) -> DesignStatus:
         """Convert a string to an instance of the ``DesignStatus`` class.
 
         Parameters
@@ -165,7 +165,7 @@ class DesignStatus(Enum):
         ValueError
             Raised when the value for the ``string`` is invalid.
         """
-        return enum_from_str(string=string, enum_class=__class__, replace=(" ", "_"))
+        return enum_from_str(string=string, enum_class=cls, replace=(" ", "_"))
 
 
 class DistributionType(Enum):
@@ -218,8 +218,8 @@ class DistributionType(Enum):
     LAMBDA = 44
     POISSON = 45
 
-    @staticmethod
-    def from_str(string: str) -> DistributionType:
+    @classmethod
+    def from_str(cls, string: str) -> DistributionType:
         """Convert string to DistributionType.
 
         Parameters
@@ -239,7 +239,7 @@ class DistributionType(Enum):
         ValueError
             Raised when invalid value of ``string`` was given.
         """
-        return enum_from_str(string=string, enum_class=__class__, replace=(" ", "_"))
+        return enum_from_str(string=string, enum_class=cls, replace=(" ", "_"))
 
 
 class ParameterResolution(Enum):
@@ -256,8 +256,8 @@ class ParameterResolution(Enum):
     EMPIRICAL_DISCRETE = 6
     EMPIRICAL_CONTINUOUS = 7
 
-    @staticmethod
-    def from_str(string: str) -> ParameterResolution:
+    @classmethod
+    def from_str(cls, string: str) -> ParameterResolution:
         """Convert string to ``ParameterResolution``.
 
         Parameters
@@ -277,7 +277,7 @@ class ParameterResolution(Enum):
         ValueError
             Raised when invalid value of ``string`` was given.
         """
-        return enum_from_str(string=string, enum_class=__class__, replace=(" ", "_"))
+        return enum_from_str(string=string, enum_class=cls, replace=(" ", "_"))
 
 
 class ParameterType(Enum):
@@ -288,8 +288,8 @@ class ParameterType(Enum):
     MIXED = 2
     DEPENDENT = 3
 
-    @staticmethod
-    def from_str(string: str) -> ParameterType:
+    @classmethod
+    def from_str(cls, string: str) -> ParameterType:
         """Convert a string to an instance of the ``ParameterType`` class.
 
         Parameters
@@ -309,7 +309,7 @@ class ParameterType(Enum):
         ValueError
             Raised when invalid value of ``string`` was given.
         """
-        return enum_from_str(string=string, enum_class=__class__)
+        return enum_from_str(string=string, enum_class=cls)
 
 
 class ParameterValueType(Enum):
@@ -322,8 +322,8 @@ class ParameterValueType(Enum):
     STRING = 4
     VARIANT = 5
 
-    @staticmethod
-    def from_str(string: str) -> ParameterValueType:
+    @classmethod
+    def from_str(cls, string: str) -> ParameterValueType:
         """Convert string to ParameterValueType.
 
         Parameters
@@ -343,7 +343,7 @@ class ParameterValueType(Enum):
         ValueError
             Raised when invalid value of ``string`` was given.
         """
-        return enum_from_str(string=string, enum_class=__class__)
+        return enum_from_str(string=string, enum_class=cls)
 
 
 class ResponseValueType(Enum):
@@ -356,8 +356,8 @@ class ResponseValueType(Enum):
     SIGNAL = 4
     XYDATA = 5
 
-    @staticmethod
-    def from_str(string: str) -> CriterionValueType:
+    @classmethod
+    def from_str(cls, string: str) -> CriterionValueType:
         """Convert string to ResponseValueType.
 
         Parameters
@@ -377,7 +377,7 @@ class ResponseValueType(Enum):
         ValueError
             Raised when invalid value of ``string`` was given.
         """
-        return enum_from_str(string=string, enum_class=__class__)
+        return enum_from_str(string=string, enum_class=cls)
 
 
 # endregion

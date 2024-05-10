@@ -64,8 +64,8 @@ class DesignFlow(Enum):
     SEND = 2
     RECEIVE_SEND = 3
 
-    @staticmethod
-    def from_str(string: str) -> DesignFlow:
+    @classmethod
+    def from_str(cls, string: str) -> DesignFlow:
         """Convert string to an instance of the ``DesignFlow`` class.
 
         Parameters
@@ -85,7 +85,7 @@ class DesignFlow(Enum):
         ValueError
             Raised when an invalid value of ``string`` is given.
         """
-        return enum_from_str(string=string, enum_class=__class__, replace=(" ", "_"))
+        return enum_from_str(string=string, enum_class=cls, replace=(" ", "_"))
 
 
 class NodeClassType(Enum):
@@ -97,8 +97,8 @@ class NodeClassType(Enum):
     ROOT_SYSTEM = 3
     INTEGRATION_NODE = 4
 
-    @staticmethod
-    def from_str(string: str) -> NodeClassType:
+    @classmethod
+    def from_str(cls, string: str) -> NodeClassType:
         """Convert string to an instance of the ``NodeClassType`` class.
 
         Parameters
@@ -118,7 +118,7 @@ class NodeClassType(Enum):
         ValueError
             Raised when an invalid value of ``string`` is given.
         """
-        return enum_from_str(string=string, enum_class=__class__, replace=(" ", "_"))
+        return enum_from_str(string=string, enum_class=cls, replace=(" ", "_"))
 
 
 class SamplingType(Enum):
@@ -148,8 +148,8 @@ class SamplingType(Enum):
     FULLCOMBINATORIAL = 21
     ADVANCEDLATINHYPER = 22
 
-    @staticmethod
-    def from_str(string: str) -> SamplingType:
+    @classmethod
+    def from_str(cls, string: str) -> SamplingType:
         """Convert string to an instance of the ``SamplingType`` class.
 
         Parameters
@@ -167,7 +167,7 @@ class SamplingType(Enum):
         TypeError
             Raised when an invalid type of ``string`` is given.
         """
-        return enum_from_str(string=string, enum_class=__class__, replace=(" ", "_"))
+        return enum_from_str(string=string, enum_class=cls, replace=(" ", "_"))
 
 
 class SlotType(Enum):
@@ -178,8 +178,8 @@ class SlotType(Enum):
     INNER_INPUT = 2
     INNER_OUTPUT = 3
 
-    @staticmethod
-    def from_str(string: str) -> SlotType:
+    @classmethod
+    def from_str(cls, string: str) -> SlotType:
         """Convert string to an instance of the ``SlotType`` class.
 
         Parameters
@@ -197,7 +197,7 @@ class SlotType(Enum):
         TypeError
             Raised when an invalid type of ``string`` is given.
         """
-        return enum_from_str(string=string, enum_class=__class__, replace=(" ", "_"))
+        return enum_from_str(string=string, enum_class=cls, replace=(" ", "_"))
 
     @staticmethod
     def to_dir_str(type_: SlotType) -> str:

@@ -273,8 +273,8 @@ class RegisteredFileUsage(Enum):
     INPUT_FILE = 2
     OUTPUT_FILE = 3
 
-    @staticmethod
-    def from_str(string: str) -> RegisteredFileUsage:
+    @classmethod
+    def from_str(cls, string: str) -> RegisteredFileUsage:
         """Convert string to an instance of the ``RegisteredFileUsage`` class.
 
         Parameters
@@ -294,7 +294,7 @@ class RegisteredFileUsage(Enum):
         ValueError
             Raised when an invalid value of ``string`` is given.
         """
-        return enum_from_str(string=string, enum_class=__class__, replace=(" ", "_"))
+        return enum_from_str(string=string, enum_class=cls, replace=(" ", "_"))
 
     def to_str(self) -> str:
         """Convert usage type to string.
