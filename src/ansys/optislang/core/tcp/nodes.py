@@ -30,7 +30,7 @@ import json
 import logging
 from pathlib import Path
 import time
-from typing import TYPE_CHECKING, Any, Dict, Iterable, List, Optional, Tuple, Union
+from typing import TYPE_CHECKING, Any, Dict, Iterable, List, Optional, Tuple, Type, Union
 
 from deprecated.sphinx import deprecated
 
@@ -3234,7 +3234,7 @@ class TcpInnerOutputSlotProxy(TcpSlotProxy, InnerOutputSlot):
 
 
 # region Factory methods
-_NODE_CLASS_TYPE_TO_TCP_MAPPING: Dict[str, TcpNodeProxy] = {
+_NODE_CLASS_TYPE_TO_TCP_MAPPING: Dict[str, Type[TcpNodeProxy]] = {
     NodeClassType.NODE.name: TcpNodeProxy,
     NodeClassType.INTEGRATION_NODE.name: TcpIntegrationNodeProxy,
     NodeClassType.SYSTEM.name: TcpSystemProxy,
@@ -3473,14 +3473,14 @@ def _get_node_class_type(node_dict: dict, type_: NodeType) -> NodeClassType:
 
 
 def _create_node_instance(
-    class_to_be_constructed: TcpNodeProxy,
+    class_to_be_constructed: Type[TcpNodeProxy],
     node: dict,
     type_: NodeType,
     osl_server: TcpOslServer,
     logger=None,
 ) -> TcpNodeProxy:
     if type_.id == "RunnableSystem":
-        return class_to_be_constructed(
+        return TcpRootSystemProxy(
             uid=node["uid"],
             osl_server=osl_server,
             logger=logger,
