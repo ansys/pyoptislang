@@ -1261,6 +1261,7 @@ class ParametricSystem(System):
         """
         pass
 
+    @abstractmethod
     def get_inner_output_slots(self, name: Optional[str] = None) -> Tuple[InnerOutputSlot, ...]:
         """Get current node's inner output slots.
 
