@@ -250,7 +250,7 @@ class OslServerProcess:
         self.__batch = batch if not service else False
         self.__service = service
         self._logger = logging.getLogger(__name__) if logger is None else logger
-        self.__process = None
+        self.__process: Optional[subprocess.Popen] = None
         self.__handle_process_output_thread = None
 
         self.__tempdir = None
@@ -485,7 +485,7 @@ class OslServerProcess:
         return self.__listener_id
 
     @property
-    def multi_listener(self) -> Iterable[Tuple[str, int, Optional[str]]]:
+    def multi_listener(self) -> Optional[Iterable[Tuple[str, int, Optional[str]]]]:
         """Multi remote listener definitions.
 
         Aeach listener (plain TCP/IP based) is registered at optiSLang server.
@@ -498,7 +498,7 @@ class OslServerProcess:
         return self.__multi_listener
 
     @property
-    def notifications(self) -> Tuple[ServerNotification, ...]:
+    def notifications(self) -> Optional[Tuple[ServerNotification, ...]]:
         """Notifications which are sent to the listener.
 
         Returns
@@ -509,7 +509,7 @@ class OslServerProcess:
         return self.__notifications
 
     @property
-    def env_vars(self) -> Dict[str, str]:
+    def env_vars(self) -> Optional[Dict[str, str]]:
         """Additional environmental variables for the optiSLang server process.
 
         Returns
@@ -793,9 +793,10 @@ class OslServerProcess:
             args.append(f"--tcp-listener-id={self.__listener_id}")
 
         if self.__multi_listener is not None:
-            if len(self.__multi_listener) >= 1:
+            multi_listeners = list(self.__multi_listener)
+            if len(multi_listeners) >= 1:
                 args.append("--register-multi-tcp-listeners")
-            for listener in self.__multi_listener:
+            for listener in multi_listeners:
                 if len(listener) >= 3 and listener[2] is not None:
                     args.append(f"{listener[0]}:{listener[1]}+{listener[2]}")
                 else:
