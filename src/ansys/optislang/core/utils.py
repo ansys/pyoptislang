@@ -24,23 +24,38 @@
 from __future__ import annotations
 
 import collections
-from enum import Enum, EnumMeta
+from enum import Enum
 import os
 from pathlib import Path
 import re
-from typing import DefaultDict, Dict, Iterable, Iterator, List, Optional, OrderedDict, Tuple, Union
+from typing import (
+    DefaultDict,
+    Dict,
+    Iterable,
+    Iterator,
+    List,
+    Optional,
+    OrderedDict,
+    Tuple,
+    Type,
+    TypeVar,
+    Union,
+)
 
 from ansys.optislang.core import FIRST_SUPPORTED_VERSION
 
 VersionMapping = Dict[int, Path]
 
 
+T = TypeVar("T", bound=Enum)
+
+
 def enum_from_str(
     string: str,
-    enum_class: EnumMeta,
+    enum_class: Type[T],
     replace: Optional[Tuple[str, str]] = None,
     upper_case: bool = True,
-) -> Enum:
+) -> T:
     """Convert string to enumeration.
 
     Parameters
