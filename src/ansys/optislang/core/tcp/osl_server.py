@@ -323,7 +323,7 @@ class TcpClient:
         ConnectionRefusedError
             Raised when the connection cannot be established.
         """
-        if self.is_connected:
+        if self.__socket is not None:
             raise ConnectionEstablishedError("Connection is already established.")
 
         start_time = time.time()
@@ -353,7 +353,7 @@ class TcpClient:
 
     def disconnect(self) -> None:
         """Disconnect from the server."""
-        if self.is_connected:
+        if self.__socket is not None:
             self.__socket.close()
             self.__socket = None
 
@@ -379,7 +379,7 @@ class TcpClient:
         OSError
             Raised when an error occurs while sending data.
         """
-        if not self.is_connected:
+        if self.__socket is None:
             raise ConnectionNotEstablishedError(
                 "Cannot send message. Connection is not established."
             )
@@ -416,7 +416,7 @@ class TcpClient:
         OSError
             Raised when an error occurs while sending data.
         """
-        if not self.is_connected:
+        if self.__socket is None:
             raise ConnectionNotEstablishedError("Cannot send file. Connection is not established.")
         if not os.path.isfile(file_path):
             raise FileNotFoundError(
@@ -466,7 +466,7 @@ class TcpClient:
         ValueError
             Raised if the timeout value is a number not greater than zero.
         """
-        if not self.is_connected:
+        if self.__socket is None:
             raise ConnectionNotEstablishedError(
                 "Cannot receive message. Connection is not established."
             )
@@ -514,7 +514,7 @@ class TcpClient:
         OSError
             Raised when the file cannot be opened.
         """
-        if not self.is_connected:
+        if self.__socket is None:
             raise ConnectionNotEstablishedError(
                 "Cannot receive file. Connection is not established."
             )
