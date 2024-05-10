@@ -866,17 +866,17 @@ def get_node_type_from_str(node_id: str) -> NodeType:
     if module_constants.get(node_id, None) is not None:
         return module_constants[node_id]
     elif node_id in customs.keys():
-        id = node_id[:-1]
+        id_ = node_id[:-1]
         subtype = AddinType.BUILT_IN
     else:
         was_found = False
         for custom in customs.keys():
             if node_id.startswith(custom):
-                id = node_id.replace(custom, "")
+                id_ = node_id.replace(custom, "")
                 subtype = customs[custom]
                 was_found = True
                 break
         if not was_found:
-            id = node_id
+            id_ = node_id
             subtype = AddinType.BUILT_IN
-    return NodeType(id=id, subtype=subtype)
+    return NodeType(id=id_, subtype=subtype)
