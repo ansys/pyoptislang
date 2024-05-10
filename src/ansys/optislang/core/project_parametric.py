@@ -357,7 +357,7 @@ class ResponseValueType(Enum):
     XYDATA = 5
 
     @classmethod
-    def from_str(cls, string: str) -> CriterionValueType:
+    def from_str(cls, string: str) -> ResponseValueType:
         """Convert string to ResponseValueType.
 
         Parameters
