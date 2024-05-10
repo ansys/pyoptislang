@@ -275,7 +275,7 @@ class TcpNodeProxy(Node):
                 "is_parametric_system": True,
             },
         ]
-        ancestors_line_dicts = self.__class__._find_ancestor_line(
+        ancestors_line_dicts = self._find_ancestor_line(
             tree=parent_tree,
             ancestor_line=ancestors_line_dicts,
             node_uid=self.uid,
@@ -761,7 +761,7 @@ class TcpNodeProxy(Node):
         project_tree = self._osl_server.get_full_project_tree_with_properties()
         root_system_uid = project_tree["projects"][0]["system"]["uid"]
         parent_tree = project_tree["projects"][0]["system"]
-        return self.__class__._find_parent_node_info(
+        return self._find_parent_node_info(
             tree=parent_tree,
             parent_uid=root_system_uid,
             node_uid=self.uid,
@@ -1621,9 +1621,9 @@ class TcpSystemProxy(TcpNodeProxy, System):
             integration_type,
             mop_node_type,
             node_type,
-        ) = self.__class__._get_subtypes(addin_type=type_.subtype)
+        ) = self._get_subtypes(addin_type=type_.subtype)
         design_flow_name = (
-            self.__class__._parse_design_flow_from_string(design_flow=design_flow).name.lower()
+            self._parse_design_flow_from_string(design_flow=design_flow).name.lower()
             if design_flow is not None
             else None
         )
@@ -1696,7 +1696,7 @@ class TcpSystemProxy(TcpNodeProxy, System):
         if self.uid == project_tree["projects"][0]["system"]["uid"]:
             system_tree = project_tree["projects"][0]["system"]
         else:
-            located_tree = self.__class__._find_subtree(
+            located_tree = self._find_subtree(
                 tree=project_tree["projects"][0]["system"],
                 uid=self.uid,
                 nodes_tree=[],
@@ -1706,7 +1706,7 @@ class TcpSystemProxy(TcpNodeProxy, System):
             else:
                 raise RuntimeError(f"Current system `{self.uid}` wasn't found.")
 
-        properties_dicts_list = self.__class__._find_node_with_uid(
+        properties_dicts_list = self._find_node_with_uid(
             uid=uid,
             tree=system_tree,
             properties_dicts_list=[],
@@ -1758,7 +1758,7 @@ class TcpSystemProxy(TcpNodeProxy, System):
         if self.uid == project_tree["projects"][0]["system"]["uid"]:
             system_tree = project_tree["projects"][0]["system"]
         else:
-            located_tree = self.__class__._find_subtree(
+            located_tree = self._find_subtree(
                 tree=project_tree["projects"][0]["system"],
                 uid=self.uid,
                 nodes_tree=[],
@@ -1768,7 +1768,7 @@ class TcpSystemProxy(TcpNodeProxy, System):
             else:
                 raise RuntimeError(f"Current system `{self.uid}` wasn't found.")
 
-        properties_dicts_list = self.__class__._find_nodes_with_name(
+        properties_dicts_list = self._find_nodes_with_name(
             name=name,
             tree=system_tree,
             properties_dicts_list=[],
@@ -1832,7 +1832,7 @@ class TcpSystemProxy(TcpNodeProxy, System):
         if self.uid == project_tree["projects"][0]["system"]["uid"]:
             system_tree = project_tree["projects"][0]["system"]
         else:
-            located_tree = self.__class__._find_subtree(
+            located_tree = self._find_subtree(
                 tree=project_tree["projects"][0]["system"],
                 uid=self.uid,
                 nodes_tree=[],
@@ -2156,7 +2156,7 @@ class TcpParametricSystemProxy(TcpSystemProxy, ParametricSystem):
             output_file = json.dumps(designs[hid])
             newline = None
         elif format == FileOutputFormat.CSV:
-            output_file = self.__class__.__convert_design_dict_to_csv(designs[hid])
+            output_file = self.__convert_design_dict_to_csv(designs[hid])
             newline = ""
         else:
             raise ValueError(f"Output type `{format}` is not supported.")
@@ -2192,17 +2192,15 @@ class TcpParametricSystemProxy(TcpSystemProxy, ParametricSystem):
         for status_info in statuses_info:
             designs[status_info["hid"]] = status_info["designs"]
             for idx, design in enumerate(designs[status_info["hid"]]["values"]):
-                self.__class__.__append_status_info_to_design(
-                    design, status_info["design_status"][idx]
-                )
+                self.__append_status_info_to_design(design, status_info["design_status"][idx])
         for i in range(2, len(statuses_info[0]["designs"]["values"][0]["hid"].split("."))):
-            designs = self.__class__.__sort_dict_by_key_hid(
+            designs = self.__sort_dict_by_key_hid(
                 designs, max(1, len(statuses_info[0]["designs"]["values"][0]["hid"].split(".")) - i)
             )
         for hid, design in designs.items():
             # sort by design number, stripped from hid prefix
             # (0.10, 0.9 ..., 0.1) -> (0.1, ..., 0.9, 0.10)
-            design["values"] = self.__class__.__sort_list_of_dicts_by_hid(
+            design["values"] = self.__sort_list_of_dicts_by_hid(
                 design["values"], len(hid.split("."))
             )
         return designs
