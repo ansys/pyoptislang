@@ -1362,7 +1362,7 @@ class RootSystem(ParametricSystem):
     def control(
         self,
         command: str,
-        hid: Optional[str],
+        hid: Optional[str] = None,
         wait_for_completion: bool = True,
         timeout: Union[float, int] = 100,
     ) -> Optional[bool]:  # pragma: no cover
