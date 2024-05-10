@@ -148,7 +148,7 @@ class FunctionsAttributeRegister:
         Any
             Attribute value registered for the given function or default value if not registered.
         """
-        if isinstance(function, Callable):
+        if callable(function):
             function = function.__name__
         if self.is_registered(function=function):
             return self.__register.get(function)
@@ -168,7 +168,7 @@ class FunctionsAttributeRegister:
         bool
             Info whether attribute is registered.
         """
-        if isinstance(function, Callable):
+        if callable(function):
             function = function.__name__
         return function in self.__register.keys()
 
@@ -187,7 +187,7 @@ class FunctionsAttributeRegister:
         ValueError
             Raised when invalid value is passed.
         """
-        if isinstance(function, Callable):
+        if callable(function):
             function = function.__name__
         self.__validate_value(value=value)
         self.__register[function] = value
@@ -200,7 +200,7 @@ class FunctionsAttributeRegister:
         function : Union[Callable, str]
             Function to be removed from the register.
         """
-        if isinstance(function, Callable):
+        if callable(function):
             function = function = function.__name__
         self.__register.pop(function, None)
 
