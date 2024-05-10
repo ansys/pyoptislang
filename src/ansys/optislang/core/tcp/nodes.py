@@ -2403,7 +2403,7 @@ class TcpRootSystemProxy(TcpParametricSystemProxy, RootSystem):
         TimeoutError
             Raised when the timeout float value expires.
         """
-        return __class__.__get_sorted_difference_of_sets(
+        return self.__get_sorted_difference_of_sets(
             first=self.parameter_manager.get_parameters_names(),
             second=design.parameters_names,
         )
@@ -2462,7 +2462,7 @@ class TcpRootSystemProxy(TcpParametricSystemProxy, RootSystem):
         TimeoutError
             Raised when the timeout float value expires.
         """
-        return __class__.__get_sorted_difference_of_sets(
+        return self.__get_sorted_difference_of_sets(
             first=design.parameters_names,
             second=self.parameter_manager.get_parameters_names(),
         )
@@ -2552,13 +2552,13 @@ class TcpRootSystemProxy(TcpParametricSystemProxy, RootSystem):
         # compare input and output values
         input_design_parameters = input_design.parameters_names
         output_parameters = results["result_design"]["parameter_names"]
-        missing_parameters = __class__.__get_sorted_difference_of_sets(
+        missing_parameters = self.__get_sorted_difference_of_sets(
             output_parameters, input_design_parameters
         )
-        undefined_parameters = __class__.__get_sorted_difference_of_sets(
+        undefined_parameters = self.__get_sorted_difference_of_sets(
             input_design_parameters, output_parameters
         )
-        unused = __class__.__compare_input_w_processed_parameters_values(evaluate_dict, results)
+        unused = self.__compare_input_w_processed_parameters_values(evaluate_dict, results)
 
         if undefined_parameters:
             self._logger.debug(f"Parameters ``{undefined_parameters}`` weren't used.")
