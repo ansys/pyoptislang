@@ -3377,13 +3377,24 @@ class Design:
         Design
             Deep copy of the unevaluated design.
         """
+        constraints_copy = copy.deepcopy(self.constraints)
+        self.__reset_output_value(constraints_copy)
+        limit_states_copy = copy.deepcopy(self.limit_states)
+        self.__reset_output_value(limit_states_copy)
+        objectives_copy = copy.deepcopy(self.objectives)
+        self.__reset_output_value(objectives_copy)
+        variables_copy = copy.deepcopy(self.variables)
+        self.__reset_output_value(variables_copy)
+        responses_copy = copy.deepcopy(self.responses)
+        self.__reset_output_value(responses_copy)
+
         return Design(
             parameters=copy.deepcopy(self.parameters),
-            constraints=self.__reset_output_value(copy.deepcopy(self.constraints)),
-            limit_states=self.__reset_output_value(copy.deepcopy(self.limit_states)),
-            objectives=self.__reset_output_value(copy.deepcopy(self.objectives)),
-            variables=self.__reset_output_value(copy.deepcopy(self.variables)),
-            responses=self.__reset_output_value(copy.deepcopy(self.responses)),
+            constraints=constraints_copy,
+            limit_states=limit_states_copy,
+            objectives=objectives_copy,
+            variables=variables_copy,
+            responses=responses_copy,
         )
 
     def remove_parameter(self, name: str) -> None:
@@ -3689,7 +3700,8 @@ class Design:
                 responses_list.append(DesignVariable(name=response.name, value=value))
         return responses_list
 
-    def __reset_output_value(self, output: Iterable[DesignVariable]) -> None:
+    @staticmethod
+    def __reset_output_value(output: Iterable[DesignVariable]) -> None:
         """Set value of given output variables to `None`.
 
         Parameters
