@@ -486,7 +486,7 @@ class Node(ABC):
         pass
 
     @abstractmethod
-    def get_property(self) -> Any:  # pragma: no cover
+    def get_property(self, name: str) -> Any:  # pragma: no cover
         """Get property from properties dictionary.
 
         Parameters
