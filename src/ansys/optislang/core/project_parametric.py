@@ -628,7 +628,9 @@ class Criterion:
         TypeError
             Raised when undefined type of criterion is given.
         """
-        criterion_properties = __class__._extract_criterion_properties_from_dict(criterion_dict)
+        criterion_properties = __class__._extract_criterion_properties_from_dict(  # type: ignore
+            criterion_dict
+        )
         if criterion_properties["criterion"] == ComparisonType.IGNORE:
             return VariableCriterion(
                 name=criterion_properties["name"],
@@ -1880,7 +1882,7 @@ class Parameter:
         TypeError
             Raised when an undefined type of parameter is given.
         """
-        parameter_properties = __class__._extract_parameter_properties_from_dict(par_dict=par_dict)
+        parameter_properties = self._extract_parameter_properties_from_dict(par_dict=par_dict)
 
         if parameter_properties["type"] == ParameterType.DEPENDENT:
             return DependentParameter(
