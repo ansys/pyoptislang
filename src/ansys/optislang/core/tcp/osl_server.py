@@ -1183,9 +1183,9 @@ class TcpOslServer(OslServer):
         self.__password = password
         self.__osl_process = None
         self.__listeners: Dict[str, TcpOslListener] = {}
-        self.__listeners_registration_thread = None
+        self.__listeners_registration_thread: Optional[threading.Thread] = None
         self.__refresh_listeners = threading.Event()
-        self.__listeners_refresh_interval = self.__class__._DEFAULT_LISTENERS_REFRESH_INTERVAL
+        self.__listeners_refresh_interval = self._DEFAULT_LISTENERS_REFRESH_INTERVAL
         self.__disposed = False
         self.__env_vars = env_vars
         self.__listener_id = listener_id
@@ -4471,36 +4471,6 @@ class TcpOslServer(OslServer):
             return None
         return project_info.get("projects", [{}])[0].get("state", None)
 
-    def __refresh_listeners_registration(self) -> None:  # pragma: no cover
-        """Refresh listeners registration.
-
-        Raises
-        ------
-        RuntimeError
-            Raised when the optiSLang server is not started.
-        OslCommunicationError
-            Raised when an error occurs while communicating with server.
-        OslCommandError
-            Raised when the command or query fails.
-        TimeoutError
-            Raised when the timeout expires.
-        """
-        check_for_refresh = 0.5
-        counter = 0
-        while self.__refresh_listeners.is_set():
-            if counter >= self.__listeners_refresh_interval:
-                for listener in self.__listeners.values():
-                    if listener.refresh_listener_registration:
-                        response = self.send_command(
-                            commands.refresh_listener_registration(
-                                uid=listener.uid, password=self.__password
-                            )
-                        )
-                counter = 0
-            counter += check_for_refresh
-            time.sleep(check_for_refresh)
-        self._logger.debug("Stop refreshing listener registration, self.__refresh = False")
-
     def __register_listener(
         self,
         host_addresses: Iterable[str],
@@ -4545,13 +4515,17 @@ class TcpOslServer(OslServer):
         """
         current_func_name = self.__register_listener.__name__
         listener_id = self.__listener_id if self.__listener_id is not None else str(uuid.uuid4())
+        notification_names = None
+        if notifications is not None:
+            notification_names = [ntf.name for ntf in notifications]
+
         for host_address in host_addresses:
             self.send_command(
                 command=commands.register_listener(
                     host=host_address,
                     port=port,
                     timeout=timeout,
-                    notifications=[ntf.name for ntf in notifications],
+                    notifications=notification_names,
                     password=self.__password,
                     listener_uid=listener_id,
                 ),
@@ -4577,13 +4551,13 @@ class TcpOslServer(OslServer):
             Raised when the timeout expires.
         """
         check_for_refresh = 0.5
-        counter = 0
+        counter = 0.0
         current_func_name = self.__refresh_listeners_registration.__name__
         while self.__refresh_listeners.is_set():
             if counter >= self.__listeners_refresh_interval:
                 for listener in self.__listeners.values():
                     if listener.refresh_listener_registration:
-                        response = self.send_command(
+                        self.send_command(
                             commands.refresh_listener_registration(
                                 uid=listener.uid, password=self.__password
                             ),
@@ -4615,7 +4589,10 @@ class TcpOslServer(OslServer):
 
     def __stop_listeners_registration_thread(self) -> None:
         """Stop listeners registration thread."""
-        if self.__listeners_registration_thread and self.__listeners_registration_thread.is_alive():
+        if (
+            self.__listeners_registration_thread is not None
+            and self.__listeners_registration_thread.is_alive()
+        ):
             self.__refresh_listeners.clear()
             self.__listeners_registration_thread.join()
             self._logger.debug("Listener registration thread stopped.")
@@ -4623,7 +4600,6 @@ class TcpOslServer(OslServer):
     def __unregister_all_listeners(self) -> None:
         """Unregister all instance listeners."""
         for listener in self.__listeners.values():
-            listener: TcpOslListener
             if listener.uid is not None:
                 try:
                     self._unregister_listener(listener)

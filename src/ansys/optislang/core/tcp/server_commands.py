@@ -764,9 +764,9 @@ def register_listener(
     """
     args: CommandArgs = {}
     if (id is not None) and ((host is not None) or (port is not None)):
-        raise TypeError(f"Please specify either ``id`` or (``host`` and ``port``).")
+        raise TypeError("Please specify either ``id`` or (``host`` and ``port``).")
     elif (id is None) and ((host is None) or (port is None)):
-        raise TypeError(f"Please specify either ``id`` or (``host`` and ``port``).")
+        raise TypeError("Please specify either ``id`` or (``host`` and ``port``).")
     elif id is not None:
         args["id"] = id
     else:
