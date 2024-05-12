@@ -124,12 +124,12 @@ class Project(ABC):
         pass
 
     @abstractmethod
-    def get_location(self) -> Path:  # pragma: no cover
+    def get_location(self) -> Optional[Path]:  # pragma: no cover
         """Get the path to the optiSLang project file.
 
         Returns
         -------
-        pathlib.Path
+        Optional[pathlib.Path]
             Path to the optiSLang project file. If no project is loaded in the optiSLang,
             ``None`` is returned.
 
@@ -247,12 +247,12 @@ class Project(ABC):
         pass
 
     @abstractmethod
-    def get_working_dir(self) -> Path:  # pragma: no cover
+    def get_working_dir(self) -> Optional[Path]:  # pragma: no cover
         """Get the path to the optiSLang project's working directory.
 
         Returns
         -------
-        pathlib.Path
+        Optional[pathlib.Path]
             Path to the optiSLang project's working directory. If no project is loaded
             in optiSLang, ``None`` is returned.
 
