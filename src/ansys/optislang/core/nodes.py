@@ -1544,7 +1544,7 @@ class Slot(ABC):
         pass
 
     @abstractmethod
-    def get_connections(self) -> Tuple[Edge]:  # pragma: no cover
+    def get_connections(self) -> Tuple[Edge, ...]:  # pragma: no cover
         """Get connections for the current slot.
 
         Returns

@@ -2768,7 +2768,7 @@ class TcpSlotProxy(Slot):
         """
         return self.__type_hint
 
-    def get_connections(self) -> Tuple[Edge]:
+    def get_connections(self) -> Tuple[Edge, ...]:
         """Get connections for the current slot.
 
         Returns
@@ -2797,11 +2797,12 @@ class TcpSlotProxy(Slot):
         """
         info = self.node._get_info()
         key = self.type.name.lower() + "_slots"
-        slots_dict_list = info.get(key)
+        slots_dict_list = info[key]
         for slot in slots_dict_list:
             if self.name == slot["name"]:
                 self.__type_hint = slot["type"]
-                return self.type_hint
+                if self.__type_hint:
+                    return self.__type_hint
         raise NameError(f"Current slot: ``{self.name}`` wasn't found in node: ``{self.node.uid}``.")
 
     @staticmethod
