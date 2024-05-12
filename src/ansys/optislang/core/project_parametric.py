@@ -890,7 +890,7 @@ class Criterion:
             return Criterion._parse_str_to_vector(value)
         elif value_type == CriterionValueType.MATRIX:
             return Criterion._parse_str_to_matrix(value)
-        elif value_type in [CriterionValueType.SIGNAL, CriterionValueType.XYDATA]:
+        elif value_type == CriterionValueType.SIGNAL or value_type == CriterionValueType.XYDATA:
             return (
                 Criterion._parse_str_to_matrix(value[0]),
                 Criterion._parse_str_to_vector(value[1]),
@@ -944,13 +944,13 @@ class Criterion:
                 )
             else:
                 value_dict.update({value_type.name.lower(): {"real": value}})
-        elif value_type in [CriterionValueType.SIGNAL, CriterionValueType.XYDATA]:
+        elif value_type == CriterionValueType.SIGNAL or value_type == CriterionValueType.XYDATA:
             value_dict.update({"matrix": value[0], "vector": value[1]})
-        elif value_type in [
-            CriterionValueType.BOOL,
-            CriterionValueType.MATRIX,
-            CriterionValueType.VECTOR,
-        ]:
+        elif (
+            value_type == CriterionValueType.BOOL
+            or value_type == CriterionValueType.MATRIX
+            or value_type == CriterionValueType.VECTOR
+        ):
             value_dict.update({value_type.name.lower(): value})
         return value_dict
 
@@ -970,13 +970,13 @@ class Criterion:
                 )
             else:
                 value_dict["kind"].update({value_type.name.lower(): {"real": value}})
-        elif value_type in [CriterionValueType.SIGNAL, CriterionValueType.XYDATA]:
+        elif value_type == CriterionValueType.SIGNAL or value_type == CriterionValueType.XYDATA:
             value_dict["kind"].update({"matrix": value[0], "vector": value[1]})
-        elif value_type in [
-            CriterionValueType.BOOL,
-            CriterionValueType.MATRIX,
-            CriterionValueType.VECTOR,
-        ]:
+        elif (
+            value_type == CriterionValueType.BOOL
+            or value_type == CriterionValueType.MATRIX
+            or value_type == CriterionValueType.VECTOR
+        ):
             value_dict["kind"].update({value_type.name.lower(): value})
         return value_dict
 
@@ -1898,7 +1898,9 @@ class Parameter:
         TypeError
             Raised when an undefined type of parameter is given.
         """
-        parameter_properties = self._extract_parameter_properties_from_dict(par_dict=par_dict)
+        parameter_properties = __class__._extract_parameter_properties_from_dict(  # type: ignore
+            par_dict=par_dict
+        )
 
         if parameter_properties["type"] == ParameterType.DEPENDENT:
             return DependentParameter(
