@@ -663,13 +663,13 @@ class IntegrationNode(Node):
 
     @abstractmethod
     def get_internal_variables(
-        self, include_reference_values: Optional[bool] = True
+        self, include_reference_values: bool = True
     ) -> Tuple:  # pragma: no cover
         """Get internal variables.
 
         Parameters
         ----------
-        include_reference_values: Optional[bool], optional
+        include_reference_values: bool
             Whether reference values are to be included. By default ``True``.
 
         Returns
@@ -690,13 +690,13 @@ class IntegrationNode(Node):
 
     @abstractmethod
     def get_registered_input_slots(
-        self, include_reference_values: Optional[bool] = True
+        self, include_reference_values: bool = True
     ) -> Tuple:  # pragma: no cover
         """Get registered input slots.
 
         Parameters
         ----------
-        include_reference_values: Optional[bool], optional
+        include_reference_values: bool
             Whether reference values are to be included. By default ``True``.
 
         Returns
@@ -717,13 +717,13 @@ class IntegrationNode(Node):
 
     @abstractmethod
     def get_registered_output_slots(
-        self, include_reference_values: Optional[bool] = True
+        self, include_reference_values: bool = True
     ) -> Tuple:  # pragma: no cover
         """Get registered output slots.
 
         Parameters
         ----------
-        include_reference_values: Optional[bool], optional
+        include_reference_values: bool
             Whether reference values are to be included. By default ``True``.
 
         Returns
@@ -744,13 +744,13 @@ class IntegrationNode(Node):
 
     @abstractmethod
     def get_registered_parameters(
-        self, include_reference_values: Optional[bool] = True
+        self, include_reference_values: bool = True
     ) -> Tuple:  # pragma: no cover
         """Get registered parameters.
 
         Parameters
         ----------
-        include_reference_values: Optional[bool], optional
+        include_reference_values: bool
             Whether reference values are to be included. By default ``True``.
 
         Returns
@@ -771,13 +771,13 @@ class IntegrationNode(Node):
 
     @abstractmethod
     def get_registered_responses(
-        self, include_reference_values: Optional[bool] = True
+        self, include_reference_values: bool = True
     ) -> Tuple:  # pragma: no cover
         """Get registered responses.
 
         Parameters
         ----------
-        include_reference_values: Optional[bool], optional
+        include_reference_values: bool
             Whether reference values are to be included. By default ``True``.
 
         Returns

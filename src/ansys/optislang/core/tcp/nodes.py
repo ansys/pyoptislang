@@ -648,7 +648,7 @@ class TcpNodeProxy(Node):
         uid: str,
         slot_type: Optional[SlotType] = None,
         slot_name: Optional[str] = None,
-    ) -> Tuple[dict]:
+    ) -> List[Dict[Any, Any]]:
         """Filter list of connections by given node uid, slot type and optionally slot name.
 
         Parameters
@@ -667,14 +667,14 @@ class TcpNodeProxy(Node):
         Tuple[dict]
             Tuple of filtered connections dictionaries.
         """
-        filtered_connections = []
+        filtered_connections: List[Dict[Any, Any]] = []
 
         # skip for combination of inner slot with TcpNodeProxy or it's subclasses
         if not (
             isinstance(self.__class__, TcpSystemProxy) or issubclass(self.__class__, TcpSystemProxy)
         ) and isinstance(slot_type, SlotType):
             if slot_type in [SlotType.INNER_INPUT, SlotType.INNER_OUTPUT]:
-                return tuple(filtered_connections)
+                return filtered_connections
 
         # prepare keys for tcp server output dictionary
         if isinstance(slot_type, SlotType):
@@ -720,7 +720,7 @@ class TcpNodeProxy(Node):
                     else:
                         continue
             filtered_connections.append(connection)
-        return tuple(filtered_connections)
+        return filtered_connections
 
     def _get_info(self) -> dict:
         """Get the raw server output with the node info.
@@ -763,7 +763,7 @@ class TcpNodeProxy(Node):
         parent_tree = project_tree["projects"][0]["system"]
         return self._find_parent_node_info(
             tree=parent_tree,
-            parent_uid=root_system_uid,
+            parent_info=root_system_uid,
             node_uid=self.uid,
         )
 
@@ -870,7 +870,7 @@ class TcpNodeProxy(Node):
         node_uid: str,
         current_depth: int,
         was_found: list,
-    ) -> Tuple[dict, ...]:
+    ) -> List[dict]:
         """Get ancestor line starting from root system.
 
         Parameters
@@ -1078,6 +1078,10 @@ class TcpNodeProxy(Node):
                     node_uid=node_uid,
                 )
 
+        # FIXME
+        # Raise to satisfy type checker
+        raise RuntimeError
+
 
 class TcpIntegrationNodeProxy(TcpNodeProxy, IntegrationNode):
     """Provides for creating and operating on integration nodes."""
@@ -1127,7 +1131,7 @@ class TcpIntegrationNodeProxy(TcpNodeProxy, IntegrationNode):
             Raised when the timeout float value expires.
         """
         # TODO: test
-        return self._osl_server.get_available_input_locations(self.uid)
+        return tuple(self._osl_server.get_available_input_locations(self.uid))
 
     def get_available_output_locations(self) -> Tuple:
         """Get available output locations for the current node.
@@ -1147,14 +1151,14 @@ class TcpIntegrationNodeProxy(TcpNodeProxy, IntegrationNode):
             Raised when the timeout float value expires.
         """
         # TODO: test
-        return self._osl_server.get_available_output_locations(self.uid)
+        return tuple(self._osl_server.get_available_output_locations(self.uid))
 
-    def get_internal_variables(self, include_reference_values: Optional[bool] = True) -> Tuple:
+    def get_internal_variables(self, include_reference_values: bool = True) -> Tuple:
         """Get internal variables.
 
         Parameters
         ----------
-        include_reference_values: Optional[bool], optional
+        include_reference_values: bool
             Whether reference values are to be included. By default ``True``.
 
         Returns
@@ -1177,12 +1181,12 @@ class TcpIntegrationNodeProxy(TcpNodeProxy, IntegrationNode):
             )
         )
 
-    def get_registered_input_slots(self, include_reference_values: Optional[bool] = True) -> Tuple:
+    def get_registered_input_slots(self, include_reference_values: bool = True) -> Tuple:
         """Get registered input slots.
 
         Parameters
         ----------
-        include_reference_values: Optional[bool], optional
+        include_reference_values: bool
             Whether reference values are to be included. By default ``True``.
 
         Returns
@@ -1205,12 +1209,12 @@ class TcpIntegrationNodeProxy(TcpNodeProxy, IntegrationNode):
             )
         )
 
-    def get_registered_output_slots(self, include_reference_values: Optional[bool] = True) -> Tuple:
+    def get_registered_output_slots(self, include_reference_values: bool = True) -> Tuple:
         """Get registered output slots.
 
         Parameters
         ----------
-        include_reference_values: Optional[bool], optional
+        include_reference_values: bool
             Whether reference values are to be included. By default ``True``.
 
         Returns
@@ -1233,12 +1237,12 @@ class TcpIntegrationNodeProxy(TcpNodeProxy, IntegrationNode):
             )
         )
 
-    def get_registered_parameters(self, include_reference_values: Optional[bool] = True) -> Tuple:
+    def get_registered_parameters(self, include_reference_values: bool = True) -> Tuple:
         """Get registered parameters.
 
         Parameters
         ----------
-        include_reference_values: Optional[bool], optional
+        include_reference_values: bool
             Whether reference values are to be included. By default ``True``.
 
         Returns
@@ -1261,7 +1265,7 @@ class TcpIntegrationNodeProxy(TcpNodeProxy, IntegrationNode):
             )
         )
 
-    def get_registered_responses(self, include_reference_values: Optional[bool] = True) -> Tuple:
+    def get_registered_responses(self, include_reference_values: bool = True) -> Tuple:
         """Get registered responses.
 
         Parameters
