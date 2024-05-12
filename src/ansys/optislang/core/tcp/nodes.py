@@ -3340,7 +3340,7 @@ def create_edge_from_dict(
 
 
 def create_nodes_from_properties_dicts(
-    osl_server: TcpOslServer, properties_dicts_list: List[dict], logger=None
+    osl_server: TcpOslServer, properties_dicts_list: Iterable[dict], logger=None
 ) -> Tuple[TcpNodeProxy, ...]:
     """Create nodes from a dictionary of properties.
 
@@ -3348,7 +3348,7 @@ def create_nodes_from_properties_dicts(
     ----------
     osl_server: TcpOslServer
         Object providing access to the optiSLang server.
-    properties_dicts_list : List[dict]
+    properties_dicts_list : Iterable[dict]
         Dictionary of node properties.
     logger: Any, optional
         Object for logging. If ``None``, standard logging object is used. Defaults to ``None``.
