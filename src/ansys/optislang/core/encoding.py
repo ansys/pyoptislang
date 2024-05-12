@@ -24,11 +24,11 @@
 
 import sys
 
-from ansys.optislang.core import PY3, utils
+from ansys.optislang.core import utils
 
 defenc = sys.getdefaultencoding()
 
-if PY3:
+if sys.version_info[0] >= 3:
     text_type = str
     binary_type = bytes
 else:
@@ -86,7 +86,7 @@ def force_bytes(text: str, encoding="ascii") -> bytes:
         An encoded version of the string as a bytes object.
     """
     if utils.is_iron_python():
-        return binary_type(text.encode(encoding, "ignore"), encoding, "ignore")
+        return binary_type(text.encode(encoding, "ignore"), encoding, "ignore")  # type: ignore
     else:
         return text.encode(encoding, "ignore")
 
@@ -111,7 +111,7 @@ def force_text(data: bytes, encoding="utf-8") -> str:
     if isinstance(data, string_types):
         return data.decode(encoding, errors="ignore")
 
-    if PY3:
+    if sys.version_info[0] >= 3:
         return text_type(data, encoding)
     else:
         return text_type(data)

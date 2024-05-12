@@ -38,7 +38,6 @@ LOG.logger.debug("Loaded logging module as LOG")
 
 __version__ = importlib.metadata.version(__name__.replace(".", "-"))
 
-PY3 = sys.version_info[0] >= 3
 # First supported version of optiSLang: 2023R1
 FIRST_SUPPORTED_VERSION = 231
 
