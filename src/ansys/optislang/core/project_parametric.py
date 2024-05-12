@@ -720,12 +720,18 @@ class Criterion:
             if criterion_dict.get("lhs_value")
             else None
         )
-        if expression_value_type in [CriterionValueType.SIGNAL, CriterionValueType.XYDATA]:
+        if (
+            expression_value_type == CriterionValueType.SIGNAL
+            or expression_value_type == CriterionValueType.XYDATA
+        ):
             expression_value = (
                 criterion_dict["lhs_value"]["matrix"],
                 criterion_dict["lhs_value"]["vector"],
             )
-        elif expression_value_type in [CriterionValueType.UNINITIALIZED, None]:
+        elif (
+            expression_value_type is None
+            or expression_value_type == CriterionValueType.UNINITIALIZED
+        ):
             expression_value = None
         else:
             expression_value = criterion_dict["lhs_value"][expression_value_type.name.lower()]
@@ -738,12 +744,18 @@ class Criterion:
             if criterion_dict.get("rhs_value")
             else None
         )
-        if limit_expression_value_type in [CriterionValueType.SIGNAL, CriterionValueType.XYDATA]:
+        if (
+            limit_expression_value_type == CriterionValueType.SIGNAL
+            or limit_expression_value_type == CriterionValueType.XYDATA
+        ):
             limit_expression_value = (
                 criterion_dict["rhs_value"]["matrix"],
                 criterion_dict["rhs_value"]["vector"],
             )
-        elif limit_expression_value_type in [CriterionValueType.UNINITIALIZED, None]:
+        elif (
+            limit_expression_value_type is None
+            or limit_expression_value_type == CriterionValueType.UNINITIALIZED
+        ):
             limit_expression_value = None
         else:
             limit_expression_value = criterion_dict["rhs_value"][
@@ -757,12 +769,12 @@ class Criterion:
             if criterion_dict.get("value")
             else None
         )
-        if value_type in [CriterionValueType.SIGNAL, CriterionValueType.XYDATA]:
+        if value_type == CriterionValueType.SIGNAL or value_type == CriterionValueType.XYDATA:
             value = (
                 criterion_dict["value"]["matrix"],
                 criterion_dict["value"]["vector"],
             )
-        elif value_type in [CriterionValueType.UNINITIALIZED, None]:
+        elif value_type is None or value_type == CriterionValueType.UNINITIALIZED:
             value = None
         else:
             value = criterion_dict["value"][value_type.name.lower()]
