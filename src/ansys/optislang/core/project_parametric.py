@@ -631,7 +631,9 @@ class Criterion:
         criterion_properties = __class__._extract_criterion_properties_from_dict(  # type: ignore
             criterion_dict
         )
-        if criterion_properties["criterion"] == ComparisonType.IGNORE:
+        comparison_type = criterion_properties["criterion"]
+
+        if comparison_type == ComparisonType.IGNORE:
             return VariableCriterion(
                 name=criterion_properties["name"],
                 expression=criterion_properties["limit_expression"],
@@ -640,7 +642,7 @@ class Criterion:
                 value=criterion_properties["value"],
                 value_type=criterion_properties["value_type"],
             )
-        elif criterion_properties["criterion"] in [ComparisonType.MIN, ComparisonType.MAX]:
+        elif comparison_type == ComparisonType.MIN or comparison_type == ComparisonType.MAX:
             return ObjectiveCriterion(
                 name=criterion_properties["name"],
                 expression=criterion_properties["limit_expression"],
@@ -650,11 +652,11 @@ class Criterion:
                 value=criterion_properties["value"],
                 value_type=criterion_properties["value_type"],
             )
-        elif criterion_properties["criterion"] in [
-            ComparisonType.LESSEQUAL,
-            ComparisonType.EQUAL,
-            ComparisonType.GREATEREQUAL,
-        ]:
+        elif (
+            comparison_type == ComparisonType.LESSEQUAL
+            or comparison_type == ComparisonType.EQUAL
+            or comparison_type == ComparisonType.GREATEREQUAL
+        ):
             return ConstraintCriterion(
                 name=criterion_properties["name"],
                 expression=criterion_properties["expression"],
@@ -667,10 +669,10 @@ class Criterion:
                 value=criterion_properties["value"],
                 value_type=criterion_properties["value_type"],
             )
-        elif criterion_properties["criterion"] in [
-            ComparisonType.LESSLIMITSTATE,
-            ComparisonType.GREATERLIMITSTATE,
-        ]:
+        elif (
+            comparison_type == ComparisonType.LESSLIMITSTATE
+            or comparison_type == ComparisonType.GREATERLIMITSTATE
+        ):
             return LimitStateCriterion(
                 name=criterion_properties["name"],
                 expression=criterion_properties["expression"],
@@ -683,6 +685,8 @@ class Criterion:
                 value=criterion_properties["value"],
                 value_type=criterion_properties["value_type"],
             )
+        # FIXME
+        raise RuntimeError
 
     @staticmethod
     def _extract_criterion_properties_from_dict(criterion_dict: dict) -> Dict[str, Any]:
