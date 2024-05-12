@@ -4284,26 +4284,6 @@ class TcpOslServer(OslServer):
         self.__listeners["main_listener"] = listener
         self.__start_listeners_registration_thread()
 
-    def _unregister_listener(self, listener: TcpOslListener) -> None:
-        """Unregister a listener.
-
-        Parameters
-        ----------
-        listener : TcpOslListener
-            Class with listener properties.
-
-        Raises
-        ------
-        OslCommunicationError
-            Raised when an error occurs while communicating with server.
-        OslCommandError
-            Raised when the command or query fails.
-        TimeoutError
-            Raised when the timeout float value expires.
-        """
-        self.send_command(commands.unregister_listener(str(listener.uid), self.__password))
-        listener.uid = None
-
     def __cast_to_path(self, file_path: Union[str, Path]) -> Path:
         """Cast path to Path."""
         if isinstance(file_path, Path):
