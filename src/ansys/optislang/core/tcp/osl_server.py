@@ -765,7 +765,7 @@ class TcpOslListener:
             self.__listener_socket.close()
 
     @property
-    def uid(self) -> str:
+    def uid(self) -> Optional[str]:
         """Instance unique identifier."""
         return self.__uid
 
