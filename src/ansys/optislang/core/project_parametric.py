@@ -835,6 +835,7 @@ class Criterion:
         # split by square bracket end
         splitted_str = string.split("]")
         size_str = splitted_str[0] + "]"
+        # TODO don't use eval
         size = eval(size_str)
         if size[0] == 1:
             splitted_str[1] = splitted_str[1][:-1] + "," + splitted_str[1][-1:]
@@ -844,6 +845,7 @@ class Criterion:
             splitted_str[1] = splitted_str[1][:-3] + "," + splitted_str[1][-3:]
 
         # evaluation of second part creates tuple
+        # TODO don't use eval
         eval_str = eval(splitted_str[1])
         matrix_list = []
         for row_index in range(size[0]):
@@ -910,10 +912,12 @@ class Criterion:
         # split by square bracket end
         splitted_str = string.split("]")
         size_str = splitted_str[0] + "]"
+        # TODO don't use eval
         size = eval(size_str)
         if size[0] == 1:
             splitted_str[1][-2:-2] = ","
         # evaluatiaon of second part creates tuple
+        # TODO don't use eval
         eval_str = eval(splitted_str[1])
         vector_list = []
         for row_index in range(size[0]):
