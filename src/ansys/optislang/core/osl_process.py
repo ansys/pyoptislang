@@ -275,31 +275,19 @@ class OslServerProcess:
                 self.__tempdir = tempfile.TemporaryDirectory()
                 project_path = Path(self.__tempdir.name) / self.__class__.DEFAULT_PROJECT_FILE
 
-        self.__project_path = self.__class__.__validated_path(project_path, "project_path")
+        self.__project_path = validated_path(project_path)
 
         if self.__project_path is not None and self.__project_path.suffix != ".opf":
             raise ValueError("Invalid optiSLang project file.")
 
-        self.__server_info = self.__class__.__validated_path(server_info, "server_info")
-        self.__import_project_properties_file = self.__class__.__validated_path(
-            import_project_properties_file, "import_project_properties_file"
-        )
-        self.__export_project_properties_file = self.__class__.__validated_path(
-            export_project_properties_file, "export_project_properties_file"
-        )
-        self.__import_placeholders_file = self.__class__.__validated_path(
-            import_placeholders_file, "import_placeholders_file"
-        )
-        self.__export_placeholders_file = self.__class__.__validated_path(
-            export_placeholders_file, "export_placeholders_file"
-        )
-        self.__output_file = self.__class__.__validated_path(output_file, "output_file")
-        self.__dump_project_state = self.__class__.__validated_path(
-            dump_project_state, "dump_project_state"
-        )
-        self.__opx_project_definition_file = self.__class__.__validated_path(
-            opx_project_definition_file, "opx_project_definition_file"
-        )
+        self.__server_info = validated_path(server_info)
+        self.__import_project_properties_file = validated_path(import_project_properties_file)
+        self.__export_project_properties_file = validated_path(export_project_properties_file)
+        self.__import_placeholders_file = validated_path(import_placeholders_file)
+        self.__export_placeholders_file = validated_path(export_placeholders_file)
+        self.__output_file = validated_path(output_file)
+        self.__dump_project_state = validated_path(dump_project_state)
+        self.__opx_project_definition_file = validated_path(opx_project_definition_file)
 
         self.__port_range = port_range
         self.__password = password
@@ -1149,31 +1137,22 @@ class OslServerProcess:
         if finalizer:
             return finalizer(process)
 
-    @staticmethod
-    def __validated_path(
-        path: Union[str, Path],
-        path_arg_name: str,
-    ):
-        """Validate a path.
 
-        Parameters
-        ----------
-        path : Union[str, pathlib.Path]
-            The path to validate.
-        path_arg_name : str
-            Path argument name/description.
+def validated_path(path: Union[str, Path, None]) -> Union[Path, None]:
+    """Validate an optional path.
 
-        Returns
-        -------
-        pathlib.Path
-            Validated path.
-        """
-        if isinstance(path, str):
-            path = Path(path)
-        elif not isinstance(path, Path) and path is not None:
-            raise TypeError(
-                f"Invalid type of {path_arg_name}: {type(path)},"
-                "Union[str, pathlib.Path] is supported."
-            )
+    Parameters
+    ----------
+    path : Union[str, pathlib.Path, None]
+        The path to validate.
 
-        return path
+    Returns
+    -------
+    Union[pathlib.Path, None]
+        Validated path.
+    """
+    if path is None:
+        return None
+    if isinstance(path, (str, Path)):
+        return Path(path)
+    raise TypeError("Path attributes must be of type str or Path.")
