@@ -28,14 +28,14 @@ from pathlib import Path
 import subprocess
 import tempfile
 from threading import Thread
-from typing import Callable, Dict, Iterable, List, Mapping, Optional, Sequence, Tuple, Union
+from typing import Callable, Dict, Iterable, List, Mapping, Optional, Tuple, Union
 
 import psutil
 
-from ansys.optislang.core import IRON_PYTHON, encoding, utils
+from ansys.optislang.core import encoding, utils
 
-if IRON_PYTHON:
-    import System
+if utils.is_iron_python():
+    import System  # type: ignore
 
 
 class ServerNotification(Enum):
@@ -273,7 +273,7 @@ class OslServerProcess:
         if self.__batch:
             if project_path is None:
                 self.__tempdir = tempfile.TemporaryDirectory()
-                project_path = Path(self.__tempdir.name) / self.__class__.DEFAULT_PROJECT_FILE
+                project_path = Path(self.__tempdir.name) / self.DEFAULT_PROJECT_FILE
 
         self.__project_path = validated_path(project_path)
 
@@ -323,12 +323,12 @@ class OslServerProcess:
         return self.__executable
 
     @property
-    def project_path(self) -> Path:
+    def project_path(self) -> Optional[Path]:
         """Path to the optiSLang project file.
 
         Returns
         -------
-        pathlib.Path
+        Optional[pathlib.Path]
             Path to the optiSLang project file.
         """
         return self.__project_path
@@ -685,20 +685,20 @@ class OslServerProcess:
         if self.__project_path:
             if not self.__project_path.is_file():
                 # Creates a new project in the provided path.
-                if IRON_PYTHON:
+                if utils.is_iron_python():
                     args.append(f'--new="{str(self.__project_path)}"')
                 else:
                     args.append(f"--new={str(self.__project_path)}")
             else:
                 # Opens existing project
-                if IRON_PYTHON:
+                if utils.is_iron_python():
                     args.append(f'"{str(self.__project_path)}"')
                 else:
                     args.append(str(self.__project_path))
 
         if self.__batch:
             if self.__opx_project_definition_file:
-                if IRON_PYTHON:
+                if utils.is_iron_python():
                     args.append("--python")
                     args.append(f'"{str(utils.get_osl_opx_import_script(self.__executable))}"')
                     args.append("--script-arg")
@@ -726,24 +726,24 @@ class OslServerProcess:
                 args.append("--autorelocate")
             if self.__export_project_properties_file is not None:
                 args.append("--export-project-properties")
-                if IRON_PYTHON:
+                if utils.is_iron_python():
                     args.append(f'"{str(self.__export_project_properties_file)}"')
                 else:
                     args.append(str(self.__export_project_properties_file))
             if self.__export_placeholders_file is not None:
                 args.append("--export-values")
-                if IRON_PYTHON:
+                if utils.is_iron_python():
                     args.append(f'"{str(self.__export_placeholders_file)}"')
                 else:
                     args.append(str(self.__export_placeholders_file))
             if self.__output_file is not None:
                 args.append("--output-file")
-                if IRON_PYTHON:
+                if utils.is_iron_python():
                     args.append(f'"{str(self.__output_file)}"')
                 else:
                     args.append(str(self.__output_file))
             if self.__dump_project_state is not None:
-                if IRON_PYTHON:
+                if utils.is_iron_python():
                     args.append(f'--dump-project-state="{str(self.__dump_project_state)}"')
                 else:
                     args.append(f"--dump-project-state={str(self.__dump_project_state)}")
@@ -763,7 +763,7 @@ class OslServerProcess:
         if self.__server_info is not None:
             # Writes the server information file using the file path specified. If an absolute path
             # is not supplied, it is considered to be relative to the project working directory.
-            if IRON_PYTHON:
+            if utils.is_iron_python():
                 args.append(f'--write-server-info="{str(self.__server_info)}"')
             else:
                 args.append(f"--write-server-info={str(self.__server_info)}")
@@ -798,14 +798,14 @@ class OslServerProcess:
 
         if self.__import_project_properties_file is not None:
             args.append("--import-project-properties")
-            if IRON_PYTHON:
+            if utils.is_iron_python():
                 args.append(f'"{str(self.__import_project_properties_file)}"')
             else:
                 args.append(str(self.__import_project_properties_file))
 
         if self.__import_placeholders_file is not None:
             args.append("--import-values")
-            if IRON_PYTHON:
+            if utils.is_iron_python():
                 args.append(f'"{str(self.__import_placeholders_file)}"')
             else:
                 args.append(str(self.__import_placeholders_file))
@@ -854,7 +854,7 @@ class OslServerProcess:
         if self.__env_vars is not None:
             env_vars.update(self.__env_vars)
 
-        if IRON_PYTHON:
+        if utils.is_iron_python():
             self.__start_in_iron_python(args, env_vars)
         else:
             self.__start_in_python(args, env_vars)
@@ -862,13 +862,13 @@ class OslServerProcess:
         if self.__log_process_stdout or self.__log_process_stderr:
             self.__start_process_output_thread()
 
-    def __start_in_iron_python(self, args: Sequence[str], env_vars: Mapping[str, str]):
+    def __start_in_iron_python(self, args: List[str], env_vars: Dict[str, str]):
         """Start new optiSLang server process with IronPython interpreter.
 
         Parameters
         ----------
-        args : Sequence[str]
-            Sequence of command line arguments.
+        args : List[str]
+            List of command line arguments.
 
         env_vars : Mapping[str, str]
             Environment variables.
@@ -897,18 +897,18 @@ class OslServerProcess:
         start_info.Arguments = " ".join(args)
 
         self.__process = System.Diagnostics.Process()
-        self.__process.StartInfo = start_info
+        self.__process.StartInfo = start_info  # type: ignore
 
         self._logger.debug("Executing process %s", args)
-        self.__process.Start()
+        self.__process.Start()  # type: ignore
 
-    def __start_in_python(self, args: Sequence[str], env_vars: Mapping[str, str]):
+    def __start_in_python(self, args: List[str], env_vars: Dict[str, str]):
         """Start new optiSLang server process with Python interpreter.
 
         Parameters
         ----------
-        args : Sequence[str]
-            Sequence of command line arguments.
+        args : List[str]
+            List of command line arguments.
 
         env_vars : Mapping[str, str]
             Environment variables.
@@ -1006,7 +1006,7 @@ class OslServerProcess:
             process.wait(**kwargs)
 
         self.__handle_process_output_thread = Thread(
-            target=self.__class__.__handle_process_output,
+            target=self.__handle_process_output,
             name="PyOptiSLang.ProcessOutputHandlerThread",
             args=(
                 self.__process,
@@ -1066,7 +1066,7 @@ class OslServerProcess:
         logger.debug("Start to handling optiSLang server process output.")
 
         # Use 2 "pupm" threads and wait for both to finish.
-        if IRON_PYTHON:
+        if utils.is_iron_python():
 
             def stream_reader(cmdline, name, stream, is_decode, handler):
                 try:

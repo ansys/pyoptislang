@@ -24,7 +24,7 @@
 
 import sys
 
-from ansys.optislang.core import IRON_PYTHON, PY3
+from ansys.optislang.core import PY3, utils
 
 defenc = sys.getdefaultencoding()
 
@@ -85,7 +85,7 @@ def force_bytes(text: str, encoding="ascii") -> bytes:
     bytes
         An encoded version of the string as a bytes object.
     """
-    if IRON_PYTHON:
+    if utils.is_iron_python():
         return binary_type(text.encode(encoding, "ignore"), encoding, "ignore")
     else:
         return text.encode(encoding, "ignore")

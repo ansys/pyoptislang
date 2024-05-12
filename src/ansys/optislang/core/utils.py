@@ -28,6 +28,7 @@ from enum import Enum
 import os
 from pathlib import Path
 import re
+import sys
 from typing import (
     DefaultDict,
     Dict,
@@ -448,3 +449,8 @@ def iter_awp_roots() -> Iterator[Tuple[int, Path]]:
         varname_match = re.fullmatch(r"AWP_ROOT([0-9]{3})", varname)
         if varname_match:
             yield int(varname_match.group(1)), Path(value)
+
+
+def is_iron_python():
+    """Whether current platform is IronPython."""
+    return sys.platform == "cli"
