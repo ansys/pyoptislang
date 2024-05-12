@@ -1626,11 +1626,6 @@ class TcpSystemProxy(TcpNodeProxy, System):
             mop_node_type,
             node_type,
         ) = self._get_subtypes(addin_type=type_.subtype)
-        design_flow_name = (
-            self._parse_design_flow_from_string(design_flow=design_flow).name.lower()
-            if design_flow is not None
-            else None
-        )
         uid = self._osl_server.create_node(
             type_=type_.id,
             name=name,
@@ -1639,7 +1634,7 @@ class TcpSystemProxy(TcpNodeProxy, System):
             mop_node_type=mop_node_type,
             node_type=node_type,
             parent_uid=self.uid,
-            design_flow=design_flow_name,
+            design_flow=self._parse_design_flow(design_flow),
         )
         info = self._osl_server.get_actor_info(
             uid=uid, include_log_messages=False, include_integrations_registered_locations=False
@@ -1926,7 +1921,7 @@ class TcpSystemProxy(TcpNodeProxy, System):
         return algorithm_type, integration_type, mop_node_type, node_type
 
     @staticmethod
-    def _parse_design_flow_from_string(design_flow: Union[DesignFlow, str]) -> DesignFlow:
+    def _parse_design_flow(design_flow: Union[DesignFlow, str, None]) -> Union[str, None]:
         """Parse ``design_flow`` argument from ``str`` to ``DesignFlow``.
 
         Parameters
@@ -1936,19 +1931,21 @@ class TcpSystemProxy(TcpNodeProxy, System):
 
         Returns
         -------
-        DesignFlow
-            Item of ``DesignFlow`` enumeration.
+        Union[str, None]
+            Design flow type as string.
 
         Raises
         ------
         TypeError
             Raised when unsupported type of ``design_flow`` argument was passed.
         """
+        if design_flow is None:
+            return None
+        if not isinstance(design_flow, (str, DesignFlow)):
+            raise TypeError(f"Design flow type: `{type(design_flow)}` is not supported.")
         if isinstance(design_flow, str):
             design_flow = DesignFlow.from_str(design_flow)
-        if not isinstance(design_flow, DesignFlow):
-            raise TypeError(f"Design flow type: `{type(design_flow)}` is not supported.")
-        return design_flow
+        return design_flow.name.lower()
 
 
 # endregion
