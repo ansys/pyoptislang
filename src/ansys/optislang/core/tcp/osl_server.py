@@ -4070,19 +4070,17 @@ class TcpOslServer(OslServer):
             current_status_priority = self._STOP_REQUESTED_STATES_PRIORITIES[status]
             if stop_request_priority > current_status_priority:
                 self.send_command(
-                    command=commands.stop(
-                        self.__password,
-                        timeout=self.timeouts_register.get_value(current_func_name),
-                        max_request_attempts=self.max_request_attempts_register.get_value(
-                            current_func_name
-                        ),
-                    )
+                    command=commands.stop(password=self.__password),
+                    timeout=self.timeouts_register.get_value(current_func_name),
+                    max_request_attempts=self.max_request_attempts_register.get_value(
+                        current_func_name
+                    ),
                 )
             else:
                 self._logger.debug(f"Do not send STOP request, project status is: {status}")
         else:
             self.send_command(
-                command=commands.stop(self.__password),
+                command=commands.stop(password=self.__password),
                 timeout=self.timeouts_register.get_value(current_func_name),
                 max_request_attempts=self.max_request_attempts_register.get_value(
                     current_func_name
