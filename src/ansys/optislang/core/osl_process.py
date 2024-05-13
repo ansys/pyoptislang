@@ -351,7 +351,7 @@ class OslServerProcess:
 
         Returns
         -------
-        Tuple[int, int]
+        Optional[Tuple[int, int]]
             Tuple of minimum and maximum port number, if defined; ``None`` otherwise.
         """
         return self.__port_range
@@ -362,7 +362,7 @@ class OslServerProcess:
 
         Returns
         -------
-        str
+        Optional[str]
             Server password, if defined; ``None`` otherwise.
         """
         return self.__password
@@ -373,7 +373,7 @@ class OslServerProcess:
 
         Returns
         -------
-        bool
+        Optional[bool]
             ``True`` if the project is explicitly not supposed to be run;
             ``False`` if the project is explicitly supposed to be run;
             ``None`` otherwise.
@@ -456,7 +456,7 @@ class OslServerProcess:
 
         Returns
         -------
-        Tuple[str, int]
+        Optional[Tuple[str, int]]
             Host and port of the listener, if defined; ``None`` otherwise.
         """
         return self.__listener
@@ -467,7 +467,7 @@ class OslServerProcess:
 
         Returns
         -------
-        str
+        Optional[str]
             Specific unique ID for the TCP listener, if defined; ``None`` otherwise.
         """
         return self.__listener_id
@@ -480,7 +480,7 @@ class OslServerProcess:
 
         Returns
         -------
-        Iterable[Tuple[str, int, Optional[str]]]
+        Optional[Iterable[Tuple[str, int, Optional[str]]]]
             Multi remote listener combinations, if defined; ``None`` otherwise.
         """
         return self.__multi_listener
@@ -491,7 +491,7 @@ class OslServerProcess:
 
         Returns
         -------
-        Tuple[ServerNotification,...]
+        Optional[Tuple[ServerNotification,...]]
             Notifications which are sent to the listener, if defined; ``None`` otherwise.
         """
         return self.__notifications
@@ -502,7 +502,7 @@ class OslServerProcess:
 
         Returns
         -------
-        Dict[str, str]
+        Optional[Dict[str, str]]
             Dictionary of additional environmental variables, if defined; ``None`` otherwise.
         """
         return self.__env_vars

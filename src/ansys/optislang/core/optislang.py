@@ -589,7 +589,7 @@ class Optislang:
 
         Returns
         -------
-        pathlib.Path
+        Optional[pathlib.Path]
             Path to the optiSLang project's working directory. If no project is loaded
             in optiSLang, ``None`` is returned.
 
