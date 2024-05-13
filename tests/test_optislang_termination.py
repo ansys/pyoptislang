@@ -285,7 +285,7 @@ def test_local_and_remote_simultaneously():
     osl_local = Optislang(ini_timeout=60)
     osl_remote = Optislang(port=osl_local.osl_server.port, host=osl_local.osl_server.host)
     osl_local.dispose()
-    time.sleep(5)
+    time.sleep(1)
     assert osl_remote.application.project
     osl_remote.dispose()
 
