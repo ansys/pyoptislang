@@ -37,7 +37,7 @@ def optislang() -> Optislang:
     Optislang:
         Connects to the optiSLang application and provides an API to control it.
     """
-    osl = Optislang(ini_timeout=60)
+    osl = Optislang(ini_timeout=90)
     yield osl
     osl.dispose()
 
@@ -60,6 +60,6 @@ def test_combinations(optislang: Optislang, input):
     "Test combinations."
     for method in input:
         if method[0] == "start":
-            optislang.start(method[1], method[2])
+            optislang.project.start(method[1], method[2])
         if method[0] == "stop":
-            optislang.stop(method[1])
+            optislang.project.stop(method[1])

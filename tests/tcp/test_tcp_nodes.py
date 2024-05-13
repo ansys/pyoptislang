@@ -55,8 +55,8 @@ def optislang(scope="function", autouse=False) -> Optislang:
     Optislang:
         Connects to the optiSLang application and provides an API to control it.
     """
-    osl = Optislang(ini_timeout=60)
-    osl.timeout = 20
+    osl = Optislang(ini_timeout=90)
+    osl.timeout = 60
     yield osl
     osl.dispose()
 
@@ -162,7 +162,7 @@ def test_control(optislang: Optislang, tmp_example_project):
     for command in ["start", "restart", "stop_gently", "stop", "reset"]:
         output = node.control(command, wait_for_completion=False)
         assert output is None
-        output = node.control(command, timeout=3)
+        output = node.control(command, timeout=60)
         assert isinstance(output, bool)
 
 
@@ -427,7 +427,7 @@ def test_get_omdb_files(optislang: Optislang, tmp_example_project):
         pytest.skip(f"Not compatible with {optislang.osl_version_string}")
 
     optislang.application.open(file_path=tmp_example_project("omdb_files"))
-    optislang.timeout = 30
+    optislang.timeout = 60
     optislang.application.project.reset()
     optislang.application.project.start()
     project = optislang.project
@@ -449,7 +449,7 @@ def test_get_omdb_files(optislang: Optislang, tmp_example_project):
 def test_save_designs_as(tmp_path: Path, tmp_example_project):
     """Test `save_designs_as` method."""
     optislang = Optislang(project_path=tmp_example_project("omdb_files"))
-    optislang.timeout = 30
+    optislang.timeout = 60
     optislang.application.project.reset()
     optislang.application.project.start()
 

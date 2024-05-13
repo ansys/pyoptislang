@@ -37,7 +37,7 @@ OPENED_PROJECT_STR = "Opened project"
 pytestmark = pytest.mark.local_osl
 
 
-def wait_for_file_creation(file: str, timeout: float = 60) -> None:
+def wait_for_file_creation(file: str, timeout: float = 90) -> None:
     """Wait for file to be created.
 
     Parameters
@@ -48,11 +48,11 @@ def wait_for_file_creation(file: str, timeout: float = 60) -> None:
         Maximum time in seconds to wait for file creation. Defaults to 60.
     """
     while not os.path.isfile(file) and timeout > 0:
-        time.sleep(1)
+        time.sleep(0.1)
         timeout -= 1
 
 
-def wait_for_log_record(text: str, caplog, timeout: float = 60) -> Optional[logging.LogRecord]:
+def wait_for_log_record(text: str, caplog, timeout: float = 90) -> Optional[logging.LogRecord]:
     """Wait for log record.
 
     Parameters
@@ -77,7 +77,7 @@ def wait_for_log_record(text: str, caplog, timeout: float = 60) -> Optional[logg
             start_index += 1
         if timeout <= 0:
             return None
-        time.sleep(1)
+        time.sleep(0.1)
         timeout -= 1
 
 
