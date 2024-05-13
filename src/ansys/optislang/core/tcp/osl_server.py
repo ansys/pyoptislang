@@ -333,7 +333,7 @@ class TcpClient:
         ):
             try:
                 self.__socket = socket.socket(af, socktype, proto)
-            except OSError as ex:
+            except OSError:
                 self.__socket = None
                 continue
             self.__socket.settimeout(_get_current_timeout(timeout, start_time))
@@ -557,11 +557,13 @@ class TcpClient:
         if isinstance(timeout, float) and timeout <= 0:
             raise ValueError("Timeout value must be greater than zero or None.")
 
-        start_time = time.time()
+        if self.__socket is None:
+            raise ConnectionNotEstablishedError("Socket not set.")
+
         self.__socket.settimeout(timeout)
 
         response_len = -1
-        bytes_to_receive = self.__class__._RESPONSE_SIZE_BYTES
+        bytes_to_receive = self._RESPONSE_SIZE_BYTES
 
         # read from socket until response size (twice) has been received
         response_len_1 = struct.unpack("!Q", self._receive_bytes(bytes_to_receive, timeout))[0]
@@ -606,6 +608,9 @@ class TcpClient:
             raise ValueError("Number of bytes must be greater than zero.")
         if isinstance(timeout, float) and timeout <= 0:
             raise ValueError("Timeout value must be greater than zero or None.")
+
+        if self.__socket is None:
+            raise ConnectionNotEstablishedError("Socket not set.")
 
         start_time = time.time()
 
@@ -654,6 +659,9 @@ class TcpClient:
         """
         if isinstance(timeout, float) and timeout <= 0:
             raise ValueError("Timeout value must be greater than zero or None.")
+
+        if self.__socket is None:
+            raise ConnectionNotEstablishedError("Socket not set.")
 
         start_time = time.time()
 
@@ -732,8 +740,8 @@ class TcpOslListener:
         self.__uid = uid
         self.__name = name
         self.__timeout = timeout
-        self.__listener_socket = None
-        self.__thread = None
+        self.__listener_socket: Optional[socket.socket] = None
+        self.__thread: Optional[threading.Thread] = None
         self.__callbacks: List[Tuple[Callable, Any]] = []
         self.__run_listening_thread = False
         self.__refresh_listener_registration = False
@@ -885,6 +893,9 @@ class TcpOslListener:
         timeout: float, optional
             Listener socket timeout.
         """
+        if self.__listener_socket is None:
+            raise ConnectionNotEstablishedError("Socket not set.")
+
         start_time = time.time()
         if timeout is None:
             timeout = self.__timeout
@@ -904,7 +915,7 @@ class TcpOslListener:
                 client.send_msg("")
                 self.__execute_callbacks(response)
 
-            except TimeoutError or socket.timeout:
+            except (TimeoutError, socket.timeout):
                 self._logger.warning(f"Listener {self.uid} listening timed out.")
                 response = {"type": "TimeoutError"}
                 self.__execute_callbacks(response)
@@ -928,7 +939,8 @@ class TcpOslListener:
         """Wait until self.__thread is finished."""
         if not self.is_listening():
             raise RuntimeError("Listener is not listening.")
-        self.__thread.join()
+        if self.__thread is not None:
+            self.__thread.join()
 
     def cleanup_notifications(self, timeout: float = 1) -> None:
         """Cleanup previously unprocessed push notifications.
@@ -1181,7 +1193,7 @@ class TcpOslServer(OslServer):
         self.__reset = reset
         self.__auto_relocate = auto_relocate
         self.__password = password
-        self.__osl_process = None
+        self.__osl_process: Optional[OslServerProcess] = None
         self.__listeners: Dict[str, TcpOslListener] = {}
         self.__listeners_registration_thread: Optional[threading.Thread] = None
         self.__refresh_listeners = threading.Event()
