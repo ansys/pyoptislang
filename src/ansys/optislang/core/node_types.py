@@ -42,8 +42,8 @@ class AddinType(Enum):
     PYTHON_BASED_MOP_NODE_PLUGIN = 5
     PYTHON_BASED_NODE_PLUGIN = 6
 
-    @staticmethod
-    def from_str(string: str) -> AddinType:
+    @classmethod
+    def from_str(cls, string: str) -> AddinType:
         """Convert string to an instance of the ``AddinType`` class.
 
         Parameters
@@ -63,7 +63,7 @@ class AddinType(Enum):
         ValueError
             Raised when an invalid value of ``string`` is given.
         """
-        return enum_from_str(string=string, enum_class=__class__, replace=(" ", "_"))
+        return enum_from_str(string=string, enum_class=cls, replace=(" ", "_"))
 
 
 class NodeType:
@@ -89,26 +89,11 @@ class NodeType:
         """Return formatted string."""
         return f"type: {self.id}, subtype: {self.subtype}"
 
-    def __eq__(self, other: NodeType) -> bool:
-        """Compare properties of two instances of the ``NodeType`` class.
-
-        Parameters
-        ----------
-        other: NodeType
-            Criterion for comparison.
-
-        Returns
-        -------
-        bool
-            ``True`` if all properties match; ``False`` otherwise.
-        """
-        if type(self) == type(other):
-            checks = {}
-            checks["id"] = self.id == other.id
-            checks["subtype"] = self.subtype == other.subtype
-            return False not in checks.values()
-        else:
-            return False
+    def __eq__(self, other: object) -> bool:
+        """Object comparison."""
+        if not isinstance(other, NodeType):
+            return NotImplemented
+        return self.id == other.id and self.subtype == other.subtype
 
     @property
     def id(self) -> str:
@@ -881,17 +866,17 @@ def get_node_type_from_str(node_id: str) -> NodeType:
     if module_constants.get(node_id, None) is not None:
         return module_constants[node_id]
     elif node_id in customs.keys():
-        id = node_id[:-1]
+        id_ = node_id[:-1]
         subtype = AddinType.BUILT_IN
     else:
         was_found = False
         for custom in customs.keys():
             if node_id.startswith(custom):
-                id = node_id.replace(custom, "")
-                subtype = customs[custom]
+                id_ = node_id.replace(custom, "")
+                subtype = customs[custom]  # type: ignore
                 was_found = True
                 break
         if not was_found:
-            id = node_id
+            id_ = node_id
             subtype = AddinType.BUILT_IN
-    return NodeType(id=id, subtype=subtype)
+    return NodeType(id=id_, subtype=subtype)

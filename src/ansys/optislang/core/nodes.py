@@ -64,8 +64,8 @@ class DesignFlow(Enum):
     SEND = 2
     RECEIVE_SEND = 3
 
-    @staticmethod
-    def from_str(string: str) -> DesignFlow:
+    @classmethod
+    def from_str(cls, string: str) -> DesignFlow:
         """Convert string to an instance of the ``DesignFlow`` class.
 
         Parameters
@@ -85,7 +85,7 @@ class DesignFlow(Enum):
         ValueError
             Raised when an invalid value of ``string`` is given.
         """
-        return enum_from_str(string=string, enum_class=__class__, replace=(" ", "_"))
+        return enum_from_str(string=string, enum_class=cls, replace=(" ", "_"))
 
 
 class NodeClassType(Enum):
@@ -97,8 +97,8 @@ class NodeClassType(Enum):
     ROOT_SYSTEM = 3
     INTEGRATION_NODE = 4
 
-    @staticmethod
-    def from_str(string: str) -> NodeClassType:
+    @classmethod
+    def from_str(cls, string: str) -> NodeClassType:
         """Convert string to an instance of the ``NodeClassType`` class.
 
         Parameters
@@ -118,7 +118,7 @@ class NodeClassType(Enum):
         ValueError
             Raised when an invalid value of ``string`` is given.
         """
-        return enum_from_str(string=string, enum_class=__class__, replace=(" ", "_"))
+        return enum_from_str(string=string, enum_class=cls, replace=(" ", "_"))
 
 
 class SamplingType(Enum):
@@ -148,8 +148,8 @@ class SamplingType(Enum):
     FULLCOMBINATORIAL = 21
     ADVANCEDLATINHYPER = 22
 
-    @staticmethod
-    def from_str(string: str) -> SamplingType:
+    @classmethod
+    def from_str(cls, string: str) -> SamplingType:
         """Convert string to an instance of the ``SamplingType`` class.
 
         Parameters
@@ -167,7 +167,7 @@ class SamplingType(Enum):
         TypeError
             Raised when an invalid type of ``string`` is given.
         """
-        return enum_from_str(string=string, enum_class=__class__, replace=(" ", "_"))
+        return enum_from_str(string=string, enum_class=cls, replace=(" ", "_"))
 
 
 class SlotType(Enum):
@@ -178,8 +178,8 @@ class SlotType(Enum):
     INNER_INPUT = 2
     INNER_OUTPUT = 3
 
-    @staticmethod
-    def from_str(string: str) -> SlotType:
+    @classmethod
+    def from_str(cls, string: str) -> SlotType:
         """Convert string to an instance of the ``SlotType`` class.
 
         Parameters
@@ -197,7 +197,7 @@ class SlotType(Enum):
         TypeError
             Raised when an invalid type of ``string`` is given.
         """
-        return enum_from_str(string=string, enum_class=__class__, replace=(" ", "_"))
+        return enum_from_str(string=string, enum_class=cls, replace=(" ", "_"))
 
     @staticmethod
     def to_dir_str(type_: SlotType) -> str:
@@ -486,7 +486,7 @@ class Node(ABC):
         pass
 
     @abstractmethod
-    def get_property(self) -> Any:  # pragma: no cover
+    def get_property(self, name: str) -> Any:  # pragma: no cover
         """Get property from properties dictionary.
 
         Parameters
@@ -663,13 +663,13 @@ class IntegrationNode(Node):
 
     @abstractmethod
     def get_internal_variables(
-        self, include_reference_values: Optional[bool] = True
+        self, include_reference_values: bool = True
     ) -> Tuple:  # pragma: no cover
         """Get internal variables.
 
         Parameters
         ----------
-        include_reference_values: Optional[bool], optional
+        include_reference_values: bool
             Whether reference values are to be included. By default ``True``.
 
         Returns
@@ -690,13 +690,13 @@ class IntegrationNode(Node):
 
     @abstractmethod
     def get_registered_input_slots(
-        self, include_reference_values: Optional[bool] = True
+        self, include_reference_values: bool = True
     ) -> Tuple:  # pragma: no cover
         """Get registered input slots.
 
         Parameters
         ----------
-        include_reference_values: Optional[bool], optional
+        include_reference_values: bool
             Whether reference values are to be included. By default ``True``.
 
         Returns
@@ -717,13 +717,13 @@ class IntegrationNode(Node):
 
     @abstractmethod
     def get_registered_output_slots(
-        self, include_reference_values: Optional[bool] = True
+        self, include_reference_values: bool = True
     ) -> Tuple:  # pragma: no cover
         """Get registered output slots.
 
         Parameters
         ----------
-        include_reference_values: Optional[bool], optional
+        include_reference_values: bool
             Whether reference values are to be included. By default ``True``.
 
         Returns
@@ -744,13 +744,13 @@ class IntegrationNode(Node):
 
     @abstractmethod
     def get_registered_parameters(
-        self, include_reference_values: Optional[bool] = True
+        self, include_reference_values: bool = True
     ) -> Tuple:  # pragma: no cover
         """Get registered parameters.
 
         Parameters
         ----------
-        include_reference_values: Optional[bool], optional
+        include_reference_values: bool
             Whether reference values are to be included. By default ``True``.
 
         Returns
@@ -771,13 +771,13 @@ class IntegrationNode(Node):
 
     @abstractmethod
     def get_registered_responses(
-        self, include_reference_values: Optional[bool] = True
+        self, include_reference_values: bool = True
     ) -> Tuple:  # pragma: no cover
         """Get registered responses.
 
         Parameters
         ----------
-        include_reference_values: Optional[bool], optional
+        include_reference_values: bool
             Whether reference values are to be included. By default ``True``.
 
         Returns
@@ -1261,6 +1261,7 @@ class ParametricSystem(System):
         """
         pass
 
+    @abstractmethod
     def get_inner_output_slots(self, name: Optional[str] = None) -> Tuple[InnerOutputSlot, ...]:
         """Get current node's inner output slots.
 
@@ -1361,7 +1362,7 @@ class RootSystem(ParametricSystem):
     def control(
         self,
         command: str,
-        hid: Optional[str],
+        hid: Optional[str] = None,
         wait_for_completion: bool = True,
         timeout: Union[float, int] = 100,
     ) -> Optional[bool]:  # pragma: no cover
@@ -1543,7 +1544,7 @@ class Slot(ABC):
         pass
 
     @abstractmethod
-    def get_connections(self) -> Tuple[Edge]:  # pragma: no cover
+    def get_connections(self) -> Tuple[Edge, ...]:  # pragma: no cover
         """Get connections for the current slot.
 
         Returns

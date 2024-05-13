@@ -24,12 +24,12 @@ import sys
 
 import pytest
 
-from ansys.optislang.core import PY3, encoding
+from ansys.optislang.core import encoding
 
 defenc = sys.getdefaultencoding()
 test_string = "my_test_str"
 
-if PY3:
+if sys.version_info[0] >= 3:
     text_type = str
     binary_type = bytes
     test_text_type = test_string
