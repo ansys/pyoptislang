@@ -3428,10 +3428,10 @@ def _get_node_class_type(node_dict: dict, type_: NodeType) -> NodeClassType:
     """
     # TODO: test
     if node_dict["kind"] == "actor":
-        if type_.subtype in [
-            AddinType.PYTHON_BASED_INTEGRATION_PLUGIN,
-            AddinType.INTEGRATION_PLUGIN,
-        ]:
+        if (
+            type_.subtype == AddinType.PYTHON_BASED_INTEGRATION_PLUGIN
+            or type_.subtype == AddinType.INTEGRATION_PLUGIN
+        ):
             return NodeClassType.INTEGRATION_NODE
         return NodeClassType.NODE
 
