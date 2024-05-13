@@ -2046,8 +2046,8 @@ def _gen_server_command(
     ----------
     command : str
         Command type.
-    password : str
-        Password.
+    password : Optional[str]
+        Password, by default ``None``.
     args : Optional[CommandArgs], optional
         Dictionary with specified arguments.
     actor_uid : Optional[str], optional

@@ -1430,13 +1430,13 @@ class TcpOslServer(OslServer):
             Type of the node.
         name : Optional[str], optional
             Node name, by default ``None``.
-        algorithm_type : str, optional
+        algorithm_type : Optional[str], optional
             Algorithm type, e. g. 'algorithm_plugin', by default None.
-        integration_type : str, optional
+        integration_type : Optional[str], optional
             Integration type, e. g. 'integration_plugin', by default None.
-        mop_node_type : str, optional
+        mop_node_type : Optional[str], optional
             MOP node type, e. g. 'python_based_mop_node_plugin', by default None.
-        node_type: str, optional
+        node_type: Optional[str], optional
             Node type, e. g. 'python_based_node_plugin`, by default None.
         parent_uid : Optional[str], optional
             Parent uid, by default ``None``.
