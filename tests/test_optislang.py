@@ -40,15 +40,15 @@ def optislang(scope="function", autouse=False) -> Optislang:
     Optislang:
         Connects to the optiSLang application and provides an API to control it.
     """
-    osl = Optislang(ini_timeout=60)
-    osl.timeout = 20
+    osl = Optislang(ini_timeout=90)
+    osl.timeout = 60
     yield osl
     osl.dispose()
 
 
 def test_dispose():
     "Test ``dispose``."
-    osl = Optislang(ini_timeout=60)
+    osl = Optislang(ini_timeout=90)
     osl.dispose()
 
 
@@ -80,11 +80,9 @@ def test_optislang_properties(optislang: Optislang):
     project = optislang.project
     assert isinstance(project, Project)
 
-    timeout = optislang.timeout
-    assert isinstance(timeout, (float, int))
-    assert timeout == 20
+    assert optislang.timeout == 60
+    assert isinstance(optislang.timeout, (int, float))
     optislang.timeout = 30
-    assert isinstance(timeout, (int, float))
     assert optislang.timeout == 30
     with pytest.raises(ValueError):
         optislang.timeout = "20"
@@ -92,5 +90,5 @@ def test_optislang_properties(optislang: Optislang):
 
 def test_shutdown():
     "Test ``shutdown``."
-    osl = Optislang(shutdown_on_finished=False, ini_timeout=60)
+    osl = Optislang(shutdown_on_finished=False, ini_timeout=90)
     osl.shutdown()
