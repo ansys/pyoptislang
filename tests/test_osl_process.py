@@ -47,9 +47,9 @@ def wait_for_file_creation(file: str, timeout: float = 90) -> None:
     timeout : float, optional
         Maximum time in seconds to wait for file creation. Defaults to 60.
     """
-    while not os.path.isfile(file) and timeout > 0:
+    start = time.time()
+    while not os.path.isfile(file) and time.time() - start < timeout:
         time.sleep(0.1)
-        timeout -= 1
 
 
 def wait_for_log_record(text: str, caplog, timeout: float = 90) -> Optional[logging.LogRecord]:
