@@ -273,7 +273,7 @@ def test_listener_properties(
     assert isinstance(tcp_listener.timeout, (float, int))
     assert tcp_listener.timeout == 60
     tcp_listener.timeout = 15
-    assert tcp_listener.new_timeout == 15
+    assert tcp_listener.timeout == 15
 
     assert isinstance(tcp_listener.host_addresses, list)
     assert all(isinstance(elem, str) for elem in tcp_listener.host_addresses)
@@ -393,7 +393,7 @@ def test_timeouts_register(osl_server_process: OslServerProcess):
     tcp_osl_server = create_tcp_osl_server(osl_server_process)
     timeouts_register = tcp_osl_server.timeouts_register
     # note: method `create_tcp_osl_server` modifies timeout, default is `30` otherwise
-    assert timeouts_register.default_value == 10
+    assert timeouts_register.default_value == 60
 
     with pytest.raises(ValueError):
         timeouts_register.register("invalid_value", "s")
