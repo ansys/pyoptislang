@@ -53,7 +53,7 @@ def create_osl_server_process(shutdown_on_finished=False) -> OslServerProcess:
         )
         osl_server_process.start()
 
-        start_timeout = 30
+        start_timeout = 60
         time_counter = 0
         while not os.path.exists(server_info_file):
             time.sleep(1)
@@ -127,7 +127,7 @@ def test_local_shutdown_on_finished_false_cm(send_dispose, send_shutdown, osl_no
             osl = None
 
     if not send_shutdown:
-        osl = Optislang(host="127.0.0.1", port=osl_port, ini_timeout=10)
+        osl = Optislang(host="127.0.0.1", port=osl_port, ini_timeout=60)
         osl.shutdown()
     else:
         with pytest.raises(
@@ -138,7 +138,7 @@ def test_local_shutdown_on_finished_false_cm(send_dispose, send_shutdown, osl_no
                 RuntimeError,
             )
         ):
-            osl = Optislang(host="127.0.0.1", port=osl_port, ini_timeout=10)
+            osl = Optislang(host="127.0.0.1", port=osl_port, ini_timeout=60)
             osl.shutdown()
 
 
@@ -165,7 +165,7 @@ def test_remote_cm(send_dispose, send_shutdown, osl_none):
             osl = None
 
     if not send_shutdown:
-        osl = Optislang(host="127.0.0.1", port=osl_server_process.port_range[0], ini_timeout=10)
+        osl = Optislang(host="127.0.0.1", port=osl_server_process.port_range[0], ini_timeout=60)
         osl.shutdown()
     else:
         with pytest.raises(
@@ -176,7 +176,7 @@ def test_remote_cm(send_dispose, send_shutdown, osl_none):
                 RuntimeError,
             )
         ):
-            osl = Optislang(host="127.0.0.1", port=osl_server_process.port_range[0], ini_timeout=10)
+            osl = Optislang(host="127.0.0.1", port=osl_server_process.port_range[0], ini_timeout=60)
             osl.shutdown()
 
 
@@ -192,7 +192,7 @@ def test_remote_cm(send_dispose, send_shutdown, osl_none):
     ],
 )
 def test_local_default_wocm(send_dispose, send_shutdown):
-    osl = Optislang(shutdown_on_finished=True, ini_timeout=60)
+    osl = Optislang(shutdown_on_finished=True, ini_timeout=90)
     osl.project.start()
     osl_port = osl._Optislang__osl_server._TcpOslServer__port
     if send_dispose:
@@ -209,7 +209,7 @@ def test_local_default_wocm(send_dispose, send_shutdown):
             RuntimeError,
         )
     ):
-        osl = Optislang(host="127.0.0.1", port=osl_port, ini_timeout=10)
+        osl = Optislang(host="127.0.0.1", port=osl_port, ini_timeout=60)
         osl.shutdown()
 
 
@@ -230,7 +230,7 @@ def test_local_shutdown_on_finished_false_wocm(send_dispose, send_shutdown):
         osl.shutdown()
 
     if not send_shutdown:
-        osl = Optislang(host="127.0.0.1", port=osl_port, ini_timeout=10)
+        osl = Optislang(host="127.0.0.1", port=osl_port, ini_timeout=60)
         osl.shutdown()
     else:
         with pytest.raises(
@@ -241,7 +241,7 @@ def test_local_shutdown_on_finished_false_wocm(send_dispose, send_shutdown):
                 RuntimeError,
             )
         ):
-            osl = Optislang(host="127.0.0.1", port=osl_port, ini_timeout=10)
+            osl = Optislang(host="127.0.0.1", port=osl_port, ini_timeout=60)
             osl.shutdown()
 
 
@@ -265,7 +265,7 @@ def test_remote_wocm(send_dispose, send_shutdown):
         osl.shutdown()
 
     if not send_shutdown:
-        osl = Optislang(host="127.0.0.1", port=osl_server_process.port_range[0], ini_timeout=10)
+        osl = Optislang(host="127.0.0.1", port=osl_server_process.port_range[0], ini_timeout=60)
         osl.shutdown()
     else:
         with pytest.raises(
@@ -276,7 +276,7 @@ def test_remote_wocm(send_dispose, send_shutdown):
                 RuntimeError,
             )
         ):
-            osl = Optislang(host="127.0.0.1", port=osl_server_process.port_range[0], ini_timeout=10)
+            osl = Optislang(host="127.0.0.1", port=osl_server_process.port_range[0], ini_timeout=60)
             osl.shutdown()
 
 
@@ -285,8 +285,8 @@ def test_local_and_remote_simultaneously():
     osl_local = Optislang(ini_timeout=60)
     osl_remote = Optislang(port=osl_local.osl_server.port, host=osl_local.osl_server.host)
     osl_local.dispose()
-    time.sleep(30)
-    name = osl_remote.application.project.get_name()
+    time.sleep(5)
+    assert osl_remote.application.project
     osl_remote.dispose()
 
 

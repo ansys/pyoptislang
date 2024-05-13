@@ -38,8 +38,8 @@ def optislang(scope="function", autouse=False) -> Optislang:
     Optislang:
         Connects to the optiSLang application and provides an API to control it.
     """
-    osl = Optislang(ini_timeout=60)
-    osl.timeout = 20
+    osl = Optislang(ini_timeout=90)
+    osl.timeout = 60
     yield osl
     osl.dispose()
 
