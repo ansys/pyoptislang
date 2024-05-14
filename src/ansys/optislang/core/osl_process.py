@@ -1097,7 +1097,7 @@ class OslServerProcess:
                         if handler:
                             try:
                                 if is_decode:
-                                    line = encoding.force_text(line)
+                                    line = encoding.force_text(line).rstrip()
                                 handler("optiSLang " + name + ": " + line)
                             except:
                                 handler("optiSLang " + name + ": " + line)
