@@ -914,7 +914,7 @@ class TcpNodeProxy(Node):
                         "is_parametric_system": "ParameterManager" in node.get("properties", {}),
                     }
                 )
-                __class__._find_ancestor_line(  # type: ignore
+                TcpNodeProxy._find_ancestor_line(
                     tree=node,
                     ancestor_line=ancestor_line,
                     node_uid=node_uid,
@@ -972,7 +972,7 @@ class TcpNodeProxy(Node):
             if node["kind"] == "system" and (
                 current_depth < max_search_depth or max_search_depth == -1
             ):
-                __class__._find_nodes_with_name(  # type: ignore
+                TcpNodeProxy._find_nodes_with_name(
                     name=name,
                     tree=node,
                     properties_dicts_list=properties_dicts_list,
@@ -1029,7 +1029,7 @@ class TcpNodeProxy(Node):
             if node["kind"] == "system" and (
                 current_depth < max_search_depth or max_search_depth == -1
             ):
-                __class__._find_node_with_uid(  # type: ignore
+                TcpNodeProxy._find_node_with_uid(
                     uid=uid,
                     tree=node,
                     properties_dicts_list=properties_dicts_list,
@@ -1074,7 +1074,7 @@ class TcpNodeProxy(Node):
                     "kind": node["kind"],
                     "is_parametric_system": "ParameterManager" in node.get("properties", {}),
                 }
-                __class__._find_parent_node_info(  # type: ignore
+                TcpNodeProxy._find_parent_node_info(
                     tree=node,
                     parent_info=new_parent_info,
                     node_uid=node_uid,
@@ -1886,7 +1886,7 @@ class TcpSystemProxy(TcpNodeProxy, System):
             if node["uid"] == uid:
                 nodes_tree.append(node)
             if node["kind"] == "system":
-                __class__._find_subtree(tree=node, uid=uid, nodes_tree=nodes_tree)  # type: ignore
+                TcpSystemProxy._find_subtree(tree=node, uid=uid, nodes_tree=nodes_tree)
         return nodes_tree
 
     @staticmethod
@@ -2859,14 +2859,14 @@ class TcpSlotProxy(Slot):
         if isinstance(from_slot.node, TcpRootSystemProxy):
             from_actor_script = "from_actor = project.get_root_system()\n"
         else:
-            from_actor_script = __class__._create_find_actor_script(  # type: ignore
+            from_actor_script = TcpSlotProxy._create_find_actor_script(
                 node=from_slot.node, name="from_actor"
             )
 
         if isinstance(to_slot.node, TcpRootSystemProxy):
             to_actor_script = "to_actor = project.get_root_system()"
         else:
-            to_actor_script = __class__._create_find_actor_script(  # type: ignore
+            to_actor_script = TcpSlotProxy._create_find_actor_script(
                 node=to_slot.node, name="to_actor"
             )
 
