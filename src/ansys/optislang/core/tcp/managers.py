@@ -87,9 +87,11 @@ class TcpCriteriaManagerProxy(CriteriaManager):
                 criterion_type=criterion.criterion.name,
                 expression=criterion.expression,
                 name=criterion.name,
-                limit=criterion.limit_expression
-                if isinstance(criterion, (ConstraintCriterion, LimitStateCriterion))
-                else None,
+                limit=(
+                    criterion.limit_expression
+                    if isinstance(criterion, (ConstraintCriterion, LimitStateCriterion))
+                    else None
+                ),
             )
 
     def get_criteria(self) -> Tuple[Criterion, ...]:

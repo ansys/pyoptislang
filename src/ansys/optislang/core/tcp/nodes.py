@@ -3277,9 +3277,7 @@ def create_edge_from_dict(
     rec_slot_type = (
         SlotType.INNER_INPUT
         if connection.get("receiving_slot_is_inner", None)
-        else SlotType.INPUT
-        if connection.get("receiving_slot_is_inner") is False
-        else None
+        else SlotType.INPUT if connection.get("receiving_slot_is_inner") is False else None
     )
     if rec_slot_type is None:
         info = osl_server.get_actor_info(
@@ -3308,9 +3306,7 @@ def create_edge_from_dict(
     sen_slot_type = (
         SlotType.INNER_OUTPUT
         if connection.get("sending_slot_is_inner", None)
-        else SlotType.OUTPUT
-        if connection.get("sending_slot_is_inner") is False
-        else None
+        else SlotType.OUTPUT if connection.get("sending_slot_is_inner") is False else None
     )
     if sen_slot_type is None:
         info = osl_server.get_actor_info(
