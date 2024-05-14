@@ -35,7 +35,6 @@ if TYPE_CHECKING:
 
     from ansys.optislang.core.managers import CriteriaManager, ParameterManager, ResponseManager
     from ansys.optislang.core.node_types import NodeType
-    from ansys.optislang.core.osl_server import OslServer
     from ansys.optislang.core.project_parametric import Design
 
 PROJECT_COMMANDS_RETURN_STATES = {
@@ -1571,37 +1570,6 @@ class Slot(ABC):
             Raised when a command or query fails.
         TimeoutError
             Raised when the timeout float value expires.
-        """
-        pass
-
-    @staticmethod
-    @abstractmethod
-    def create_slot(
-        osl_server: OslServer,
-        node: Node,
-        name: str,
-        type_: SlotType,
-        type_hint: Optional[str] = None,
-    ) -> Slot:  # pragma: no cover
-        """Create instance of new slot.
-
-        Parameters
-        ----------
-        osl_server: OslServer
-            Object providing access to the optiSLang server.
-        node : Node
-            Node to which slot belongs to.
-        name : str
-            Slot name.
-        type_ : SlotType
-            Slot type.
-        type_hint : Optional[str], optional
-            Slot's expected data type, by default None.
-
-        Returns
-        -------
-        Slot
-            Instance of InputSlot, OutputSlot, InnerInputSlot or InnerOutputSlot class.
         """
         pass
 
