@@ -30,7 +30,7 @@ import json
 import logging
 from pathlib import Path
 import time
-from typing import TYPE_CHECKING, Any, Dict, Iterable, List, Optional, Tuple, Type, Union
+from typing import TYPE_CHECKING, Any, Dict, Iterable, List, Optional, Tuple, Type, Union, cast
 
 from deprecated.sphinx import deprecated
 
@@ -357,7 +357,7 @@ class TcpNodeProxy(Node):
         TimeoutError
             Raised when the timeout float value expires.
         """
-        return self._get_slots(type_=SlotType.INPUT, name=name)
+        return cast(Tuple[TcpInputSlotProxy, ...], self._get_slots(type_=SlotType.INPUT, name=name))
 
     def get_name(self) -> str:
         """Get the name of the node.
@@ -405,7 +405,9 @@ class TcpNodeProxy(Node):
         TimeoutError
             Raised when the timeout float value expires.
         """
-        return self._get_slots(type_=SlotType.OUTPUT, name=name)
+        return cast(
+            Tuple[TcpOutputSlotProxy, ...], self._get_slots(type_=SlotType.OUTPUT, name=name)
+        )
 
     def get_parent(self) -> TcpNodeProxy:
         """Get the instance of the parent node.
@@ -2021,7 +2023,10 @@ class TcpParametricSystemProxy(TcpSystemProxy, ParametricSystem):
         TimeoutError
             Raised when the timeout float value expires.
         """
-        return self._get_slots(type_=SlotType.INNER_INPUT, name=name)
+        return cast(
+            Tuple[TcpInnerInputSlotProxy, ...],
+            self._get_slots(type_=SlotType.INNER_INPUT, name=name),
+        )
 
     def get_inner_output_slots(
         self, name: Optional[str] = None
@@ -2047,7 +2052,10 @@ class TcpParametricSystemProxy(TcpSystemProxy, ParametricSystem):
         TimeoutError
             Raised when the timeout float value expires.
         """
-        return self._get_slots(type_=SlotType.INNER_OUTPUT, name=name)
+        return cast(
+            Tuple[TcpInnerOutputSlotProxy, ...],
+            self._get_slots(type_=SlotType.INNER_OUTPUT, name=name),
+        )
 
     def get_omdb_files(self) -> Tuple[File]:
         """Get paths to omdb files.
