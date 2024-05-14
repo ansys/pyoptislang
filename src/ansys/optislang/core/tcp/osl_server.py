@@ -433,10 +433,10 @@ class TcpClient:
         with open(file_path, "rb") as file:
             self.__socket.settimeout(timeout)
             self.__socket.sendall(header)
-            load = file.read(self.__class__._BUFFER_SIZE)
+            load = file.read(self._BUFFER_SIZE)
             while load:
                 self.__socket.send(load)
-                load = file.read(self.__class__._BUFFER_SIZE)
+                load = file.read(self._BUFFER_SIZE)
 
     def receive_msg(self, timeout: Optional[float] = 5) -> str:
         """Receive message from the server.
@@ -618,8 +618,8 @@ class TcpClient:
         received_len = 0
         while received_len < count:
             remain = count - received_len
-            if remain > self.__class__._BUFFER_SIZE:
-                buff = self.__class__._BUFFER_SIZE
+            if remain > self._BUFFER_SIZE:
+                buff = self._BUFFER_SIZE
             else:
                 buff = remain
 
@@ -669,8 +669,8 @@ class TcpClient:
             data_len = 0
             while data_len < file_len:
                 remain = file_len - data_len
-                if remain > self.__class__._BUFFER_SIZE:
-                    buff = self.__class__._BUFFER_SIZE
+                if remain > self._BUFFER_SIZE:
+                    buff = self._BUFFER_SIZE
                 else:
                     buff = remain
 
@@ -1224,7 +1224,7 @@ class TcpOslServer(OslServer):
         atexit.register(self.dispose)
 
         if self.__host is None or self.__port is None:
-            self.__host = self.__class__._LOCALHOST
+            self.__host = self._LOCALHOST
             self.__shutdown_on_finished = shutdown_on_finished
             self._start_local(ini_timeout, shutdown_on_finished)
         else:
@@ -3773,9 +3773,9 @@ class TcpOslServer(OslServer):
 
         if isinstance(response, list):
             for resp_elem in response:
-                self.__class__.__check_command_response(resp_elem)
+                self.__check_command_response(resp_elem)
         else:
-            self.__class__.__check_command_response(response)
+            self.__check_command_response(response)
 
         return response
 
@@ -4115,7 +4115,7 @@ class TcpOslServer(OslServer):
         start_time = datetime.now()
         while (
             self.__osl_process.is_running()
-            and (datetime.now() - start_time).seconds < self.__class__._SHUTDOWN_WAIT
+            and (datetime.now() - start_time).seconds < self._SHUTDOWN_WAIT
         ):
             time.sleep(0.5)
 
@@ -4328,7 +4328,7 @@ class TcpOslServer(OslServer):
             optiSLang server port is not listened for specified timeout value.
         """
         listener = TcpOslListener(
-            port_range=self.__class__._PRIVATE_PORTS_RANGE,
+            port_range=self._PRIVATE_PORTS_RANGE,
             timeout=timeout,
             name=name,
             uid=uid,
