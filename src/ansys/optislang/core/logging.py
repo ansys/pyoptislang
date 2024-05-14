@@ -39,16 +39,7 @@ FILE_NAME = "pyOptislang.log"
 ## Formatting
 
 LOG_MSG_FORMAT = "%(levelname)s - %(name)s - %(module)s.%(funcName)s - %(message)s"
-
-DEFAULT_STDOUT_HEADER = """
-LEVEL - MODULE - CLASS - FUNCTION - MESSAGE
-"""
-DEFAULT_FILE_HEADER = DEFAULT_STDOUT_HEADER
-NEW_SESSION_HEADER = f"""
-===============================================================================
-       NEW SESSION - {datetime.now().strftime("%m/%d/%Y, %H:%M:%S")}
-===============================================================================
-"""
+LOG_SESSION_HEADER = f"{datetime.now()} - PyOptiSLang session started"
 
 
 class OslCustomAdapter(logging.LoggerAdapter):
@@ -168,8 +159,7 @@ class OslLogger:
         file_handler.setLevel(loglevel)
         self.logger.addHandler(file_handler)
         self.file_handler = file_handler
-        file_handler.stream.write(NEW_SESSION_HEADER)
-        file_handler.stream.write(DEFAULT_FILE_HEADER)
+        file_handler.stream.write(LOG_SESSION_HEADER + "\n")
 
     def add_std_out_handler(
         self,
@@ -187,8 +177,7 @@ class OslLogger:
         std_out_handler.setFormatter(logging.Formatter(LOG_MSG_FORMAT))
         self.logger.addHandler(std_out_handler)
         self.std_out_handler = std_out_handler
-        std_out_handler.stream.write(NEW_SESSION_HEADER)
-        std_out_handler.stream.write(DEFAULT_STDOUT_HEADER)
+        std_out_handler.stream.write(LOG_SESSION_HEADER + "\n")
 
     def create_logger(self, new_logger_name: str, level: Optional[str] = None) -> logging.Logger:
         """Create a logger for the Optislang instance.
