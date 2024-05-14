@@ -38,8 +38,7 @@ FILE_NAME = "pyOptislang.log"
 
 ## Formatting
 
-STDOUT_MSG_FORMAT = "%(levelname)s -  %(module)s - %(name)s -  %(funcName)s - %(message)s"
-FILE_MSG_FORMAT = STDOUT_MSG_FORMAT
+LOG_MSG_FORMAT = "%(levelname)s - %(name)s - %(module)s.%(funcName)s - %(message)s"
 
 DEFAULT_STDOUT_HEADER = """
 LEVEL - MODULE - CLASS - FUNCTION - MESSAGE
@@ -71,8 +70,6 @@ class OslCustomAdapter(logging.LoggerAdapter):
         ----------
         logger : str, optional
             Level of logging. The default is ``LOG_LEVEL``.
-        osl_instance : bool, optional
-            Whether to record logs to an output file. The default is ``True``.
         """
         self.logger = logger
         if extra:
@@ -167,7 +164,7 @@ class OslLogger:
             Level of logging. The default is ``LOG_LEVEL``.
         """
         file_handler = logging.FileHandler(logfile_name)
-        file_handler.setFormatter(logging.Formatter(FILE_MSG_FORMAT))
+        file_handler.setFormatter(logging.Formatter(LOG_MSG_FORMAT))
         file_handler.setLevel(loglevel)
         self.logger.addHandler(file_handler)
         self.file_handler = file_handler
@@ -187,7 +184,7 @@ class OslLogger:
         """
         std_out_handler = logging.StreamHandler()
         std_out_handler.setLevel(loglevel)
-        std_out_handler.setFormatter(logging.Formatter(FILE_MSG_FORMAT))
+        std_out_handler.setFormatter(logging.Formatter(LOG_MSG_FORMAT))
         self.logger.addHandler(std_out_handler)
         self.std_out_handler = std_out_handler
         std_out_handler.stream.write(NEW_SESSION_HEADER)
@@ -236,14 +233,14 @@ class OslLogger:
     ) -> None:
         """Call the ``create_logger`` method to add a child logger.
 
-        This looger is more general than the main logger.
+        This logger is more general than the main logger.
 
         Parameters
         ----------
         child_logger_name : str
             Name of the  child logger.
         """
-        if type(child_logger_name) is not str:
+        if not isinstance(child_logger_name, str):
             raise ValueError("Expected input child_logger_name: str")
         child_logger = self.logger.name + "." + child_logger_name
         self.instances[child_logger] = self.create_logger(child_logger)
