@@ -221,7 +221,7 @@ class Optislang:
         auto_relocate: bool = False,
         listener_id: Optional[str] = None,
         multi_listener: Optional[Iterable[Tuple[str, int, Optional[str]]]] = None,
-        ini_timeout: Union[int, float] = 20,
+        ini_timeout: Union[int, float] = 60,
         name: Optional[str] = None,
         password: Optional[str] = None,
         loglevel: Optional[str] = None,
