@@ -30,7 +30,7 @@ import json
 import logging
 from pathlib import Path
 import time
-from typing import TYPE_CHECKING, Any, Dict, Iterable, List, Optional, Tuple, Type, Union
+from typing import TYPE_CHECKING, Any, Dict, Iterable, List, Optional, Tuple, Type, Union, cast
 
 from deprecated.sphinx import deprecated
 
@@ -357,7 +357,7 @@ class TcpNodeProxy(Node):
         TimeoutError
             Raised when the timeout float value expires.
         """
-        return self._get_slots(type_=SlotType.INPUT, name=name)
+        return cast(Tuple[TcpInputSlotProxy, ...], self._get_slots(type_=SlotType.INPUT, name=name))
 
     def get_name(self) -> str:
         """Get the name of the node.
@@ -405,7 +405,9 @@ class TcpNodeProxy(Node):
         TimeoutError
             Raised when the timeout float value expires.
         """
-        return self._get_slots(type_=SlotType.OUTPUT, name=name)
+        return cast(
+            Tuple[TcpOutputSlotProxy, ...], self._get_slots(type_=SlotType.OUTPUT, name=name)
+        )
 
     def get_parent(self) -> TcpNodeProxy:
         """Get the instance of the parent node.
@@ -912,7 +914,7 @@ class TcpNodeProxy(Node):
                         "is_parametric_system": "ParameterManager" in node.get("properties", {}),
                     }
                 )
-                __class__._find_ancestor_line(  # type: ignore
+                TcpNodeProxy._find_ancestor_line(
                     tree=node,
                     ancestor_line=ancestor_line,
                     node_uid=node_uid,
@@ -970,7 +972,7 @@ class TcpNodeProxy(Node):
             if node["kind"] == "system" and (
                 current_depth < max_search_depth or max_search_depth == -1
             ):
-                __class__._find_nodes_with_name(  # type: ignore
+                TcpNodeProxy._find_nodes_with_name(
                     name=name,
                     tree=node,
                     properties_dicts_list=properties_dicts_list,
@@ -1027,7 +1029,7 @@ class TcpNodeProxy(Node):
             if node["kind"] == "system" and (
                 current_depth < max_search_depth or max_search_depth == -1
             ):
-                __class__._find_node_with_uid(  # type: ignore
+                TcpNodeProxy._find_node_with_uid(
                     uid=uid,
                     tree=node,
                     properties_dicts_list=properties_dicts_list,
@@ -1072,7 +1074,7 @@ class TcpNodeProxy(Node):
                     "kind": node["kind"],
                     "is_parametric_system": "ParameterManager" in node.get("properties", {}),
                 }
-                __class__._find_parent_node_info(  # type: ignore
+                TcpNodeProxy._find_parent_node_info(
                     tree=node,
                     parent_info=new_parent_info,
                     node_uid=node_uid,
@@ -1626,6 +1628,12 @@ class TcpSystemProxy(TcpNodeProxy, System):
             mop_node_type,
             node_type,
         ) = self._get_subtypes(addin_type=type_.subtype)
+
+        if not isinstance(design_flow, (str, DesignFlow)):
+            raise TypeError(f"Design flow type: `{type(design_flow)}` is not supported.")
+        if isinstance(design_flow, str):
+            design_flow = DesignFlow.from_str(design_flow)
+
         uid = self._osl_server.create_node(
             type_=type_.id,
             name=name,
@@ -1634,7 +1642,7 @@ class TcpSystemProxy(TcpNodeProxy, System):
             mop_node_type=mop_node_type,
             node_type=node_type,
             parent_uid=self.uid,
-            design_flow=self._parse_design_flow(design_flow),
+            design_flow=design_flow.name.lower(),
         )
         info = self._osl_server.get_actor_info(
             uid=uid, include_log_messages=False, include_integrations_registered_locations=False
@@ -1878,7 +1886,7 @@ class TcpSystemProxy(TcpNodeProxy, System):
             if node["uid"] == uid:
                 nodes_tree.append(node)
             if node["kind"] == "system":
-                __class__._find_subtree(tree=node, uid=uid, nodes_tree=nodes_tree)  # type: ignore
+                TcpSystemProxy._find_subtree(tree=node, uid=uid, nodes_tree=nodes_tree)
         return nodes_tree
 
     @staticmethod
@@ -1919,33 +1927,6 @@ class TcpSystemProxy(TcpNodeProxy, System):
             raise ValueError(f"Unsupported value of addin_type: ``{addin_type}``.")
 
         return algorithm_type, integration_type, mop_node_type, node_type
-
-    @staticmethod
-    def _parse_design_flow(design_flow: Union[DesignFlow, str, None]) -> Union[str, None]:
-        """Parse ``design_flow`` argument from ``str`` to ``DesignFlow``.
-
-        Parameters
-        ----------
-        design_flow : Union[DesignFlow, str]
-            Argument to be converted.
-
-        Returns
-        -------
-        Union[str, None]
-            Design flow type as string.
-
-        Raises
-        ------
-        TypeError
-            Raised when unsupported type of ``design_flow`` argument was passed.
-        """
-        if design_flow is None:
-            return None
-        if not isinstance(design_flow, (str, DesignFlow)):
-            raise TypeError(f"Design flow type: `{type(design_flow)}` is not supported.")
-        if isinstance(design_flow, str):
-            design_flow = DesignFlow.from_str(design_flow)
-        return design_flow.name.lower()
 
 
 # endregion
@@ -2042,7 +2023,10 @@ class TcpParametricSystemProxy(TcpSystemProxy, ParametricSystem):
         TimeoutError
             Raised when the timeout float value expires.
         """
-        return self._get_slots(type_=SlotType.INNER_INPUT, name=name)
+        return cast(
+            Tuple[TcpInnerInputSlotProxy, ...],
+            self._get_slots(type_=SlotType.INNER_INPUT, name=name),
+        )
 
     def get_inner_output_slots(
         self, name: Optional[str] = None
@@ -2068,7 +2052,10 @@ class TcpParametricSystemProxy(TcpSystemProxy, ParametricSystem):
         TimeoutError
             Raised when the timeout float value expires.
         """
-        return self._get_slots(type_=SlotType.INNER_OUTPUT, name=name)
+        return cast(
+            Tuple[TcpInnerOutputSlotProxy, ...],
+            self._get_slots(type_=SlotType.INNER_OUTPUT, name=name),
+        )
 
     def get_omdb_files(self) -> Tuple[File]:
         """Get paths to omdb files.
@@ -2872,14 +2859,14 @@ class TcpSlotProxy(Slot):
         if isinstance(from_slot.node, TcpRootSystemProxy):
             from_actor_script = "from_actor = project.get_root_system()\n"
         else:
-            from_actor_script = __class__._create_find_actor_script(  # type: ignore
+            from_actor_script = TcpSlotProxy._create_find_actor_script(
                 node=from_slot.node, name="from_actor"
             )
 
         if isinstance(to_slot.node, TcpRootSystemProxy):
             to_actor_script = "to_actor = project.get_root_system()"
         else:
-            to_actor_script = __class__._create_find_actor_script(  # type: ignore
+            to_actor_script = TcpSlotProxy._create_find_actor_script(
                 node=to_slot.node, name="to_actor"
             )
 
@@ -3449,10 +3436,10 @@ def _get_node_class_type(node_dict: dict, type_: NodeType) -> NodeClassType:
     """
     # TODO: test
     if node_dict["kind"] == "actor":
-        if type_.subtype in [
-            AddinType.PYTHON_BASED_INTEGRATION_PLUGIN,
-            AddinType.INTEGRATION_PLUGIN,
-        ]:
+        if (
+            type_.subtype == AddinType.PYTHON_BASED_INTEGRATION_PLUGIN
+            or type_.subtype == AddinType.INTEGRATION_PLUGIN
+        ):
             return NodeClassType.INTEGRATION_NODE
         return NodeClassType.NODE
 

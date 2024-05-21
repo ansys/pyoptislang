@@ -333,7 +333,7 @@ class TcpClient:
         ):
             try:
                 self.__socket = socket.socket(af, socktype, proto)
-            except OSError as ex:
+            except OSError:
                 self.__socket = None
                 continue
             self.__socket.settimeout(_get_current_timeout(timeout, start_time))
@@ -433,10 +433,10 @@ class TcpClient:
         with open(file_path, "rb") as file:
             self.__socket.settimeout(timeout)
             self.__socket.sendall(header)
-            load = file.read(self.__class__._BUFFER_SIZE)
+            load = file.read(self._BUFFER_SIZE)
             while load:
                 self.__socket.send(load)
-                load = file.read(self.__class__._BUFFER_SIZE)
+                load = file.read(self._BUFFER_SIZE)
 
     def receive_msg(self, timeout: Optional[float] = 5) -> str:
         """Receive message from the server.
@@ -557,11 +557,13 @@ class TcpClient:
         if isinstance(timeout, float) and timeout <= 0:
             raise ValueError("Timeout value must be greater than zero or None.")
 
-        start_time = time.time()
+        if self.__socket is None:
+            raise ConnectionNotEstablishedError("Socket not set.")
+
         self.__socket.settimeout(timeout)
 
         response_len = -1
-        bytes_to_receive = self.__class__._RESPONSE_SIZE_BYTES
+        bytes_to_receive = self._RESPONSE_SIZE_BYTES
 
         # read from socket until response size (twice) has been received
         response_len_1 = struct.unpack("!Q", self._receive_bytes(bytes_to_receive, timeout))[0]
@@ -607,14 +609,17 @@ class TcpClient:
         if isinstance(timeout, float) and timeout <= 0:
             raise ValueError("Timeout value must be greater than zero or None.")
 
+        if self.__socket is None:
+            raise ConnectionNotEstablishedError("Socket not set.")
+
         start_time = time.time()
 
         received = b""
         received_len = 0
         while received_len < count:
             remain = count - received_len
-            if remain > self.__class__._BUFFER_SIZE:
-                buff = self.__class__._BUFFER_SIZE
+            if remain > self._BUFFER_SIZE:
+                buff = self._BUFFER_SIZE
             else:
                 buff = remain
 
@@ -655,14 +660,17 @@ class TcpClient:
         if isinstance(timeout, float) and timeout <= 0:
             raise ValueError("Timeout value must be greater than zero or None.")
 
+        if self.__socket is None:
+            raise ConnectionNotEstablishedError("Socket not set.")
+
         start_time = time.time()
 
         with open(file_path, "wb") as file:
             data_len = 0
             while data_len < file_len:
                 remain = file_len - data_len
-                if remain > self.__class__._BUFFER_SIZE:
-                    buff = self.__class__._BUFFER_SIZE
+                if remain > self._BUFFER_SIZE:
+                    buff = self._BUFFER_SIZE
                 else:
                     buff = remain
 
@@ -732,8 +740,8 @@ class TcpOslListener:
         self.__uid = uid
         self.__name = name
         self.__timeout = timeout
-        self.__listener_socket = None
-        self.__thread = None
+        self.__listener_socket: Optional[socket.socket] = None
+        self.__thread: Optional[threading.Thread] = None
         self.__callbacks: List[Tuple[Callable, Any]] = []
         self.__run_listening_thread = False
         self.__refresh_listener_registration = False
@@ -885,6 +893,9 @@ class TcpOslListener:
         timeout: float, optional
             Listener socket timeout.
         """
+        if self.__listener_socket is None:
+            raise ConnectionNotEstablishedError("Socket not set.")
+
         start_time = time.time()
         if timeout is None:
             timeout = self.__timeout
@@ -904,7 +915,7 @@ class TcpOslListener:
                 client.send_msg("")
                 self.__execute_callbacks(response)
 
-            except TimeoutError or socket.timeout:
+            except (TimeoutError, socket.timeout):
                 self._logger.warning(f"Listener {self.uid} listening timed out.")
                 response = {"type": "TimeoutError"}
                 self.__execute_callbacks(response)
@@ -928,7 +939,8 @@ class TcpOslListener:
         """Wait until self.__thread is finished."""
         if not self.is_listening():
             raise RuntimeError("Listener is not listening.")
-        self.__thread.join()
+        if self.__thread is not None:
+            self.__thread.join()
 
     def cleanup_notifications(self, timeout: float = 1) -> None:
         """Cleanup previously unprocessed push notifications.
@@ -1181,7 +1193,7 @@ class TcpOslServer(OslServer):
         self.__reset = reset
         self.__auto_relocate = auto_relocate
         self.__password = password
-        self.__osl_process = None
+        self.__osl_process: Optional[OslServerProcess] = None
         self.__listeners: Dict[str, TcpOslListener] = {}
         self.__listeners_registration_thread: Optional[threading.Thread] = None
         self.__refresh_listeners = threading.Event()
@@ -1212,7 +1224,7 @@ class TcpOslServer(OslServer):
         atexit.register(self.dispose)
 
         if self.__host is None or self.__port is None:
-            self.__host = self.__class__._LOCALHOST
+            self.__host = self._LOCALHOST
             self.__shutdown_on_finished = shutdown_on_finished
             self._start_local(ini_timeout, shutdown_on_finished)
         else:
@@ -3761,9 +3773,9 @@ class TcpOslServer(OslServer):
 
         if isinstance(response, list):
             for resp_elem in response:
-                self.__class__.__check_command_response(resp_elem)
+                self.__check_command_response(resp_elem)
         else:
-            self.__class__.__check_command_response(response)
+            self.__check_command_response(response)
 
         return response
 
@@ -4103,7 +4115,7 @@ class TcpOslServer(OslServer):
         start_time = datetime.now()
         while (
             self.__osl_process.is_running()
-            and (datetime.now() - start_time).seconds < self.__class__._SHUTDOWN_WAIT
+            and (datetime.now() - start_time).seconds < self._SHUTDOWN_WAIT
         ):
             time.sleep(0.5)
 
@@ -4316,7 +4328,7 @@ class TcpOslServer(OslServer):
             optiSLang server port is not listened for specified timeout value.
         """
         listener = TcpOslListener(
-            port_range=self.__class__._PRIVATE_PORTS_RANGE,
+            port_range=self._PRIVATE_PORTS_RANGE,
             timeout=timeout,
             name=name,
             uid=uid,
