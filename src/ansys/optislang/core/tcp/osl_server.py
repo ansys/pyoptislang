@@ -1160,7 +1160,7 @@ class TcpOslServer(OslServer):
         auto_relocate: bool = False,
         listener_id: Optional[str] = None,
         multi_listener: Optional[Iterable[Tuple[str, int, Optional[str]]]] = None,
-        ini_timeout: float = 20,
+        ini_timeout: float = 60,
         password: Optional[str] = None,
         logger: Optional[Any] = None,
         shutdown_on_finished: bool = True,
