@@ -37,7 +37,7 @@ FILE_NAME = "pyOptislang.log"
 
 ## Formatting
 
-LOG_MSG_FORMAT = "%(levelname)s - %(name)s - %(module)s.%(funcName)s - %(message)s"
+LOG_MSG_FORMAT = "%(asctime)s - %(levelname)s - %(name)s - %(module)s.%(funcName)s - %(message)s"
 
 
 class OslCustomAdapter(logging.LoggerAdapter):
