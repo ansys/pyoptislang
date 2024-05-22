@@ -265,20 +265,3 @@ class OslLogger:
         )
 
         return self.instances[instance_name]
-
-    def __getitem__(self, instance_name: str) -> logging.Logger:
-        """Get a logger by an instance name.
-
-        Parameters
-        ----------
-        instance_name : str
-            Name of the instance.
-        Returns
-        -------
-        self.instances[instance_name]: logging.Logger()
-            Logger class.
-        """
-        if instance_name in self.instances.keys():
-            return self.instances[instance_name]
-        else:
-            raise KeyError(f"There is no instances with name {instance_name}")
