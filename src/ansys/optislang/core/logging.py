@@ -87,7 +87,6 @@ class OslLogger:
     file_handler = None
     std_out_handler = None
     log_level = LOG_LEVEL
-    instances = {}
 
     def __init__(
         self,
@@ -212,24 +211,6 @@ class OslLogger:
         new_logger.propagate = True
         return new_logger
 
-    def add_child_logger(
-        self,
-        child_logger_name: str,
-    ) -> None:
-        """Call the ``create_logger`` method to add a child logger.
-
-        This logger is more general than the main logger.
-
-        Parameters
-        ----------
-        child_logger_name : str
-            Name of the  child logger.
-        """
-        if not isinstance(child_logger_name, str):
-            raise ValueError("Expected input child_logger_name: str")
-        child_logger = self.logger.name + "." + child_logger_name
-        self.instances[child_logger] = self.create_logger(child_logger)
-
     def add_instance_logger(
         self, instance_name: str, osl_instance: Optislang, level: Optional[str] = None
     ) -> OslCustomAdapter:
@@ -260,8 +241,4 @@ class OslLogger:
             counter += 1
             instance_name = name + str(counter)
 
-        self.instances[instance_name] = OslCustomAdapter(
-            self.create_logger(instance_name, level), osl_instance
-        )
-
-        return self.instances[instance_name]
+        return OslCustomAdapter(self.create_logger(instance_name, level), osl_instance)
