@@ -35,7 +35,7 @@ jobs:
       - uses: ansys/actions/doc-style@v6
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          vale-version: "2.29.6"
+          vale-version: "3.4.1"
 
   wheelhouse:
     name: "Wheelhouse and smoke tests"

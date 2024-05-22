@@ -227,13 +227,13 @@ class TcpApplicationProxy(Application):
         """
         self.__osl_server.save_copy(file_path=file_path)
 
-    def __get_project_uid(self) -> Optional[str]:
+    def __get_project_uid(self) -> str:
         """Get project uid.
 
         Returns
         -------
-        Optional[str]
-            Project uid. If no project is loaded in the optiSLang, returns `None`.
+        str
+            Project uid.
 
         Raises
         ------
@@ -244,11 +244,8 @@ class TcpApplicationProxy(Application):
         TimeoutError
             Raised when the timeout float value expires.
         """
-        try:
-            project_tree = self.__osl_server.get_full_project_tree_with_properties()
-            return project_tree.get("projects", [{}])[0].get("system", {}).get("uid", None)
-        except:
-            return None
+        project_tree = self.__osl_server.get_full_project_tree_with_properties()
+        return project_tree["projects"][0]["system"]["uid"]
 
     # FUTURES:
 

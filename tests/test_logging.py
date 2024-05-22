@@ -44,7 +44,7 @@ def test_create_log_file(tmp_path: Path):
     "This tests creation of logfile with ``logfile_name`` when initialized"
     logfile_path = tmp_path / "testlog.log"
     assert not logfile_path.is_file()
-    log = logging.OslLogger(log_to_file=True, logfile_name=logfile_path)
+    logging.OslLogger(log_to_file=True, logfile_name=str(logfile_path))
     assert logfile_path.is_file()
 
 
@@ -65,8 +65,8 @@ def test_set_log_level():
 
 def test_add_file_handler(tmp_path: Path):
     log = logging.OslLogger()
-    log.add_file_handler(logfile_name=tmp_path / "testlog.log")
-    assert log.file_handler != None
+    log.add_file_handler(logfile_name=str(tmp_path / "testlog.log"))
+    assert log.file_handler is not None
     assert log.file_handler.level == LOG_LEVELS[logging.LOG_LEVEL]
     log.set_log_level(loglevel="ERROR")
     assert log.file_handler.level == deflogging.ERROR
@@ -89,7 +89,7 @@ def test_global_logger_has_handlers():
     "This tests if global logger has handlers"
     assert hasattr(LOG, "file_handler")
     assert hasattr(LOG, "std_out_handler")
-    assert LOG.logger.hasHandlers
+    assert LOG.logger.hasHandlers()
     assert LOG.file_handler or LOG.std_out_handler  # at least a handler is not empty
 
 
@@ -105,7 +105,7 @@ def test_global_logger_stdout(caplog):
 
 def test_global_logger_log_to_file(tmp_path: Path):
     LOG.logger.setLevel("DEBUG")
-    LOG.add_file_handler(logfile_name=tmp_path / "testlog.log", loglevel="DEBUG")
+    LOG.add_file_handler(logfile_name=str(tmp_path / "testlog.log"), loglevel="DEBUG")
     msg = "Random debug message"
     LOG.logger.debug(msg)
     with open(tmp_path / "testlog.log", "r") as fid:

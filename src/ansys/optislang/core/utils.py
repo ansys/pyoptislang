@@ -24,23 +24,39 @@
 from __future__ import annotations
 
 import collections
-from enum import Enum, EnumMeta
+from enum import Enum
 import os
 from pathlib import Path
 import re
-from typing import DefaultDict, Dict, Iterable, Iterator, List, Optional, OrderedDict, Tuple, Union
+import sys
+from typing import (
+    DefaultDict,
+    Dict,
+    Iterable,
+    Iterator,
+    List,
+    Optional,
+    OrderedDict,
+    Tuple,
+    Type,
+    TypeVar,
+    Union,
+)
 
 from ansys.optislang.core import FIRST_SUPPORTED_VERSION
 
 VersionMapping = Dict[int, Path]
 
 
+T = TypeVar("T", bound=Enum)
+
+
 def enum_from_str(
     string: str,
-    enum_class: EnumMeta,
+    enum_class: Type[T],
     replace: Optional[Tuple[str, str]] = None,
     upper_case: bool = True,
-) -> Enum:
+) -> T:
     """Convert string to enumeration.
 
     Parameters
@@ -433,3 +449,8 @@ def iter_awp_roots() -> Iterator[Tuple[int, Path]]:
         varname_match = re.fullmatch(r"AWP_ROOT([0-9]{3})", varname)
         if varname_match:
             yield int(varname_match.group(1)), Path(value)
+
+
+def is_iron_python():
+    """Whether current platform is IronPython."""
+    return sys.platform == "cli"

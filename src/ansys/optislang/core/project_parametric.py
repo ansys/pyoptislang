@@ -40,8 +40,8 @@ class CriterionType(Enum):
     OBJECTIVE = 2
     VARIABLE = 3
 
-    @staticmethod
-    def from_str(string: str) -> CriterionType:
+    @classmethod
+    def from_str(cls, string: str) -> CriterionType:
         """Convert string to CriterionType.
 
         Parameters
@@ -61,7 +61,7 @@ class CriterionType(Enum):
         ValueError
             Raised when the value for the ``string`` is invalid.
         """
-        return enum_from_str(string=string, enum_class=__class__, replace=(" ", "_"))
+        return enum_from_str(string=string, enum_class=cls, replace=(" ", "_"))
 
 
 class ComparisonType(Enum):
@@ -76,8 +76,8 @@ class ComparisonType(Enum):
     LESSLIMITSTATE = 6
     GREATERLIMITSTATE = 7
 
-    @staticmethod
-    def from_str(string: str) -> ComparisonType:
+    @classmethod
+    def from_str(cls, string: str) -> ComparisonType:
         """Convert string to ComparisonType.
 
         Parameters
@@ -97,7 +97,7 @@ class ComparisonType(Enum):
         ValueError
             Raised when the value for the ``string`` is invalid.
         """
-        return enum_from_str(string=string, enum_class=__class__)
+        return enum_from_str(string=string, enum_class=cls)
 
 
 class CriterionValueType(Enum):
@@ -111,8 +111,8 @@ class CriterionValueType(Enum):
     SIGNAL = 5
     XYDATA = 6
 
-    @staticmethod
-    def from_str(string: str) -> CriterionValueType:
+    @classmethod
+    def from_str(cls, string: str) -> CriterionValueType:
         """Convert string to CriterionValueType.
 
         Parameters
@@ -132,7 +132,7 @@ class CriterionValueType(Enum):
         ValueError
             Raised when the value for the ``string`` is invalid.
         """
-        return enum_from_str(string=string, enum_class=__class__)
+        return enum_from_str(string=string, enum_class=cls)
 
 
 class DesignStatus(Enum):
@@ -144,8 +144,8 @@ class DesignStatus(Enum):
     NOT_SUCCEEDED = 3
     FAILED = 4
 
-    @staticmethod
-    def from_str(string: str) -> DesignStatus:
+    @classmethod
+    def from_str(cls, string: str) -> DesignStatus:
         """Convert a string to an instance of the ``DesignStatus`` class.
 
         Parameters
@@ -165,7 +165,7 @@ class DesignStatus(Enum):
         ValueError
             Raised when the value for the ``string`` is invalid.
         """
-        return enum_from_str(string=string, enum_class=__class__, replace=(" ", "_"))
+        return enum_from_str(string=string, enum_class=cls, replace=(" ", "_"))
 
 
 class DistributionType(Enum):
@@ -218,8 +218,8 @@ class DistributionType(Enum):
     LAMBDA = 44
     POISSON = 45
 
-    @staticmethod
-    def from_str(string: str) -> DistributionType:
+    @classmethod
+    def from_str(cls, string: str) -> DistributionType:
         """Convert string to DistributionType.
 
         Parameters
@@ -239,7 +239,7 @@ class DistributionType(Enum):
         ValueError
             Raised when invalid value of ``string`` was given.
         """
-        return enum_from_str(string=string, enum_class=__class__, replace=(" ", "_"))
+        return enum_from_str(string=string, enum_class=cls, replace=(" ", "_"))
 
 
 class ParameterResolution(Enum):
@@ -256,8 +256,8 @@ class ParameterResolution(Enum):
     EMPIRICAL_DISCRETE = 6
     EMPIRICAL_CONTINUOUS = 7
 
-    @staticmethod
-    def from_str(string: str) -> ParameterResolution:
+    @classmethod
+    def from_str(cls, string: str) -> ParameterResolution:
         """Convert string to ``ParameterResolution``.
 
         Parameters
@@ -277,7 +277,7 @@ class ParameterResolution(Enum):
         ValueError
             Raised when invalid value of ``string`` was given.
         """
-        return enum_from_str(string=string, enum_class=__class__, replace=(" ", "_"))
+        return enum_from_str(string=string, enum_class=cls, replace=(" ", "_"))
 
 
 class ParameterType(Enum):
@@ -288,8 +288,8 @@ class ParameterType(Enum):
     MIXED = 2
     DEPENDENT = 3
 
-    @staticmethod
-    def from_str(string: str) -> ParameterType:
+    @classmethod
+    def from_str(cls, string: str) -> ParameterType:
         """Convert a string to an instance of the ``ParameterType`` class.
 
         Parameters
@@ -309,7 +309,7 @@ class ParameterType(Enum):
         ValueError
             Raised when invalid value of ``string`` was given.
         """
-        return enum_from_str(string=string, enum_class=__class__)
+        return enum_from_str(string=string, enum_class=cls)
 
 
 class ParameterValueType(Enum):
@@ -322,8 +322,8 @@ class ParameterValueType(Enum):
     STRING = 4
     VARIANT = 5
 
-    @staticmethod
-    def from_str(string: str) -> ParameterValueType:
+    @classmethod
+    def from_str(cls, string: str) -> ParameterValueType:
         """Convert string to ParameterValueType.
 
         Parameters
@@ -343,7 +343,7 @@ class ParameterValueType(Enum):
         ValueError
             Raised when invalid value of ``string`` was given.
         """
-        return enum_from_str(string=string, enum_class=__class__)
+        return enum_from_str(string=string, enum_class=cls)
 
 
 class ResponseValueType(Enum):
@@ -356,8 +356,8 @@ class ResponseValueType(Enum):
     SIGNAL = 4
     XYDATA = 5
 
-    @staticmethod
-    def from_str(string: str) -> CriterionValueType:
+    @classmethod
+    def from_str(cls, string: str) -> ResponseValueType:
         """Convert string to ResponseValueType.
 
         Parameters
@@ -377,7 +377,7 @@ class ResponseValueType(Enum):
         ValueError
             Raised when invalid value of ``string`` was given.
         """
-        return enum_from_str(string=string, enum_class=__class__)
+        return enum_from_str(string=string, enum_class=cls)
 
 
 # endregion
@@ -628,8 +628,12 @@ class Criterion:
         TypeError
             Raised when undefined type of criterion is given.
         """
-        criterion_properties = __class__._extract_criterion_properties_from_dict(criterion_dict)
-        if criterion_properties["criterion"] == ComparisonType.IGNORE:
+        criterion_properties = __class__._extract_criterion_properties_from_dict(  # type: ignore
+            criterion_dict
+        )
+        comparison_type = criterion_properties["criterion"]
+
+        if comparison_type == ComparisonType.IGNORE:
             return VariableCriterion(
                 name=criterion_properties["name"],
                 expression=criterion_properties["limit_expression"],
@@ -638,7 +642,7 @@ class Criterion:
                 value=criterion_properties["value"],
                 value_type=criterion_properties["value_type"],
             )
-        elif criterion_properties["criterion"] in [ComparisonType.MIN, ComparisonType.MAX]:
+        elif comparison_type == ComparisonType.MIN or comparison_type == ComparisonType.MAX:
             return ObjectiveCriterion(
                 name=criterion_properties["name"],
                 expression=criterion_properties["limit_expression"],
@@ -648,11 +652,11 @@ class Criterion:
                 value=criterion_properties["value"],
                 value_type=criterion_properties["value_type"],
             )
-        elif criterion_properties["criterion"] in [
-            ComparisonType.LESSEQUAL,
-            ComparisonType.EQUAL,
-            ComparisonType.GREATEREQUAL,
-        ]:
+        elif (
+            comparison_type == ComparisonType.LESSEQUAL
+            or comparison_type == ComparisonType.EQUAL
+            or comparison_type == ComparisonType.GREATEREQUAL
+        ):
             return ConstraintCriterion(
                 name=criterion_properties["name"],
                 expression=criterion_properties["expression"],
@@ -665,10 +669,10 @@ class Criterion:
                 value=criterion_properties["value"],
                 value_type=criterion_properties["value_type"],
             )
-        elif criterion_properties["criterion"] in [
-            ComparisonType.LESSLIMITSTATE,
-            ComparisonType.GREATERLIMITSTATE,
-        ]:
+        elif (
+            comparison_type == ComparisonType.LESSLIMITSTATE
+            or comparison_type == ComparisonType.GREATERLIMITSTATE
+        ):
             return LimitStateCriterion(
                 name=criterion_properties["name"],
                 expression=criterion_properties["expression"],
@@ -681,6 +685,8 @@ class Criterion:
                 value=criterion_properties["value"],
                 value_type=criterion_properties["value_type"],
             )
+        # FIXME
+        raise RuntimeError
 
     @staticmethod
     def _extract_criterion_properties_from_dict(criterion_dict: dict) -> Dict[str, Any]:
@@ -718,12 +724,18 @@ class Criterion:
             if criterion_dict.get("lhs_value")
             else None
         )
-        if expression_value_type in [CriterionValueType.SIGNAL, CriterionValueType.XYDATA]:
+        if (
+            expression_value_type == CriterionValueType.SIGNAL
+            or expression_value_type == CriterionValueType.XYDATA
+        ):
             expression_value = (
                 criterion_dict["lhs_value"]["matrix"],
                 criterion_dict["lhs_value"]["vector"],
             )
-        elif expression_value_type in [CriterionValueType.UNINITIALIZED, None]:
+        elif (
+            expression_value_type is None
+            or expression_value_type == CriterionValueType.UNINITIALIZED
+        ):
             expression_value = None
         else:
             expression_value = criterion_dict["lhs_value"][expression_value_type.name.lower()]
@@ -736,12 +748,18 @@ class Criterion:
             if criterion_dict.get("rhs_value")
             else None
         )
-        if limit_expression_value_type in [CriterionValueType.SIGNAL, CriterionValueType.XYDATA]:
+        if (
+            limit_expression_value_type == CriterionValueType.SIGNAL
+            or limit_expression_value_type == CriterionValueType.XYDATA
+        ):
             limit_expression_value = (
                 criterion_dict["rhs_value"]["matrix"],
                 criterion_dict["rhs_value"]["vector"],
             )
-        elif limit_expression_value_type in [CriterionValueType.UNINITIALIZED, None]:
+        elif (
+            limit_expression_value_type is None
+            or limit_expression_value_type == CriterionValueType.UNINITIALIZED
+        ):
             limit_expression_value = None
         else:
             limit_expression_value = criterion_dict["rhs_value"][
@@ -755,12 +773,12 @@ class Criterion:
             if criterion_dict.get("value")
             else None
         )
-        if value_type in [CriterionValueType.SIGNAL, CriterionValueType.XYDATA]:
+        if value_type == CriterionValueType.SIGNAL or value_type == CriterionValueType.XYDATA:
             value = (
                 criterion_dict["value"]["matrix"],
                 criterion_dict["value"]["vector"],
             )
-        elif value_type in [CriterionValueType.UNINITIALIZED, None]:
+        elif value_type is None or value_type == CriterionValueType.UNINITIALIZED:
             value = None
         else:
             value = criterion_dict["value"][value_type.name.lower()]
@@ -817,6 +835,7 @@ class Criterion:
         # split by square bracket end
         splitted_str = string.split("]")
         size_str = splitted_str[0] + "]"
+        # TODO don't use eval
         size = eval(size_str)
         if size[0] == 1:
             splitted_str[1] = splitted_str[1][:-1] + "," + splitted_str[1][-1:]
@@ -826,6 +845,7 @@ class Criterion:
             splitted_str[1] = splitted_str[1][:-3] + "," + splitted_str[1][-3:]
 
         # evaluation of second part creates tuple
+        # TODO don't use eval
         eval_str = eval(splitted_str[1])
         matrix_list = []
         for row_index in range(size[0]):
@@ -872,7 +892,7 @@ class Criterion:
             return Criterion._parse_str_to_vector(value)
         elif value_type == CriterionValueType.MATRIX:
             return Criterion._parse_str_to_matrix(value)
-        elif value_type in [CriterionValueType.SIGNAL, CriterionValueType.XYDATA]:
+        elif value_type == CriterionValueType.SIGNAL or value_type == CriterionValueType.XYDATA:
             return (
                 Criterion._parse_str_to_matrix(value[0]),
                 Criterion._parse_str_to_vector(value[1]),
@@ -892,10 +912,12 @@ class Criterion:
         # split by square bracket end
         splitted_str = string.split("]")
         size_str = splitted_str[0] + "]"
+        # TODO don't use eval
         size = eval(size_str)
         if size[0] == 1:
             splitted_str[1][-2:-2] = ","
         # evaluatiaon of second part creates tuple
+        # TODO don't use eval
         eval_str = eval(splitted_str[1])
         vector_list = []
         for row_index in range(size[0]):
@@ -926,13 +948,13 @@ class Criterion:
                 )
             else:
                 value_dict.update({value_type.name.lower(): {"real": value}})
-        elif value_type in [CriterionValueType.SIGNAL, CriterionValueType.XYDATA]:
+        elif value_type == CriterionValueType.SIGNAL or value_type == CriterionValueType.XYDATA:
             value_dict.update({"matrix": value[0], "vector": value[1]})
-        elif value_type in [
-            CriterionValueType.BOOL,
-            CriterionValueType.MATRIX,
-            CriterionValueType.VECTOR,
-        ]:
+        elif (
+            value_type == CriterionValueType.BOOL
+            or value_type == CriterionValueType.MATRIX
+            or value_type == CriterionValueType.VECTOR
+        ):
             value_dict.update({value_type.name.lower(): value})
         return value_dict
 
@@ -952,13 +974,13 @@ class Criterion:
                 )
             else:
                 value_dict["kind"].update({value_type.name.lower(): {"real": value}})
-        elif value_type in [CriterionValueType.SIGNAL, CriterionValueType.XYDATA]:
+        elif value_type == CriterionValueType.SIGNAL or value_type == CriterionValueType.XYDATA:
             value_dict["kind"].update({"matrix": value[0], "vector": value[1]})
-        elif value_type in [
-            CriterionValueType.BOOL,
-            CriterionValueType.MATRIX,
-            CriterionValueType.VECTOR,
-        ]:
+        elif (
+            value_type == CriterionValueType.BOOL
+            or value_type == CriterionValueType.MATRIX
+            or value_type == CriterionValueType.VECTOR
+        ):
             value_dict["kind"].update({value_type.name.lower(): value})
         return value_dict
 
@@ -1880,7 +1902,9 @@ class Parameter:
         TypeError
             Raised when an undefined type of parameter is given.
         """
-        parameter_properties = __class__._extract_parameter_properties_from_dict(par_dict=par_dict)
+        parameter_properties = __class__._extract_parameter_properties_from_dict(  # type: ignore
+            par_dict=par_dict
+        )
 
         if parameter_properties["type"] == ParameterType.DEPENDENT:
             return DependentParameter(
@@ -1992,6 +2016,10 @@ class Parameter:
         else:
             properties_dict["range"] = None
         return properties_dict
+
+    def to_dict(self) -> dict:
+        """Convert to dictionary."""
+        raise NotImplementedError
 
 
 class DependentParameter(Parameter):
@@ -3373,13 +3401,24 @@ class Design:
         Design
             Deep copy of the unevaluated design.
         """
+        constraints_copy = copy.deepcopy(self.constraints)
+        self.__reset_output_value(constraints_copy)
+        limit_states_copy = copy.deepcopy(self.limit_states)
+        self.__reset_output_value(limit_states_copy)
+        objectives_copy = copy.deepcopy(self.objectives)
+        self.__reset_output_value(objectives_copy)
+        variables_copy = copy.deepcopy(self.variables)
+        self.__reset_output_value(variables_copy)
+        responses_copy = copy.deepcopy(self.responses)
+        self.__reset_output_value(responses_copy)
+
         return Design(
             parameters=copy.deepcopy(self.parameters),
-            constraints=self.__reset_output_value(copy.deepcopy(self.constraints)),
-            limit_states=self.__reset_output_value(copy.deepcopy(self.limit_states)),
-            objectives=self.__reset_output_value(copy.deepcopy(self.objectives)),
-            variables=self.__reset_output_value(copy.deepcopy(self.variables)),
-            responses=self.__reset_output_value(copy.deepcopy(self.responses)),
+            constraints=constraints_copy,
+            limit_states=limit_states_copy,
+            objectives=objectives_copy,
+            variables=variables_copy,
+            responses=responses_copy,
         )
 
     def remove_parameter(self, name: str) -> None:
@@ -3685,7 +3724,8 @@ class Design:
                 responses_list.append(DesignVariable(name=response.name, value=value))
         return responses_list
 
-    def __reset_output_value(self, output: Iterable[DesignVariable]) -> None:
+    @staticmethod
+    def __reset_output_value(output: Iterable[DesignVariable]) -> None:
         """Set value of given output variables to `None`.
 
         Parameters

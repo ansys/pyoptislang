@@ -3,7 +3,7 @@
 =============================
 OptiSLang instance management
 =============================
-You use the :class:`Optislang <ansys.optislang.core.optislang.Optislang>`
+You use the :py:class:`Optislang <ansys.optislang.core.optislang.Optislang>`
 class to launch optiSLang as a server and to control and query optiSLang projects.
 You can either launch optiSLang locally or connect to a remote optiSLang instance.
 
@@ -164,7 +164,7 @@ initialized with the ``shutdown_on_finished`` parameter set to ``False``.
 
 * To shut down the optiSLang server, use both the
    :py:meth:`shutdown() <ansys.optislang.core.optislang.Optislang.shutdown>` and
-   :py;meth:`dispose() <ansys.optislang.core.optislang.Optislang.dispose>` methods: 
+   :py:meth:`dispose() <ansys.optislang.core.optislang.Optislang.dispose>` methods: 
    
    .. code:: python
 

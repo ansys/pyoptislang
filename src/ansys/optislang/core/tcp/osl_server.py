@@ -148,7 +148,7 @@ class FunctionsAttributeRegister:
         Any
             Attribute value registered for the given function or default value if not registered.
         """
-        if isinstance(function, Callable):
+        if callable(function):
             function = function.__name__
         if self.is_registered(function=function):
             return self.__register.get(function)
@@ -168,7 +168,7 @@ class FunctionsAttributeRegister:
         bool
             Info whether attribute is registered.
         """
-        if isinstance(function, Callable):
+        if callable(function):
             function = function.__name__
         return function in self.__register.keys()
 
@@ -187,7 +187,7 @@ class FunctionsAttributeRegister:
         ValueError
             Raised when invalid value is passed.
         """
-        if isinstance(function, Callable):
+        if callable(function):
             function = function.__name__
         self.__validate_value(value=value)
         self.__register[function] = value
@@ -200,7 +200,7 @@ class FunctionsAttributeRegister:
         function : Union[Callable, str]
             Function to be removed from the register.
         """
-        if isinstance(function, Callable):
+        if callable(function):
             function = function = function.__name__
         self.__register.pop(function, None)
 
@@ -323,7 +323,7 @@ class TcpClient:
         ConnectionRefusedError
             Raised when the connection cannot be established.
         """
-        if self.is_connected:
+        if self.__socket is not None:
             raise ConnectionEstablishedError("Connection is already established.")
 
         start_time = time.time()
@@ -333,7 +333,7 @@ class TcpClient:
         ):
             try:
                 self.__socket = socket.socket(af, socktype, proto)
-            except OSError as ex:
+            except OSError:
                 self.__socket = None
                 continue
             self.__socket.settimeout(_get_current_timeout(timeout, start_time))
@@ -353,7 +353,7 @@ class TcpClient:
 
     def disconnect(self) -> None:
         """Disconnect from the server."""
-        if self.is_connected:
+        if self.__socket is not None:
             self.__socket.close()
             self.__socket = None
 
@@ -379,7 +379,7 @@ class TcpClient:
         OSError
             Raised when an error occurs while sending data.
         """
-        if not self.is_connected:
+        if self.__socket is None:
             raise ConnectionNotEstablishedError(
                 "Cannot send message. Connection is not established."
             )
@@ -416,7 +416,7 @@ class TcpClient:
         OSError
             Raised when an error occurs while sending data.
         """
-        if not self.is_connected:
+        if self.__socket is None:
             raise ConnectionNotEstablishedError("Cannot send file. Connection is not established.")
         if not os.path.isfile(file_path):
             raise FileNotFoundError(
@@ -433,10 +433,10 @@ class TcpClient:
         with open(file_path, "rb") as file:
             self.__socket.settimeout(timeout)
             self.__socket.sendall(header)
-            load = file.read(self.__class__._BUFFER_SIZE)
+            load = file.read(self._BUFFER_SIZE)
             while load:
                 self.__socket.send(load)
-                load = file.read(self.__class__._BUFFER_SIZE)
+                load = file.read(self._BUFFER_SIZE)
 
     def receive_msg(self, timeout: Optional[float] = 5) -> str:
         """Receive message from the server.
@@ -466,7 +466,7 @@ class TcpClient:
         ValueError
             Raised if the timeout value is a number not greater than zero.
         """
-        if not self.is_connected:
+        if self.__socket is None:
             raise ConnectionNotEstablishedError(
                 "Cannot receive message. Connection is not established."
             )
@@ -514,7 +514,7 @@ class TcpClient:
         OSError
             Raised when the file cannot be opened.
         """
-        if not self.is_connected:
+        if self.__socket is None:
             raise ConnectionNotEstablishedError(
                 "Cannot receive file. Connection is not established."
             )
@@ -557,11 +557,13 @@ class TcpClient:
         if isinstance(timeout, float) and timeout <= 0:
             raise ValueError("Timeout value must be greater than zero or None.")
 
-        start_time = time.time()
+        if self.__socket is None:
+            raise ConnectionNotEstablishedError("Socket not set.")
+
         self.__socket.settimeout(timeout)
 
         response_len = -1
-        bytes_to_receive = self.__class__._RESPONSE_SIZE_BYTES
+        bytes_to_receive = self._RESPONSE_SIZE_BYTES
 
         # read from socket until response size (twice) has been received
         response_len_1 = struct.unpack("!Q", self._receive_bytes(bytes_to_receive, timeout))[0]
@@ -607,14 +609,17 @@ class TcpClient:
         if isinstance(timeout, float) and timeout <= 0:
             raise ValueError("Timeout value must be greater than zero or None.")
 
+        if self.__socket is None:
+            raise ConnectionNotEstablishedError("Socket not set.")
+
         start_time = time.time()
 
         received = b""
         received_len = 0
         while received_len < count:
             remain = count - received_len
-            if remain > self.__class__._BUFFER_SIZE:
-                buff = self.__class__._BUFFER_SIZE
+            if remain > self._BUFFER_SIZE:
+                buff = self._BUFFER_SIZE
             else:
                 buff = remain
 
@@ -655,14 +660,17 @@ class TcpClient:
         if isinstance(timeout, float) and timeout <= 0:
             raise ValueError("Timeout value must be greater than zero or None.")
 
+        if self.__socket is None:
+            raise ConnectionNotEstablishedError("Socket not set.")
+
         start_time = time.time()
 
         with open(file_path, "wb") as file:
             data_len = 0
             while data_len < file_len:
                 remain = file_len - data_len
-                if remain > self.__class__._BUFFER_SIZE:
-                    buff = self.__class__._BUFFER_SIZE
+                if remain > self._BUFFER_SIZE:
+                    buff = self._BUFFER_SIZE
                 else:
                     buff = remain
 
@@ -732,9 +740,9 @@ class TcpOslListener:
         self.__uid = uid
         self.__name = name
         self.__timeout = timeout
-        self.__listener_socket = None
-        self.__thread = None
-        self.__callbacks = []
+        self.__listener_socket: Optional[socket.socket] = None
+        self.__thread: Optional[threading.Thread] = None
+        self.__callbacks: List[Tuple[Callable, Any]] = []
         self.__run_listening_thread = False
         self.__refresh_listener_registration = False
 
@@ -765,7 +773,7 @@ class TcpOslListener:
             self.__listener_socket.close()
 
     @property
-    def uid(self) -> str:
+    def uid(self) -> Optional[str]:
         """Instance unique identifier."""
         return self.__uid
 
@@ -885,6 +893,9 @@ class TcpOslListener:
         timeout: float, optional
             Listener socket timeout.
         """
+        if self.__listener_socket is None:
+            raise ConnectionNotEstablishedError("Socket not set.")
+
         start_time = time.time()
         if timeout is None:
             timeout = self.__timeout
@@ -904,7 +915,7 @@ class TcpOslListener:
                 client.send_msg("")
                 self.__execute_callbacks(response)
 
-            except TimeoutError or socket.timeout:
+            except (TimeoutError, socket.timeout):
                 self._logger.warning(f"Listener {self.uid} listening timed out.")
                 response = {"type": "TimeoutError"}
                 self.__execute_callbacks(response)
@@ -928,7 +939,8 @@ class TcpOslListener:
         """Wait until self.__thread is finished."""
         if not self.is_listening():
             raise RuntimeError("Listener is not listening.")
-        self.__thread.join()
+        if self.__thread is not None:
+            self.__thread.join()
 
     def cleanup_notifications(self, timeout: float = 1) -> None:
         """Cleanup previously unprocessed push notifications.
@@ -1148,7 +1160,7 @@ class TcpOslServer(OslServer):
         auto_relocate: bool = False,
         listener_id: Optional[str] = None,
         multi_listener: Optional[Iterable[Tuple[str, int, Optional[str]]]] = None,
-        ini_timeout: float = 20,
+        ini_timeout: float = 60,
         password: Optional[str] = None,
         logger: Optional[Any] = None,
         shutdown_on_finished: bool = True,
@@ -1165,10 +1177,8 @@ class TcpOslServer(OslServer):
         """Initialize a new instance of the ``TcpOslServer`` class."""
         self.__host = host
         self.__port = port
-        self.__max_request_attempts_register = (
-            self.__class__.__get_default_max_request_attempts_register()
-        )
-        self.__timeouts_register = self.__class__.__get_default_timeouts_register()
+        self.__max_request_attempts_register = self.__get_default_max_request_attempts_register()
+        self.__timeouts_register = self.__get_default_timeouts_register()
 
         self._logger = logging.getLogger(__name__) if logger is None else logger
 
@@ -1183,11 +1193,11 @@ class TcpOslServer(OslServer):
         self.__reset = reset
         self.__auto_relocate = auto_relocate
         self.__password = password
-        self.__osl_process = None
+        self.__osl_process: Optional[OslServerProcess] = None
         self.__listeners: Dict[str, TcpOslListener] = {}
-        self.__listeners_registration_thread = None
+        self.__listeners_registration_thread: Optional[threading.Thread] = None
         self.__refresh_listeners = threading.Event()
-        self.__listeners_refresh_interval = self.__class__._DEFAULT_LISTENERS_REFRESH_INTERVAL
+        self.__listeners_refresh_interval = self._DEFAULT_LISTENERS_REFRESH_INTERVAL
         self.__disposed = False
         self.__env_vars = env_vars
         self.__listener_id = listener_id
@@ -1214,7 +1224,7 @@ class TcpOslServer(OslServer):
         atexit.register(self.dispose)
 
         if self.__host is None or self.__port is None:
-            self.__host = self.__class__._LOCALHOST
+            self.__host = self._LOCALHOST
             self.__shutdown_on_finished = shutdown_on_finished
             self._start_local(ini_timeout, shutdown_on_finished)
         else:
@@ -1323,7 +1333,7 @@ class TcpOslServer(OslServer):
         ----------
         timeout: Optional[float]
             Timeout in seconds to perform commands, it must be greater than zero or ``None``.
-            Another functions will raise a timeout exception if the timeout period value has
+            Certain functions will raise a timeout exception if the timeout period value has
             elapsed before the operation has completed.
             If ``None`` is given, functions will wait until they're finished (no timeout
             exception is raised). Defaults to ``30``.
@@ -1417,10 +1427,10 @@ class TcpOslServer(OslServer):
         self,
         type_: str,
         name: Optional[str] = None,
-        algorithm_type: str = None,
-        integration_type: str = None,
-        mop_node_type: str = None,
-        node_type: str = None,
+        algorithm_type: Optional[str] = None,
+        integration_type: Optional[str] = None,
+        mop_node_type: Optional[str] = None,
+        node_type: Optional[str] = None,
         parent_uid: Optional[str] = None,
         design_flow: Optional[str] = None,
     ) -> str:
@@ -1432,13 +1442,13 @@ class TcpOslServer(OslServer):
             Type of the node.
         name : Optional[str], optional
             Node name, by default ``None``.
-        algorithm_type : str, optional
+        algorithm_type : Optional[str], optional
             Algorithm type, e. g. 'algorithm_plugin', by default None.
-        integration_type : str, optional
+        integration_type : Optional[str], optional
             Integration type, e. g. 'integration_plugin', by default None.
-        mop_node_type : str, optional
+        mop_node_type : Optional[str], optional
             MOP node type, e. g. 'python_based_mop_node_plugin', by default None.
-        node_type: str, optional
+        node_type: Optional[str], optional
             Node type, e. g. 'python_based_node_plugin`, by default None.
         parent_uid : Optional[str], optional
             Parent uid, by default ``None``.
@@ -3487,7 +3497,7 @@ class TcpOslServer(OslServer):
         Parameters
         ----------
         actor_uid: Optional[str], optional
-            Actor uid entry. A Hirearchical ID (hid) is required. By default ``None``.
+            Actor uid entry. A Hierarchical ID (hid) is required. By default ``None``.
         hid: Optional[str], optional
             Hid entry. The actor uid is required. By default ``None``.
 
@@ -3763,9 +3773,9 @@ class TcpOslServer(OslServer):
 
         if isinstance(response, list):
             for resp_elem in response:
-                self.__class__.__check_command_response(resp_elem)
+                self.__check_command_response(resp_elem)
         else:
-            self.__class__.__check_command_response(response)
+            self.__check_command_response(response)
 
         return response
 
@@ -3954,7 +3964,7 @@ class TcpOslServer(OslServer):
                 timeout=self.timeouts_register.get_value(self.__class__.start)
             )
             exec_started_listener.cleanup_notifications()
-            wait_for_started_queue = Queue()
+            wait_for_started_queue: Queue = Queue()
             exec_started_listener.add_callback(
                 self.__class__.__terminate_listener_thread,
                 (
@@ -3974,7 +3984,7 @@ class TcpOslServer(OslServer):
                 self.timeouts_register.get_value(self.__class__.start)
             )
             exec_finished_listener.cleanup_notifications()
-            wait_for_finished_queue = Queue()
+            wait_for_finished_queue: Queue = Queue()
             exec_finished_listener.add_callback(
                 self.__class__.__terminate_listener_thread,
                 (
@@ -3999,7 +4009,7 @@ class TcpOslServer(OslServer):
             )
 
         if not already_running and (wait_for_started or wait_for_finished):
-            self._logger.info(f"Waiting for started")
+            self._logger.info("Waiting for started")
             successfully_started = wait_for_started_queue.get()
             self.__delete_exec_started_listener()
             if successfully_started == "Terminate":
@@ -4007,7 +4017,7 @@ class TcpOslServer(OslServer):
             self._logger.info(f"Successfully started: {successfully_started}.")
 
         if wait_for_finished and (successfully_started or already_running):
-            self._logger.info(f"Waiting for finished")
+            self._logger.info("Waiting for finished")
             successfully_finished = wait_for_finished_queue.get()
             self.__delete_exec_finished_listener()
             if successfully_finished == "Terminate":
@@ -4041,7 +4051,7 @@ class TcpOslServer(OslServer):
                 timeout=self.timeouts_register.get_value(self.__class__.stop)
             )
             exec_finished_listener.cleanup_notifications()
-            wait_for_finished_queue = Queue()
+            wait_for_finished_queue: Queue = Queue()
             exec_finished_listener.add_callback(
                 self.__class__.__terminate_listener_thread,
                 (
@@ -4072,19 +4082,17 @@ class TcpOslServer(OslServer):
             current_status_priority = self._STOP_REQUESTED_STATES_PRIORITIES[status]
             if stop_request_priority > current_status_priority:
                 self.send_command(
-                    command=commands.stop(
-                        self.__password,
-                        timeout=self.timeouts_register.get_value(current_func_name),
-                        max_request_attempts=self.max_request_attempts_register.get_value(
-                            current_func_name
-                        ),
-                    )
+                    command=commands.stop(password=self.__password),
+                    timeout=self.timeouts_register.get_value(current_func_name),
+                    max_request_attempts=self.max_request_attempts_register.get_value(
+                        current_func_name
+                    ),
                 )
             else:
                 self._logger.debug(f"Do not send STOP request, project status is: {status}")
         else:
             self.send_command(
-                command=commands.stop(self.__password),
+                command=commands.stop(password=self.__password),
                 timeout=self.timeouts_register.get_value(current_func_name),
                 max_request_attempts=self.max_request_attempts_register.get_value(
                     current_func_name
@@ -4092,7 +4100,7 @@ class TcpOslServer(OslServer):
             )
 
         if wait_for_finished:
-            self._logger.info(f"Waiting for finished")
+            self._logger.info("Waiting for finished")
             successfully_finished = wait_for_finished_queue.get()
             self.__delete_exec_finished_listener()
             if successfully_finished == "Terminate":
@@ -4107,7 +4115,7 @@ class TcpOslServer(OslServer):
         start_time = datetime.now()
         while (
             self.__osl_process.is_running()
-            and (datetime.now() - start_time).seconds < self.__class__._SHUTDOWN_WAIT
+            and (datetime.now() - start_time).seconds < self._SHUTDOWN_WAIT
         ):
             time.sleep(0.5)
 
@@ -4223,7 +4231,7 @@ class TcpOslServer(OslServer):
             timeout=None,
             name="Main",
         )
-        port_queue = Queue()
+        port_queue: Queue = Queue()
         listener.add_callback(self.__class__.__port_on_listended, (port_queue, self._logger))
 
         try:
@@ -4286,26 +4294,6 @@ class TcpOslServer(OslServer):
         self.__listeners["main_listener"] = listener
         self.__start_listeners_registration_thread()
 
-    def _unregister_listener(self, listener: TcpOslListener) -> None:
-        """Unregister a listener.
-
-        Parameters
-        ----------
-        listener : TcpOslListener
-            Class with listener properties.
-
-        Raises
-        ------
-        OslCommunicationError
-            Raised when an error occurs while communicating with server.
-        OslCommandError
-            Raised when the command or query fails.
-        TimeoutError
-            Raised when the timeout float value expires.
-        """
-        self.send_command(commands.unregister_listener(str(listener.uid), self.__password))
-        listener.uid = None
-
     def __cast_to_path(self, file_path: Union[str, Path]) -> Path:
         """Cast path to Path."""
         if isinstance(file_path, Path):
@@ -4340,7 +4328,7 @@ class TcpOslServer(OslServer):
             optiSLang server port is not listened for specified timeout value.
         """
         listener = TcpOslListener(
-            port_range=self.__class__._PRIVATE_PORTS_RANGE,
+            port_range=self._PRIVATE_PORTS_RANGE,
             timeout=timeout,
             name=name,
             uid=uid,
@@ -4473,36 +4461,6 @@ class TcpOslServer(OslServer):
             return None
         return project_info.get("projects", [{}])[0].get("state", None)
 
-    def __refresh_listeners_registration(self) -> None:  # pragma: no cover
-        """Refresh listeners registration.
-
-        Raises
-        ------
-        RuntimeError
-            Raised when the optiSLang server is not started.
-        OslCommunicationError
-            Raised when an error occurs while communicating with server.
-        OslCommandError
-            Raised when the command or query fails.
-        TimeoutError
-            Raised when the timeout expires.
-        """
-        check_for_refresh = 0.5
-        counter = 0
-        while self.__refresh_listeners.is_set():
-            if counter >= self.__listeners_refresh_interval:
-                for listener in self.__listeners.values():
-                    if listener.refresh_listener_registration:
-                        response = self.send_command(
-                            commands.refresh_listener_registration(
-                                uid=listener.uid, password=self.__password
-                            )
-                        )
-                counter = 0
-            counter += check_for_refresh
-            time.sleep(check_for_refresh)
-        self._logger.debug("Stop refreshing listener registration, self.__refresh = False")
-
     def __register_listener(
         self,
         host_addresses: Iterable[str],
@@ -4547,13 +4505,17 @@ class TcpOslServer(OslServer):
         """
         current_func_name = self.__register_listener.__name__
         listener_id = self.__listener_id if self.__listener_id is not None else str(uuid.uuid4())
+        notification_names = None
+        if notifications is not None:
+            notification_names = [ntf.name for ntf in notifications]
+
         for host_address in host_addresses:
             self.send_command(
                 command=commands.register_listener(
                     host=host_address,
                     port=port,
                     timeout=timeout,
-                    notifications=[ntf.name for ntf in notifications],
+                    notifications=notification_names,
                     password=self.__password,
                     listener_uid=listener_id,
                 ),
@@ -4579,13 +4541,13 @@ class TcpOslServer(OslServer):
             Raised when the timeout expires.
         """
         check_for_refresh = 0.5
-        counter = 0
+        counter = 0.0
         current_func_name = self.__refresh_listeners_registration.__name__
         while self.__refresh_listeners.is_set():
             if counter >= self.__listeners_refresh_interval:
                 for listener in self.__listeners.values():
                     if listener.refresh_listener_registration:
-                        response = self.send_command(
+                        self.send_command(
                             commands.refresh_listener_registration(
                                 uid=listener.uid, password=self.__password
                             ),
@@ -4617,7 +4579,10 @@ class TcpOslServer(OslServer):
 
     def __stop_listeners_registration_thread(self) -> None:
         """Stop listeners registration thread."""
-        if self.__listeners_registration_thread and self.__listeners_registration_thread.is_alive():
+        if (
+            self.__listeners_registration_thread is not None
+            and self.__listeners_registration_thread.is_alive()
+        ):
             self.__refresh_listeners.clear()
             self.__listeners_registration_thread.join()
             self._logger.debug("Listener registration thread stopped.")
@@ -4625,7 +4590,6 @@ class TcpOslServer(OslServer):
     def __unregister_all_listeners(self) -> None:
         """Unregister all instance listeners."""
         for listener in self.__listeners.values():
-            listener: TcpOslListener
             if listener.uid is not None:
                 try:
                     self._unregister_listener(listener)
@@ -4749,38 +4713,36 @@ class TcpOslServer(OslServer):
                 message = "Command error: " + str(response)
             raise OslCommandError(message)
 
-    @staticmethod
-    def __get_default_max_request_attempts_register() -> FunctionsAttributeRegister:
+    def __get_default_max_request_attempts_register(self) -> FunctionsAttributeRegister:
         max_requests_register = FunctionsAttributeRegister(
-            default_value=2, validator=__class__.__validate_max_request_attempts_value
+            default_value=2, validator=self.__class__.__validate_max_request_attempts_value
         )
-        max_requests_register.register(__class__.evaluate_design, 1)
-        max_requests_register.register(__class__.get_full_project_status_info, 1)
-        max_requests_register.register(__class__.open, 1)
-        max_requests_register.register(__class__.reset, 1)
-        max_requests_register.register(__class__.run_python_script, 1)
-        max_requests_register.register(__class__.save, 1)
-        max_requests_register.register(__class__.save_as, 1)
-        max_requests_register.register(__class__.save_copy, 1)
-        max_requests_register.register(__class__.start, 1)
-        max_requests_register.register(__class__.stop, 1)
+        max_requests_register.register(self.__class__.evaluate_design, 1)
+        max_requests_register.register(self.__class__.get_full_project_status_info, 1)
+        max_requests_register.register(self.__class__.open, 1)
+        max_requests_register.register(self.__class__.reset, 1)
+        max_requests_register.register(self.__class__.run_python_script, 1)
+        max_requests_register.register(self.__class__.save, 1)
+        max_requests_register.register(self.__class__.save_as, 1)
+        max_requests_register.register(self.__class__.save_copy, 1)
+        max_requests_register.register(self.__class__.start, 1)
+        max_requests_register.register(self.__class__.stop, 1)
         return max_requests_register
 
-    @staticmethod
-    def __get_default_timeouts_register() -> FunctionsAttributeRegister:
+    def __get_default_timeouts_register(self) -> FunctionsAttributeRegister:
         timeout_register = FunctionsAttributeRegister(
-            default_value=30, validator=__class__.__validate_timeout_value
+            default_value=30, validator=self.__class__.__validate_timeout_value
         )
-        timeout_register.register(__class__.evaluate_design, None)
-        timeout_register.register(__class__.get_full_project_status_info, None)
-        timeout_register.register(__class__.open, None)
-        timeout_register.register(__class__.reset, None)
-        timeout_register.register(__class__.run_python_script, None)
-        timeout_register.register(__class__.save, None)
-        timeout_register.register(__class__.save_as, None)
-        timeout_register.register(__class__.save_copy, None)
-        timeout_register.register(__class__.start, None)
-        timeout_register.register(__class__.stop, None)
+        timeout_register.register(self.__class__.evaluate_design, None)
+        timeout_register.register(self.__class__.get_full_project_status_info, None)
+        timeout_register.register(self.__class__.open, None)
+        timeout_register.register(self.__class__.reset, None)
+        timeout_register.register(self.__class__.run_python_script, None)
+        timeout_register.register(self.__class__.save, None)
+        timeout_register.register(self.__class__.save_as, None)
+        timeout_register.register(self.__class__.save_copy, None)
+        timeout_register.register(self.__class__.start, None)
+        timeout_register.register(self.__class__.stop, None)
         return timeout_register
 
     @staticmethod

@@ -28,14 +28,14 @@ from pathlib import Path
 import subprocess
 import tempfile
 from threading import Thread
-from typing import Callable, Dict, Iterable, List, Mapping, Optional, Sequence, Tuple, Union
+from typing import Callable, Dict, Iterable, List, Mapping, Optional, Tuple, Union
 
 import psutil
 
-from ansys.optislang.core import IRON_PYTHON, encoding, utils
+from ansys.optislang.core import encoding, utils
 
-if IRON_PYTHON:
-    import System
+if utils.is_iron_python():
+    import System  # type: ignore
 
 
 class ServerNotification(Enum):
@@ -250,7 +250,7 @@ class OslServerProcess:
         self.__batch = batch if not service else False
         self.__service = service
         self._logger = logging.getLogger(__name__) if logger is None else logger
-        self.__process = None
+        self.__process: Optional[subprocess.Popen] = None
         self.__handle_process_output_thread = None
 
         self.__tempdir = None
@@ -273,33 +273,21 @@ class OslServerProcess:
         if self.__batch:
             if project_path is None:
                 self.__tempdir = tempfile.TemporaryDirectory()
-                project_path = Path(self.__tempdir.name) / self.__class__.DEFAULT_PROJECT_FILE
+                project_path = Path(self.__tempdir.name) / self.DEFAULT_PROJECT_FILE
 
-        self.__project_path = self.__class__.__validated_path(project_path, "project_path")
+        self.__project_path = validated_path(project_path)
 
         if self.__project_path is not None and self.__project_path.suffix != ".opf":
             raise ValueError("Invalid optiSLang project file.")
 
-        self.__server_info = self.__class__.__validated_path(server_info, "server_info")
-        self.__import_project_properties_file = self.__class__.__validated_path(
-            import_project_properties_file, "import_project_properties_file"
-        )
-        self.__export_project_properties_file = self.__class__.__validated_path(
-            export_project_properties_file, "export_project_properties_file"
-        )
-        self.__import_placeholders_file = self.__class__.__validated_path(
-            import_placeholders_file, "import_placeholders_file"
-        )
-        self.__export_placeholders_file = self.__class__.__validated_path(
-            export_placeholders_file, "export_placeholders_file"
-        )
-        self.__output_file = self.__class__.__validated_path(output_file, "output_file")
-        self.__dump_project_state = self.__class__.__validated_path(
-            dump_project_state, "dump_project_state"
-        )
-        self.__opx_project_definition_file = self.__class__.__validated_path(
-            opx_project_definition_file, "opx_project_definition_file"
-        )
+        self.__server_info = validated_path(server_info)
+        self.__import_project_properties_file = validated_path(import_project_properties_file)
+        self.__export_project_properties_file = validated_path(export_project_properties_file)
+        self.__import_placeholders_file = validated_path(import_placeholders_file)
+        self.__export_placeholders_file = validated_path(export_placeholders_file)
+        self.__output_file = validated_path(output_file)
+        self.__dump_project_state = validated_path(dump_project_state)
+        self.__opx_project_definition_file = validated_path(opx_project_definition_file)
 
         self.__port_range = port_range
         self.__password = password
@@ -335,12 +323,12 @@ class OslServerProcess:
         return self.__executable
 
     @property
-    def project_path(self) -> Path:
+    def project_path(self) -> Optional[Path]:
         """Path to the optiSLang project file.
 
         Returns
         -------
-        pathlib.Path
+        Optional[pathlib.Path]
             Path to the optiSLang project file.
         """
         return self.__project_path
@@ -358,34 +346,34 @@ class OslServerProcess:
         return self.__batch
 
     @property
-    def port_range(self) -> Tuple[int, int]:
+    def port_range(self) -> Optional[Tuple[int, int]]:
         """Port range for optiSLang server execution.
 
         Returns
         -------
-        Tuple[int, int]
+        Optional[Tuple[int, int]]
             Tuple of minimum and maximum port number, if defined; ``None`` otherwise.
         """
         return self.__port_range
 
     @property
-    def password(self) -> str:
+    def password(self) -> Optional[str]:
         """Server password.
 
         Returns
         -------
-        str
+        Optional[str]
             Server password, if defined; ``None`` otherwise.
         """
         return self.__password
 
     @property
-    def no_run(self) -> bool:
+    def no_run(self) -> Optional[bool]:
         """Get whether not to run the specified project when started in batch mode .
 
         Returns
         -------
-        bool
+        Optional[bool]
             ``True`` if the project is explicitly not supposed to be run;
             ``False`` if the project is explicitly supposed to be run;
             ``None`` otherwise.
@@ -461,60 +449,60 @@ class OslServerProcess:
         return self.__log_server_events
 
     @property
-    def listener(self) -> Tuple[str, int]:
+    def listener(self) -> Optional[Tuple[str, int]]:
         """Host and port of the remote listener.
 
         The listener (plain TCP/IP based) is registered at optiSLang server.
 
         Returns
         -------
-        Tuple[str, int]
+        Optional[Tuple[str, int]]
             Host and port of the listener, if defined; ``None`` otherwise.
         """
         return self.__listener
 
     @property
-    def listener_id(self) -> str:
+    def listener_id(self) -> Optional[str]:
         """Specific unique ID for the TCP listener.
 
         Returns
         -------
-        str
+        Optional[str]
             Specific unique ID for the TCP listener, if defined; ``None`` otherwise.
         """
         return self.__listener_id
 
     @property
-    def multi_listener(self) -> Iterable[Tuple[str, int, Optional[str]]]:
+    def multi_listener(self) -> Optional[Iterable[Tuple[str, int, Optional[str]]]]:
         """Multi remote listener definitions.
 
         Aeach listener (plain TCP/IP based) is registered at optiSLang server.
 
         Returns
         -------
-        Iterable[Tuple[str, int, Optional[str]]]
+        Optional[Iterable[Tuple[str, int, Optional[str]]]]
             Multi remote listener combinations, if defined; ``None`` otherwise.
         """
         return self.__multi_listener
 
     @property
-    def notifications(self) -> Tuple[ServerNotification, ...]:
+    def notifications(self) -> Optional[Tuple[ServerNotification, ...]]:
         """Notifications which are sent to the listener.
 
         Returns
         -------
-        Tuple[ServerNotification,...]
+        Optional[Tuple[ServerNotification,...]]
             Notifications which are sent to the listener, if defined; ``None`` otherwise.
         """
         return self.__notifications
 
     @property
-    def env_vars(self) -> Dict[str, str]:
+    def env_vars(self) -> Optional[Dict[str, str]]:
         """Additional environmental variables for the optiSLang server process.
 
         Returns
         -------
-        Dict[str, str]
+        Optional[Dict[str, str]]
             Dictionary of additional environmental variables, if defined; ``None`` otherwise.
         """
         return self.__env_vars
@@ -561,9 +549,11 @@ class OslServerProcess:
         Returns
         -------
         Tuple[str, ...]
-            Additional command line arguments, if defined; ``None`` otherwise.
+            Additional command line arguments.
         """
-        return self.__additional_args
+        if self.__additional_args is not None:
+            return tuple(self.__additional_args)
+        return ()
 
     @property
     def pid(self) -> Optional[int]:
@@ -574,15 +564,17 @@ class OslServerProcess:
         Optional[int]
             Process ID, if exists; ``None`` otherwise.
         """
-        return None if self.__process is None else self.__process.pid
+        if self.__process is not None:
+            return self.__process.pid
+        return None
 
     @property
-    def shutdown_on_finished(self) -> str:
+    def shutdown_on_finished(self) -> bool:
         """Whether to shut down when execution is finished.
 
         Returns
         -------
-        str
+        bool
             Whether to shut down when execution is finished.
         """
         return self.__shutdown_on_finished
@@ -693,20 +685,20 @@ class OslServerProcess:
         if self.__project_path:
             if not self.__project_path.is_file():
                 # Creates a new project in the provided path.
-                if IRON_PYTHON:
+                if utils.is_iron_python():
                     args.append(f'--new="{str(self.__project_path)}"')
                 else:
                     args.append(f"--new={str(self.__project_path)}")
             else:
                 # Opens existing project
-                if IRON_PYTHON:
+                if utils.is_iron_python():
                     args.append(f'"{str(self.__project_path)}"')
                 else:
                     args.append(str(self.__project_path))
 
         if self.__batch:
             if self.__opx_project_definition_file:
-                if IRON_PYTHON:
+                if utils.is_iron_python():
                     args.append("--python")
                     args.append(f'"{str(utils.get_osl_opx_import_script(self.__executable))}"')
                     args.append("--script-arg")
@@ -734,24 +726,24 @@ class OslServerProcess:
                 args.append("--autorelocate")
             if self.__export_project_properties_file is not None:
                 args.append("--export-project-properties")
-                if IRON_PYTHON:
+                if utils.is_iron_python():
                     args.append(f'"{str(self.__export_project_properties_file)}"')
                 else:
                     args.append(str(self.__export_project_properties_file))
             if self.__export_placeholders_file is not None:
                 args.append("--export-values")
-                if IRON_PYTHON:
+                if utils.is_iron_python():
                     args.append(f'"{str(self.__export_placeholders_file)}"')
                 else:
                     args.append(str(self.__export_placeholders_file))
             if self.__output_file is not None:
                 args.append("--output-file")
-                if IRON_PYTHON:
+                if utils.is_iron_python():
                     args.append(f'"{str(self.__output_file)}"')
                 else:
                     args.append(str(self.__output_file))
             if self.__dump_project_state is not None:
-                if IRON_PYTHON:
+                if utils.is_iron_python():
                     args.append(f'--dump-project-state="{str(self.__dump_project_state)}"')
                 else:
                     args.append(f"--dump-project-state={str(self.__dump_project_state)}")
@@ -771,7 +763,7 @@ class OslServerProcess:
         if self.__server_info is not None:
             # Writes the server information file using the file path specified. If an absolute path
             # is not supplied, it is considered to be relative to the project working directory.
-            if IRON_PYTHON:
+            if utils.is_iron_python():
                 args.append(f'--write-server-info="{str(self.__server_info)}"')
             else:
                 args.append(f"--write-server-info={str(self.__server_info)}")
@@ -789,9 +781,10 @@ class OslServerProcess:
             args.append(f"--tcp-listener-id={self.__listener_id}")
 
         if self.__multi_listener is not None:
-            if len(self.__multi_listener) >= 1:
+            multi_listeners = list(self.__multi_listener)
+            if len(multi_listeners) >= 1:
                 args.append("--register-multi-tcp-listeners")
-            for listener in self.__multi_listener:
+            for listener in multi_listeners:
                 if len(listener) >= 3 and listener[2] is not None:
                     args.append(f"{listener[0]}:{listener[1]}+{listener[2]}")
                 else:
@@ -805,14 +798,14 @@ class OslServerProcess:
 
         if self.__import_project_properties_file is not None:
             args.append("--import-project-properties")
-            if IRON_PYTHON:
+            if utils.is_iron_python():
                 args.append(f'"{str(self.__import_project_properties_file)}"')
             else:
                 args.append(str(self.__import_project_properties_file))
 
         if self.__import_placeholders_file is not None:
             args.append("--import-values")
-            if IRON_PYTHON:
+            if utils.is_iron_python():
                 args.append(f'"{str(self.__import_placeholders_file)}"')
             else:
                 args.append(str(self.__import_placeholders_file))
@@ -861,7 +854,7 @@ class OslServerProcess:
         if self.__env_vars is not None:
             env_vars.update(self.__env_vars)
 
-        if IRON_PYTHON:
+        if utils.is_iron_python():
             self.__start_in_iron_python(args, env_vars)
         else:
             self.__start_in_python(args, env_vars)
@@ -869,13 +862,13 @@ class OslServerProcess:
         if self.__log_process_stdout or self.__log_process_stderr:
             self.__start_process_output_thread()
 
-    def __start_in_iron_python(self, args: Sequence[str], env_vars: Mapping[str, str]):
+    def __start_in_iron_python(self, args: List[str], env_vars: Dict[str, str]):
         """Start new optiSLang server process with IronPython interpreter.
 
         Parameters
         ----------
-        args : Sequence[str]
-            Sequence of command line arguments.
+        args : List[str]
+            List of command line arguments.
 
         env_vars : Mapping[str, str]
             Environment variables.
@@ -904,18 +897,18 @@ class OslServerProcess:
         start_info.Arguments = " ".join(args)
 
         self.__process = System.Diagnostics.Process()
-        self.__process.StartInfo = start_info
+        self.__process.StartInfo = start_info  # type: ignore
 
         self._logger.debug("Executing process %s", args)
-        self.__process.Start()
+        self.__process.Start()  # type: ignore
 
-    def __start_in_python(self, args: Sequence[str], env_vars: Mapping[str, str]):
+    def __start_in_python(self, args: List[str], env_vars: Dict[str, str]):
         """Start new optiSLang server process with Python interpreter.
 
         Parameters
         ----------
-        args : Sequence[str]
-            Sequence of command line arguments.
+        args : List[str]
+            List of command line arguments.
 
         env_vars : Mapping[str, str]
             Environment variables.
@@ -1013,7 +1006,7 @@ class OslServerProcess:
             process.wait(**kwargs)
 
         self.__handle_process_output_thread = Thread(
-            target=self.__class__.__handle_process_output,
+            target=self.__handle_process_output,
             name="PyOptiSLang.ProcessOutputHandlerThread",
             args=(
                 self.__process,
@@ -1073,7 +1066,7 @@ class OslServerProcess:
         logger.debug("Start to handling optiSLang server process output.")
 
         # Use 2 "pupm" threads and wait for both to finish.
-        if IRON_PYTHON:
+        if utils.is_iron_python():
 
             def stream_reader(cmdline, name, stream, is_decode, handler):
                 try:
@@ -1144,31 +1137,22 @@ class OslServerProcess:
         if finalizer:
             return finalizer(process)
 
-    @staticmethod
-    def __validated_path(
-        path: Union[str, Path],
-        path_arg_name: str,
-    ):
-        """Validate a path.
 
-        Parameters
-        ----------
-        path : Union[str, pathlib.Path]
-            The path to validate.
-        path_arg_name : str
-            Path argument name/description.
+def validated_path(path: Union[str, Path, None]) -> Union[Path, None]:
+    """Validate an optional path.
 
-        Returns
-        -------
-        pathlib.Path
-            Validated path.
-        """
-        if isinstance(path, str):
-            path = Path(path)
-        elif not isinstance(path, Path) and path is not None:
-            raise TypeError(
-                f"Invalid type of {path_arg_name}: {type(path)},"
-                "Union[str, pathlib.Path] is supported."
-            )
+    Parameters
+    ----------
+    path : Union[str, pathlib.Path, None]
+        The path to validate.
 
-        return path
+    Returns
+    -------
+    Union[pathlib.Path, None]
+        Validated path.
+    """
+    if path is None:
+        return None
+    if isinstance(path, (str, Path)):
+        return Path(path)
+    raise TypeError("Path attributes must be of type str or Path.")

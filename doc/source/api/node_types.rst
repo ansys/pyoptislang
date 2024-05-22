@@ -1,5 +1,5 @@
-NodeTypes
-=========
+Node types
+==========
 .. currentmodule:: ansys.optislang.core.node_types
 
 .. toctree::

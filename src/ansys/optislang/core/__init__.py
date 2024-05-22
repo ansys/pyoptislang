@@ -38,8 +38,6 @@ LOG.logger.debug("Loaded logging module as LOG")
 
 __version__ = importlib.metadata.version(__name__.replace(".", "-"))
 
-IRON_PYTHON = sys.platform == "cli"
-PY3 = sys.version_info[0] >= 3
 # First supported version of optiSLang: 2023R1
 FIRST_SUPPORTED_VERSION = 231
 
@@ -47,11 +45,15 @@ from ansys.optislang.core.optislang import Optislang
 from ansys.optislang.core.osl_process import OslServerProcess, ServerNotification
 
 # Provide examples directory path
-examples = "ansys.optislang.core.examples"
-if spec := importlib.util.find_spec(examples):
+EXAMPLES_MODULE = "ansys.optislang.core.examples"
+if spec := importlib.util.find_spec(EXAMPLES_MODULE):
     if spec.origin:
         os.environ["OSL_EXAMPLES"] = os.path.dirname(spec.origin)
     else:
-        LOG.logger.warning(f"Could not set path to examples. Missing spec for module {examples}.")
+        LOG.logger.warning(
+            f"Could not set path to examples. Missing spec for module {EXAMPLES_MODULE}."
+        )
 else:
-    LOG.logger.warning(f"Could not set path to examples. Missing origin for module {examples}.")
+    LOG.logger.warning(
+        f"Could not set path to examples. Missing origin for module {EXAMPLES_MODULE}."
+    )

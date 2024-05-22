@@ -25,7 +25,7 @@ from __future__ import annotations
 
 import logging
 from pathlib import Path
-from typing import TYPE_CHECKING, Dict, List, Sequence, Tuple, Union
+from typing import TYPE_CHECKING, Dict, List, Optional, Sequence, Tuple, Union
 
 from ansys.optislang.core.io import RegisteredFile, RegisteredFileUsage
 from ansys.optislang.core.project import Project
@@ -209,12 +209,12 @@ class TcpProjectProxy(Project):
             project_info.get("projects", [{}])[0].get("settings", {}).get("short_description", None)
         )
 
-    def get_location(self) -> Path:
+    def get_location(self) -> Optional[Path]:
         """Get the path to the optiSLang project file.
 
         Returns
         -------
-        pathlib.Path
+        Optional[pathlib.Path]
             Path to the optiSLang project file. If no project is loaded in the optiSLang,
             ``None`` is returned.
 
@@ -347,12 +347,12 @@ class TcpProjectProxy(Project):
         project_info = self.__osl_server.get_basic_project_info()
         return project_info.get("projects", [{}])[0].get("state", None)
 
-    def get_working_dir(self) -> Path:
+    def get_working_dir(self) -> Optional[Path]:
         """Get the path to the optiSLang project's working directory.
 
         Returns
         -------
-        pathlib.Path
+        Optional[pathlib.Path]
             Path to the optiSLang project's working directory. If no project is loaded
             in optiSLang, ``None`` is returned.
 

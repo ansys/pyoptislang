@@ -221,7 +221,7 @@ class Optislang:
         auto_relocate: bool = False,
         listener_id: Optional[str] = None,
         multi_listener: Optional[Iterable[Tuple[str, int, Optional[str]]]] = None,
-        ini_timeout: Union[int, float] = 20,
+        ini_timeout: Union[int, float] = 60,
         name: Optional[str] = None,
         password: Optional[str] = None,
         loglevel: Optional[str] = None,
@@ -326,7 +326,7 @@ class Optislang:
         if isinstance(self.__osl_server, TcpOslServer):
             return TcpApplicationProxy(osl_server=self.__osl_server, logger=self.log)
         else:
-            raise NotImplementedError(f"Currently supported only for ``TcpOslServer``.")
+            raise NotImplementedError("Currently supported only for ``TcpOslServer``.")
 
     def __str__(self):
         """Return product name, version of optiSLang, and version of PyOptiSLang."""
@@ -407,7 +407,7 @@ class Optislang:
         return self.__name
 
     @property
-    def osl_server(self) -> Optional[OslServer]:
+    def osl_server(self) -> OslServer:
         """Get the currently used instance of the OslServer.
 
         This instance can be used to directly communicate with optiSLang using
@@ -584,12 +584,12 @@ class Optislang:
             ":py:class:`Project <ansys.optislang.core.project.Project>`."
         ),
     )
-    def get_working_dir(self) -> Path:
+    def get_working_dir(self) -> Optional[Path]:
         """Get the path to the optiSLang project's working directory.
 
         Returns
         -------
-        pathlib.Path
+        Optional[pathlib.Path]
             Path to the optiSLang project's working directory. If no project is loaded
             in optiSLang, ``None`` is returned.
 
@@ -602,6 +602,8 @@ class Optislang:
         TimeoutError
             Raised when the timeout float value expires.
         """
+        if self.application.project is None:
+            return None
         return self.application.project.get_working_dir()
 
     @deprecated(
@@ -696,7 +698,10 @@ class Optislang:
         TimeoutError
             Raised when the timeout float value expires.
         """
-        self.application.project.reset()
+        if self.application.project is not None:
+            self.application.project.reset()
+        else:
+            self.log.error("Cannot reset: No project loaded.")
 
     @deprecated(
         version="0.6.0",
@@ -734,7 +739,10 @@ class Optislang:
         TimeoutError
             Raised when the timeout float value expires.
         """
-        return self.application.project.run_python_script(script, args)
+        if self.application.project is not None:
+            return self.application.project.run_python_script(script, args)
+        self.log.error("Cannot run Python script: No project loaded.")
+        return ("", "")
 
     @deprecated(
         version="0.6.0",
@@ -773,7 +781,10 @@ class Optislang:
         TimeoutError
             Raised when the timeout float value expires.
         """
-        return self.application.project.run_python_file(file_path, args)
+        if self.application.project is not None:
+            return self.application.project.run_python_file(file_path, args)
+        self.log.error("Cannot run Python file: No project loaded.")
+        return ("", "")
 
     @deprecated(
         version="0.6.0",
@@ -952,9 +963,12 @@ class Optislang:
         TimeoutError
             Raised when the timeout float value expires.
         """
-        self.application.project.start(
-            wait_for_started=wait_for_started, wait_for_finished=wait_for_finished
-        )
+        if self.application.project is not None:
+            self.application.project.start(
+                wait_for_started=wait_for_started, wait_for_finished=wait_for_finished
+            )
+        else:
+            self.log.error("Cannot start: No project loaded.")
 
     @deprecated(
         version="0.6.0",
@@ -984,4 +998,7 @@ class Optislang:
         TimeoutError
             Raised when the timeout float value expires.
         """
-        self.application.project.stop(wait_for_finished=wait_for_finished)
+        if self.application.project is not None:
+            self.application.project.stop(wait_for_finished=wait_for_finished)
+        else:
+            self.log.error("Cannot stop: No project loaded.")

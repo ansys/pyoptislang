@@ -398,7 +398,7 @@ def create_start_designs(
     args: CommandArgs = {}
     args["sampling_type"] = sampling_type
     if (number_of_levels is not None) and (number_of_samples is not None):
-        raise TypeError(f"Please specify either ``number_of_levels`` or ``number of samples``.")
+        raise TypeError("Please specify either ``number_of_levels`` or ``number of samples``.")
     elif number_of_levels is not None:
         args["number_of_levels"] = number_of_levels
     elif number_of_samples is not None:
@@ -764,9 +764,9 @@ def register_listener(
     """
     args: CommandArgs = {}
     if (id is not None) and ((host is not None) or (port is not None)):
-        raise TypeError(f"Please specify either ``id`` or (``host`` and ``port``).")
+        raise TypeError("Please specify either ``id`` or (``host`` and ``port``).")
     elif (id is None) and ((host is None) or (port is None)):
-        raise TypeError(f"Please specify either ``id`` or (``host`` and ``port``).")
+        raise TypeError("Please specify either ``id`` or (``host`` and ``port``).")
     elif id is not None:
         args["id"] = id
     else:
@@ -1168,7 +1168,7 @@ def reset(
     Parameters
     ----------
     actor_uid: Optional[str], optional
-        Actor uid entry. A Hirearchical ID (hid) is required. By default ``None``.
+        Actor uid entry. A Hierarchical ID (hid) is required. By default ``None``.
     hid: Optional[str], optional
         Hid entry. The actor uid is required. By default ``None``.
     password : Optional[str], optional
@@ -1180,7 +1180,7 @@ def reset(
         JSON string of ``reset`` command.
     """
     if actor_uid and hid is None:
-        raise ValueError("The Hirearchical ID (hid) is required.")
+        raise ValueError("The Hierarchical ID (hid) is required.")
     elif actor_uid is None and hid:
         raise ValueError("The actor uid is required.")
     return _to_json(
@@ -1196,7 +1196,7 @@ def restart(
     Parameters
     ----------
     actor_uid: Optional[str], optional
-        Actor uid entry. A Hirearchical ID (hid) is required. By default ``None``.
+        Actor uid entry. A Hierarchical ID (hid) is required. By default ``None``.
     hid: Optional[str], optional
         Hid entry. The actor uid is required. By default ``None``.
     password : Optional[str], optional
@@ -1208,7 +1208,7 @@ def restart(
         JSON string of ``restart`` command.
     """
     if actor_uid and hid is None:
-        raise ValueError("The Hirearchical ID (hid) is required.")
+        raise ValueError("The Hierarchical ID (hid) is required.")
     elif actor_uid is None and hid:
         raise ValueError("The actor uid is required.")
     return _to_json(
@@ -1772,7 +1772,7 @@ def start(
     Parameters
     ----------
     actor_uid: Optional[str], optional
-        Actor uid entry. A Hirearchical ID (hid) is required. By default ``None``.
+        Actor uid entry. A Hierarchical ID (hid) is required. By default ``None``.
     hid: Optional[str], optional
         Hid entry. The actor uid is required. By default ``None``.
     password : Optional[str], optional
@@ -1784,7 +1784,7 @@ def start(
         JSON string of ``start`` command.
     """
     if actor_uid and hid is None:
-        raise ValueError("The Hirearchical ID (hid) is required.")
+        raise ValueError("The Hierarchical ID (hid) is required.")
     elif actor_uid is None and hid:
         raise ValueError("The actor uid is required.")
 
@@ -1801,7 +1801,7 @@ def stop(
     Parameters
     ----------
     actor_uid: Optional[str], optional
-        Actor uid entry. A Hirearchical ID (hid) is required. By default ``None``.
+        Actor uid entry. A Hierarchical ID (hid) is required. By default ``None``.
     hid: Optional[str], optional
         Hid entry. The actor uid is required. By default ``None``.
     password : Optional[str], optional
@@ -1813,7 +1813,7 @@ def stop(
         JSON string of ``stop`` command.
     """
     if actor_uid and hid is None:
-        raise ValueError("The Hirearchical ID (hid) is required.")
+        raise ValueError("The Hierarchical ID (hid) is required.")
     elif actor_uid is None and hid:
         raise ValueError("The actor uid is required.")
 
@@ -1830,7 +1830,7 @@ def stop_gently(
     Parameters
     ----------
     actor_uid: Optional[str], optional
-        Actor uid entry. A Hirearchical ID (hid) is required. By default ``None``.
+        Actor uid entry. A Hierarchical ID (hid) is required. By default ``None``.
     hid: Optional[str], optional
         Hid entry. The actor uid is required. By default ``None``.
     password : Optional[str], optional
@@ -1842,7 +1842,7 @@ def stop_gently(
         JSON string of ``stop_gently`` command.
     """
     if actor_uid and hid is None:
-        raise ValueError("The Hirearchical ID (hid) is required.")
+        raise ValueError("The Hierarchical ID (hid) is required.")
     elif actor_uid is None and hid:
         raise ValueError("The actor uid is required.")
     return _to_json(
@@ -2035,7 +2035,7 @@ def write_monitoring_database(
 
 def _gen_server_command(
     command: str,
-    password: str,
+    password: Optional[str] = None,
     args: Optional[CommandArgs] = None,
     actor_uid: Optional[str] = None,
     hid: Optional[str] = None,
@@ -2046,8 +2046,8 @@ def _gen_server_command(
     ----------
     command : str
         Command type.
-    password : str
-        Password.
+    password : Optional[str]
+        Password, by default ``None``.
     args : Optional[CommandArgs], optional
         Dictionary with specified arguments.
     actor_uid : Optional[str], optional
@@ -2061,15 +2061,15 @@ def _gen_server_command(
         Dictionary of server command.
 
     """
-    scmd = {
+    server_command: Dict[str, Any] = {
         "projects": [
             {"commands": [_gen_command(command=command, args=args, actor_uid=actor_uid, hid=hid)]}
         ]
     }
 
     if password:
-        scmd["Password"] = password
-    return scmd
+        server_command["Password"] = password
+    return server_command
 
 
 def _gen_command(

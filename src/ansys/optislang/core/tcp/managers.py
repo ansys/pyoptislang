@@ -87,9 +87,11 @@ class TcpCriteriaManagerProxy(CriteriaManager):
                 criterion_type=criterion.criterion.name,
                 expression=criterion.expression,
                 name=criterion.name,
-                limit=criterion.limit_expression
-                if isinstance(criterion, (ConstraintCriterion, LimitStateCriterion))
-                else None,
+                limit=(
+                    criterion.limit_expression
+                    if isinstance(criterion, (ConstraintCriterion, LimitStateCriterion))
+                    else None
+                ),
             )
 
     def get_criteria(self) -> Tuple[Criterion, ...]:
@@ -210,7 +212,7 @@ class TcpCriteriaManagerProxy(CriteriaManager):
             self.__osl_server.set_criterion_property(
                 uid=self.__uid,
                 criterion_name=criterion_name,
-                name=self.__class__.__PROPERTY_MAPPING.get(property_name, property_name),
+                name=self.__PROPERTY_MAPPING.get(property_name, property_name),
                 value=property_value,
             )
 
@@ -302,10 +304,7 @@ class TcpParameterManagerProxy(ParameterManager):
             Raised when the timeout float value expires.
         """
         parameter_manager, container = self.__get_parameter_container()
-        if (
-            self.__class__.__get_parameter_idx(container=container, parameter_name=parameter.name)
-            is not None
-        ):
+        if self.__get_parameter_idx(container=container, parameter_name=parameter.name) is not None:
             raise NameError(
                 f"Parameter `{parameter.name}` already exists, choose another name"
                 " or modify this parameter instead."
@@ -419,7 +418,7 @@ class TcpParameterManagerProxy(ParameterManager):
         idx = self.__get_parameter_idx(container=container, parameter_name=parameter_name)
         if idx is not None:
             container[idx][
-                self.__class__.__PROPERTY_MAPPING.get(property_name, property_name)
+                self.__PROPERTY_MAPPING.get(property_name, property_name)
             ] = property_value
             parameter_manager["parameter_container"] = container
             self.__osl_server.set_actor_property(

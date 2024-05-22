@@ -62,7 +62,7 @@ def create_osl_server_process(shutdown_on_finished=False, project_path=None) -> 
         )
         osl_server_process.start()
 
-        start_timeout = 60
+        start_timeout = 90
         start = time.time()
         while not os.path.exists(server_info_file):
             time.sleep(0.1)
@@ -85,7 +85,7 @@ def osl_server_process():
 def tcp_listener():
     return tos.TcpOslListener(
         port_range=(49152, 65535),
-        timeout=30,
+        timeout=60,
         name="GeneralListener",
         uid=str(uuid.uuid4()),
         logger=logging.getLogger(__name__),
@@ -120,7 +120,7 @@ def create_tcp_osl_server(osl_server_process: OslServerProcess) -> tos.TcpOslSer
         Class which provides access to optiSLang server using plain TCP/IP communication protocol.
     """
     tcp_osl_server = tos.TcpOslServer(host=_host, port=osl_server_process.port_range[0])
-    tcp_osl_server.timeout = 10
+    tcp_osl_server.timeout = 60
     return tcp_osl_server
 
 
@@ -269,13 +269,12 @@ def test_listener_properties(
     name = tcp_listener.name
     assert isinstance(name, str)
     assert name == "GeneralListener"
-    timeout = tcp_listener.timeout
-    assert isinstance(timeout, (float, int))
-    assert timeout == 30
+
+    assert isinstance(tcp_listener.timeout, (float, int))
+    assert tcp_listener.timeout == 60
     tcp_listener.timeout = 15
-    new_timeout = tcp_listener.timeout
-    assert isinstance(new_timeout, (float, int))
-    assert new_timeout == 15
+    assert tcp_listener.timeout == 15
+
     assert isinstance(tcp_listener.host_addresses, list)
     assert all(isinstance(elem, str) for elem in tcp_listener.host_addresses)
     assert isinstance(tcp_listener.port, int)
@@ -332,10 +331,10 @@ def test_tcp_osl_properties(osl_server_process: OslServerProcess):
     assert isinstance(osl_version_string, str)
 
     assert isinstance(tcp_osl_server.timeout, (int, float))
-    assert tcp_osl_server.timeout == 10
+    assert tcp_osl_server.timeout == 60
     tcp_osl_server.timeout = 20
-    assert isinstance(tcp_osl_server.timeout, (int, float))
     assert tcp_osl_server.timeout == 20
+
     with pytest.raises(ValueError):
         tcp_osl_server.timeout = -5
     with pytest.raises(ValueError):
@@ -394,7 +393,7 @@ def test_timeouts_register(osl_server_process: OslServerProcess):
     tcp_osl_server = create_tcp_osl_server(osl_server_process)
     timeouts_register = tcp_osl_server.timeouts_register
     # note: method `create_tcp_osl_server` modifies timeout, default is `30` otherwise
-    assert timeouts_register.default_value == 10
+    assert timeouts_register.default_value == 60
 
     with pytest.raises(ValueError):
         timeouts_register.register("invalid_value", "s")
