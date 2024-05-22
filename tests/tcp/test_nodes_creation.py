@@ -20,6 +20,8 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+from typing import cast
+
 import pytest
 
 from ansys.optislang.core import Optislang, node_types
@@ -65,8 +67,9 @@ def test_all_nodes_creation(optislang: Optislang):
 
 def test_create_node_in_system(optislang: Optislang):
     """Test creation of node inside a system."""
+    assert optislang.application.project
     rs = optislang.application.project.root_system
-    sens: System = rs.create_node(type_=node_types.Sensitivity)
+    sens = cast(System, rs.create_node(type_=node_types.Sensitivity))
     node = sens.create_node(type_=node_types.CalculatorSet)
 
     nodes_in_rs = rs.get_nodes()
