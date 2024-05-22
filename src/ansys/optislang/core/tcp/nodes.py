@@ -1587,7 +1587,7 @@ class TcpSystemProxy(TcpNodeProxy, System):
         self,
         type_: Union[NodeType, str],
         name: Optional[str] = None,
-        design_flow: Optional[Union[DesignFlow, str]] = None,
+        design_flow: Union[DesignFlow, str] = DesignFlow.NONE,
     ) -> TcpNodeProxy:
         """Create a new node in current system in active project.
 
