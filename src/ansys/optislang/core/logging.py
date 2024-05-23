@@ -26,7 +26,6 @@ from __future__ import annotations
 from copy import copy
 import logging
 from typing import TYPE_CHECKING, Optional
-import weakref
 
 if TYPE_CHECKING:
     from ansys.optislang.core import Optislang
@@ -38,47 +37,6 @@ FILE_NAME = "pyOptislang.log"
 ## Formatting
 
 LOG_MSG_FORMAT = "%(asctime)s - %(levelname)s - %(name)s - %(module)s.%(funcName)s - %(message)s"
-
-
-class OslCustomAdapter(logging.LoggerAdapter):
-    """Provides a customized logger with extra inputs."""
-
-    file_handler = None
-    std_out_handler = None
-    log_level = LOG_LEVEL
-
-    def __init__(
-        self,
-        logger: logging.Logger,
-        extra=None,
-    ) -> None:
-        """
-        Initialize the customized logger with extra inputs.
-
-        Parameters
-        ----------
-        logger : str, optional
-            Level of logging. The default is ``LOG_LEVEL``.
-        """
-        self.logger = logger
-        if extra:
-            self.extra = weakref.proxy(extra)
-        else:
-            self.extra = None
-
-        self.file_handler = logger.file_handler
-        self.std_out_handler = logger.std_out_handler
-
-    def process(self, msg, kwargs):
-        """Modify the message and/or keyword arguments passed to a logging call."""
-        kwargs["extra"] = {}
-        # These are the extra parameters sent to the log.
-        # Here, self.extra is the argument passed to the log records.
-        try:
-            kwargs["extra"]["instance_name"] = self.extra.name
-        except ReferenceError:
-            kwargs["extra"]["instance_name"] = "Undefined"
-        return msg, kwargs
 
 
 class OslLogger:
@@ -187,7 +145,7 @@ class OslLogger:
         Returns
         -------
         logging.logger
-            Logger class.
+            Logger instance.
         """
         new_logger = logging.getLogger(new_logger_name)
         new_logger.std_out_handler = None
@@ -213,7 +171,7 @@ class OslLogger:
 
     def add_instance_logger(
         self, instance_name: str, osl_instance: Optislang, level: Optional[str] = None
-    ) -> OslCustomAdapter:
+    ) -> logging.Logger:
         """Add a logger for an Optislang instance.
 
         Parameters
@@ -228,8 +186,8 @@ class OslLogger:
 
         Returns
         -------
-        OslCustomAdapter
-            Customized logger with extra inputs.
+        logging.Logger
+            Logger instance.
         """
         if type(instance_name) is not str:
             raise ValueError("Expected input instance_name: str")
@@ -241,4 +199,4 @@ class OslLogger:
             counter += 1
             instance_name = name + str(counter)
 
-        return OslCustomAdapter(self.create_logger(instance_name, level), osl_instance)
+        return self.create_logger(instance_name, level)
