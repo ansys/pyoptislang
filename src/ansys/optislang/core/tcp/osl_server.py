@@ -1196,7 +1196,7 @@ class TcpOslServer(OslServer):
         self.__osl_process: Optional[OslServerProcess] = None
         self.__listeners: Dict[str, TcpOslListener] = {}
         self.__listeners_registration_thread: Optional[threading.Thread] = None
-        self.__refresh_listeners = threading.Event()
+        self.__refresh_listeners_stopped = threading.Event()
         self.__listeners_refresh_interval = self._DEFAULT_LISTENERS_REFRESH_INTERVAL
         self.__disposed = False
         self.__env_vars = env_vars
@@ -4543,7 +4543,7 @@ class TcpOslServer(OslServer):
         check_for_refresh = 0.5
         counter = 0.0
         current_func_name = self.__refresh_listeners_registration.__name__
-        while self.__refresh_listeners.is_set():
+        while not self.__refresh_listeners_stopped.is_set():
             if counter >= self.__listeners_refresh_interval:
                 for listener in self.__listeners.values():
                     if listener.refresh_listener_registration:
@@ -4558,7 +4558,7 @@ class TcpOslServer(OslServer):
                         )
                 counter = 0
             counter += check_for_refresh
-            time.sleep(check_for_refresh)
+            self.__refresh_listeners_stopped.wait(check_for_refresh)
         self._logger.debug("Stop refreshing listener registration, self.__refresh = False")
 
     def __signal_handler(self, signum, frame):
@@ -4574,7 +4574,7 @@ class TcpOslServer(OslServer):
             args=(),
             daemon=True,
         )
-        self.__refresh_listeners.set()
+        self.__refresh_listeners_stopped.clear()
         self.__listeners_registration_thread.start()
 
     def __stop_listeners_registration_thread(self) -> None:
@@ -4583,7 +4583,7 @@ class TcpOslServer(OslServer):
             self.__listeners_registration_thread is not None
             and self.__listeners_registration_thread.is_alive()
         ):
-            self.__refresh_listeners.clear()
+            self.__refresh_listeners_stopped.set()
             self.__listeners_registration_thread.join()
             self._logger.debug("Listener registration thread stopped.")
 
