@@ -1057,7 +1057,7 @@ class System(Node):
         self,
         type_: NodeType,
         name: Optional[str] = None,
-        design_flow: Optional[DesignFlow] = None,
+        design_flow: DesignFlow = DesignFlow.NONE,
     ) -> Node:  # pragma: no cover
         """Create a new node in current system in active project.
 

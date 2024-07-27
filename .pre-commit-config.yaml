@@ -17,7 +17,7 @@ repos:
   - id: isort
 
 - repo: https://github.com/PyCQA/flake8
-  rev: 7.0.0
+  rev: 7.1.0
   hooks:
   - id: flake8
     exclude: "examples/"
@@ -36,7 +36,7 @@ repos:
     exclude: "tests/|examples/"
 
 - repo: https://github.com/ansys/pre-commit-hooks
-  rev: v0.3.1
+  rev: v0.3.2
   hooks:
   - id: add-license-headers
     args:
