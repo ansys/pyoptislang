@@ -1029,7 +1029,7 @@ class OslServerProcess:
         decode_streams: bool = True,
         logger=None,
     ):
-        """Handle STDOUT/STDERR of the specified process.
+        """Handle stdout/stderr of the specified process.
 
         Registers for notifications to lean that process output is ready to read, and dispatches
         lines to the respective line handlers. This function returns once the finalizer returns.
@@ -1039,19 +1039,19 @@ class OslServerProcess:
         Parameters
         ----------
         process : subprocess.Popen
-            Process which STDOUT or STDERR is supposed to be handled.
+            Process to read from.
 
         stdout_handler : Callable[[str], None], None
-            Handler for STDOUT.
+            Handler for stdout.
 
         stderr_handler : Callable[[str], None], None
-            Handler for STDERR. It is supposed to be a function with one argument of str.
+            Handler for stderr. It is supposed to be a function with one argument of str.
 
         finalizer : Callable[[subprocess.Popen,...], Any], optional
             Function which finalizes output process handling. Defaults to ``None``.
 
         decode_streams : bool, optional
-            Determines whether to safely decode STDOUT/STDERR streams before pushing their
+            Determines whether to safely decode standard streams before pushing their
             contents to handlers. Should be set to ``False`` if 'universal_newline == True'
             (then streams are in text-mode) or if decoding must happen later. Defaults to ``True``.
 
@@ -1065,7 +1065,7 @@ class OslServerProcess:
         """
         logger.debug("Start to handling optiSLang server process output.")
 
-        # Use 2 "pupm" threads and wait for both to finish.
+        # Use 2 "pump" threads and wait for both to finish.
         if utils.is_iron_python():
 
             def stream_reader(cmdline, name, stream, is_decode, handler):
@@ -1097,7 +1097,7 @@ class OslServerProcess:
                         if handler:
                             try:
                                 if is_decode:
-                                    line = encoding.force_text(line)
+                                    line = encoding.force_text(line).rstrip()
                                 handler("optiSLang " + name + ": " + line)
                             except:
                                 handler("optiSLang " + name + ": " + line)
@@ -1115,9 +1115,9 @@ class OslServerProcess:
 
         pumps = []
         if process.stdout and stdout_handler is not None:
-            pumps.append(("Stdout", process.stdout, stdout_handler))
+            pumps.append(("stdout", process.stdout, stdout_handler))
         if process.stderr and stderr_handler is not None:
-            pumps.append(("Stderr", process.stderr, stderr_handler))
+            pumps.append(("stderr", process.stderr, stderr_handler))
 
         threads = []
 

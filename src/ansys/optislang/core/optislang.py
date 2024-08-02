@@ -24,6 +24,7 @@
 from __future__ import annotations
 
 from importlib.metadata import version
+from logging import Logger
 from pathlib import Path
 from typing import TYPE_CHECKING, Iterable, Mapping, Optional, Sequence, Tuple, Union
 
@@ -35,7 +36,6 @@ from ansys.optislang.core.tcp.osl_server import TcpOslServer
 
 if TYPE_CHECKING:
     from ansys.optislang.core.application import Application
-    from ansys.optislang.core.logging import OslCustomAdapter
     from ansys.optislang.core.osl_server import OslServer, OslVersion
     from ansys.optislang.core.project import Project
 
@@ -392,7 +392,7 @@ class Optislang:
         return self.application.project is not None
 
     @property
-    def log(self) -> OslCustomAdapter:
+    def log(self) -> Logger:
         """Instance logger."""
         return self.__logger
 
