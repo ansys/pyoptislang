@@ -2945,13 +2945,15 @@ class TcpOslServer(OslServer):
             return None
         return Path(project_info.get("projects", [{}])[0].get("working_dir", None))
 
-    def load(self, uid: str) -> None:
+    def load(self, uid: str, args: Optional[Dict[str, Any]] = None) -> None:
         """Explicit load of node.
 
         Parameters
         ----------
         uid: str
             Actor uid.
+        args: Optional[Dict[str, any]], optional
+            Additional arguments, by default ``None``.
 
         Raises
         ------
@@ -2967,6 +2969,7 @@ class TcpOslServer(OslServer):
         self.send_command(
             command=commands.load(
                 actor_uid=uid,
+                args=args,
                 password=self.__password,
             ),
             timeout=self.timeouts_register.get_value(current_func_name),

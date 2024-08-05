@@ -25,7 +25,7 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from enum import Enum
-from typing import TYPE_CHECKING, Any, Optional, Tuple, Union
+from typing import TYPE_CHECKING, Any, Dict, Optional, Tuple, Union
 
 from ansys.optislang.core.io import File, FileOutputFormat, RegisteredFile
 from ansys.optislang.core.utils import enum_from_str
@@ -95,6 +95,7 @@ class NodeClassType(Enum):
     PARAMETRIC_SYSTEM = 2
     ROOT_SYSTEM = 3
     INTEGRATION_NODE = 4
+    PROXY_SOLVER = 5
 
     @classmethod
     def from_str(cls, string: str) -> NodeClassType:
@@ -796,11 +797,16 @@ class IntegrationNode(Node):
         pass
 
     @abstractmethod
-    def load(self) -> None:  # pragma: no cover
+    def load(self, args: Optional[Dict[str, Any]] = None) -> None:  # pragma: no cover
         """Explicitly load the node.
 
         Some optiSLang nodes support/need an explicit load prior to being able to register
         or to make registering more convenient.
+
+        Parameters
+        ----------
+        args: Optional[Dict[str, any]], optional
+            Additional arguments, by default ``None``.
 
         Raises
         ------
@@ -1044,6 +1050,55 @@ class IntegrationNode(Node):
         pass
 
 
+class ProxySolverNode(IntegrationNode):
+    """Base class for classes which provide for creating and operating on an proxy solver node."""
+
+    @abstractmethod
+    def __init__(self):  # pragma: no cover
+        """``ProxySolverNode`` class is an abstract base class and cannot be instantiated."""
+        pass
+
+    @abstractmethod
+    def get_designs(self) -> list:  # pragma: no cover
+        """Get pending designs from parent node.
+
+        Returns
+        -------
+        list
+            List of pending designs.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        pass
+
+    @abstractmethod
+    def set_designs(self, designs: list) -> None:  # pragma: no cover
+        """Set calculated designs.
+
+        Parameters
+        -------
+        list
+            List of calculated designs.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        pass
+
+
 class System(Node):
     """Base class for classes which provide for creating and operating on a system."""
 
@@ -1077,6 +1132,12 @@ class System(Node):
 
         Raises
         ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
         TypeError
             Raised when unsupported type of ``type_`` is given.
         ValueError

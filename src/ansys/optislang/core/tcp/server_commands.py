@@ -547,13 +547,15 @@ def link_registered_file(actor_uid: str, uid: str, password: Optional[str] = Non
     )
 
 
-def load(actor_uid: str, password: Optional[str] = None) -> str:
+def load(actor_uid: str, args: Optional[CommandArgs] = None, password: Optional[str] = None) -> str:
     """Generate JSON string of ``load`` command.
 
     Parameters
     ----------
     actor_uid: str
         Actor uid entry.
+    args: Optional[CommandArgs], optional
+        Dictionary with additional arguments, by default ``None``.
     password : Optional[str], optional
         Password, by default ``None``.
 
@@ -562,7 +564,9 @@ def load(actor_uid: str, password: Optional[str] = None) -> str:
     str
         JSON string of ``load`` command.
     """
-    return _to_json(_gen_server_command(command=_LOAD, actor_uid=actor_uid, password=password))
+    return _to_json(
+        _gen_server_command(command=_LOAD, args=args, actor_uid=actor_uid, password=password)
+    )
 
 
 def new(password: Optional[str] = None) -> str:

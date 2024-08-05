@@ -50,6 +50,7 @@ from ansys.optislang.core.nodes import (
     NodeClassType,
     OutputSlot,
     ParametricSystem,
+    ProxySolverNode,
     RootSystem,
     Slot,
     SlotType,
@@ -1095,7 +1096,7 @@ class TcpIntegrationNodeProxy(TcpNodeProxy, IntegrationNode):
         type_: NodeType,
         logger=None,
     ) -> None:
-        """Create an ``TcpSystemProxy`` instance.
+        """Create an ``TcpIntegrationNodeProxy`` instance.
 
         Parameters
         ----------
@@ -1295,11 +1296,16 @@ class TcpIntegrationNodeProxy(TcpNodeProxy, IntegrationNode):
             )
         )
 
-    def load(self) -> None:
+    def load(self, args: Optional[Dict[str, Any]] = None) -> None:
         """Explicitly load the node.
 
         Some optiSLang nodes support/need an explicit LOAD prior to being able to register
         or to make registering more convenient.
+
+        Parameters
+        ----------
+        args: Optional[Dict[str, any]], optional
+            Additional arguments, by default ``None``.
 
         Raises
         ------
@@ -1311,7 +1317,7 @@ class TcpIntegrationNodeProxy(TcpNodeProxy, IntegrationNode):
             Raised when the timeout float value expires.
         """
         # TODO: test
-        self._osl_server.load(self.uid)
+        self._osl_server.load(uid=self.uid, args=args)
 
     def register_location_as_input_slot(
         self,
@@ -1547,6 +1553,95 @@ class TcpIntegrationNodeProxy(TcpNodeProxy, IntegrationNode):
         """
         # TODO: test
         self._osl_server.re_register_locations_as_response(uid=self.uid)
+
+
+class TcpProxySolverNodeProxy(TcpIntegrationNodeProxy, ProxySolverNode):
+    """Provides for creating and operating on integration nodes."""
+
+    def __init__(
+        self,
+        uid: str,
+        osl_server: TcpOslServer,
+        type_: NodeType,
+        logger=None,
+    ) -> None:
+        """Create an ``TcpProxySolverProxy`` instance.
+
+        Parameters
+        ----------
+        uid: str
+            Unique ID.
+        osl_server: TcpOslServer
+            Object providing access to the optiSLang server.
+        type_: NodeType
+            Instance of the ``NodeType`` class.
+        logger: Any, optional
+            Object for logging. If ``None``, standard logging object is used. Defaults to ``None``.
+        """
+        super().__init__(
+            uid=uid,
+            osl_server=osl_server,
+            type_=type_,
+            logger=logger,
+        )
+
+    def get_designs(self) -> list:
+        """Get pending designs from parent node.
+
+        Parameters
+        -------
+        list
+           List of pending designs.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        return self._osl_server.send_command(
+            command=json.dumps({"What": "GET_DESIGNS", "uid": self.uid}),
+            timeout=30,
+            max_request_attempts=2,
+        )["designs_json"]
+
+    def set_designs(self, designs: list) -> None:
+        """Set calculated designs.
+
+        Parameters
+        -------
+        list
+            List of calculated with designs.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        set_designs_cmd = {
+            "projects": [
+                {
+                    "commands": [
+                        {
+                            "actor_uid": self.uid,
+                            "args": {"design_responses": designs},
+                            "command": "SET_DESIGNS",
+                            "type": "builtin",
+                        }
+                    ]
+                }
+            ]
+        }
+        self._osl_server.send_command(
+            command=json.dumps(set_designs_cmd), timeout=30, max_request_attempts=2
+        )
 
 
 # endregion
@@ -3228,6 +3323,7 @@ _NODE_CLASS_TYPE_TO_TCP_MAPPING: Dict[str, Type[TcpNodeProxy]] = {
     NodeClassType.INTEGRATION_NODE.name: TcpIntegrationNodeProxy,
     NodeClassType.SYSTEM.name: TcpSystemProxy,
     NodeClassType.PARAMETRIC_SYSTEM.name: TcpParametricSystemProxy,
+    NodeClassType.PROXY_SOLVER.name: TcpProxySolverNodeProxy,
     NodeClassType.ROOT_SYSTEM.name: TcpRootSystemProxy,
 }
 
