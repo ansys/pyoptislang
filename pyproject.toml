@@ -48,7 +48,7 @@ doc = [
     "pypandoc==1.13",
     "Sphinx==7.4.7",
     "sphinx-copybutton==0.5.2",
-    "sphinx-gallery==0.17.0",
+    "sphinx-gallery==0.17.1",
     "sphinxcontrib-images==0.9.4",
 ]
 build = [
