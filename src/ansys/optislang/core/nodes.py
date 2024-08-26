@@ -25,7 +25,7 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from enum import Enum
-from typing import TYPE_CHECKING, Any, Dict, Optional, Tuple, Union
+from typing import TYPE_CHECKING, Any, Dict, Optional, List, Tuple, Union
 
 from ansys.optislang.core.io import File, FileOutputFormat, RegisteredFile
 from ansys.optislang.core.utils import enum_from_str
@@ -1059,13 +1059,13 @@ class ProxySolverNode(IntegrationNode):
         pass
 
     @abstractmethod
-    def get_designs(self) -> list:  # pragma: no cover
+    def get_designs(self) -> Any:  # pragma: no cover
         """Get pending designs from parent node.
 
         Returns
         -------
-        list
-            List of pending designs.
+        Any
+            Pending designs.
 
         Raises
         ------
@@ -1079,13 +1079,13 @@ class ProxySolverNode(IntegrationNode):
         pass
 
     @abstractmethod
-    def set_designs(self, designs: list) -> None:  # pragma: no cover
+    def set_designs(self, designs: Any) -> None:  # pragma: no cover
         """Set calculated designs.
 
         Parameters
-        -------
-        list
-            List of calculated designs.
+        ----------
+        Any
+            Calculated designs.
 
         Raises
         ------

@@ -1585,12 +1585,12 @@ class TcpProxySolverNodeProxy(TcpIntegrationNodeProxy, ProxySolverNode):
             logger=logger,
         )
 
-    def get_designs(self) -> list:
+    def get_designs(self) -> List[Dict[str, dict]]:
         """Get pending designs from parent node.
 
         Parameters
         -------
-        list
+        List[Dict[str, dict]]
            List of pending designs.
 
         Raises
@@ -1608,13 +1608,17 @@ class TcpProxySolverNodeProxy(TcpIntegrationNodeProxy, ProxySolverNode):
             max_request_attempts=2,
         )["designs_json"]
 
-    def set_designs(self, designs: list) -> None:
+    def set_designs(self, designs: Dict[str, list]) -> None:
         """Set calculated designs.
 
         Parameters
-        -------
-        list
-            List of calculated with designs.
+        ----------
+        Dict[str, list]
+            Dictionary of calculated designs.
+            {
+                'hid1': [{'id': 'res1',...},{'id': 'res2',...}],
+                'hid2': [...],
+            }
 
         Raises
         ------
