@@ -42,6 +42,7 @@ from ansys.optislang.core.nodes import (
     PROJECT_COMMANDS_RETURN_STATES,
     DesignFlow,
     Edge,
+    ExecutionOption,
     InnerInputSlot,
     InnerOutputSlot,
     InputSlot,
@@ -287,6 +288,25 @@ class TcpNodeProxy(Node):
             properties_dicts_list=ancestors_line_dicts,
             logger=self._logger,
         )
+
+    def get_execution_options(self) -> ExecutionOption:
+        """Get execution options.
+
+        Returns
+        -------
+        ExecutionOption
+            Execution options of the ``Node``.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        return ExecutionOption(self.get_property("ExecutionOptions"))
 
     def get_connections(
         self, slot_type: Optional[SlotType] = None, slot_name: Optional[str] = None
@@ -622,6 +642,35 @@ class TcpNodeProxy(Node):
             include_integrations_registered_locations=False,
         )
         return get_node_type_from_str(node_id=actor_info["type"])
+
+    def set_execution_options(self, value: ExecutionOption) -> None:
+        """Set execution options.
+
+        Parameters
+        ----------
+        value : ExecutionOption
+            Execution options of the ``Node``. More execution options can be
+            combined using the bitwise operations.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+
+        Examples
+        --------
+        Combination of more execution options using the bitwise operation.
+
+        >>> ...
+        >>> node.set_execution_options(
+                ExecutionOption.ACTIVE | ExecutionOption.STARTING_POINT
+            )
+        """
+        return self.set_property("ExecutionOptions", value.value)
 
     def set_property(self, name: str, value: Any) -> None:
         """Set node's property.

@@ -32,6 +32,7 @@ from ansys.optislang.core.tcp.managers import CriteriaManager, ParameterManager,
 from ansys.optislang.core.tcp.nodes import (
     DesignFlow,
     Edge,
+    ExecutionOption,
     TcpInnerInputSlotProxy,
     TcpInnerOutputSlotProxy,
     TcpInputSlotProxy,
@@ -214,6 +215,31 @@ def test_set_property(optislang: Optislang, tmp_example_project):
     set_int_property = 2
     node.set_property("ExecutionOptions", set_int_property)
     assert node.get_property("ExecutionOptions") == set_int_property
+
+
+def test_node_execution_options(optislang: Optislang, tmp_example_project):
+    """Test `set_execution_options` and `get_execution_options` methods."""
+    optislang.application.open(file_path=tmp_example_project("calculator_with_params"))
+    root_system = optislang.project.root_system
+    node: TcpNodeProxy = root_system.find_nodes_by_name("Calculator")[0]
+
+    execution_options_list = [
+        ExecutionOption.INACTIVE,
+        ExecutionOption.ACTIVE,
+        ExecutionOption.STARTING_POINT,
+        ExecutionOption.ACTIVE | ExecutionOption.STARTING_POINT,
+        ExecutionOption.END_POINT,
+        ExecutionOption.ACTIVE | ExecutionOption.END_POINT,
+        ExecutionOption.SAVE_POINT,
+        ExecutionOption.ACTIVE | ExecutionOption.SAVE_POINT,
+        ExecutionOption.RECYCLE_RESULTS,
+        ExecutionOption.ACTIVE | ExecutionOption.RECYCLE_RESULTS,
+    ]
+
+    for execution_options in execution_options_list:
+        node.set_execution_options(execution_options)
+        recv_execution_options = node.get_execution_options()
+        assert execution_options == recv_execution_options
 
 
 # endregion
