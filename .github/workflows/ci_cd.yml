@@ -9,7 +9,7 @@ on:
       - main
 
 env:
-  MAIN_PYTHON_VERSION: '3.12'
+  MAIN_PYTHON_VERSION: '3.10'
   PACKAGE_NAME: 'ansys-optislang-core'
   PACKAGE_NAMESPACE: 'ansys.optislang.core'
   DOCUMENTATION_CNAME: 'optislang.docs.pyansys.com'
