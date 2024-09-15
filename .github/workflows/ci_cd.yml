@@ -9,7 +9,7 @@ on:
       - main
 
 env:
-  MAIN_PYTHON_VERSION: '3.10'
+  MAIN_PYTHON_VERSION: '3.12'
   PACKAGE_NAME: 'ansys-optislang-core'
   PACKAGE_NAMESPACE: 'ansys.optislang.core'
   DOCUMENTATION_CNAME: 'optislang.docs.pyansys.com'
@@ -45,7 +45,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest]
-        python-version: ['3.8', '3.9', '3.10', '3.11', '3.12']
+        python-version: ['3.10', '3.11', '3.12']
     steps:
       - uses: ansys/actions/build-wheelhouse@v7
         with:
@@ -63,7 +63,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest]
-        python-version: ['3.8', '3.9', '3.10', '3.11', '3.12']
+        python-version: ['3.10', '3.11', '3.12']
       fail-fast: false
 
     steps:
