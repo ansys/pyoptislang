@@ -1617,7 +1617,7 @@ class TcpProxySolverNodeProxy(TcpIntegrationNodeProxy, ProxySolverNode):
             List of calculated designs.
             Design format:
             {
-                'hid': '0.1', 
+                'hid': '0.1',
                 'responses': [{"name": "res1", "value": 1.0}, {...}, ...],
             }
 
