@@ -55,38 +55,37 @@ def calculator(hid, X1, X2, X3, X4, X5):
     return Y
 
 def calculate(designs) : 
-    designs_dict = {}
-
+    result_design_list = []
     print(f"Calculate {len(designs)} designs")
-    for d in designs:
-        for hid, params in d.items():
-            X1 = 0.0
-            X2 = 0.0
-            X3 = 0.0
-            X4 = 0.0
-            X5 = 0.0
-            for p in params:
-                if p["name"] == "X1":
-                    X1 = p["value"]
-                elif p["name"] == "X2":
-                    X2 = p["value"]
-                elif p["name"] == "X3":
-                    X3 = p["value"]
-                elif p["name"] == "X4":
-                    X4 = p["value"]
-                elif p["name"] == "X5":
-                    X5 = p["value"]
-            Y = calculator(hid, X1, X2, X3, X4, X5)
-            
-            r = {}
-            r["id" ] = "Y"
-            r["name"] = "Y"
-            r["value"] = Y
-            r["unit"] = "m"       
-            designs_dict[hid] = []
-            designs_dict[hid].append(r)
+    for design in designs:
+        hid=design["hid"]
+        parameters=design["parameters"]
+        X1 = 0.0
+        X2 = 0.0
+        X3 = 0.0
+        X4 = 0.0
+        X5 = 0.0
+        for parameter in parameters:
+            if parameter["name"] == "X1":
+                X1 = parameter["value"]
+            elif parameter["name"] == "X2":
+                X2 = parameter["value"]
+            elif parameter["name"] == "X3":
+                X3 = parameter["value"]
+            elif parameter["name"] == "X4":
+                X4 = parameter["value"]
+            elif parameter["name"] == "X5":
+                X5 = parameter["value"]
+        Y = calculator(hid, X1, X2, X3, X4, X5)
+        
+        result_design={}
+        result_design["hid"]=hid
+        responses = [{"name": "Y", "value": Y}]
+        result_design["responses"]=responses
+        result_design_list.append(result_design)
 
-    return designs_dict
+    print(f"Return {len(result_design_list)} designs")
+    return result_design_list
 
 #########################################################
 # Create optiSLang instance
@@ -95,8 +94,8 @@ def calculate(designs) :
 
 available_optislang_executables = find_all_osl_exec()
 version, executables = available_optislang_executables.popitem(last=False)
-if not version >= 251:
-    raise KeyError("OptiSLang intallation >= 25R1 wasn't found, please specify path manually.")
+# if not version >= 251:
+#     raise KeyError("OptiSLang intallation >= 25R1 wasn't found, please specify path manually.")
 
 osl = Optislang(executable=executables[0])
 
@@ -114,6 +113,19 @@ root_system = osl.application.project.root_system
 
 algorithm_system: ParametricSystem = root_system.create_node(type_=node_types.Sensitivity, name="Sensitivity")
 
+num_discretization = 2000
+
+algorithm_settings = algorithm_system.get_property("AlgorithmSettings")
+algorithm_settings["num_discretization"] = num_discretization
+algorithm_system.set_property("AlgorithmSettings", algorithm_settings)
+
+# Fast running solver settings
+
+algorithm_system.set_property("AutoSaveMode", "no_auto_save")
+algorithm_system.set_property("SolveTwice", True)
+algorithm_system.set_property("UpdateResultFile", "never")
+algorithm_system.set_property("WriteDesignStartSetFlag", False)
+
 # Add the Proxy Solver node and set the desired maximum number of designs you handle in one go.
 
 proxy_solver: ProxySolverNode = algorithm_system.create_node(
@@ -122,34 +134,22 @@ proxy_solver: ProxySolverNode = algorithm_system.create_node(
     design_flow=DesignFlow.RECEIVE_SEND
 )
 
-proxy_solver.set_property('MultiDesignLaunchNum', -1)
-proxy_solver.get_properties()
+multi_design_launch_num = 99 # set -1 to solve all designs simultaneously
+proxy_solver.set_property('MultiDesignLaunchNum', multi_design_launch_num)
+proxy_solver.set_property('ForwardHPCLicenseContextEnvironment', True)
 
-# Load the inputs and outputs into the Proxy Solver node.
-
-load_json = {}
-load_json["parameters"] = []
-load_json["responses"] = []
+# Add parameters to the algorithm system and register them in the proxy solver.
 
 for i in range(1,6):
-    load_json["parameters"].append({"id" : f"X{i}", "name" : f"X{i}", "unit" : "", "value":1.0})
+    parameter = OptimizationParameter(name = f"X{i}", reference_value = 1.0,  range = (-3.14, 3.14))
+    algorithm_system.parameter_manager.add_parameter(parameter)
+    proxy_solver.register_location_as_parameter({'dir': {'value': 'input'}, 'name': parameter.name, 'value': parameter.reference_value})
 
-load_json["responses"].append({"id" : "Y", "name" : "Y", "unit" : "", "value":3.0})
-proxy_solver.load(load_json)
-
-# Register the inputs and outputs as parameters and responses at the algorithm system.
-
-proxy_solver.register_locations_as_parameter()
-proxy_solver.register_locations_as_response()
-
-
-# Set parameter ranges and define a criterion (this is necessary at least for optimizers).
-
-for i in range(1,6):
-    algorithm_system.parameter_manager.modify_parameter(OptimizationParameter(name = f"X{i}", reference_value = 1.0,  range = (-3.14, 3.14)))
-
-algorithm_system.criteria_manager.add_criterion(ObjectiveCriterion(name="obj", expression="Y", criterion=ComparisonType.MIN))
-
+# Register response in the proxy solver and create criterion in algorithm
+ 
+proxy_solver.register_location_as_response({'dir': {'value': 'output'}, 'name': "Y", 'value': 3.0})
+criterion = ObjectiveCriterion(name="obj", expression="Y", expression_value=3.0, criterion=ComparisonType.MIN)
+algorithm_system.criteria_manager.add_criterion(criterion)
 
 
 #########################################################
@@ -161,7 +161,7 @@ algorithm_system.criteria_manager.add_criterion(ObjectiveCriterion(name="obj", e
 # .. code:: python
 #
 #   dir_path = Path(r"<insert-desired-location>")
-#   project_name = "oscillator_optimization_workflow.opf"
+#   project_name = "proxy_solver_workflow.opf"
 #   osl.application.save_as(dir_path / project_name)
 
 
@@ -190,7 +190,6 @@ print("Solved Successfully!")
 # Stop and cancel project
 # ~~~~~~~~~~~~~~~~~~~~~~~
 # Stop and cancel the project.
-
 osl.dispose()
 
 #########################################################
