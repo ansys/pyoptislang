@@ -104,7 +104,7 @@ def calculate(designs):
 available_optislang_executables = find_all_osl_exec()
 version, executables = available_optislang_executables.popitem(last=False)
 if not version >= 251:
-    raise KeyError("OptiSLang intallation >= 25R1 wasn't found, please specify path manually.")
+    raise KeyError("OptiSLang installation >= 25R1 wasn't found, please specify path manually.")
 
 osl = Optislang(executable=executables[0])
 
