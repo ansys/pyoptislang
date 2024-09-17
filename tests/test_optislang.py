@@ -20,11 +20,12 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+from logging import Logger
+
 import pytest
 
 from ansys.optislang.core import Optislang
 from ansys.optislang.core.application import Application
-from ansys.optislang.core.logging import OslCustomAdapter
 from ansys.optislang.core.osl_server import OslServer
 from ansys.optislang.core.project import Project
 
@@ -60,7 +61,7 @@ def test_optislang_properties(optislang: Optislang):
     assert isinstance(application, Application)
 
     logger = optislang.log
-    assert isinstance(logger, OslCustomAdapter)
+    assert isinstance(logger, Logger)
 
     name = optislang.name
     assert isinstance(name, str)
