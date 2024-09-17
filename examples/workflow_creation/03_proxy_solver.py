@@ -31,35 +31,43 @@ This example demonstrates how to obtain designs from parametric system and proce
 It creates a proxy solver node inside parametric system and solves it's designs externally.
 """
 
+from pathlib import Path
+
 #########################################################
 # Perform required imports
 # ~~~~~~~~~~~~~~~~~~~~~~~~
 # Perform the required imports.
 import time
-from pathlib import Path
 
 from ansys.optislang.core import Optislang
-from ansys.optislang.core.utils import find_all_osl_exec
 import ansys.optislang.core.node_types as node_types
 from ansys.optislang.core.nodes import DesignFlow, ParametricSystem, ProxySolverNode
-from ansys.optislang.core.project_parametric import ComparisonType, ObjectiveCriterion, OptimizationParameter
+from ansys.optislang.core.project_parametric import (
+    ComparisonType,
+    ObjectiveCriterion,
+    OptimizationParameter,
+)
+from ansys.optislang.core.utils import find_all_osl_exec
 
 #########################################################
 # Create solver
 # ~~~~~~~~~~~~~
 # Define a simple calculator function to solve the variations
 
+
 def calculator(hid, X1, X2, X3, X4, X5):
     from math import sin
+
     Y = 0.5 * X1 + X2 + 0.5 * X1 * X2 + 5 * sin(X3) + 0.2 * X4 + 0.1 * X5
     return Y
 
-def calculate(designs) : 
+
+def calculate(designs):
     result_design_list = []
     print(f"Calculate {len(designs)} designs")
     for design in designs:
-        hid=design["hid"]
-        parameters=design["parameters"]
+        hid = design["hid"]
+        parameters = design["parameters"]
         X1 = 0.0
         X2 = 0.0
         X3 = 0.0
@@ -77,15 +85,16 @@ def calculate(designs) :
             elif parameter["name"] == "X5":
                 X5 = parameter["value"]
         Y = calculator(hid, X1, X2, X3, X4, X5)
-        
-        result_design={}
-        result_design["hid"]=hid
+
+        result_design = {}
+        result_design["hid"] = hid
         responses = [{"name": "Y", "value": Y}]
-        result_design["responses"]=responses
+        result_design["responses"] = responses
         result_design_list.append(result_design)
 
     print(f"Return {len(result_design_list)} designs")
     return result_design_list
+
 
 #########################################################
 # Create optiSLang instance
@@ -111,7 +120,9 @@ root_system = osl.application.project.root_system
 
 # Create the algorithm system of your choice.
 
-algorithm_system: ParametricSystem = root_system.create_node(type_=node_types.Sensitivity, name="Sensitivity")
+algorithm_system: ParametricSystem = root_system.create_node(
+    type_=node_types.Sensitivity, name="Sensitivity"
+)
 
 num_discretization = 2000
 
@@ -129,26 +140,28 @@ algorithm_system.set_property("WriteDesignStartSetFlag", False)
 # Add the Proxy Solver node and set the desired maximum number of designs you handle in one go.
 
 proxy_solver: ProxySolverNode = algorithm_system.create_node(
-    type_=node_types.ProxySolver, 
-    name='Calculator', 
-    design_flow=DesignFlow.RECEIVE_SEND
+    type_=node_types.ProxySolver, name="Calculator", design_flow=DesignFlow.RECEIVE_SEND
 )
 
-multi_design_launch_num = 99 # set -1 to solve all designs simultaneously
-proxy_solver.set_property('MultiDesignLaunchNum', multi_design_launch_num)
-proxy_solver.set_property('ForwardHPCLicenseContextEnvironment', True)
+multi_design_launch_num = 99  # set -1 to solve all designs simultaneously
+proxy_solver.set_property("MultiDesignLaunchNum", multi_design_launch_num)
+proxy_solver.set_property("ForwardHPCLicenseContextEnvironment", True)
 
 # Add parameters to the algorithm system and register them in the proxy solver.
 
-for i in range(1,6):
-    parameter = OptimizationParameter(name = f"X{i}", reference_value = 1.0,  range = (-3.14, 3.14))
+for i in range(1, 6):
+    parameter = OptimizationParameter(name=f"X{i}", reference_value=1.0, range=(-3.14, 3.14))
     algorithm_system.parameter_manager.add_parameter(parameter)
-    proxy_solver.register_location_as_parameter({'dir': {'value': 'input'}, 'name': parameter.name, 'value': parameter.reference_value})
+    proxy_solver.register_location_as_parameter(
+        {"dir": {"value": "input"}, "name": parameter.name, "value": parameter.reference_value}
+    )
 
 # Register response in the proxy solver and create criterion in algorithm
- 
-proxy_solver.register_location_as_response({'dir': {'value': 'output'}, 'name': "Y", 'value': 3.0})
-criterion = ObjectiveCriterion(name="obj", expression="Y", expression_value=3.0, criterion=ComparisonType.MIN)
+
+proxy_solver.register_location_as_response({"dir": {"value": "output"}, "name": "Y", "value": 3.0})
+criterion = ObjectiveCriterion(
+    name="obj", expression="Y", expression_value=3.0, criterion=ComparisonType.MIN
+)
 algorithm_system.criteria_manager.add_criterion(criterion)
 
 
@@ -182,7 +195,7 @@ while not osl.project.root_system.get_status() == "Processing done":
         responses_dict = calculate(design_list)
         proxy_solver.set_designs(responses_dict)
     time.sleep(0.1)
-    
+
 print("Solved Successfully!")
 
 
