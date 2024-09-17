@@ -25,7 +25,7 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from enum import Enum
-from typing import TYPE_CHECKING, Any, Dict, Optional, List, Tuple, Union
+from typing import TYPE_CHECKING, Any, Optional, Tuple, Union
 
 from ansys.optislang.core.io import File, FileOutputFormat, RegisteredFile
 from ansys.optislang.core.utils import enum_from_str
@@ -797,7 +797,7 @@ class IntegrationNode(Node):
         pass
 
     @abstractmethod
-    def load(self, args: Optional[Dict[str, Any]] = None) -> None:  # pragma: no cover
+    def load(self, args: Optional[dict] = None) -> None:  # pragma: no cover
         """Explicitly load the node.
 
         Some optiSLang nodes support/need an explicit load prior to being able to register
@@ -805,7 +805,7 @@ class IntegrationNode(Node):
 
         Parameters
         ----------
-        args: Optional[Dict[str, any]], optional
+        args: Optional[dict], optional
             Additional arguments, by default ``None``.
 
         Raises

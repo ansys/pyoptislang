@@ -89,7 +89,7 @@ def calculate(designs) :
 
 #########################################################
 # Create optiSLang instance
-# ~~~~~~~~~~~~~~~~~~~~~~~~
+# ~~~~~~~~~~~~~~~~~~~~~~~~~
 # Find the optiSLang >= 25.1 executable. Initialize the Optislang class instance with the executable.
 
 available_optislang_executables = find_all_osl_exec()
