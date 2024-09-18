@@ -31,8 +31,6 @@ This example demonstrates how to obtain designs from parametric system and proce
 It creates a proxy solver node inside parametric system and solves it's designs externally.
 """
 
-from pathlib import Path
-
 #########################################################
 # Perform required imports
 # ~~~~~~~~~~~~~~~~~~~~~~~~
@@ -115,7 +113,6 @@ print(f"Using optiSLang version {osl.osl_version_string}")
 # Create workflow
 # ~~~~~~~~~~~~~~~
 
-osl_server = osl.osl_server
 root_system = osl.application.project.root_system
 
 # Create the algorithm system of your choice.
