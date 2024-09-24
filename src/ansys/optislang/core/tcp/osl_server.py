@@ -2212,7 +2212,7 @@ class TcpOslServer(OslServer):
         TimeoutError
             Raised when the timeout float value expires.
         """
-        current_func_name = self.add_criterion.__name__
+        current_func_name = self.get_doe_size.__name__
         return self.send_command(
             command=queries.doe_size(
                 uid=uid,
