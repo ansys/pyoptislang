@@ -46,6 +46,7 @@ _FULL_PROJECT_TREE = "FULL_PROJECT_TREE"
 _FULL_PROJECT_TREE_WITH_PROPERTIES = "FULL_PROJECT_TREE_WITH_PROPERTIES"
 _GET_CRITERIA = "GET_CRITERIA"
 _GET_CRITERION = "GET_CRITERION"
+_GET_DESIGNS = "GET_DESIGNS"
 _HPC_LICENSING_FORWARDED_ENVIRONMENT = "HPC_LICENSING_FORWARDED_ENVIRONMENT"
 _INPUT_SLOT_VALUE = "INPUT_SLOT_VALUE"
 _OUTPUT_SLOT_VALUE = "OUTPUT_SLOT_VALUE"
@@ -617,6 +618,24 @@ def get_criterion(uid: str, name: str, password: Optional[str] = None) -> str:
     return _to_json(
         _gen_query(what=_GET_CRITERION, uid=uid, args={"name": name}, password=password)
     )
+
+
+def get_designs(uid: str, password: Optional[str] = None) -> str:
+    """Generate JSON string of get_designs query.
+
+    Parameters
+    ----------
+    uid: str
+        Uid entry.
+    password : Optional[str], optional
+        Password. Defaults to ``None``.
+
+    Returns
+    -------
+    str
+        JSON string of get_designs query.
+    """
+    return _to_json(_gen_query(what=_GET_DESIGNS, uid=uid, password=password))
 
 
 def hpc_licensing_forwarded_environment(uid: str, password: Optional[str] = None) -> str:

@@ -1588,7 +1588,7 @@ class TcpProxySolverNodeProxy(TcpIntegrationNodeProxy, ProxySolverNode):
     def get_designs(self) -> List[dict]:
         """Get pending designs from parent node.
 
-        Parameters
+        Returns
         -------
         List[dict]
            List of pending designs.
@@ -1602,23 +1602,19 @@ class TcpProxySolverNodeProxy(TcpIntegrationNodeProxy, ProxySolverNode):
         TimeoutError
             Raised when the timeout float value expires.
         """
-        return self._osl_server.send_command(
-            command=json.dumps({"What": "GET_DESIGNS", "uid": self.uid}),
-            timeout=30,
-            max_request_attempts=2,
-        )["designs"]
+        return self._osl_server.get_designs(self.uid)
 
-    def set_designs(self, designs: Dict[str, list]) -> None:
+    def set_designs(self, designs: Iterable[dict]) -> None:
         """Set calculated designs.
 
         Parameters
         ----------
-        List[dict]
-            List of calculated designs.
+        Iterable[dict]
+            Iterable of calculated designs.
             Design format:
             {
-                'hid': '0.1',
-                'responses': [{"name": "res1", "value": 1.0}, {...}, ...],
+                "hid": "0.1",
+                "responses": [{"name": "res1", "value": 1.0}, {...}, ...],
             }
 
         Raises
@@ -1630,23 +1626,7 @@ class TcpProxySolverNodeProxy(TcpIntegrationNodeProxy, ProxySolverNode):
         TimeoutError
             Raised when the timeout float value expires.
         """
-        set_designs_cmd = {
-            "projects": [
-                {
-                    "commands": [
-                        {
-                            "actor_uid": self.uid,
-                            "args": {"designs": designs},
-                            "command": "SET_DESIGNS",
-                            "type": "builtin",
-                        }
-                    ]
-                }
-            ]
-        }
-        self._osl_server.send_command(
-            command=json.dumps(set_designs_cmd), timeout=30, max_request_attempts=2
-        )
+        self._osl_server.set_designs(actor_uid=self.uid, designs=designs)
 
 
 # endregion

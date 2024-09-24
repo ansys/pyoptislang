@@ -2188,6 +2188,38 @@ class TcpOslServer(OslServer):
             max_request_attempts=self.max_request_attempts_register.get_value(current_func_name),
         )["criteria"]
 
+    def get_designs(self, uid: str) -> List[dict]:
+        """Get pending designs from parent node.
+
+        Parameters
+        ----------
+        uid : str
+            Actor uid.
+
+        Returns
+        -------
+        List[dict]
+           List of pending designs.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        current_func_name = self.get_designs.__name__
+        return self.send_command(
+            command=queries.get_designs(
+                uid=uid,
+                password=self.__password,
+            ),
+            timeout=self.timeouts_register.get_value(current_func_name),
+            max_request_attempts=self.max_request_attempts_register.get_value(current_func_name),
+        )["designs"]
+
     def get_doe_size(self, uid: str, sampling_type: str, num_discrete_levels: int) -> int:
         """Get the DOE size for given sampling type and number of levels for a specific actor.
 
@@ -3849,6 +3881,34 @@ class TcpOslServer(OslServer):
                 name=name,
                 value=value,
                 password=self.__password,
+            ),
+            timeout=self.timeouts_register.get_value(current_func_name),
+            max_request_attempts=self.max_request_attempts_register.get_value(current_func_name),
+        )
+
+    def set_designs(self, actor_uid: str, designs: Iterable[dict]) -> None:
+        """Set an actor property.
+
+        Parameters
+        ----------
+        actor_uid : str
+            Actor uid.
+        designs : Iterable[dict]
+            Iterable of calculated designs.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        current_func_name = self.set_designs.__name__
+        self.send_command(
+            command=commands.set_designs(
+                actor_uid=actor_uid, designs=designs, password=self.__password
             ),
             timeout=self.timeouts_register.get_value(current_func_name),
             max_request_attempts=self.max_request_attempts_register.get_value(current_func_name),
