@@ -247,7 +247,7 @@ class TcpClient:
     >>> client.send_msg('{ "What": "SYSTEMS_STATUS_INFO" }')
     """
 
-    _BUFFER_SIZE = pow(2, 12)
+    _BUFFER_SIZE = pow(2, 16)
     # Response size in bytes. Value is assumed to be binary 64Bit unsigned integer.
     _RESPONSE_SIZE_BYTES = 8
 
