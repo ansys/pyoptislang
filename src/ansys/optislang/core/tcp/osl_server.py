@@ -2189,6 +2189,38 @@ class TcpOslServer(OslServer):
             max_request_attempts=self.max_request_attempts_register.get_value(current_func_name),
         )["criteria"]
 
+    def get_designs(self, uid: str) -> List[dict]:
+        """Get pending designs from parent node.
+
+        Parameters
+        ----------
+        uid : str
+            Actor uid.
+
+        Returns
+        -------
+        List[dict]
+           List of pending designs.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        current_func_name = self.get_designs.__name__
+        return self.send_command(
+            command=queries.get_designs(
+                uid=uid,
+                password=self.__password,
+            ),
+            timeout=self.timeouts_register.get_value(current_func_name),
+            max_request_attempts=self.max_request_attempts_register.get_value(current_func_name),
+        )["designs"]
+
     def get_doe_size(self, uid: str, sampling_type: str, num_discrete_levels: int) -> int:
         """Get the DOE size for given sampling type and number of levels for a specific actor.
 
@@ -2213,7 +2245,7 @@ class TcpOslServer(OslServer):
         TimeoutError
             Raised when the timeout float value expires.
         """
-        current_func_name = self.add_criterion.__name__
+        current_func_name = self.get_doe_size.__name__
         return self.send_command(
             command=queries.doe_size(
                 uid=uid,
@@ -2946,13 +2978,15 @@ class TcpOslServer(OslServer):
             return None
         return Path(project_info.get("projects", [{}])[0].get("working_dir", None))
 
-    def load(self, uid: str) -> None:
+    def load(self, uid: str, args: Optional[Dict[str, Any]] = None) -> None:
         """Explicit load of node.
 
         Parameters
         ----------
         uid: str
             Actor uid.
+        args: Optional[Dict[str, any]], optional
+            Additional arguments, by default ``None``.
 
         Raises
         ------
@@ -2968,6 +3002,7 @@ class TcpOslServer(OslServer):
         self.send_command(
             command=commands.load(
                 actor_uid=uid,
+                args=args,
                 password=self.__password,
             ),
             timeout=self.timeouts_register.get_value(current_func_name),
@@ -3847,6 +3882,34 @@ class TcpOslServer(OslServer):
                 name=name,
                 value=value,
                 password=self.__password,
+            ),
+            timeout=self.timeouts_register.get_value(current_func_name),
+            max_request_attempts=self.max_request_attempts_register.get_value(current_func_name),
+        )
+
+    def set_designs(self, actor_uid: str, designs: Iterable[dict]) -> None:
+        """Set an actor property.
+
+        Parameters
+        ----------
+        actor_uid : str
+            Actor uid.
+        designs : Iterable[dict]
+            Iterable of calculated designs.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        current_func_name = self.set_designs.__name__
+        self.send_command(
+            command=commands.set_designs(
+                actor_uid=actor_uid, designs=designs, password=self.__password
             ),
             timeout=self.timeouts_register.get_value(current_func_name),
             max_request_attempts=self.max_request_attempts_register.get_value(current_func_name),

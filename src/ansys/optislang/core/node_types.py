@@ -291,6 +291,9 @@ ProEParameterize = NodeType(
 ProEProcess = NodeType(
     id="ProEProcess", subtype=AddinType.BUILT_IN, osl_class_type=NodeClassType.INTEGRATION_NODE
 )
+ProxySolver = NodeType(
+    id="ProxySolver", subtype=AddinType.BUILT_IN, osl_class_type=NodeClassType.PROXY_SOLVER
+)
 Python2 = NodeType(
     id="Python2", subtype=AddinType.BUILT_IN, osl_class_type=NodeClassType.INTEGRATION_NODE
 )
