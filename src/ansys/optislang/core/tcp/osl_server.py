@@ -42,6 +42,7 @@ import uuid
 
 from deprecated.sphinx import deprecated
 
+from ansys.optislang.core import utils
 from ansys.optislang.core.encoding import force_bytes, force_text
 from ansys.optislang.core.errors import (
     ConnectionEstablishedError,
@@ -798,7 +799,7 @@ class TcpOslListener:
     @property
     def host_addresses(self) -> List[str]:
         """Local IP addresses associated with self.__listener_socket."""
-        addresses = [i[4][0] for i in socket.getaddrinfo(socket.gethostname(), None)]
+        addresses = utils.get_localhost_addresses()
         # Explicitly add localhost  to workaround potential networking issues
         addresses.append("127.0.0.1")
         return addresses
