@@ -84,6 +84,7 @@ def test_design_flow(name: str):
         "PARAMETRIC_SYSTEM",
         "ROOT_SYSTEM",
         "INTEGRATION_NODE",
+        "PROXY_SOLVER",
     ],
 )
 def test_node_class_type(name: str):
