@@ -343,6 +343,7 @@ class TcpClient:
                 self.__socket.close()
                 self.__socket = None
                 continue
+            break
 
         if self.__socket is None:
             raise ConnectionRefusedError(
