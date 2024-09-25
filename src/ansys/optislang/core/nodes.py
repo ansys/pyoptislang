@@ -27,6 +27,8 @@ from abc import ABC, abstractmethod
 from enum import Enum
 from typing import TYPE_CHECKING, Any, Optional, Tuple, Union
 
+from deprecated.sphinx import deprecated
+
 from ansys.optislang.core.io import File, FileOutputFormat, RegisteredFile
 from ansys.optislang.core.utils import enum_from_str
 
@@ -1366,7 +1368,80 @@ class ParametricSystem(System):
         """
         pass
 
+    def save_designs_as_json(
+        self, hid: str, file_path: Union[Path, str]
+    ) -> File:  # pragma: no cover
+        """Save designs for a given state to JSON file.
+
+        Parameters
+        ----------
+        hid : str
+            Actor's state.
+        file_path : Union[Path, str]
+            Path to the file.
+
+        Returns
+        -------
+        File
+            Object representing saved file.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        TypeError
+            Raised when the `hid` is `None`
+            -or-
+            `file_path` is `None` or unsupported type.
+        ValueError
+            Raised when ``hid`` does not exist.
+        """
+        pass
+
+    def save_designs_as_csv(
+        self, hid: str, file_path: Union[Path, str]
+    ) -> File:  # pragma: no cover
+        """Save designs for a given state to CSV file.
+
+        Parameters
+        ----------
+        hid : str
+            Actor's state.
+        file_path : Union[Path, str]
+            Path to the file.
+
+        Returns
+        -------
+        File
+            Object representing saved file.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        TypeError
+            Raised when the `hid` is `None`
+            -or-
+            `file_path` is `None` or unsupported type.
+        ValueError
+            Raised when ``hid`` does not exist.
+        """
+        pass
+
     @abstractmethod
+    @deprecated(
+        version="0.9.0",
+        reason="Use :py:meth:`ParametricSystem.save_designs_as_json` or "
+        ":py:meth:`ParametricSystem.save_designs_as_csv` instead.",
+    )
     def save_designs_as(
         self,
         hid: str,

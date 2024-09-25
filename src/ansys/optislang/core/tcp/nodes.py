@@ -2161,6 +2161,138 @@ class TcpParametricSystemProxy(TcpSystemProxy, ParametricSystem):
             omdb_files.extend([File(path) for path in wdir.glob("*.omdb")])
         return tuple(omdb_files)
 
+    def save_designs_as_json(self, hid: str, file_path: Union[Path, str]) -> File:
+        """Save designs for a given state to JSON file.
+
+        Parameters
+        ----------
+        hid : str
+            Actor's state.
+        file_path : Union[Path, str]
+            Path to the file.
+
+        Returns
+        -------
+        File
+            Object representing saved file.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        TypeError
+            Raised when the `hid` is `None`
+            -or-
+            `file_path` is `None` or unsupported type.
+        ValueError
+            Raised when ``hid`` does not exist.
+        """
+        self.__save_designs_as(hid, file_path, FileOutputFormat.JSON)
+
+    def save_designs_as_csv(self, hid: str, file_path: Union[Path, str]) -> File:
+        """Save designs for a given state to CSV file.
+
+        Parameters
+        ----------
+        hid : str
+            Actor's state.
+        file_path : Union[Path, str]
+            Path to the file.
+
+        Returns
+        -------
+        File
+            Object representing saved file.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        TypeError
+            Raised when the `hid` is `None`
+            -or-
+            `file_path` is `None` or unsupported type.
+        ValueError
+            Raised when ``hid`` does not exist.
+        """
+        self.__save_designs_as(hid, file_path, FileOutputFormat.CSV)
+
+    def __save_designs_as(self, hid: str, file_path: Union[Path, str], format: FileOutputFormat):
+        """Save designs for a given state.
+
+        Parameters
+        ----------
+        hid : str
+            Actor's state.
+        file_path : Union[Path, str]
+            Path to the file.
+        format : FileOutputFormat
+            Format of the file.
+
+        Returns
+        -------
+        File
+            Object representing saved file.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        TypeError
+            Raised when the `hid` is `None`
+            -or-
+            `file_path` is `None` or unsupported type.
+        ValueError
+            Raised when ``format`` is not unsupported
+            -or-
+            ``hid`` does not exist.
+        """
+        if hid is None:
+            raise TypeError("Actor's state cannot be `None`.")
+        if file_path is None:
+            raise TypeError("Path to the file cannot be `None`.")
+        if isinstance(file_path, str):
+            file_path = Path(file_path)
+        if not isinstance(file_path, Path):
+            raise TypeError(
+                "Type of the `file_path` argument is not supported: `file_path` = "
+                f"`{type(file_path)}`."
+            )
+
+        designs = self._get_designs_dicts()
+        if not designs.get(hid):
+            raise ValueError(f"Design for given `hid` argument not available: `hid` = `{hid}.")
+
+        if format == FileOutputFormat.JSON:
+            file_output = json.dumps(designs[hid])
+            newline = None
+        elif format == FileOutputFormat.CSV:
+            file_output = self.__convert_design_dict_to_csv(designs[hid])
+            newline = ""
+        else:
+            raise ValueError(f"Output file format `{format}` is not supported.")
+
+        with open(file_path, "w", newline=newline) as f:
+            f.write(file_output)
+        return File(file_path)
+
+    @deprecated(
+        version="0.9.0",
+        reason="Use :py:meth:`TcpParametricSystemProxy.save_designs_as_json` or "
+        ":py:meth:`TcpParametricSystemProxy.save_designs_as_csv` instead.",
+    )
     def save_designs_as(
         self,
         hid: str,
