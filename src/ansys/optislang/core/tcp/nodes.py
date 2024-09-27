@@ -2140,6 +2140,9 @@ class TcpParametricSystemProxy(TcpSystemProxy, ParametricSystem):
     def get_omdb_files(self) -> Tuple[File]:
         """Get paths to omdb files.
 
+        This method is supported only when the client runs on the same file
+        system as the server, i.e., the server is not remote.
+
         Returns
         -------
         Tuple[File]
@@ -2153,7 +2156,14 @@ class TcpParametricSystemProxy(TcpSystemProxy, ParametricSystem):
             Raised when a command or query fails.
         TimeoutError
             Raised when the timeout float value expires.
+        RuntimeError
+            Raised when the server is remote.
         """
+        if self._osl_server.is_remote:
+            raise RuntimeError(
+                "Paths to omdb files cannot be provided when connected to the remote server."
+            )
+
         statuses_info = self._get_status_info()
         wdirs = [Path(status_info["working dir"]) for status_info in statuses_info]
         omdb_files = []
