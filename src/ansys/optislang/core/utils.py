@@ -469,7 +469,7 @@ def get_localhost_addresses() -> List[str]:
     return [i[4][0] for i in socket.getaddrinfo(socket.gethostname(), None)]
 
 
-def is_localhost(host) -> bool:
+def is_localhost(host: str) -> bool:
     """Determine whether the host is localhost.
 
     Parameters
