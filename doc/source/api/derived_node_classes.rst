@@ -6,3 +6,4 @@ Derived node classes
    :toctree: _autosummary
 
    IntegrationNode
+   ProxySolverNode

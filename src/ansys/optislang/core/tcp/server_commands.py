@@ -71,6 +71,7 @@ _SET_ACTOR_PROPERTY = "SET_ACTOR_PROPERTY"
 _SET_ACTOR_SETTING = "SET_ACTOR_SETTING"
 _SET_ACTOR_STATE_PROPERTY = "SET_ACTOR_STATE_PROPERTY"
 _SET_CRITERION_PROPERTY = "SET_CRITERION_PROPERTY"
+_SET_DESIGNS = "SET_DESIGNS"
 _SET_PLACEHOLDER_VALUE = "SET_PLACEHOLDER_VALUE"
 _SET_PROJECT_SETTING = "SET_PROJECT_SETTING"
 _SET_REGISTERED_FILE_VALUE = "SET_REGISTERED_FILE_VALUE"
@@ -547,13 +548,15 @@ def link_registered_file(actor_uid: str, uid: str, password: Optional[str] = Non
     )
 
 
-def load(actor_uid: str, password: Optional[str] = None) -> str:
+def load(actor_uid: str, args: Optional[CommandArgs] = None, password: Optional[str] = None) -> str:
     """Generate JSON string of ``load`` command.
 
     Parameters
     ----------
     actor_uid: str
         Actor uid entry.
+    args: Optional[CommandArgs], optional
+        Dictionary with additional arguments, by default ``None``.
     password : Optional[str], optional
         Password, by default ``None``.
 
@@ -562,7 +565,9 @@ def load(actor_uid: str, password: Optional[str] = None) -> str:
     str
         JSON string of ``load`` command.
     """
-    return _to_json(_gen_server_command(command=_LOAD, actor_uid=actor_uid, password=password))
+    return _to_json(
+        _gen_server_command(command=_LOAD, args=args, actor_uid=actor_uid, password=password)
+    )
 
 
 def new(password: Optional[str] = None) -> str:
@@ -1487,6 +1492,31 @@ def set_criterion_property(
         _gen_server_command(
             command=_SET_CRITERION_PROPERTY, actor_uid=actor_uid, args=args, password=password
         )
+    )
+
+
+def set_designs(actor_uid: str, designs: Iterable[dict], password: Optional[str] = None) -> str:
+    """Generate JSON string of ``set_designs`` command.
+
+    Parameters
+    ----------
+    actor_uid: str
+        Actor uid entry.
+    designs: Iterable[dict]
+        Iterable of calculated designs.
+    password : Optional[str], optional
+        Password. Defaults to ``None``.
+
+    Returns
+    -------
+    str
+        JSON string of ``set_designs`` command.
+    """
+    args: CommandArgs = {}
+    args["designs"] = designs
+
+    return _to_json(
+        _gen_server_command(command=_SET_DESIGNS, actor_uid=actor_uid, args=args, password=password)
     )
 
 
