@@ -2201,7 +2201,7 @@ class TcpParametricSystemProxy(TcpSystemProxy, ParametricSystem):
         ValueError
             Raised when ``hid`` does not exist.
         """
-        self.__save_designs_as(hid, file_path, FileOutputFormat.JSON)
+        return self.__save_designs_as(hid, file_path, FileOutputFormat.JSON)
 
     def save_designs_as_csv(self, hid: str, file_path: Union[Path, str]) -> File:
         """Save designs for a given state to CSV file.
@@ -2233,7 +2233,7 @@ class TcpParametricSystemProxy(TcpSystemProxy, ParametricSystem):
         ValueError
             Raised when ``hid`` does not exist.
         """
-        self.__save_designs_as(hid, file_path, FileOutputFormat.CSV)
+        return self.__save_designs_as(hid, file_path, FileOutputFormat.CSV)
 
     def __save_designs_as(self, hid: str, file_path: Union[Path, str], format: FileOutputFormat):
         """Save designs for a given state.
