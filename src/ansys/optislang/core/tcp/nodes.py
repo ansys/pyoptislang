@@ -51,6 +51,7 @@ from ansys.optislang.core.nodes import (
     NodeClassType,
     OutputSlot,
     ParametricSystem,
+    ProxySolverNode,
     RootSystem,
     Slot,
     SlotType,
@@ -1144,7 +1145,7 @@ class TcpIntegrationNodeProxy(TcpNodeProxy, IntegrationNode):
         type_: NodeType,
         logger=None,
     ) -> None:
-        """Create an ``TcpSystemProxy`` instance.
+        """Create an ``TcpIntegrationNodeProxy`` instance.
 
         Parameters
         ----------
@@ -1344,11 +1345,16 @@ class TcpIntegrationNodeProxy(TcpNodeProxy, IntegrationNode):
             )
         )
 
-    def load(self) -> None:
+    def load(self, args: Optional[Dict[str, Any]] = None) -> None:
         """Explicitly load the node.
 
         Some optiSLang nodes support/need an explicit LOAD prior to being able to register
         or to make registering more convenient.
+
+        Parameters
+        ----------
+        args: Optional[Dict[str, any]], optional
+            Additional arguments, by default ``None``.
 
         Raises
         ------
@@ -1360,7 +1366,7 @@ class TcpIntegrationNodeProxy(TcpNodeProxy, IntegrationNode):
             Raised when the timeout float value expires.
         """
         # TODO: test
-        self._osl_server.load(self.uid)
+        self._osl_server.load(uid=self.uid, args=args)
 
     def register_location_as_input_slot(
         self,
@@ -1596,6 +1602,80 @@ class TcpIntegrationNodeProxy(TcpNodeProxy, IntegrationNode):
         """
         # TODO: test
         self._osl_server.re_register_locations_as_response(uid=self.uid)
+
+
+class TcpProxySolverNodeProxy(TcpIntegrationNodeProxy, ProxySolverNode):
+    """Provides for creating and operating on integration nodes."""
+
+    def __init__(
+        self,
+        uid: str,
+        osl_server: TcpOslServer,
+        type_: NodeType,
+        logger=None,
+    ) -> None:
+        """Create an ``TcpProxySolverProxy`` instance.
+
+        Parameters
+        ----------
+        uid: str
+            Unique ID.
+        osl_server: TcpOslServer
+            Object providing access to the optiSLang server.
+        type_: NodeType
+            Instance of the ``NodeType`` class.
+        logger: Any, optional
+            Object for logging. If ``None``, standard logging object is used. Defaults to ``None``.
+        """
+        super().__init__(
+            uid=uid,
+            osl_server=osl_server,
+            type_=type_,
+            logger=logger,
+        )
+
+    def get_designs(self) -> List[dict]:
+        """Get pending designs from parent node.
+
+        Returns
+        -------
+        List[dict]
+           List of pending designs.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        return self._osl_server.get_designs(self.uid)
+
+    def set_designs(self, designs: Iterable[dict]) -> None:
+        """Set calculated designs.
+
+        Parameters
+        ----------
+        Iterable[dict]
+            Iterable of calculated designs.
+            Design format:
+            {
+                "hid": "0.1",
+                "responses": [{"name": "res1", "value": 1.0}, {...}, ...],
+            }
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        self._osl_server.set_designs(actor_uid=self.uid, designs=designs)
 
 
 # endregion
@@ -2109,6 +2189,9 @@ class TcpParametricSystemProxy(TcpSystemProxy, ParametricSystem):
     def get_omdb_files(self) -> Tuple[File]:
         """Get paths to omdb files.
 
+        This method is supported only when the client runs on the same file
+        system as the server, i.e., the server is not remote.
+
         Returns
         -------
         Tuple[File]
@@ -2122,7 +2205,14 @@ class TcpParametricSystemProxy(TcpSystemProxy, ParametricSystem):
             Raised when a command or query fails.
         TimeoutError
             Raised when the timeout float value expires.
+        RuntimeError
+            Raised when the server is remote.
         """
+        if self._osl_server.is_remote:
+            raise RuntimeError(
+                "Paths to omdb files cannot be provided when connected to the remote server."
+            )
+
         statuses_info = self._get_status_info()
         wdirs = [Path(status_info["working dir"]) for status_info in statuses_info]
         omdb_files = []
@@ -2130,6 +2220,138 @@ class TcpParametricSystemProxy(TcpSystemProxy, ParametricSystem):
             omdb_files.extend([File(path) for path in wdir.glob("*.omdb")])
         return tuple(omdb_files)
 
+    def save_designs_as_json(self, hid: str, file_path: Union[Path, str]) -> File:
+        """Save designs for a given state to JSON file.
+
+        Parameters
+        ----------
+        hid : str
+            Actor's state.
+        file_path : Union[Path, str]
+            Path to the file.
+
+        Returns
+        -------
+        File
+            Object representing saved file.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        TypeError
+            Raised when the `hid` is `None`
+            -or-
+            `file_path` is `None` or unsupported type.
+        ValueError
+            Raised when ``hid`` does not exist.
+        """
+        self.__save_designs_as(hid, file_path, FileOutputFormat.JSON)
+
+    def save_designs_as_csv(self, hid: str, file_path: Union[Path, str]) -> File:
+        """Save designs for a given state to CSV file.
+
+        Parameters
+        ----------
+        hid : str
+            Actor's state.
+        file_path : Union[Path, str]
+            Path to the file.
+
+        Returns
+        -------
+        File
+            Object representing saved file.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        TypeError
+            Raised when the `hid` is `None`
+            -or-
+            `file_path` is `None` or unsupported type.
+        ValueError
+            Raised when ``hid`` does not exist.
+        """
+        self.__save_designs_as(hid, file_path, FileOutputFormat.CSV)
+
+    def __save_designs_as(self, hid: str, file_path: Union[Path, str], format: FileOutputFormat):
+        """Save designs for a given state.
+
+        Parameters
+        ----------
+        hid : str
+            Actor's state.
+        file_path : Union[Path, str]
+            Path to the file.
+        format : FileOutputFormat
+            Format of the file.
+
+        Returns
+        -------
+        File
+            Object representing saved file.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        TypeError
+            Raised when the `hid` is `None`
+            -or-
+            `file_path` is `None` or unsupported type.
+        ValueError
+            Raised when ``format`` is not unsupported
+            -or-
+            ``hid`` does not exist.
+        """
+        if hid is None:
+            raise TypeError("Actor's state cannot be `None`.")
+        if file_path is None:
+            raise TypeError("Path to the file cannot be `None`.")
+        if isinstance(file_path, str):
+            file_path = Path(file_path)
+        if not isinstance(file_path, Path):
+            raise TypeError(
+                "Type of the `file_path` argument is not supported: `file_path` = "
+                f"`{type(file_path)}`."
+            )
+
+        designs = self._get_designs_dicts()
+        if not designs.get(hid):
+            raise ValueError(f"Design for given `hid` argument not available: `hid` = `{hid}.")
+
+        if format == FileOutputFormat.JSON:
+            file_output = json.dumps(designs[hid])
+            newline = None
+        elif format == FileOutputFormat.CSV:
+            file_output = self.__convert_design_dict_to_csv(designs[hid])
+            newline = ""
+        else:
+            raise ValueError(f"Output file format `{format}` is not supported.")
+
+        with open(file_path, "w", newline=newline) as f:
+            f.write(file_output)
+        return File(file_path)
+
+    @deprecated(
+        version="0.9.0",
+        reason="Use :py:meth:`TcpParametricSystemProxy.save_designs_as_json` or "
+        ":py:meth:`TcpParametricSystemProxy.save_designs_as_csv` instead.",
+    )
     def save_designs_as(
         self,
         hid: str,
@@ -3277,6 +3499,7 @@ _NODE_CLASS_TYPE_TO_TCP_MAPPING: Dict[str, Type[TcpNodeProxy]] = {
     NodeClassType.INTEGRATION_NODE.name: TcpIntegrationNodeProxy,
     NodeClassType.SYSTEM.name: TcpSystemProxy,
     NodeClassType.PARAMETRIC_SYSTEM.name: TcpParametricSystemProxy,
+    NodeClassType.PROXY_SOLVER.name: TcpProxySolverNodeProxy,
     NodeClassType.ROOT_SYSTEM.name: TcpRootSystemProxy,
 }
 

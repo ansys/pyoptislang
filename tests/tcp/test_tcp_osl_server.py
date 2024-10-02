@@ -335,6 +335,8 @@ def test_tcp_osl_properties(osl_server_process: OslServerProcess):
     tcp_osl_server.timeout = 20
     assert tcp_osl_server.timeout == 20
 
+    assert not tcp_osl_server.is_remote
+
     with pytest.raises(ValueError):
         tcp_osl_server.timeout = -5
     with pytest.raises(ValueError):

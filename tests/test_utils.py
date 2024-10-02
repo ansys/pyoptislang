@@ -21,10 +21,26 @@
 # SOFTWARE.
 
 from enum import Enum
+from socket import getaddrinfo, gethostname
 
 import pytest
 
 from ansys.optislang.core import utils
+
+
+@pytest.fixture
+def localhost_addresses():
+    """Get addresses of the local machine excluding loopback addresses."""
+    addresses = []
+    for _, _, _, _, sockaddr in getaddrinfo(gethostname(), None):
+        addresses.append(sockaddr[0])
+    return addresses
+
+
+@pytest.fixture
+def loopback_addresses():
+    """Get loopback addresses."""
+    return ["127.0.0.0", "127.0.0.1", "127.255.255.255", "::1", "localhost"]
 
 
 def test_enum_from_str():
@@ -42,3 +58,27 @@ def test_enum_from_str():
     assert utils.enum_from_str("one", MyEnum) == MyEnum.ONE
     assert utils.enum_from_str("ONE", MyEnum) == MyEnum.ONE
     assert utils.enum_from_str("ONX", MyEnum, ["X", "E"]) == MyEnum.ONE
+
+
+def test_get_localhost_addresses(localhost_addresses):
+    for address in utils.get_localhost_addresses():
+        assert address in localhost_addresses
+
+
+def test_is_localhost(loopback_addresses, localhost_addresses):
+    random_addresses = [
+        "192.168.101.1",
+        "10.0.10.1",
+        "130.10.20.1",
+        "2001:0db8:85a3:0000:0000:8a2e:0370:7334",
+        "fe80::1ff:fe23:4567:890a%3",
+    ]
+
+    for loopback_address in loopback_addresses:
+        assert utils.is_localhost(loopback_address) == True
+
+    for localhost_address in localhost_addresses:
+        assert utils.is_localhost(localhost_address) == True
+
+    for random_address in random_addresses:
+        assert utils.is_localhost(random_address) == (random_address in localhost_address)

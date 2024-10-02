@@ -27,6 +27,8 @@ from abc import ABC, abstractmethod
 from enum import Enum, Flag
 from typing import TYPE_CHECKING, Any, Optional, Tuple, Union
 
+from deprecated.sphinx import deprecated
+
 from ansys.optislang.core.io import File, FileOutputFormat, RegisteredFile
 from ansys.optislang.core.utils import enum_from_str
 
@@ -106,6 +108,7 @@ class NodeClassType(Enum):
     PARAMETRIC_SYSTEM = 2
     ROOT_SYSTEM = 3
     INTEGRATION_NODE = 4
+    PROXY_SOLVER = 5
 
     @classmethod
     def from_str(cls, string: str) -> NodeClassType:
@@ -857,11 +860,16 @@ class IntegrationNode(Node):
         pass
 
     @abstractmethod
-    def load(self) -> None:  # pragma: no cover
+    def load(self, args: Optional[dict] = None) -> None:  # pragma: no cover
         """Explicitly load the node.
 
         Some optiSLang nodes support/need an explicit load prior to being able to register
         or to make registering more convenient.
+
+        Parameters
+        ----------
+        args: Optional[dict], optional
+            Additional arguments, by default ``None``.
 
         Raises
         ------
@@ -1105,6 +1113,55 @@ class IntegrationNode(Node):
         pass
 
 
+class ProxySolverNode(IntegrationNode):
+    """Base class for classes which provide for creating and operating on an proxy solver node."""
+
+    @abstractmethod
+    def __init__(self):  # pragma: no cover
+        """``ProxySolverNode`` class is an abstract base class and cannot be instantiated."""
+        pass
+
+    @abstractmethod
+    def get_designs(self) -> Any:  # pragma: no cover
+        """Get pending designs from parent node.
+
+        Returns
+        -------
+        Any
+            Pending designs.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        pass
+
+    @abstractmethod
+    def set_designs(self, designs: Any) -> None:  # pragma: no cover
+        """Set calculated designs.
+
+        Parameters
+        ----------
+        Any
+            Calculated designs.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        pass
+
+
 class System(Node):
     """Base class for classes which provide for creating and operating on a system."""
 
@@ -1138,6 +1195,12 @@ class System(Node):
 
         Raises
         ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
         TypeError
             Raised when unsupported type of ``type_`` is given.
         ValueError
@@ -1366,7 +1429,80 @@ class ParametricSystem(System):
         """
         pass
 
+    def save_designs_as_json(
+        self, hid: str, file_path: Union[Path, str]
+    ) -> File:  # pragma: no cover
+        """Save designs for a given state to JSON file.
+
+        Parameters
+        ----------
+        hid : str
+            Actor's state.
+        file_path : Union[Path, str]
+            Path to the file.
+
+        Returns
+        -------
+        File
+            Object representing saved file.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        TypeError
+            Raised when the `hid` is `None`
+            -or-
+            `file_path` is `None` or unsupported type.
+        ValueError
+            Raised when ``hid`` does not exist.
+        """
+        pass
+
+    def save_designs_as_csv(
+        self, hid: str, file_path: Union[Path, str]
+    ) -> File:  # pragma: no cover
+        """Save designs for a given state to CSV file.
+
+        Parameters
+        ----------
+        hid : str
+            Actor's state.
+        file_path : Union[Path, str]
+            Path to the file.
+
+        Returns
+        -------
+        File
+            Object representing saved file.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        TypeError
+            Raised when the `hid` is `None`
+            -or-
+            `file_path` is `None` or unsupported type.
+        ValueError
+            Raised when ``hid`` does not exist.
+        """
+        pass
+
     @abstractmethod
+    @deprecated(
+        version="0.9.0",
+        reason="Use :py:meth:`ParametricSystem.save_designs_as_json` or "
+        ":py:meth:`ParametricSystem.save_designs_as_csv` instead.",
+    )
     def save_designs_as(
         self,
         hid: str,
