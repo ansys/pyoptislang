@@ -482,12 +482,12 @@ def test_save_designs_as(tmp_path: Path, tmp_example_project):
         project = osl.project
         root_system = project.root_system
 
-        __test_save_designs_as_json(tmp_path, root_system)
         __test_save_designs_as_csv(tmp_path, root_system)
+        __test_save_designs_as_json(tmp_path, root_system)
 
 
-def __test_save_designs_as_json(tmp_path: Path, root_system: TcpRootSystemProxy):
-    """Test `save_designs_as_json` method."""
+def __test_save_designs_as_csv(tmp_path: Path, root_system: TcpRootSystemProxy):
+    """Test `save_designs_as_csv` method."""
     sensitivity: TcpParametricSystemProxy = root_system.find_nodes_by_name("Sensitivity")[0]
     s_hids = sensitivity.get_states_ids()
     csv_file_path = tmp_path / "FirstDesign.csv"
@@ -496,8 +496,8 @@ def __test_save_designs_as_json(tmp_path: Path, root_system: TcpRootSystemProxy)
     assert csv_file.exists
 
 
-def __test_save_designs_as_csv(tmp_path: Path, root_system: TcpRootSystemProxy):
-    """Test `save_designs_as_csv` method."""
+def __test_save_designs_as_json(tmp_path: Path, root_system: TcpRootSystemProxy):
+    """Test `save_designs_as_json` method."""
     most_inner_sensitivity: TcpParametricSystemProxy = root_system.find_nodes_by_name(
         "MostInnerSensitivity", 3
     )[0]
