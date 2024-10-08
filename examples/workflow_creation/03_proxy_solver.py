@@ -152,11 +152,11 @@ load_json = {}
 load_json["parameters"] = []
 load_json["responses"] = []
 
-for i in range(1,6):
+for i in range(1, 6):
     parameter = {"dir": {"value": "input"}, "name": f"X{i}", "value": 1.0}
     load_json["parameters"].append(parameter)
 
-response = {"dir": {"value": "output"}, "name" : "Y", "value": 3.0}
+response = {"dir": {"value": "output"}, "name": "Y", "value": 3.0}
 load_json["responses"].append(response)
 
 proxy_solver.load(args=load_json)
@@ -168,12 +168,16 @@ proxy_solver.register_locations_as_response()
 
 # Change parameter bounds.
 
-for i in range(1,6):
-    algorithm_system.parameter_manager.modify_parameter(OptimizationParameter(name = f"X{i}", reference_value = 1.0,  range = (-3.14, 3.14)))
+for i in range(1, 6):
+    algorithm_system.parameter_manager.modify_parameter(
+        OptimizationParameter(name=f"X{i}", reference_value=1.0, range=(-3.14, 3.14))
+    )
 
 # Create a criterion in the algorithm system
 
-algorithm_system.criteria_manager.add_criterion(ObjectiveCriterion(name="obj", expression="Y", criterion=ComparisonType.MIN))
+algorithm_system.criteria_manager.add_criterion(
+    ObjectiveCriterion(name="obj", expression="Y", criterion=ComparisonType.MIN)
+)
 
 
 #########################################################
