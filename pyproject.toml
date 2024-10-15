@@ -45,7 +45,7 @@ doc = [
     "ansys-sphinx-theme==1.1.2",
     "matplotlib==3.9.2",
     "numpydoc==1.8.0",
-    "pypandoc==1.13",
+    "pypandoc==1.14",
     "Sphinx==7.4.7",
     "sphinx-copybutton==0.5.2",
     "sphinx-gallery==0.18.0",
