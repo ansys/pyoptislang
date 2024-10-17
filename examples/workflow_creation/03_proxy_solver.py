@@ -29,6 +29,8 @@ Proxy solver
 This example demonstrates how to obtain designs from parametric system and process them externally.
 
 It creates a proxy solver node inside parametric system and solves it's designs externally.
+
+This is a unified approach for "optiSLang inside" solutions.
 """
 
 #########################################################
@@ -144,22 +146,38 @@ multi_design_launch_num = 99  # set -1 to solve all designs simultaneously
 proxy_solver.set_property("MultiDesignLaunchNum", multi_design_launch_num)
 proxy_solver.set_property("ForwardHPCLicenseContextEnvironment", True)
 
-# Add parameters to the algorithm system and register them in the proxy solver.
+# Load the available parameters and responses.
+
+load_json = {}
+load_json["parameters"] = []
+load_json["responses"] = []
 
 for i in range(1, 6):
-    parameter = OptimizationParameter(name=f"X{i}", reference_value=1.0, range=(-3.14, 3.14))
-    algorithm_system.parameter_manager.add_parameter(parameter)
-    proxy_solver.register_location_as_parameter(
-        {"dir": {"value": "input"}, "name": parameter.name, "value": parameter.reference_value}
+    parameter = {"dir": {"value": "input"}, "name": f"X{i}", "value": 1.0}
+    load_json["parameters"].append(parameter)
+
+response = {"dir": {"value": "output"}, "name": "Y", "value": 3.0}
+load_json["responses"].append(response)
+
+proxy_solver.load(args=load_json)
+
+# Register parameters and responses to be available in the algorithm system
+
+proxy_solver.register_locations_as_parameter()
+proxy_solver.register_locations_as_response()
+
+# Change parameter bounds.
+
+for i in range(1, 6):
+    algorithm_system.parameter_manager.modify_parameter(
+        OptimizationParameter(name=f"X{i}", reference_value=1.0, range=(-3.14, 3.14))
     )
 
-# Register response in the proxy solver and create criterion in algorithm
+# Create a criterion in the algorithm system
 
-proxy_solver.register_location_as_response({"dir": {"value": "output"}, "name": "Y", "value": 3.0})
-criterion = ObjectiveCriterion(
-    name="obj", expression="Y", expression_value=3.0, criterion=ComparisonType.MIN
+algorithm_system.criteria_manager.add_criterion(
+    ObjectiveCriterion(name="obj", expression="Y", criterion=ComparisonType.MIN)
 )
-algorithm_system.criteria_manager.add_criterion(criterion)
 
 
 #########################################################
@@ -191,7 +209,7 @@ while not osl.project.root_system.get_status() == "Processing done":
     if len(design_list):
         responses_dict = calculate(design_list)
         proxy_solver.set_designs(responses_dict)
-    time.sleep(0.1)
+    # time.sleep(0.1)
 
 print("Solved Successfully!")
 
@@ -206,6 +224,7 @@ osl.dispose()
 # View generated workflow
 # ~~~~~~~~~~~~~~~~~~~~~~~
 # This image shows the generated workflow.
+# However, it is important to note, that this workflow is only usable through pyoptislang and cannot be used interactively!
 #
 # .. image:: ../../_static/03_ProxySolver.png
 #  :width: 400
