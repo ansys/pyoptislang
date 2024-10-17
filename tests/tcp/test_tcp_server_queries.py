@@ -387,6 +387,24 @@ def test_get_criterion():
     assert dictionary["Password"] == example_password
 
 
+def test_get_designs():
+    "Test get_designs."
+    json_string = sq.get_designs(uid=example_uid)
+    dictionary = json.loads(json_string)
+    requiered_string = json.loads(
+        '{"What": "GET_DESIGNS", "uid": "5cdfb20b-bef6-4412-9985-89f5ded5ee95"}'
+    )
+    assert type(json_string) == str
+    assert sorted(dictionary.items()) == sorted(requiered_string.items())
+    # with password
+    json_string = sq.get_designs(
+        uid=example_uid,
+        password=example_password,
+    )
+    dictionary = json.loads(json_string)
+    assert dictionary["Password"] == example_password
+
+
 def test_hpc_licensing_forwarded_environment():
     "Test hpc_licensing_forwarded_environment."
     json_string = sq.hpc_licensing_forwarded_environment(uid=example_uid)
