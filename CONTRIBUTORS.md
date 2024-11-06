@@ -1,10 +1,10 @@
-# Authors
+# Contributors
 
 ## Project Lead
 
 * [Ronny Fahlberg](https://github.com/rfahlberg)
 
-## Contributors
+## Individual Contributors
 
 * [ekrja](https://github.com/ekrja)
 * [Jorge Martínez](https://github.com/jorgepiloto)
