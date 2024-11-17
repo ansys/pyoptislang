@@ -24,7 +24,7 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from enum import Enum
+from enum import Enum, Flag
 from typing import TYPE_CHECKING, Any, Optional, Tuple, Union
 
 from deprecated.sphinx import deprecated
@@ -87,6 +87,17 @@ class DesignFlow(Enum):
             Raised when an invalid value of ``string`` is given.
         """
         return enum_from_str(string=string, enum_class=cls, replace=(" ", "_"))
+
+
+class ExecutionOption(Flag):
+    """Provides actor execution options."""
+
+    INACTIVE = 0
+    ACTIVE = 1
+    END_POINT = 2
+    STARTING_POINT = 4
+    SAVE_POINT = 8
+    RECYCLE_RESULTS = 16
 
 
 class NodeClassType(Enum):
@@ -349,6 +360,26 @@ class Node(ABC):
         pass
 
     @abstractmethod
+    def get_execution_options(self) -> ExecutionOption:  # pragma: no cover
+        """Get execution options.
+
+        Returns
+        -------
+        ExecutionOption
+            Execution options of the ``Node``.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        pass
+
+    @abstractmethod
     def get_connections(
         self, slot_type: Optional[SlotType] = None, slot_name: Optional[str] = None
     ) -> Tuple[Edge, ...]:  # pragma: no cover
@@ -589,6 +620,36 @@ class Node(ABC):
             Raised when a command or query fails.
         TimeoutError
             Raised when the timeout float value expires.
+        """
+        pass
+
+    @abstractmethod
+    def set_execution_options(self, value: ExecutionOption) -> None:  # pragma: no cover
+        """Set execution options.
+
+        Parameters
+        ----------
+        value : ExecutionOption
+            Execution options of the ``Node``. More execution options can be
+            combined using the bitwise operations.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+
+        Examples
+        --------
+        Combination of more execution options using the bitwise operation.
+
+        >>> ...
+        >>> node.set_execution_options(
+                ExecutionOption.ACTIVE | ExecutionOption.STARTING_POINT
+            )
         """
         pass
 

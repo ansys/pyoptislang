@@ -62,7 +62,7 @@ def create_osl_server_process(shutdown_on_finished=False, project_path=None) -> 
         )
         osl_server_process.start()
 
-        start_timeout = 90
+        start_timeout = 180
         start = time.time()
         while not os.path.exists(server_info_file):
             time.sleep(0.1)
