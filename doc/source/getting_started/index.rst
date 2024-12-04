@@ -8,7 +8,7 @@ on the Ansys website.
 ************
 Installation
 ************
-The ``ansys-optislang-core`` package supports Python 3.9 through 3.12 on
+The ``ansys-optislang-core`` package supports Python 3.9 through 3.13 on
 Windows and Linux. Three modes of installation are available:
 
 - User installation
