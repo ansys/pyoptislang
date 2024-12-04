@@ -21,13 +21,16 @@ pyoptislang.BUILDING_GALLERY = True
 
 # Sphinx extensions
 extensions = [
+    "numpydoc",
     "sphinx.ext.autodoc",
     "sphinx.ext.autosummary",
-    "numpydoc",
+    "sphinx.ext.coverage",
+    "sphinx.ext.doctest",
+    "sphinx.ext.extlinks",
     "sphinx.ext.intersphinx",
     "sphinx_copybutton",
     "sphinx_gallery.gen_gallery",
-    "sphinxcontrib.images",
+    "ansys_sphinx_theme.extension.linkcode",
 ]
 
 # Intersphinx mapping
