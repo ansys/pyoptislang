@@ -65,6 +65,20 @@ numpydoc_validation_checks = {
     # type, unless multiple values are being returned"
 }
 
+# Ignoring numpydoc validation on built-in methods from Python
+# or other libraries due to inheritance
+numpydoc_validation_exclude = {
+    "denominator",
+    "imag",
+    "numerator",
+    "real",
+    "__cause__",
+    "__context__",
+    "__abs__",
+    "__float__",
+    "__int__",
+}
+
 # Favicon
 html_favicon = ansys_favicon
 
