@@ -2498,12 +2498,12 @@ class OptimizationParameter(Parameter):
     def __init__(
         self,
         name: str = "",
-        reference_value: Union[bool, float, str, None] = 0,
+        reference_value: Union[bool, float, str, int, None] = 0,
         reference_value_type: ParameterValueType = ParameterValueType.REAL,
         id: Optional[str] = None,
         const: bool = False,
         deterministic_resolution: Union[ParameterResolution, str] = ParameterResolution.CONTINUOUS,
-        range: Union[Sequence[float, float], Sequence[Sequence[float]]] = (-1, 1),
+        range: Union[Sequence[float, float], Sequence[Sequence[Union[bool, float, str, int]]]] = (-1, 1),
     ) -> None:
         """Create a new instance of ``OptimizationParameter``.
 
@@ -2633,17 +2633,17 @@ class OptimizationParameter(Parameter):
             )
 
     @property
-    def range(self) -> Union[Tuple[float, float], Tuple[Tuple[float, ...]]]:
+    def range(self) -> Union[Tuple[float, float], Tuple[Tuple[Union[bool, float, str, int], ...]]]:
         """Range of the optimization parameter."""
         return self.__range
 
     @range.setter
-    def range(self, range: Union[Sequence[float, float], Sequence[Sequence[float]]]) -> None:
+    def range(self, range: Union[Sequence[float, float], Sequence[Sequence[Union[bool, float, str, int]]]]) -> None:
         """Set the range of the optimization parameter.
 
         Parameters
         ----------
-        range: Union[Sequence[float, float], Sequence[Sequence[float]]]
+        range: Union[Sequence[float, float], Sequence[Sequence[Union[bool, float, str, int]]]]
             Range of the optimization parameter.
         """
         if not isinstance(range[0], (float, int)):
@@ -2659,13 +2659,13 @@ class OptimizationParameter(Parameter):
         dict
             Input dictionary for the optiSLang server.
         """
-        if len(self.range) == 1:
-            range_dict = {"discrete_states": self.range[0]}
-        else:
+        if self.deterministic_resolution == ParameterResolution.CONTINUOUS:
             range_dict = {
                 "lower_bound": self.range[0],
                 "upper_bound": self.range[1],
             }
+        else:
+            range_dict = {"discrete_states": self.range}
         output_dict = {
             "active": True,
             "const": self.const if self.const is not None else False,
