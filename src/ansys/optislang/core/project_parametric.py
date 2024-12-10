@@ -28,6 +28,7 @@ from enum import Enum
 from typing import Any, Dict, Iterable, List, Mapping, Optional, Sequence, Tuple, Union
 import uuid
 
+from ansys.optislang.core.json_utils import _get_enum_value
 from ansys.optislang.core.utils import enum_from_str
 
 
@@ -1159,7 +1160,7 @@ class ConstraintCriterion(Criterion):
                 "rhs_value": Criterion._lhs_rhs_value_to_dict(
                     value=self.limit_expression_value, value_type=self.limit_expression_value_type
                 ),
-                "type": {"value": self.criterion.name.lower()},
+                "type": self.criterion.name.lower(),
                 "value": Criterion._value_to_dict(value=self.value, value_type=self.value_type),
             },
         }
@@ -1475,7 +1476,7 @@ class ObjectiveCriterion(Criterion):
                 "rhs_value": Criterion._lhs_rhs_value_to_dict(
                     self.expression_value, self.expression_value_type
                 ),
-                "type": {"value": self.criterion.name.lower()},
+                "type": self.criterion.name.lower(),
                 "value": Criterion._value_to_dict(self.value, self.value_type),
             },
         }
@@ -1587,7 +1588,7 @@ class VariableCriterion(Criterion):
                 "rhs_value": Criterion._lhs_rhs_value_to_dict(
                     self.expression_value, self.expression_value_type
                 ),
-                "type": {"value": self.criterion.name.lower()},
+                "type": self.criterion.name.lower(),
                 "value": Criterion._value_to_dict(self.value, self.value_type),
             },
         }
@@ -1703,7 +1704,7 @@ class Parameter:
     def __init__(
         self,
         name: str = "",
-        reference_value: Optional[Union[bool, float, str]] = None,
+        reference_value: Optional[Union[bool, float, str, int]] = None,
         id: Optional[str] = None,
         const: bool = False,
         type_: Union[ParameterType, str] = ParameterType.DETERMINISTIC,
@@ -1714,7 +1715,7 @@ class Parameter:
         ----------
         name: str, optional
             Name of the parameter. By default ``""``.
-        reference_value: Optional[Union[bool, float, str]], optional
+        reference_value: Optional[Union[bool, float, str, int]], optional
             Parameter's reference value. By default ``None``.
         id: str, optional
             Parameter's unique id. By default ``None``.
@@ -1849,20 +1850,20 @@ class Parameter:
     @property
     def reference_value(
         self,
-    ) -> Union[bool, float, str, None]:
+    ) -> Optional[Union[bool, float, str, int]]:
         """Reference value of the parameter."""
         return self.__reference_value
 
     @reference_value.setter
     def reference_value(
         self,
-        reference_value: Union[bool, float, str, None],
+        reference_value: Optional[Union[bool, float, str, int]],
     ) -> None:
         """Set the reference value of the parameter.
 
         Parameters
         ----------
-        reference_value: Union[bool, float, str, None]
+        reference_value: Optional[Union[bool, float, str, int]]
             Reference value of the parameter.
 
         Raises
@@ -1959,42 +1960,56 @@ class Parameter:
             "name": par_dict["name"],
             "reference_value": par_dict["reference_value"],
             "reference_value_type": (
-                par_dict["deterministic_property"].get("domain_type", {}).get("value", None)
+                ParameterValueType.from_str(
+                    _get_enum_value(
+                        par_dict["deterministic_property"].get("domain_type", {}),
+                        None,
+                    )
+                )
                 if par_dict.get("deterministic_property")
                 else None
             ),
             "id": par_dict["id"],
             "const": par_dict["const"],
-            "type": ParameterType.from_str(par_dict["type"]["value"]),
-            "operation": par_dict.get("dependency_expression", None),
+            "type": ParameterType.from_str(_get_enum_value(par_dict["type"], None)),
+            "operation": par_dict.get("dependency_expression", ""),
             "deterministic_resolution": (
                 ParameterResolution.from_str(
-                    par_dict["deterministic_property"].get("kind", {}).get("value", None)
+                    _get_enum_value(
+                        par_dict["deterministic_property"].get("kind", {}),
+                        ParameterResolution.CONTINUOUS,
+                    )
                 )
                 if par_dict.get("deterministic_property")
-                else None
+                else ParameterResolution.CONTINUOUS
             ),
             "stochastic_resolution": (
                 ParameterResolution.from_str(
-                    par_dict["stochastic_property"].get("kind", {}).get("value", None)
+                    _get_enum_value(
+                        par_dict["stochastic_property"].get("kind", {}),
+                        ParameterResolution.MARGINALDISTRIBUTION,
+                    )
                 )
                 if par_dict.get("stochastic_property")
-                else None
+                else ParameterResolution.MARGINALDISTRIBUTION
             ),
             "distribution_type": (
                 DistributionType.from_str(
-                    par_dict.get("stochastic_property", {}).get("type", {}).get("value", None)
+                    _get_enum_value(
+                        par_dict["stochastic_property"].get("type", {}),
+                        DistributionType.NORMAL,
+                    )
                 )
                 if par_dict.get("stochastic_property")
-                else None
+                else DistributionType.NORMAL
             ),
             "distribution_parameters": (
-                tuple(par_dict["stochastic_property"]["distribution_parameters"])
+                par_dict["stochastic_property"]["distribution_parameters"]
                 if par_dict.get("stochastic_property", {}).get("distribution_parameters")
                 else None
             ),
             "statistical_moments": (
-                tuple(par_dict["stochastic_property"]["statistical_moments"])
+                par_dict["stochastic_property"]["statistical_moments"]
                 if par_dict.get("stochastic_property", {}).get(
                     "statistical_moments",
                 )
@@ -2008,10 +2023,10 @@ class Parameter:
                 par_dict.get("deterministic_property", {}).get("lower_bound", None),
                 par_dict.get("deterministic_property", {}).get("upper_bound", None),
             )
-        # discrete values otherwise, stored as ([val1, val2, val3 ..])
+        # discrete values otherwise, stored as [val1, val2, val3 ..]
         elif properties_dict["deterministic_resolution"] is not None:
-            properties_dict["range"] = (
-                tuple(par_dict.get("deterministic_property", {}).get("discrete_states", [])),
+            properties_dict["range"] = par_dict.get("deterministic_property", {}).get(
+                "discrete_states", []
             )
         else:
             properties_dict["range"] = None
@@ -2029,7 +2044,7 @@ class DependentParameter(Parameter):
         self,
         name: str = "",
         operation: str = "0",
-        reference_value: Optional[Union[bool, float, str, Tuple[Any, ParameterValueType]]] = None,
+        reference_value: Optional[Union[bool, float, str, int]] = None,
         id: Optional[str] = None,
         const: bool = False,
     ) -> None:
@@ -2125,7 +2140,7 @@ class DependentParameter(Parameter):
             "name": self.name,
             "reference_value": None,
             "removable": True,
-            "type": {"value": self.type.name.lower()},
+            "type": self.type.name.lower(),
             "unit": "",
         }
 
@@ -2156,7 +2171,7 @@ class MixedParameter(Parameter):
         id: Optional[str] = None,
         const: bool = False,
         deterministic_resolution: Union[ParameterResolution, str] = ParameterResolution.CONTINUOUS,
-        range: Union[Sequence[float, float], Sequence[Sequence[float]]] = (-1, 1),
+        range: Union[Tuple[float, float], Sequence[float]] = (-1, 1),
         stochastic_resolution: Union[
             ParameterResolution, str
         ] = ParameterResolution.MARGINALDISTRIBUTION,
@@ -2179,16 +2194,16 @@ class MixedParameter(Parameter):
             Determines whether is parameter constant. By default ``False``.
         deterministic_resolution: Union[ParameterResolution, str], optional
             Parameter's deterministic resolution. By default ``ParameterResolution.CONTINUOUS``.
-        range: Union[Sequence[float, float], Sequence[Sequence[float]]], optional
+        range: Union[Tuple[float, float], Sequence[float]], optional
             Either 2 values specifying range or list of discrete values. By default ``(-1, 1)``.
         stochastic_resolution: Union[ParameterResolution, str], optional
             Parameter's stochastic resolution.
             By default ``ParameterResolution.MARGINALDISTRIBUTION``.
         distribution_type: Union[DistributionType, str], optional
             Parameter's distribution type. By default ``DistributionType.NORMAL``.
-        distribution_parameters: Optional[Sequence[float, ...]], optional
+        distribution_parameters: Optional[Sequence[float]], optional
             Distribution's parameters. By default ``None``.
-        statistical_moments: Optional[Sequence[float, ...]], optional
+        statistical_moments: Optional[Sequence[float]], optional
             Distribution's statistical moments. By default ``None``.
         cov: Optional[float], optional
             Distribution's COV. By default ``None``.
@@ -2205,13 +2220,16 @@ class MixedParameter(Parameter):
         self.range = range
         self.stochastic_resolution = stochastic_resolution
         self.distribution_type = distribution_type
-        self.distribution_parameters = (
-            tuple(distribution_parameters) if distribution_parameters is not None else None
-        )
-        self.statistical_moments = (
-            tuple(statistical_moments) if statistical_moments is not None else None
-        )
+        self.distribution_parameters = distribution_parameters
+        self.statistical_moments = statistical_moments
         self.cov = cov
+
+        if (
+            self.distribution_parameters is None
+            and self.statistical_moments is None
+            and self.cov is None
+        ):
+            self.statistical_moments = [self.reference_value, 1]
 
     def __eq__(self, other) -> bool:
         """Compare properties of two instances of the ``MixedParameter`` class.
@@ -2296,23 +2314,20 @@ class MixedParameter(Parameter):
             )
 
     @property
-    def range(self) -> Union[Tuple[float, float], Tuple[Tuple[float, ...]]]:
+    def range(self) -> Union[Tuple[float, float], Sequence[float]]:
         """Range of the mixed parameter."""
         return self.__range
 
     @range.setter
-    def range(self, range: Union[Sequence[float, float], Sequence[Sequence[float]]]) -> None:
+    def range(self, range: Union[Tuple[float, float], Sequence[float]]) -> None:
         """Set the range of the mixed parameter.
 
         Parameters
         ----------
-        range : Union[Sequence[float, float], Sequence[Sequence[float]]]
+        range : Union[Tuple[float, float], Sequence[float]]
             Range of the mixed parameter.
         """
-        if not isinstance(range[0], (int, float)):
-            self.__range = (tuple(range[0]),)
-        else:
-            self.__range = tuple(range)
+        self.__range = range
 
     @property
     def stochastic_resolution(self) -> ParameterResolution:
@@ -2373,26 +2388,23 @@ class MixedParameter(Parameter):
             )
 
     @property
-    def distribution_parameters(self) -> Union[Tuple[float], None]:
+    def distribution_parameters(self) -> Optional[Sequence[float]]:
         """Parameters of the distribution."""
         return self.__distribution_parameters
 
     @distribution_parameters.setter
-    def distribution_parameters(self, parameters: Union[Sequence[float], None]):
+    def distribution_parameters(self, parameters: Optional[Sequence[float]]):
         """Set the parameters of the distribution.
 
         Parameters
         ----------
-        parameters : Sequence[float]
+        parameters : Optional[Sequence[float]]
             Parameters of the distribution.
         """
-        if parameters is not None:
-            self.__distribution_parameters = tuple(parameters)
-        else:
-            self.__distribution_parameters = None
+        self.__distribution_parameters = parameters
 
     @property
-    def statistical_moments(self) -> Optional[Tuple[float]]:
+    def statistical_moments(self) -> Optional[Sequence[float]]:
         """Statistical moments of the distribution."""
         return self.__statistical_moments
 
@@ -2405,10 +2417,7 @@ class MixedParameter(Parameter):
         moments : Optional[Sequence[float]]
             Statistical moments of the distribution.
         """
-        if moments is not None:
-            self.__statistical_moments = tuple(moments)
-        else:
-            self.__statistical_moments = None
+        self.__statistical_moments = moments
 
     @property
     def cov(self) -> Optional[float]:
@@ -2434,16 +2443,16 @@ class MixedParameter(Parameter):
         dict
             Input dictionary for the optiSLang server.
         """
-        if len(self.range) == 1:
-            range_dict = {"discrete_states": self.range[0]}
-        else:
+        if self.deterministic_resolution == ParameterResolution.CONTINUOUS:
             range_dict = {
                 "lower_bound": self.range[0],
                 "upper_bound": self.range[1],
             }
+        else:
+            range_dict = {"discrete_states": self.range}
         stochastic_property = {
-            "kind": {"value": self.stochastic_resolution.name.lower()},
-            "type": {"value": self.distribution_type.name.lower()},
+            "kind": self.stochastic_resolution.name.lower(),
+            "type": self.distribution_type.name.lower(),
         }
         if self.distribution_parameters is not None:
             stochastic_property["distribution_parameters"] = self.distribution_parameters
@@ -2455,15 +2464,15 @@ class MixedParameter(Parameter):
             "active": True,
             "const": self.const if self.const is not None else False,
             "deterministic_property": {
-                "domain_type": {"value": self.reference_value_type.name.lower()},
-                "kind": {"value": self.deterministic_resolution.name.lower()},
+                "domain_type": self.reference_value_type.name.lower(),
+                "kind": self.deterministic_resolution.name.lower(),
             },
             "modifiable": False,
             "name": self.name,
             "reference_value": self.reference_value if self.reference_value else 0,
             "removable": True,
             "stochastic_property": stochastic_property,
-            "type": {"value": self.type.name.lower()},
+            "type": self.type.name.lower(),
             "unit": "",
         }
 
@@ -2498,12 +2507,12 @@ class OptimizationParameter(Parameter):
     def __init__(
         self,
         name: str = "",
-        reference_value: Union[bool, float, str, int, None] = 0,
+        reference_value: Union[bool, float, str, int] = 0,
         reference_value_type: ParameterValueType = ParameterValueType.REAL,
         id: Optional[str] = None,
         const: bool = False,
         deterministic_resolution: Union[ParameterResolution, str] = ParameterResolution.CONTINUOUS,
-        range: Union[Sequence[float, float], Sequence[Sequence[Union[bool, float, str, int]]]] = (-1, 1),
+        range: Union[Tuple[float, float], Sequence[Union[bool, float, str, int]]] = (-1, 1),
     ) -> None:
         """Create a new instance of ``OptimizationParameter``.
 
@@ -2511,7 +2520,7 @@ class OptimizationParameter(Parameter):
         ----------
         name: str, optional
             Name of the parameter. By default ``""``.
-        reference_value: Union[bool, float, str, None], optional
+        reference_value: Union[bool, float, str, int], optional
             Parameter's reference value. By default ``0``.
         reference_value_type: ParameterValueType, optional
             Type of the reference value. By default ``ParameterValueType.REAL``.
@@ -2521,7 +2530,7 @@ class OptimizationParameter(Parameter):
             Determines whether is parameter constant. By default ``False``.
         deterministic_resolution: Union[ParameterResolution, str], optional
             Parameter's deterministic resolution. By default ``ParameterResolution.CONTINUOUS``.
-        range: Union[Sequence[float, float], Sequence[Sequence[float]]], optional
+        range: Union[Tuple[float, float], Sequence[Union[bool, float, str, int]]], optional
             Either 2 values specifying range or list of discrete values. By default ``(-1, 1)``.
         """
         super().__init__(
@@ -2633,23 +2642,22 @@ class OptimizationParameter(Parameter):
             )
 
     @property
-    def range(self) -> Union[Tuple[float, float], Tuple[Tuple[Union[bool, float, str, int], ...]]]:
+    def range(self) -> Union[Tuple[float, float], Sequence[Union[bool, float, str, int]]]:
         """Range of the optimization parameter."""
         return self.__range
 
     @range.setter
-    def range(self, range: Union[Sequence[float, float], Sequence[Sequence[Union[bool, float, str, int]]]]) -> None:
+    def range(
+        self, range: Union[Tuple[float, float], Sequence[Union[bool, float, str, int]]]
+    ) -> None:
         """Set the range of the optimization parameter.
 
         Parameters
         ----------
-        range: Union[Sequence[float, float], Sequence[Sequence[Union[bool, float, str, int]]]]
+        range: Union[Tuple[float, float], Sequence[Union[bool, float, str, int]]]
             Range of the optimization parameter.
         """
-        if not isinstance(range[0], (float, int)):
-            self.__range = (tuple(range[0]),)
-        else:
-            self.__range = tuple(range)
+        self.__range = range
 
     def to_dict(self) -> dict:
         """Convert an instance of the ``OptimizationParameter`` to a dictionary.
@@ -2670,14 +2678,14 @@ class OptimizationParameter(Parameter):
             "active": True,
             "const": self.const if self.const is not None else False,
             "deterministic_property": {
-                "domain_type": {"value": self.reference_value_type.name.lower()},
-                "kind": {"value": self.deterministic_resolution.name.lower()},
+                "domain_type": self.reference_value_type.name.lower(),
+                "kind": self.deterministic_resolution.name.lower(),
             },
             "modifiable": False,
             "name": self.name,
             "reference_value": self.reference_value,
             "removable": True,
-            "type": {"value": self.type.name.lower()},
+            "type": self.type.name.lower(),
             "unit": "",
         }
         if self.id is not None:
@@ -2733,9 +2741,9 @@ class StochasticParameter(Parameter):
             By default ``ParameterResolution.MARGINALDISTRIBUTION``.
         distribution_type: Union[DistributionType, str], optional
             Parameter's distribution type. By default ``DistributionType.NORMAL``.
-        distribution_parameters: Optional[Sequence[float, ...]], optional
+        distribution_parameters: Optional[Sequence[float]], optional
             Distribution's parameters. Defaults to ``None``.
-        statistical_moments: Optional[Sequence[float, ...]], optional
+        statistical_moments: Optional[Sequence[float]], optional
             Distribution's statistical moments. Defaults to ``None``.
         cov: Optional[float], optional
             Distribution's COV. Defaults to ``None``.
@@ -2750,13 +2758,16 @@ class StochasticParameter(Parameter):
         self.__reference_value_type = ParameterValueType.REAL
         self.stochastic_resolution = stochastic_resolution
         self.distribution_type = distribution_type
-        self.distribution_parameters = (
-            tuple(distribution_parameters) if distribution_parameters is not None else None
-        )
-        self.statistical_moments = (
-            tuple(statistical_moments) if statistical_moments is not None else None
-        )
+        self.distribution_parameters = distribution_parameters
+        self.statistical_moments = statistical_moments
         self.cov = cov
+
+        if (
+            self.distribution_parameters is None
+            and self.statistical_moments is None
+            and self.cov is None
+        ):
+            self.statistical_moments = [self.reference_value, 1]
 
     def __eq__(self, other) -> bool:
         r"""Compare properties of two instances of the ``StochasticParameter`` class.
@@ -2864,42 +2875,36 @@ class StochasticParameter(Parameter):
             )
 
     @property
-    def distribution_parameters(self) -> Union[Tuple[float], None]:
+    def distribution_parameters(self) -> Optional[Sequence[float]]:
         """Parameters of the distribution."""
         return self.__distribution_parameters
 
     @distribution_parameters.setter
-    def distribution_parameters(self, parameters: Union[Sequence[float], None]):
+    def distribution_parameters(self, parameters: Optional[Sequence[float]]):
         """Set the parameters of the distribution.
 
         Parameters
         ----------
-        parameters : Sequence[float]
+        parameters : Optional[Sequence[float]]
             Parameters of the distribution.
         """
-        if parameters is not None:
-            self.__distribution_parameters = tuple(parameters)
-        else:
-            self.__distribution_parameters = None
+        self.__distribution_parameters = parameters
 
     @property
-    def statistical_moments(self) -> Union[Tuple[float], None]:
+    def statistical_moments(self) -> Optional[Sequence[float]]:
         """Statistical moments of the distribution."""
         return self.__statistical_moments
 
     @statistical_moments.setter
-    def statistical_moments(self, moments: Union[Sequence[float], None]):
+    def statistical_moments(self, moments: Optional[Sequence[float]]):
         """Set the statistical moments of the distribution.
 
         Parameters
         ----------
-        moments : Sequence[float]
+        moments : Optional[Sequence[float]]
             Statistical moments of the distribution.
         """
-        if moments is not None:
-            self.__statistical_moments = tuple(moments)
-        else:
-            self.__statistical_moments = None
+        self.__statistical_moments = moments
 
     @property
     def cov(self) -> Optional[float]:
@@ -2926,8 +2931,8 @@ class StochasticParameter(Parameter):
             Input dictionary for the optiSLang server.
         """
         stochastic_property = {
-            "kind": {"value": self.stochastic_resolution.name.lower()},
-            "type": {"value": self.distribution_type.name.lower()},
+            "kind": self.stochastic_resolution.name.lower(),
+            "type": self.distribution_type.name.lower(),
         }
         if self.distribution_parameters is not None:
             stochastic_property["distribution_parameters"] = self.distribution_parameters
@@ -2943,7 +2948,7 @@ class StochasticParameter(Parameter):
             "reference_value": self.reference_value,
             "removable": True,
             "stochastic_property": stochastic_property,
-            "type": {"value": self.type.name.lower()},
+            "type": self.type.name.lower(),
             "unit": "",
         }
         if self.id is not None:
