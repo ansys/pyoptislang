@@ -191,35 +191,17 @@ CONSTRAINT_CRITERION_DICT = {
     "Second": {
         "lhs": "0",
         "lhs_value": {
-            "kind": {
-                "enum": ["uninitialized", "bool", "scalar", "vector", "matrix", "signal", "xydata"],
-                "value": "scalar",
-            },
+            "kind": "scalar",
             "scalar": {"imag": 0.0, "real": 0.0},
         },
         "need_eval": False,
         "rhs": "0",
         "rhs_value": {
-            "kind": {
-                "enum": ["uninitialized", "bool", "scalar", "vector", "matrix", "signal", "xydata"],
-                "value": "scalar",
-            },
+            "kind": "scalar",
             "scalar": {"imag": 0.0, "real": 0.0},
         },
-        "type": {
-            "enum": [
-                "ignore",
-                "min",
-                "max",
-                "lessequal",
-                "equal",
-                "greaterequal",
-                "lesslimitstate",
-                "greaterlimitstate",
-            ],
-            "value": "lessequal",
-        },
-        "value": {"kind": {"enum": [...], "value": "scalar"}, "scalar": {"imag": 0.0, "real": 0.0}},
+        "type": "lessequal",
+        "value": {"kind": "scalar", "scalar": {"imag": 0.0, "real": 0.0}},
     },
 }
 OBJECTIVE_CRITERION = ObjectiveCriterion(
@@ -276,10 +258,7 @@ LIMIT_STATE_CRITERION_DICT = {
     "Second": {
         "lhs": "0",
         "lhs_value": {
-            "kind": {
-                "enum": ["uninitialized", "bool", "scalar", "vector", "matrix", "signal", "xydata"],
-                "value": "scalar",
-            },
+            "kind": "scalar",
             "scalar": {"imag": 0.0, "real": 0.0},
         },
         "need_eval": False,
@@ -291,19 +270,7 @@ LIMIT_STATE_CRITERION_DICT = {
             },
             "scalar": {"imag": 0.0, "real": 0.0},
         },
-        "type": {
-            "enum": [
-                "ignore",
-                "min",
-                "max",
-                "lessequal",
-                "equal",
-                "greaterequal",
-                "lesslimitstate",
-                "greaterlimitstate",
-            ],
-            "value": "lesslimitstate",
-        },
+        "type": "lesslimitstate",
         "value": {
             "kind": {
                 "enum": ["uninitialized", "bool", "scalar", "vector", "matrix", "signal", "xydata"],
@@ -1009,7 +976,7 @@ def test_criterion():
     assert isinstance(variable_criterion_from_dict, VariableCriterion)
 
     with pytest.raises(TypeError):
-        Criterion.from_dict({"Second": {"type": {"value": "invalid"}}})
+        Criterion.from_dict({"Second": {"type": "invalid"}})
 
     with pytest.raises(AttributeError):
         criterion.type = CriterionType.LIMIT_STATE

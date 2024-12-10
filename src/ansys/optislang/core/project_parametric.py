@@ -716,11 +716,11 @@ class Criterion:
             raise TypeError("Unsupported format of criterion dictionary.")
         name = criterion_dict["First"]
         criterion_dict = criterion_dict["Second"]
-        criterion = ComparisonType.from_str(criterion_dict["type"]["value"])
+        criterion = ComparisonType.from_str(_get_enum_value(criterion_dict["type"], None))
         expression = criterion_dict["lhs"]
         expression_value_type = (
             CriterionValueType.from_str(
-                criterion_dict["lhs_value"].get("kind", {}).get("value", "UNINITIALIZED")
+                _get_enum_value(criterion_dict["lhs_value"].get("kind", {}), "UNINITIALIZED")
             )
             if criterion_dict.get("lhs_value")
             else None
@@ -744,7 +744,7 @@ class Criterion:
         limit_expression = criterion_dict.get("rhs")  # optional
         limit_expression_value_type = (
             CriterionValueType.from_str(
-                criterion_dict["rhs_value"].get("kind", {}).get("value", "UNINITIALIZED")
+                _get_enum_value(criterion_dict["rhs_value"].get("kind", {}), "UNINITIALIZED")
             )
             if criterion_dict.get("rhs_value")
             else None
@@ -769,7 +769,7 @@ class Criterion:
 
         value_type = value_type = (
             CriterionValueType.from_str(
-                criterion_dict["value"].get("kind", {}).get("value", "UNINITIALIZED")
+                _get_enum_value(criterion_dict["value"].get("kind", {}), "UNINITIALIZED")
             )
             if criterion_dict.get("value")
             else None
@@ -934,14 +934,14 @@ class Criterion:
         return vector_list
 
     @staticmethod
-    def _lhs_rhs_value_to_dict(
+    def _value_to_dict(
         value: Union[bool, float, complex, list, dict, None], value_type: CriterionValueType
     ) -> dict:
-        """Convert given value to `lhs_value` or `rhs_value` dictionary."""
+        """Convert given value to dictionary."""
         if value_type == CriterionValueType.UNINITIALIZED:
-            return {"kind": {"value": None}}
+            return {"kind": None}
 
-        value_dict = {"kind": {"value": value_type.name.lower()}}
+        value_dict = {"kind": value_type.name.lower()}
         if value_type == CriterionValueType.SCALAR:
             if isinstance(value, complex):
                 value_dict.update(
@@ -957,32 +957,6 @@ class Criterion:
             or value_type == CriterionValueType.VECTOR
         ):
             value_dict.update({value_type.name.lower(): value})
-        return value_dict
-
-    @staticmethod
-    def _value_to_dict(
-        value: Union[bool, float, complex, list, dict, None], value_type: CriterionValueType
-    ) -> dict:
-        """Convert given value to dictionary."""
-        if value_type == CriterionValueType.UNINITIALIZED:
-            return {"kind": {"value": None}}
-
-        value_dict = {"kind": {"value": value_type.name.lower()}}
-        if value_type == CriterionValueType.SCALAR:
-            if isinstance(value, complex):
-                value_dict["kind"].update(
-                    {value_type.name.lower(): {"imag": value.imag, "real": value.real}}
-                )
-            else:
-                value_dict["kind"].update({value_type.name.lower(): {"real": value}})
-        elif value_type == CriterionValueType.SIGNAL or value_type == CriterionValueType.XYDATA:
-            value_dict["kind"].update({"matrix": value[0], "vector": value[1]})
-        elif (
-            value_type == CriterionValueType.BOOL
-            or value_type == CriterionValueType.MATRIX
-            or value_type == CriterionValueType.VECTOR
-        ):
-            value_dict["kind"].update({value_type.name.lower(): value})
         return value_dict
 
 
@@ -1152,12 +1126,12 @@ class ConstraintCriterion(Criterion):
             "First": self.name,
             "Second": {
                 "lhs": self.expression,
-                "lhs_value": Criterion._lhs_rhs_value_to_dict(
+                "lhs_value": Criterion._value_to_dict(
                     value=self.expression_value, value_type=self.expression_value_type
                 ),
                 "need_eval": False,
                 "rhs": self.limit_expression,
-                "rhs_value": Criterion._lhs_rhs_value_to_dict(
+                "rhs_value": Criterion._value_to_dict(
                     value=self.limit_expression_value, value_type=self.limit_expression_value_type
                 ),
                 "type": self.criterion.name.lower(),
@@ -1347,17 +1321,15 @@ class LimitStateCriterion(Criterion):
             "First": self.name,
             "Second": {
                 "lhs": self.expression,
-                "lhs_value": Criterion._lhs_rhs_value_to_dict(
+                "lhs_value": Criterion._value_to_dict(
                     value=self.expression_value, value_type=self.expression_value_type
                 ),
                 "need_eval": False,
                 "rhs": self.limit_expression,
-                "rhs_value": Criterion._lhs_rhs_value_to_dict(
+                "rhs_value": Criterion._value_to_dict(
                     value=self.expression_value, value_type=self.expression_value_type
                 ),
-                "type": {
-                    "value": self.criterion.name.lower(),
-                },
+                "type": self.criterion.name.lower(),
                 "value": Criterion._value_to_dict(value=self.value, value_type=self.value_type),
             },
         }
@@ -1473,7 +1445,7 @@ class ObjectiveCriterion(Criterion):
                 "lhs_value": None,
                 "need_eval": False,
                 "rhs": self.expression,
-                "rhs_value": Criterion._lhs_rhs_value_to_dict(
+                "rhs_value": Criterion._value_to_dict(
                     self.expression_value, self.expression_value_type
                 ),
                 "type": self.criterion.name.lower(),
@@ -1585,7 +1557,7 @@ class VariableCriterion(Criterion):
                 "lhs_value": None,
                 "need_eval": False,
                 "rhs": self.expression,
-                "rhs_value": Criterion._lhs_rhs_value_to_dict(
+                "rhs_value": Criterion._value_to_dict(
                     self.expression_value, self.expression_value_type
                 ),
                 "type": self.criterion.name.lower(),
