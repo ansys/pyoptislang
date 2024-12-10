@@ -205,10 +205,10 @@ def test_add_parameter(optislang: Optislang):
         "default_stochastic": StochasticParameter(name="default_stochastic"),
         "custom_optimization": OptimizationParameter(
             name="custom_optimization",
-            reference_value=3,
+            reference_value=3.0,
             const=True,
             deterministic_resolution=ParameterResolution.NOMINALDISCRETE,
-            range=[[1, 2, 3]],
+            range=[1.0, 2.0, 3.0],
         ),
         "custom_mixed": MixedParameter(
             name="custom_mixed", reference_value=10, distribution_type=DistributionType.CHI_SQUARE
@@ -216,7 +216,29 @@ def test_add_parameter(optislang: Optislang):
         "custom_dependent": DependentParameter(
             name="custom_dependent", operation="default_optimization+custom_optimization"
         ),
-        "custom_stochastic": StochasticParameter(name="custom_stochastic", reference_value=12),
+        "custom_stochastic": StochasticParameter(
+            name="custom_stochastic",
+            reference_value=12,
+            statistical_moments=[12],
+            cov=0.5,
+        ),
+        "custom_stochastic_2": StochasticParameter(
+            name="custom_stochastic_2",
+            reference_value=12,
+            statistical_moments=[12, 6],
+        ),
+        "custom_stochastic_3": StochasticParameter(
+            name="custom_stochastic_3",
+            reference_value=12,
+            distribution_parameters=[12, 6],
+        ),
+        "custom_mixed_2": MixedParameter(
+            name="custom_mixed_2",
+            reference_value=10,
+            distribution_type=DistributionType.TRIANGULAR,
+            distribution_parameters=[6, 12, 18],
+            range=(0, 20),
+        ),
     }
     for parameter in parameter_dict.values():
         parameter_manager.add_parameter(parameter=parameter)
@@ -224,7 +246,7 @@ def test_add_parameter(optislang: Optislang):
         parameter_manager.add_parameter(parameter=MixedParameter("custom_mixed"))
 
     parameters = parameter_manager.get_parameters()
-    assert len(parameters) == 8
+    assert len(parameters) == 11
 
     for parameter in parameters:
         if parameter_dict.get(parameter.name):
