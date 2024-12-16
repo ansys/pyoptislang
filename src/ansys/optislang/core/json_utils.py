@@ -22,25 +22,27 @@
 
 """Json utilities module."""
 
-from typing import Any, Optional
+from typing import Any
 
 
-def _get_enum_value(enum_value: Any, default_value: str = None) -> Optional[str]:
+def _get_enum_value(enum_value: Any, default_value: str = "") -> str:
     """Get value of an enum encoded in oSL Json.
 
     Parameters
     ----------
     enum_value : Any
         The enum encoded in oSL Json
-    default_value : str, optional
-        The default value if not convertible.
+    default_value : str
+        The default value if not present or convertible.
 
     Returns
     -------
-    Optional[str]
-        The decoded enum value. If not convertible, ``default_value`` is returned
+    str
+        The decoded enum value. If not present or convertible, ``default_value`` is returned
     """
     if isinstance(enum_value, dict):
         return enum_value.get("value", default_value)
-    else:
+    elif isinstance(enum_value, str):
         return enum_value
+    else:
+        return default_value

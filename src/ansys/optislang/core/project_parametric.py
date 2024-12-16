@@ -716,7 +716,7 @@ class Criterion:
             raise TypeError("Unsupported format of criterion dictionary.")
         name = criterion_dict["First"]
         criterion_dict = criterion_dict["Second"]
-        criterion = ComparisonType.from_str(_get_enum_value(criterion_dict["type"], None))
+        criterion = ComparisonType.from_str(_get_enum_value(criterion_dict["type"]))
         expression = criterion_dict["lhs"]
         expression_value_type = (
             CriterionValueType.from_str(
@@ -1933,23 +1933,20 @@ class Parameter:
             "reference_value": par_dict["reference_value"],
             "reference_value_type": (
                 ParameterValueType.from_str(
-                    _get_enum_value(
-                        par_dict["deterministic_property"].get("domain_type", {}),
-                        None,
-                    )
+                    _get_enum_value(par_dict["deterministic_property"].get("domain_type", {}))
                 )
                 if par_dict.get("deterministic_property")
                 else None
             ),
             "id": par_dict["id"],
             "const": par_dict["const"],
-            "type": ParameterType.from_str(_get_enum_value(par_dict["type"], None)),
+            "type": ParameterType.from_str(_get_enum_value(par_dict["type"])),
             "operation": par_dict.get("dependency_expression", ""),
             "deterministic_resolution": (
                 ParameterResolution.from_str(
                     _get_enum_value(
                         par_dict["deterministic_property"].get("kind", {}),
-                        ParameterResolution.CONTINUOUS,
+                        "CONTINUOUS",
                     )
                 )
                 if par_dict.get("deterministic_property")
@@ -1959,7 +1956,7 @@ class Parameter:
                 ParameterResolution.from_str(
                     _get_enum_value(
                         par_dict["stochastic_property"].get("kind", {}),
-                        ParameterResolution.MARGINALDISTRIBUTION,
+                        "MARGINALDISTRIBUTION",
                     )
                 )
                 if par_dict.get("stochastic_property")
@@ -1969,7 +1966,7 @@ class Parameter:
                 DistributionType.from_str(
                     _get_enum_value(
                         par_dict["stochastic_property"].get("type", {}),
-                        DistributionType.NORMAL,
+                        "NORMAL",
                     )
                 )
                 if par_dict.get("stochastic_property")
