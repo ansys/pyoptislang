@@ -25,24 +25,51 @@
 from typing import Any
 
 
-def _get_enum_value(enum_value: Any, default_value: str = "") -> str:
+def _get_enum_value(enum_value: Any, default_value: str = "", throw_on_error: bool = True) -> str:
     """Get value of an enum encoded in oSL Json.
 
     Parameters
     ----------
     enum_value : Any
-        The enum encoded in oSL Json
+        The enum encoded in oSL Json. Can be either a plain string
+        or a dict in the format ``{ "enum" : [], "value" : "" }``.
     default_value : str
         The default value if not present or convertible.
 
     Returns
     -------
     str
-        The decoded enum value. If not present or convertible, ``default_value`` is returned
+        The decoded enum value. If not present or convertible and throw_on_error is False,
+        ``default_value`` is returned, otherwise, an exception it raised.
+    Raises
+    ------
+    TypeError
+        Raised when the decoded enum_value is not a string.
+    ValueError
+        Raised when the value for the ``string`` is invalid.
     """
     if isinstance(enum_value, dict):
-        return enum_value.get("value", default_value)
+        value = enum_value.get("value")
+        if value is None:
+            if throw_on_error:
+                raise ValueError(
+                    f"Cannot decode {enum_value} as enum: Doesn't contain the 'value' entry."
+                )
+            else:
+                return default_value
+        elif isinstance(value, str):
+            return value
+        else:
+            if throw_on_error:
+                raise TypeError(
+                    f"Cannot decode {enum_value} as enum: 'value' entry is not of type str."
+                )
+            else:
+                return default_value
     elif isinstance(enum_value, str):
         return enum_value
     else:
-        return default_value
+        if throw_on_error:
+            raise TypeError(f"Cannot decode {enum_value} as enum: str or dict expected.")
+        else:
+            return default_value

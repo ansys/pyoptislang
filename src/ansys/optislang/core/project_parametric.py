@@ -720,7 +720,7 @@ class Criterion:
         expression = criterion_dict["lhs"]
         expression_value_type = (
             CriterionValueType.from_str(
-                _get_enum_value(criterion_dict["lhs_value"].get("kind", {}), "UNINITIALIZED")
+                _get_enum_value(criterion_dict["lhs_value"].get("kind", {}), "UNINITIALIZED", False)
             )
             if criterion_dict.get("lhs_value")
             else None
@@ -744,7 +744,7 @@ class Criterion:
         limit_expression = criterion_dict.get("rhs")  # optional
         limit_expression_value_type = (
             CriterionValueType.from_str(
-                _get_enum_value(criterion_dict["rhs_value"].get("kind", {}), "UNINITIALIZED")
+                _get_enum_value(criterion_dict["rhs_value"].get("kind", {}), "UNINITIALIZED", False)
             )
             if criterion_dict.get("rhs_value")
             else None
@@ -769,7 +769,7 @@ class Criterion:
 
         value_type = value_type = (
             CriterionValueType.from_str(
-                _get_enum_value(criterion_dict["value"].get("kind", {}), "UNINITIALIZED")
+                _get_enum_value(criterion_dict["value"].get("kind", {}), "UNINITIALIZED", False)
             )
             if criterion_dict.get("value")
             else None
@@ -1944,30 +1944,21 @@ class Parameter:
             "operation": par_dict.get("dependency_expression", ""),
             "deterministic_resolution": (
                 ParameterResolution.from_str(
-                    _get_enum_value(
-                        par_dict["deterministic_property"].get("kind", {}),
-                        "CONTINUOUS",
-                    )
+                    _get_enum_value(par_dict["deterministic_property"].get("kind", {}))
                 )
                 if par_dict.get("deterministic_property")
                 else ParameterResolution.CONTINUOUS
             ),
             "stochastic_resolution": (
                 ParameterResolution.from_str(
-                    _get_enum_value(
-                        par_dict["stochastic_property"].get("kind", {}),
-                        "MARGINALDISTRIBUTION",
-                    )
+                    _get_enum_value(par_dict["stochastic_property"].get("kind", {}))
                 )
                 if par_dict.get("stochastic_property")
                 else ParameterResolution.MARGINALDISTRIBUTION
             ),
             "distribution_type": (
                 DistributionType.from_str(
-                    _get_enum_value(
-                        par_dict["stochastic_property"].get("type", {}),
-                        "NORMAL",
-                    )
+                    _get_enum_value(par_dict["stochastic_property"].get("type", {}))
                 )
                 if par_dict.get("stochastic_property")
                 else DistributionType.NORMAL
