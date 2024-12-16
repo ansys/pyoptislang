@@ -211,33 +211,33 @@ def test_add_parameter(optislang: Optislang):
             range=[1.0, 2.0, 3.0],
         ),
         "custom_mixed": MixedParameter(
-            name="custom_mixed", reference_value=10, distribution_type=DistributionType.CHI_SQUARE
+            name="custom_mixed", reference_value=10.0, distribution_type=DistributionType.CHI_SQUARE
         ),
         "custom_dependent": DependentParameter(
             name="custom_dependent", operation="default_optimization+custom_optimization"
         ),
         "custom_stochastic": StochasticParameter(
             name="custom_stochastic",
-            reference_value=12,
-            statistical_moments=[12],
+            reference_value=12.0,
+            statistical_moments=[12.0],
             cov=0.5,
         ),
         "custom_stochastic_2": StochasticParameter(
             name="custom_stochastic_2",
-            reference_value=12,
-            statistical_moments=[12, 6],
+            reference_value=12.0,
+            statistical_moments=[12.0, 6.0],
         ),
         "custom_stochastic_3": StochasticParameter(
             name="custom_stochastic_3",
-            reference_value=12,
-            distribution_parameters=[12, 6],
+            reference_value=12.0,
+            distribution_parameters=[12.0, 6.0],
         ),
         "custom_mixed_2": MixedParameter(
             name="custom_mixed_2",
-            reference_value=10,
+            reference_value=10.0,
             distribution_type=DistributionType.TRIANGULAR,
-            distribution_parameters=[6, 12, 18],
-            range=(0, 20),
+            distribution_parameters=[6.0, 12.0, 18.0],
+            range=(0.0, 20.0),
         ),
     }
     for parameter in parameter_dict.values():
@@ -300,7 +300,7 @@ def test_modify_parameter(optislang: Optislang):
     )
     with pytest.raises(NameError):
         parameter_manager.modify_parameter(
-            MixedParameter(name="xxx", reference_value=15, const=False)
+            MixedParameter(name="xxx", reference_value=15.0, const=False)
         )
     modified_parameter = [
         parameter for parameter in parameter_manager.get_parameters() if parameter.name == "a"
@@ -329,7 +329,7 @@ def test_modify_parameter_property(optislang: Optislang):
     ][0]
     assert isinstance(modified_parameter, StochasticParameter)
     assert modified_parameter.type == ParameterType.STOCHASTIC
-    assert modified_parameter.reference_value == 10
+    assert modified_parameter.reference_value == 10.0
     assert modified_parameter.const == False
 
 
