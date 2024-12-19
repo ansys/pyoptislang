@@ -1410,12 +1410,12 @@ class ParametricSystem(System):
         pass
 
     @abstractmethod
-    def get_omdb_files(self) -> Tuple[File]:  # pragma: no cover
+    def get_omdb_files(self) -> Tuple[File, ...]:  # pragma: no cover
         """Get paths to omdb files.
 
         Returns
         -------
-        Tuple[File]
+        Tuple[File, ...]
             Tuple with File objects containing path.
 
         Raises
@@ -1429,6 +1429,7 @@ class ParametricSystem(System):
         """
         pass
 
+    @abstractmethod
     def save_designs_as_json(
         self, hid: str, file_path: Union[Path, str]
     ) -> File:  # pragma: no cover
@@ -1463,6 +1464,7 @@ class ParametricSystem(System):
         """
         pass
 
+    @abstractmethod
     def save_designs_as_csv(
         self, hid: str, file_path: Union[Path, str]
     ) -> File:  # pragma: no cover

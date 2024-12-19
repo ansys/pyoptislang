@@ -1992,7 +1992,7 @@ class TcpSystemProxy(TcpNodeProxy, System):
         return tuple(children_dicts_list)
 
     @staticmethod
-    def _find_subtree(tree: dict, uid: str, nodes_tree: List[dict]) -> dict:
+    def _find_subtree(tree: dict, uid: str, nodes_tree: List[dict]) -> List[dict]:
         """Find the subtree with a root node matching a specified unique ID.
 
         Parameters
@@ -2006,8 +2006,8 @@ class TcpSystemProxy(TcpNodeProxy, System):
 
         Returns
         -------
-        dict
-            Dictionary representing the subtree found.
+        List[dict]
+            The subtree found.
         """
         for node in tree["nodes"]:
             if len(nodes_tree) != 0:
@@ -2186,7 +2186,7 @@ class TcpParametricSystemProxy(TcpSystemProxy, ParametricSystem):
             self._get_slots(type_=SlotType.INNER_OUTPUT, name=name),
         )
 
-    def get_omdb_files(self) -> Tuple[File]:
+    def get_omdb_files(self) -> Tuple[File, ...]:
         """Get paths to omdb files.
 
         This method is supported only when the client runs on the same file
@@ -2194,7 +2194,7 @@ class TcpParametricSystemProxy(TcpSystemProxy, ParametricSystem):
 
         Returns
         -------
-        Tuple[File]
+        Tuple[File, ...]
             Tuple with File objects containing path.
 
         Raises
@@ -2445,8 +2445,8 @@ class TcpParametricSystemProxy(TcpSystemProxy, ParametricSystem):
         """
         statuses_info = self._get_status_info()
         if not statuses_info:
-            return {}
-        designs = {}
+            return OrderedDict()
+        designs = OrderedDict()
         # TODO: sort by hid? -> delete / use OrderedDict
         for status_info in statuses_info:
             designs[status_info["hid"]] = status_info["designs"]
@@ -2510,7 +2510,7 @@ class TcpParametricSystemProxy(TcpSystemProxy, ParametricSystem):
         return sorted(unsorted_list, key=sort_key)
 
     @staticmethod
-    def __sort_dict_by_key_hid(unsorted_dict: dict, sort_by_position: int) -> dict:
+    def __sort_dict_by_key_hid(unsorted_dict: dict, sort_by_position: int) -> OrderedDict:
         sort_key = lambda item: int(item[0].split(".")[sort_by_position])
         return OrderedDict(sorted(unsorted_dict.items(), key=sort_key))
 
@@ -2629,7 +2629,7 @@ class TcpRootSystemProxy(TcpParametricSystemProxy, RootSystem):
         TimeoutError
             Raised when the timeout float value expires.
         """
-        evaluate_dict = {}
+        evaluate_dict: dict[str, Any] = {}
         for parameter in design.parameters:
             evaluate_dict[parameter.name] = parameter.value
 
@@ -2888,7 +2888,7 @@ class TcpRootSystemProxy(TcpParametricSystemProxy, RootSystem):
     @staticmethod
     def __compare_input_w_processed_parameters_values(
         input: dict, processed: dict
-    ) -> Tuple[Tuple[str, Union[float, str, bool], Union[float, str, bool]]]:
+    ) -> List[Tuple[str, Union[float, str, bool], Union[float, str, bool]]]:
         """Compare input values of parameters before and after it's processed by server.
 
         Parameters
@@ -2906,13 +2906,13 @@ class TcpRootSystemProxy(TcpParametricSystemProxy, RootSystem):
                 Tuple[1]: input value
                 Tuple[2]: processed value
         """
-        differences = []
+        differences: List[Tuple[str, Union[float, str, bool], Union[float, str, bool]]] = []
         for index, parameter_name in enumerate(processed["result_design"]["parameter_names"]):
             input_value = input.get(parameter_name)
             output_value = processed["result_design"]["parameter_values"][index]
             if input_value and input_value != output_value:
                 differences.append((parameter_name, input_value, output_value))
-        return tuple(differences)
+        return differences
 
     @staticmethod
     def __get_sorted_difference_of_sets(

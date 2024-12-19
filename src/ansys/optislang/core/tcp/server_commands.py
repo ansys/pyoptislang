@@ -97,7 +97,7 @@ def add_criterion(
     criterion_type: str,
     expression: str,
     name: str,
-    limit: str = "",
+    limit: Optional[str] = None,
     password: Optional[str] = None,
 ) -> str:
     """Generate JSON string of add_criterion command.
@@ -114,8 +114,8 @@ def add_criterion(
         Expression to be evaluated.
     name: str
         Criterion name.
-    limit: str, optional
-        Limit expression. By default `""`.
+    limit: Optional[str], optional
+        Limit expression. By default ``None``.
     password : Optional[str], optional
         Password. Defaults to ``None``.
 
@@ -1239,7 +1239,7 @@ def resume(password: Optional[str] = None) -> str:
 
 def run_python_script(
     script: str,
-    args_: Optional[list] = None,
+    args_: Optional[Sequence[str]] = None,
     password: Optional[str] = None,
 ) -> str:
     """Generate JSON string of register_listener command.
@@ -1248,7 +1248,7 @@ def run_python_script(
     ----------
     script: str
         Path of the script.
-    args: Optional[list], optional
+    args: Optional[Sequence[str]], optional
         Script arguments, by default ``None``.
     password : Optional[str], optional
         Password, by default ``None``.
@@ -1367,7 +1367,7 @@ def save_copy(path: str, password: Optional[str] = None) -> str:
 
 
 def set_actor_property(
-    actor_uid: str, name: str, value: str, password: Optional[str] = None
+    actor_uid: str, name: str, value: Any, password: Optional[str] = None
 ) -> str:
     """Generate JSON string of ``set_actor_property`` command.
 
@@ -1377,7 +1377,7 @@ def set_actor_property(
         Actor uid entry.
     name: str
         Property name.
-    value: str
+    value: Any
         Value.
     password : Optional[str], optional
         Password, by default ``None``.
