@@ -2771,7 +2771,6 @@ class TcpRootSystemProxy(TcpParametricSystemProxy, RootSystem):
         id = results["result_design"]["hid"]
         feasibility = results["result_design"]["feasible"]
         status = DesignStatus.from_str(results["result_design"]["status"])
-        pareto_design = results["result_design"]["pareto_design"]
 
         # constraint
         constraints = []
@@ -2830,7 +2829,6 @@ class TcpRootSystemProxy(TcpParametricSystemProxy, RootSystem):
             feasibility=feasibility,
             design_id=id,
             status=status,
-            pareto_design=pareto_design,
         )
 
         # compare input and output values
