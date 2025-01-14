@@ -24,12 +24,14 @@
 from __future__ import annotations
 
 from abc import abstractmethod
-from typing import TYPE_CHECKING, Any, Tuple
-
-from ansys.optislang.core.project_parametric import Criterion, Parameter, Response
+from typing import TYPE_CHECKING, Any, Optional, Tuple, Union
 
 if TYPE_CHECKING:
+    from pathlib import Path
+
+    from ansys.optislang.core.io import File
     from ansys.optislang.core.osl_server import OslServer
+    from ansys.optislang.core.project_parametric import Criterion, Design, Parameter, Response
 
 
 class CriteriaManager:
@@ -188,6 +190,121 @@ class CriteriaManager:
             Raised when the timeout float value expires.
         """
         pass
+
+
+class DesignManager:
+    """Base classes for classes that obtains and operate with designs."""
+
+    @abstractmethod
+    def __init__(self, uid: str, osl_server: OslServer) -> None:  # pragma: no cover
+        """``DesignManager`` class is an abstract base class and cannot be instantiated."""
+        pass
+
+    @abstractmethod
+    def get_design(self, id: str) -> Design:  # pragma: no cover
+        """Get design by id.
+
+        Parameters
+        ----------
+        id : str
+            Design id.
+
+        Returns
+        -------
+        Design
+            Design object.
+        """
+        pass
+
+    @abstractmethod
+    def get_designs(
+        self, hid: Optional[str] = None, include_design_values=True
+    ) -> Tuple[Design]:  # pragma: no cover
+        """Get designs for a given state.
+
+        Parameters
+        ----------
+        hid : Optional[str], optional
+            State/Design hierarchical id. By default ``None``.
+        include_design_values : bool, optional
+            Include values in (result) designs. By default ``True``.
+
+        Returns
+        -------
+        Tuple[Design]
+            Tuple of designs for a given state.
+        """
+        pass
+
+    @abstractmethod
+    def save_designs_as_json(
+        self, hid: str, file_path: Union[Path, str]
+    ) -> File:  # pragma: no cover
+        """Save designs for a given state to JSON file.
+
+        Parameters
+        ----------
+        hid : str
+            Actor's state.
+        file_path : Union[Path, str]
+            Path to the file.
+
+        Returns
+        -------
+        File
+            Object representing saved file.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        TypeError
+            Raised when the `hid` is `None`
+            -or-
+            `file_path` is `None` or unsupported type.
+        ValueError
+            Raised when ``hid`` does not exist.
+        """
+        pass
+
+    @abstractmethod
+    def save_designs_as_csv(
+        self, hid: str, file_path: Union[Path, str]
+    ) -> File:  # pragma: no cover
+        """Save designs for a given state to CSV file.
+
+        Parameters
+        ----------
+        hid : str
+            Actor's state.
+        file_path : Union[Path, str]
+            Path to the file.
+
+        Returns
+        -------
+        File
+            Object representing saved file.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        TypeError
+            Raised when the `hid` is `None`
+            -or-
+            `file_path` is `None` or unsupported type.
+        ValueError
+            Raised when ``hid`` does not exist.
+        """
+        return self.__save_designs_as(hid, file_path, FileOutputFormat.CSV)
 
 
 class ParameterManager:

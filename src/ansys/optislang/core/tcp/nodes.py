@@ -69,6 +69,7 @@ from ansys.optislang.core.project_parametric import (
 from ansys.optislang.core.tcp import server_commands as commands
 from ansys.optislang.core.tcp.managers import (
     TcpCriteriaManagerProxy,
+    TcpDesignManagerProxy,
     TcpParameterManagerProxy,
     TcpResponseManagerProxy,
 )
@@ -2092,6 +2093,7 @@ class TcpParametricSystemProxy(TcpSystemProxy, ParametricSystem):
             logger=logger,
         )
         self.__criteria_manager = TcpCriteriaManagerProxy(uid, osl_server)
+        self.__design_manager = TcpDesignManagerProxy(uid, osl_server)
         self.__parameter_manager = TcpParameterManagerProxy(uid, osl_server)
         self.__response_manager = TcpResponseManagerProxy(uid, osl_server)
 
@@ -2105,6 +2107,17 @@ class TcpParametricSystemProxy(TcpSystemProxy, ParametricSystem):
             Instance of the ``TcpCriteriaManagerProxy`` class.
         """
         return self.__criteria_manager
+
+    @property
+    def design_manager(self) -> TcpDesignManagerProxy:
+        """Design manager of the current system.
+
+        Returns
+        -------
+        TcpDesignManagerProxy
+            Instance of the ``TcpDesignManagerProxy`` class.
+        """
+        return self.__design_manager
 
     @property
     def parameter_manager(self) -> TcpParameterManagerProxy:
@@ -2220,6 +2233,11 @@ class TcpParametricSystemProxy(TcpSystemProxy, ParametricSystem):
             omdb_files.extend([File(path) for path in wdir.glob("*.omdb")])
         return tuple(omdb_files)
 
+    @deprecated(
+        version="0.9.3",
+        reason="Use :py:meth:`TcpParametricSystemProxy.design_manager.save_designs_as_json` "
+        "instead.",
+    )
     def save_designs_as_json(self, hid: str, file_path: Union[Path, str]) -> File:
         """Save designs for a given state to JSON file.
 
@@ -2252,6 +2270,11 @@ class TcpParametricSystemProxy(TcpSystemProxy, ParametricSystem):
         """
         return self.__save_designs_as(hid, file_path, FileOutputFormat.JSON)
 
+    @deprecated(
+        version="0.9.3",
+        reason="Use :py:meth:`TcpParametricSystemProxy.design_manager.save_designs_as_csv` "
+        "instead.",
+    )
     def save_designs_as_csv(self, hid: str, file_path: Union[Path, str]) -> File:
         """Save designs for a given state to CSV file.
 
@@ -2748,6 +2771,7 @@ class TcpRootSystemProxy(TcpParametricSystemProxy, RootSystem):
         id = results["result_design"]["hid"]
         feasibility = results["result_design"]["feasible"]
         status = DesignStatus.from_str(results["result_design"]["status"])
+        pareto_design = results["result_design"]["pareto_design"]
 
         # constraint
         constraints = []
@@ -2806,6 +2830,7 @@ class TcpRootSystemProxy(TcpParametricSystemProxy, RootSystem):
             feasibility=feasibility,
             design_id=id,
             status=status,
+            pareto_design=pareto_design,
         )
 
         # compare input and output values
@@ -2851,7 +2876,7 @@ class TcpRootSystemProxy(TcpParametricSystemProxy, RootSystem):
         Parameters
         ----------
         criteria : Tuple[Criterion]
-           Tuple of unsorted criteria.
+            Tuple of unsorted criteria.
 
         Returns
         -------
