@@ -1,4 +1,4 @@
-# Copyright (C) 2022 - 2024 ANSYS, Inc. and/or its affiliates.
+# Copyright (C) 2022 - 2025 ANSYS, Inc. and/or its affiliates.
 # SPDX-License-Identifier: MIT
 #
 #
@@ -28,8 +28,8 @@ Oscillator optimization using EA flow
 
 This example demonstrates how to create and run a direct optimization.
 
-It creates a direct optimization workflow for an oscillator with the Nature Inspired Optimization 
-(Evolutionary Algorithm) using pyOptiSLang. It then explains how you can optionally save 
+It creates a direct optimization workflow for an oscillator with the Nature Inspired Optimization
+(Evolutionary Algorithm) using pyOptiSLang. It then explains how you can optionally save
 the project to a desired location.
 """
 
