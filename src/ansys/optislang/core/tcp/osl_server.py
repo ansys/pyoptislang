@@ -4693,14 +4693,21 @@ class TcpOslServer(OslServer):
                             )
                             if "No such listener" in str(e):
                                 self._logger.debug("Re-register listener: %s", listener.uid)
-                                # re-register the listener
-                                listener.uid = self.__register_listener(
-                                    host_addresses=listener.host_addresses,
-                                    port=listener.port,
-                                    timeout=self.__listeners_default_timeout,
-                                    explicit_listener_id=listener.uid,
-                                    notifications=listener.notifications,
-                                )
+                                try:
+                                    # re-register the listener
+                                    listener.uid = self.__register_listener(
+                                        host_addresses=listener.host_addresses,
+                                        port=listener.port,
+                                        timeout=self.__listeners_default_timeout,
+                                        explicit_listener_id=listener.uid,
+                                        notifications=listener.notifications,
+                                    )
+                                except Exception as e:
+                                    self._logger.debug(
+                                        "Re-registering listener %s failed: %s",
+                                        listener.uid,
+                                        str(e),
+                                    )
                 counter = 0
             counter += check_for_refresh
             self.__refresh_listeners_stopped.wait(check_for_refresh)
