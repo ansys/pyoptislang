@@ -40,12 +40,7 @@ from typing import Union
 
 from ansys.optislang.core import Optislang
 import ansys.optislang.core.node_types as node_types
-from ansys.optislang.core.nodes import (
-    DesignFlow,
-    IntegrationNode,
-    Node,
-    ParametricSystem,
-)
+from ansys.optislang.core.nodes import DesignFlow, IntegrationNode, Node, ParametricSystem
 from ansys.optislang.core.project_parametric import (
     ComparisonType,
     MixedParameter,
@@ -393,7 +388,7 @@ osl.log.info("Workflow created")
 #########################################################
 # Run workflow
 # ------------
-# Run the workflow created by the preceding scripts. 
+# Run the workflow created by the preceding scripts.
 # In this example, workflow is run in one step.
 
 osl.log.info("Start execution of the workflow.")
