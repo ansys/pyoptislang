@@ -24,16 +24,16 @@
 .. _ref_rdo_python_solver:
 
 Robust design optimization with python solver
----------------------------------------------
+=============================================
 
 This example demonstrates how to create robust design optimization workflow.
 
-It creates multiple parametric systems using `Python` node to calculate designs and runs the workflow.
+It creates multiple parametric systems using `Python` node as a solver and then runs the workflow.
 """
 
 #########################################################
 # Perform required imports
-# ~~~~~~~~~~~~~~~~~~~~~~~~
+# ------------------------
 # Perform the required imports.
 
 from typing import Union
@@ -42,12 +42,9 @@ from ansys.optislang.core import Optislang
 import ansys.optislang.core.node_types as node_types
 from ansys.optislang.core.nodes import (
     DesignFlow,
-    ExecutionOption,
     IntegrationNode,
     Node,
     ParametricSystem,
-    ProxySolverNode,
-    RootSystem,
 )
 from ansys.optislang.core.project_parametric import (
     ComparisonType,
@@ -57,8 +54,10 @@ from ansys.optislang.core.project_parametric import (
     ParameterType,
 )
 
-########################################################
-# Define routines that will be used in parametric systems
+#########################################################
+# Create workflow creation routines
+# ---------------------------------
+# Define a routine that adds a python node into parametric system and registers parameters, responses and criteria.
 
 
 def add_solver_node_to_parent_system(
@@ -123,23 +122,23 @@ Z = ((-1)*sqrt(abs(Y)))**3"""
 
 #########################################################
 # Create optiSLang instance
-# ~~~~~~~~~~~~~~~~~~~~~~~~~
+# -------------------------
+
 from pathlib import Path
 
-opf_path = Path(r"C:\Users\opanek\DEVELOP\pyosl\temp\example_p.opf")
-
-osl = Optislang(project_path=opf_path, loglevel="INFO")
+osl = Optislang(loglevel="INFO")
 osl.log.info(f"Using optiSLang version {osl.osl_version_string}")
 
 
 #########################################################
 # Create workflow
-# ~~~~~~~~~~~~~~~
+# ---------------
 
 root_system = osl.application.project.root_system
 
-# Create the amop system of your choice.
-# --------------------------------------
+#########################################################
+# AMOP system of your choice
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 amop_system: ParametricSystem = root_system.create_node(type_=node_types.AMOP, name="AMOP")
 
@@ -156,12 +155,13 @@ amop_system.set_property("SolveTwice", True)
 amop_system.set_property("UpdateResultFile", "at_end")
 # amop_system.set_property("WriteDesignStartSetFlag", False)
 
-# Add the Proxy Solver node.
+# Add the Python node.
 
 amop_python_solver: IntegrationNode = add_solver_node_to_parent_system(amop_system)
 
+#########################################################
 # Optimization on MOP
-# -------------------
+# ~~~~~~~~~~~~~~~~~~~
 
 oco_on_mop: ParametricSystem = root_system.create_node(type_=node_types.OCO, name="OCO_MOP")
 
@@ -235,8 +235,9 @@ oco_on_mop.criteria_manager.add_criterion(
     ObjectiveCriterion(name="obj_z", expression="Z", criterion=ComparisonType.MIN)
 )
 
+#########################################################
 # Filter designs
-# --------------
+# ~~~~~~~~~~~~~~
 
 filter_node: IntegrationNode = root_system.create_node(
     type_=node_types.DataMining, name="VALIDATOR_FILTER_NODE"
@@ -281,8 +282,9 @@ filter_node.register_location_as_output_slot(
     location="OFilteredBestDesigns", name="OFilteredBestDesigns"
 )
 
-# Create Validator system
-# -----------------------
+#########################################################
+# Validator system
+# ~~~~~~~~~~~~~~~~
 
 validator_system: ParametricSystem = osl.application.project.root_system.create_node(
     type_=node_types.Sensitivity, name="Validator System"
@@ -297,8 +299,10 @@ oco_on_mop.get_output_slots("OCriteria")[0].connect_to(
     validator_system.get_input_slots("ICriteria")[0]
 )
 
-# Create design filter for postprocessing.
-# ----------------------------------------
+#########################################################
+# Design filter for postprocessing
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 append_node: IntegrationNode = osl.application.project.root_system.create_node(
     type_=node_types.DataMining, name="Append Designs"
 )
@@ -313,8 +317,9 @@ validator_system.get_output_slots("ODesigns")[0].connect_to(
 oco_on_mop.get_output_slots("OMDBPath")[0].connect_to(append_node.get_input_slots("IMDBPath")[0])
 
 
-# Create postprocessing node
-# --------------------------
+#########################################################
+# Postprocessing node
+# ~~~~~~~~~~~~~~~~~~~
 postprocessing_node: Node = root_system.create_node(
     type_=node_types.Postprocessing, name="PostProcessing"
 )
@@ -324,8 +329,9 @@ append_node.get_output_slots("OValidatedMDBPath")[0].connect_to(
     postprocessing_node.get_input_slots("IMDBPath")[0]
 )
 
-# Create optimization on solver
-# -----------------------------
+#########################################################
+# Optimization on python solver
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 oco_on_solver: ParametricSystem = root_system.create_node(type_=node_types.OCO, name="OCO_SOLVER")
 
@@ -342,8 +348,9 @@ validator_system.get_output_slots("OBestDesigns")[0].connect_to(
     oco_on_solver.get_input_slots("IStartDesigns")[0]
 )
 
-# Create Robustness system
-# ------------------------
+#########################################################
+# Robustness system
+# ~~~~~~~~~~~~~~~~~
 
 robustness: ParametricSystem = root_system.create_node(
     type_=node_types.Robustness, name="Robustness"
@@ -355,12 +362,11 @@ oco_on_solver.get_output_slots("OBestDesigns")[0].connect_to(
     robustness.get_input_slots("INominalDesigns")[0]
 )
 
-
-# Create MOP node
-# ---------------
+#################
+# MOP node
+# ~~~~~~~~
 
 mop_node = root_system.create_node(type_=node_types.Mop, name="MOP")
-# todo: setup
 
 # connect
 robustness.get_output_slots("OMDBPath")[0].connect_to(mop_node.get_input_slots("IMDBPath")[0])
@@ -378,26 +384,18 @@ osl.log.info("Workflow created")
 #
 # .. code:: python
 #
-# dir_path = r"D:\ansysdev\projects\03_proxy_solver"
-# project_name = "proxy_solver_workflow"
-# project_path=os.path.join(dir_path, project_name+".opf")
-# project_dir_path=os.path.join(dir_path, project_name+".opd")
-# os.remove(project_path)
-# shutil.rmtree(project_dir_path)
+#   from pathlib import Path
+#   dir_path = Path(r"<insert-desired-location>")
+#   project_name = "rdo_workflow.opf"
+#   osl.application.save_as(dir_path / project_name)
 
-# osl.application.save_as(project_path)
-osl.application.save()
 
 #########################################################
 # Run workflow
-# ~~~~~~~~~~~~
-# Run the workflow created by the preceding scripts. In this example, workflow is run in multiple steps.
-# At first, all systems are set to inactive except the AMOP system. The AMOP system is run with the proxy solver.
-# Then, the other systems/nodes are activated and run one by one.
+# ------------
+# Run the workflow created by the preceding scripts. 
+# In this example, workflow is run in one step.
 
-# Run the workflow
-# --------------------
-# Start the optiSLang project execution.
 osl.log.info("Start execution of the workflow.")
 osl.application.project.start()
 osl.application.save()
@@ -407,11 +405,12 @@ osl.log.info("Project saved.")
 # Stop and cancel project
 # ~~~~~~~~~~~~~~~~~~~~~~~
 # Stop and cancel the project.
+
 osl.dispose()
 
 #########################################################
 # View generated workflow
-# ~~~~~~~~~~~~~~~~~~~~~~~
+# -----------------------
 # This image shows the generated workflow.
 #
 # .. image:: ../../_static/04_1_RDO_w_python.png
