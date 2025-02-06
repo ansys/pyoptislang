@@ -2549,7 +2549,9 @@ class TcpOslServer(OslServer):
             max_request_attempts=self.max_request_attempts_register.get_value(current_func_name),
         )
 
-    def get_input_slot_value(self, uid: str, hid: str, slot_name: str) -> Dict:
+    def get_input_slot_value(
+        self, uid: str, hid: str, slot_name: str, legacy_design_format: bool = False
+    ) -> Dict:
         """Get input slot value of actor defined by uid.
 
         Parameters
@@ -2560,6 +2562,11 @@ class TcpOslServer(OslServer):
             State/Design hierarchical id.
         slot_name: str
             Slot name.
+        legacy_design_format: bool, optional
+            Whether to use legacy format for designs and design container type slots.
+            Defaults to false.
+
+            .. note:: Argument has effect for Ansys optiSLang version >= 25.2 only.
 
         Returns
         -------
@@ -2578,13 +2585,19 @@ class TcpOslServer(OslServer):
         current_func_name = self.get_input_slot_value.__name__
         return self.send_command(
             command=queries.input_slot_value(
-                uid=uid, hid=hid, slot_name=slot_name, password=self.__password
+                uid=uid,
+                hid=hid,
+                slot_name=slot_name,
+                legacy_design_format=legacy_design_format,
+                password=self.__password,
             ),
             timeout=self.timeouts_register.get_value(current_func_name),
             max_request_attempts=self.max_request_attempts_register.get_value(current_func_name),
         )
 
-    def get_output_slot_value(self, uid: str, hid: str, slot_name: str) -> Dict:
+    def get_output_slot_value(
+        self, uid: str, hid: str, slot_name: str, legacy_design_format: bool = False
+    ) -> Dict:
         """Get output slot value of actor defined by uid.
 
         Parameters
@@ -2595,6 +2608,11 @@ class TcpOslServer(OslServer):
             State/Design hierarchical id.
         slot_name: str
             Slot name.
+        legacy_design_format: bool, optional
+            Whether to use legacy format for designs and design container type slots.
+            Defaults to false.
+
+            .. note:: Argument has effect for Ansys optiSLang version >= 25.2 only.
 
         Returns
         -------
@@ -2613,7 +2631,11 @@ class TcpOslServer(OslServer):
         current_func_name = self.get_output_slot_value.__name__
         return self.send_command(
             command=queries.output_slot_value(
-                uid=uid, hid=hid, slot_name=slot_name, password=self.__password
+                uid=uid,
+                hid=hid,
+                slot_name=slot_name,
+                legacy_design_format=legacy_design_format,
+                password=self.__password,
             ),
             timeout=self.timeouts_register.get_value(current_func_name),
             max_request_attempts=self.max_request_attempts_register.get_value(current_func_name),
