@@ -1102,7 +1102,7 @@ def remove_criterion(actor_uid: str, name: str, password: Optional[str] = None) 
 
 
 def remove_node(actor_uid: str, password: Optional[str] = None) -> str:
-    """Generate JSON string of ``remove node`` command.
+    """Generate JSON string of ``remove_node`` command.
 
     Parameters
     ----------

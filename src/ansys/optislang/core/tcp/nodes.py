@@ -2963,11 +2963,11 @@ class TcpSlotProxy(Slot):
         node : TcpNodeProxy
             Node to which the slot belongs.
         name : str
-           Slot name.
+            Slot name.
         type_ : SlotType
             Slot type.
         type_hint : Optional[str], optional
-            Description, by default None.
+            Data type of the slot, by default None.
         """
         self._osl_server = osl_server
         self.__node = node
@@ -3202,11 +3202,11 @@ class TcpInputSlotProxy(TcpSlotProxy, InputSlot):
         node : TcpNodeProxy
             Node to which the slot belongs.
         name : str
-           Slot name.
+            Slot name.
         type_ : SlotType
             Slot type.
         type_hint : Optional[str], optional
-            Description, by default None.
+            Data type of the slot, by default None.
         """
         super().__init__(
             osl_server=osl_server,
@@ -3287,11 +3287,11 @@ class TcpOutputSlotProxy(TcpSlotProxy, OutputSlot):
         node : TcpNodeProxy
             Node to which the slot belongs.
         name : str
-           Slot name.
+            Slot name.
         type_ : SlotType
             Slot type.
         type_hint : Optional[str], optional
-            Description, by default None.
+            Data type of the slot, by default None.
         """
         super().__init__(
             osl_server=osl_server,
@@ -3372,11 +3372,11 @@ class TcpInnerInputSlotProxy(TcpSlotProxy, InnerInputSlot):
         node : TcpNodeProxy
             Node to which the slot belongs.
         name : str
-           Slot name.
+            Slot name.
         type_ : SlotType
             Slot type.
         type_hint : Optional[str], optional
-            Description, by default None.
+            Data type of the slot, by default None.
         """
         super().__init__(
             osl_server=osl_server,
@@ -3441,11 +3441,11 @@ class TcpInnerOutputSlotProxy(TcpSlotProxy, InnerOutputSlot):
         node : TcpNodeProxy
             Node to which the slot belongs.
         name : str
-           Slot name.
+            Slot name.
         type_ : SlotType
             Slot type.
         type_hint : Optional[str], optional
-            Description, by default None.
+            Data type of the slot, by default None.
         """
         super().__init__(
             osl_server=osl_server,
