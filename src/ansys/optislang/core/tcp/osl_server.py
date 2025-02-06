@@ -3634,6 +3634,82 @@ class TcpOslServer(OslServer):
             max_request_attempts=self.max_request_attempts_register.get_value(current_func_name),
         )
 
+    def rename_node(self, actor_uid: str, new_name: str) -> None:
+        """Rename node specified by uid.
+
+        .. note:: Method is supported for Ansys optiSLang version >= 25.2 only.
+
+        Parameters
+        ----------
+        actor_uid : str
+            Actor uid.
+        new_name: str
+            New node name.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        current_func_name = self.rename_node.__name__
+        self.send_command(
+            command=commands.rename_node(
+                actor_uid=actor_uid, new_name=new_name, password=self.__password
+            ),
+            timeout=self.timeouts_register.get_value(current_func_name),
+            max_request_attempts=self.max_request_attempts_register.get_value(current_func_name),
+        )
+
+    def rename_slot(
+        self,
+        actor_uid: str,
+        new_name: str,
+        slot_uid: Optional[str] = None,
+        slot_name: Optional[str] = None,
+    ) -> None:
+        """Rename node slot specified by uid or name.
+
+        .. note:: Method is supported for Ansys optiSLang version >= 25.2 only.
+
+        Parameters
+        ----------
+        actor_uid : str
+            Actor uid.
+        slot_uid: Optional[str], optional
+            UID of the slot to rename. Defaults to ``None``.
+            Either slot_uid or slot_name needs to be provided.
+        slot_name: Optional[str], optional
+            Name of the slot to rename. Defaults to ``None``.
+            Either slot_uid or slot_name needs to be provided.
+        new_name: str
+            New slot name.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        current_func_name = self.rename_slot.__name__
+        self.send_command(
+            command=commands.rename_slot(
+                actor_uid=actor_uid,
+                new_name=new_name,
+                slot_uid=slot_uid,
+                slot_name=slot_name,
+                password=self.__password,
+            ),
+            timeout=self.timeouts_register.get_value(current_func_name),
+            max_request_attempts=self.max_request_attempts_register.get_value(current_func_name),
+        )
+
     def reset(self, actor_uid: Optional[str] = None, hid: Optional[str] = None):
         """Reset complete project or a specific actor state.
 

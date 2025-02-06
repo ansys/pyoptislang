@@ -790,6 +790,34 @@ class TcpNodeProxy(Node):
             actor_uid=self.uid, slot_name=slot_name, type_hint=type_hint
         )
 
+    def set_name(self, new_name: str) -> None:
+        """Rename node.
+
+        .. note:: Method is supported for Ansys optiSLang version >= 25.2 only.
+
+        Parameters
+        ----------
+        new_name: str
+            New node name.
+
+        Raises
+        ------
+        NotImplementedError
+            Raised when unsupported optiSLang server is used.
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        if (
+            self._osl_server.osl_version.major == 25 and self._osl_server.osl_version.minor >= 2
+        ) or self._osl_server.osl_version.major > 25:
+            self._osl_server.rename_node(actor_uid=self.uid, new_name=new_name)
+        else:
+            raise NotImplementedError("Method is supported for Ansys optiSLang version >= 25.2.")
+
     def _filter_connections(
         self,
         connections: List[dict],
@@ -3085,6 +3113,42 @@ class TcpSlotProxy(Slot):
             Slot name.
         """
         return self.__name
+
+    @name.setter
+    def name(self, name: str) -> None:
+        """Set slot name.
+
+        .. note:: Setting slot names it only supported for dynamic slots.
+
+        .. note:: Method is supported for Ansys optiSLang version >= 25.2 only.
+
+        Parameters
+        ----------
+        name: str
+            Slot name.
+
+        Raises
+        ------
+        NotImplementedError
+            Raised when unsupported optiSLang server is used.
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        if (
+            self._osl_server.osl_version.major == 25 and self._osl_server.osl_version.minor >= 2
+        ) or self._osl_server.osl_version.major > 25:
+            self._osl_server.rename_slot(
+                actor_uid=self.__node.uid,
+                new_name=name,
+                slot_name=self.__name,
+            )
+            self.__name = name
+        else:
+            raise NotImplementedError("Method is supported for Ansys optiSLang version >= 25.2.")
 
     @property
     def node(self) -> TcpNodeProxy:

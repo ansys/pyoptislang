@@ -773,6 +773,30 @@ class Node(ABC):
         """
         pass
 
+    @abstractmethod
+    def set_name(self, new_name: str) -> None:  # pragma: no cover
+        """Rename node.
+
+        .. note:: Method is supported for Ansys optiSLang version >= 25.2 only.
+
+        Parameters
+        ----------
+        new_name: str
+            New node name.
+
+        Raises
+        ------
+        NotImplementedError
+            Raised when unsupported optiSLang server is used.
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        pass
+
 
 class IntegrationNode(Node):
     """Base class for classes which provide for creating and operating on an integration node."""
@@ -1800,6 +1824,31 @@ class Slot(ABC):
             Slot name.
         """
         pass
+
+    @name.setter
+    def name(self, name: str) -> None:  # pragma: no cover
+        """Set slot name.
+
+        .. note:: Setting slot names it only supported for dynamic slots.
+
+        .. note:: Method is supported for Ansys optiSLang version >= 25.2 only.
+
+        Parameters
+        ----------
+        name: str
+            Slot name.
+
+        Raises
+        ------
+        NotImplementedError
+            Raised when unsupported optiSLang server is used.
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
 
     @property
     @abstractmethod
