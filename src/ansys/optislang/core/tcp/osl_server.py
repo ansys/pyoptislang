@@ -1521,16 +1521,16 @@ class TcpOslServer(OslServer):
         return output[0].get("result_data", {}).get("actor_uid")
 
     def create_input_slot(
-        self, actor_uid: str, slot_name: Optional[str] = None, type_hint: Optional[str] = None
+        self, actor_uid: str, slot_name: str, type_hint: Optional[str] = None
     ) -> None:
-        """Create custom input slot.
+        """Create dynamic input slot.
 
         Parameters
         ----------
         actor_uid : str
             Uid of the actor.
-        slot_name : Optional[str], optional
-            Name of the slot to be created. By default ``None``.
+        slot_name : str
+            Name of the slot to be created.
         type_hint: Optional[str], optional
             Type of the slot. By default ``None``.
 
@@ -1544,8 +1544,7 @@ class TcpOslServer(OslServer):
         TimeoutError
             Raised when the timeout float value expires.
         """
-        # TODO: test
-        current_func_name = self.connect_nodes.__name__
+        current_func_name = self.create_input_slot.__name__
         self.send_command(
             command=commands.create_input_slot(
                 actor_uid=actor_uid,
@@ -1558,16 +1557,16 @@ class TcpOslServer(OslServer):
         )
 
     def create_output_slot(
-        self, actor_uid: str, slot_name: Optional[str] = None, type_hint: Optional[str] = None
+        self, actor_uid: str, slot_name: str, type_hint: Optional[str] = None
     ) -> None:
-        """Create custom output slot.
+        """Create dynamic output slot.
 
         Parameters
         ----------
         actor_uid : str
             Uid of the actor.
-        slot_name : Optional[str], optional
-            Name of the slot to be created. By default ``None``.
+        slot_name : str
+            Name of the slot to be created.
         type_hint: Optional[str], optional
             Type of the slot. By default ``None``.
 
@@ -1581,8 +1580,7 @@ class TcpOslServer(OslServer):
         TimeoutError
             Raised when the timeout float value expires.
         """
-        # TODO: test
-        current_func_name = self.connect_nodes.__name__
+        current_func_name = self.create_output_slot.__name__
         self.send_command(
             command=commands.create_output_slot(
                 actor_uid=actor_uid,

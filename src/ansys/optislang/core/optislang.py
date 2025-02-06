@@ -125,7 +125,7 @@ class Optislang:
         Each listener is a combination of host, port and (optionally) listener ID.
         Defaults to ``None``.
     ini_timeout : float, optional
-        Time in seconds to connect to the optiSLang server. The default is ``20``.
+        Time in seconds to connect to the optiSLang server. The default is ``60``.
     name : Optional[str], optional
         ID of the optiSLang instance. Defaults to ``None``.
     password : Optional[str], optional
