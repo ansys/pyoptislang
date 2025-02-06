@@ -1878,13 +1878,20 @@ class InputSlot(Slot):
         pass
 
     @abstractmethod
-    def connect_from(self, from_slot: Slot) -> Edge:  # pragma: no cover
+    def connect_from(
+        self, from_slot: Slot, skip_rename_slot: bool = False
+    ) -> Edge:  # pragma: no cover
         """Connect slot from another slot.
 
         Parameters
         ----------
         from_slot: Slot
             Sending (output) slot.
+        skip_rename_slot: bool, optional
+            Skip automatic slot rename for untyped slots.
+            Defaults to False.
+
+            .. note:: Argument has effect for Ansys optiSLang version >= 25.2 only.
 
         Returns
         -------
@@ -1927,13 +1934,18 @@ class OutputSlot(Slot):
         pass
 
     @abstractmethod
-    def connect_to(self, to_slot: Slot) -> Edge:  # pragma: no cover
+    def connect_to(self, to_slot: Slot, skip_rename_slot: bool = False) -> Edge:  # pragma: no cover
         """Connect slot to another slot.
 
         Parameters
         ----------
         to_slot: Slot
             Receiving (input) slot
+        skip_rename_slot: bool, optional
+            Skip automatic slot rename for untyped slots.
+            Defaults to False.
+
+            .. note:: Argument has effect for Ansys optiSLang version >= 25.2 only.
 
         Returns
         -------
@@ -1976,13 +1988,20 @@ class InnerInputSlot(Slot):
         pass
 
     @abstractmethod
-    def connect_from(self, from_slot: Slot) -> Edge:  # pragma: no cover
+    def connect_from(
+        self, from_slot: Slot, skip_rename_slot: bool = False
+    ) -> Edge:  # pragma: no cover
         """Connect slot from another slot.
 
         Parameters
         ----------
         from_slot: Slot
             Sending (output) slot.
+        skip_rename_slot: bool, optional
+            Skip automatic slot rename for untyped slots.
+            Defaults to False.
+
+            .. note:: Argument has effect for Ansys optiSLang version >= 25.2 only.
 
         Returns
         -------
@@ -2010,13 +2029,18 @@ class InnerOutputSlot(Slot):
         pass
 
     @abstractmethod
-    def connect_to(self, to_slot: Slot) -> Edge:  # pragma: no cover
+    def connect_to(self, to_slot: Slot, skip_rename_slot: bool = False) -> Edge:  # pragma: no cover
         """Connect slot to another slot.
 
         Parameters
         ----------
         to_slot: Slot
             Receiving (input) slot
+        skip_rename_slot: bool, optional
+            Skip automatic slot rename for untyped slots.
+            Defaults to False.
+
+            .. note:: Argument has effect for Ansys optiSLang version >= 25.2 only.
 
         Returns
         -------

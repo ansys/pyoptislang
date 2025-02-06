@@ -3337,13 +3337,18 @@ class TcpInputSlotProxy(TcpSlotProxy, InputSlot):
             type_hint=type_hint,
         )
 
-    def connect_from(self, from_slot: TcpSlotProxy) -> Edge:
+    def connect_from(self, from_slot: TcpSlotProxy, skip_rename_slot: bool = False) -> Edge:
         """Connect slot from another slot.
 
         Parameters
         ----------
         from_slot: TcpSlotProxy
             Sending (output) slot.
+        skip_rename_slot: bool, optional
+            Skip automatic slot rename for untyped slots.
+            Defaults to False.
+
+            .. note:: Argument has effect for Ansys optiSLang version >= 25.2 only.
 
         Returns
         -------
@@ -3365,6 +3370,7 @@ class TcpInputSlotProxy(TcpSlotProxy, InputSlot):
                 from_slot=from_slot.name,
                 to_actor_uid=self.node.uid,
                 to_slot=self.name,
+                skip_rename_slot=skip_rename_slot,
             )
         else:
             python_script = self._create_connection_script(from_slot=from_slot, to_slot=self)
@@ -3422,13 +3428,18 @@ class TcpOutputSlotProxy(TcpSlotProxy, OutputSlot):
             type_hint=type_hint,
         )
 
-    def connect_to(self, to_slot: TcpSlotProxy) -> Edge:
+    def connect_to(self, to_slot: TcpSlotProxy, skip_rename_slot: bool = False) -> Edge:
         """Connect slot to another slot.
 
         Parameters
         ----------
         to_slot: TcpSlotProxy
             Receiving (input) slot
+        skip_rename_slot: bool, optional
+            Skip automatic slot rename for untyped slots.
+            Defaults to False.
+
+            .. note:: Argument has effect for Ansys optiSLang version >= 25.2 only.
 
         Returns
         -------
@@ -3450,6 +3461,7 @@ class TcpOutputSlotProxy(TcpSlotProxy, OutputSlot):
                 from_slot=self.name,
                 to_actor_uid=to_slot.node.uid,
                 to_slot=to_slot.name,
+                skip_rename_slot=skip_rename_slot,
             )
         else:
             python_script = self._create_connection_script(from_slot=self, to_slot=to_slot)
@@ -3507,13 +3519,18 @@ class TcpInnerInputSlotProxy(TcpSlotProxy, InnerInputSlot):
             type_hint=type_hint,
         )
 
-    def connect_from(self, from_slot: TcpSlotProxy) -> Edge:
+    def connect_from(self, from_slot: TcpSlotProxy, skip_rename_slot: bool = False) -> Edge:
         """Connect slot from another slot.
 
         Parameters
         ----------
         from_slot: TcpSlotProxy
             Sending (output) slot
+        skip_rename_slot: bool, optional
+            Skip automatic slot rename for untyped slots.
+            Defaults to False.
+
+            .. note:: Argument has effect for Ansys optiSLang version >= 25.2 only.
 
         Returns
         -------
@@ -3535,6 +3552,7 @@ class TcpInnerInputSlotProxy(TcpSlotProxy, InnerInputSlot):
                 from_slot=from_slot.name,
                 to_actor_uid=self.node.uid,
                 to_slot=self.name,
+                skip_rename_slot=skip_rename_slot,
             )
         else:
             python_script = self._create_connection_script(from_slot=from_slot, to_slot=self)
@@ -3576,13 +3594,18 @@ class TcpInnerOutputSlotProxy(TcpSlotProxy, InnerOutputSlot):
             type_hint=type_hint,
         )
 
-    def connect_to(self, to_slot: TcpSlotProxy) -> Edge:
+    def connect_to(self, to_slot: TcpSlotProxy, skip_rename_slot: bool = False) -> Edge:
         """Connect slot to another slot.
 
         Parameters
         ----------
         to_slot: TcpSlotProxy
             Receiving (input) slot
+        skip_rename_slot: bool, optional
+            Skip automatic slot rename for untyped slots.
+            Defaults to False.
+
+            .. note:: Argument has effect for Ansys optiSLang version >= 25.2 only.
 
         Returns
         -------
@@ -3604,6 +3627,7 @@ class TcpInnerOutputSlotProxy(TcpSlotProxy, InnerOutputSlot):
                 from_slot=self.name,
                 to_actor_uid=to_slot.node.uid,
                 to_slot=to_slot.name,
+                skip_rename_slot=skip_rename_slot,
             )
         else:
             python_script = self._create_connection_script(from_slot=self, to_slot=to_slot)

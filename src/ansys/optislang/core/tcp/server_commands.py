@@ -214,6 +214,7 @@ def connect_nodes(
     from_slot: str,
     to_actor_uid: str,
     to_slot: str,
+    skip_rename_slot: bool = False,
     password: Optional[str] = None,
 ) -> str:
     """Generate JSON string of connect_nodes command.
@@ -228,6 +229,12 @@ def connect_nodes(
         Uid of connection target.
     to_slot: str
         Slot of connection target.
+    skip_rename_slot: bool, optional
+        Skip automatic slot rename for untyped slots.
+        Defaults to False.
+
+        .. note:: Argument has effect for Ansys optiSLang version >= 25.2 only.
+
     password : Optional[str], optional
         Password, by default ``None``.
 
@@ -241,6 +248,7 @@ def connect_nodes(
     args["from_slot"] = from_slot
     args["to_actor_uid"] = to_actor_uid
     args["to_slot"] = to_slot
+    args["skip_rename_slot"] = skip_rename_slot
 
     return _to_json(_gen_server_command(command=_CONNECT_NODES, args=args, password=password))
 

@@ -1417,7 +1417,12 @@ class TcpOslServer(OslServer):
         )
 
     def connect_nodes(
-        self, from_actor_uid: str, from_slot: str, to_actor_uid: str, to_slot: str
+        self,
+        from_actor_uid: str,
+        from_slot: str,
+        to_actor_uid: str,
+        to_slot: str,
+        skip_rename_slot: bool = False,
     ) -> None:
         """Connect 2 nodes.
 
@@ -1431,6 +1436,11 @@ class TcpOslServer(OslServer):
             Uid of the receiving actor.
         to_slot : str
             Slot of the receiving actor.
+        skip_rename_slot: bool, optional
+            Skip automatic slot rename for untyped slots.
+            Defaults to False.
+
+            .. note:: Argument has effect for Ansys optiSLang version >= 25.2 only.
 
         Raises
         ------
@@ -1448,6 +1458,7 @@ class TcpOslServer(OslServer):
                 from_slot=from_slot,
                 to_actor_uid=to_actor_uid,
                 to_slot=to_slot,
+                skip_rename_slot=skip_rename_slot,
                 password=self.__password,
             ),
             timeout=self.timeouts_register.get_value(current_func_name),
