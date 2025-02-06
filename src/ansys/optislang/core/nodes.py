@@ -675,6 +675,104 @@ class Node(ABC):
         """
         pass
 
+    @abstractmethod
+    def create_input_slot(
+        self, slot_name: str, type_hint: Optional[str] = None  # pragma: no cover
+    ) -> None:
+        """Create dynamic input slot.
+
+        Parameters
+        ----------
+        slot_name : str
+            Name of the slot to be created.
+        type_hint: Optional[str], optional
+            Type of the slot. By default ``None``.
+            Available types:
+
+            * ``Undefined``, undefined type
+            * ``Bool``
+            * ``Integer``
+            * ``Unsigned Integer``
+            * ``Unsigned Integer Vector``
+            * ``Real``
+            * ``String``
+            * ``String List``
+            * ``Variant``
+            * ``Path``
+            * ``Parameter``
+            * ``Parameter Set``
+            * ``Parameter Manager``
+            * ``Design``
+            * ``Designpoint``
+            * ``Design Container``
+            * ``Bool Vector``
+            * ``Criterion``
+            * ``Criterion Sequence``
+            * ``Designentry``
+            * ``Runinfo Meta``
+            * ``Runinfo``
+            * ``Designpoints``
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        pass
+
+    @abstractmethod
+    def create_output_slot(
+        self, slot_name: str, type_hint: Optional[str] = None
+    ) -> None:  # pragma: no cover
+        """Create dynamic output slot.
+
+        Parameters
+        ----------
+        slot_name : str
+            Name of the slot to be created.d
+        type_hint: Optional[str], optional
+            Type of the slot. By default ``None``.
+            Available types:
+
+            * ``Undefined``, undefined type
+            * ``Bool``
+            * ``Integer``
+            * ``Unsigned Integer``
+            * ``Unsigned Integer Vector``
+            * ``Real``
+            * ``String``
+            * ``String List``
+            * ``Variant``
+            * ``Path``
+            * ``Parameter``
+            * ``Parameter Set``
+            * ``Parameter Manager``
+            * ``Design``
+            * ``Designpoint``
+            * ``Design Container``
+            * ``Bool Vector``
+            * ``Criterion``
+            * ``Criterion Sequence``
+            * ``Designentry``
+            * ``Runinfo Meta``
+            * ``Runinfo``
+            * ``Designpoints``
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        pass
+
 
 class IntegrationNode(Node):
     """Base class for classes which provide for creating and operating on an integration node."""

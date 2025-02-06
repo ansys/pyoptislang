@@ -258,6 +258,31 @@ def create_input_slot(
         Name of slot.
     type_hint: Optional[str], optional
         Type of hint. Defaults to ``None``.
+        Available types:
+
+        * ``Undefined``, undefined type
+        * ``Bool``
+        * ``Integer``
+        * ``Unsigned Integer``
+        * ``Unsigned Integer Vector``
+        * ``Real``
+        * ``String``
+        * ``String List``
+        * ``Variant``
+        * ``Path``
+        * ``Parameter``
+        * ``Parameter Set``
+        * ``Parameter Manager``
+        * ``Design``
+        * ``Designpoint``
+        * ``Design Container``
+        * ``Bool Vector``
+        * ``Criterion``
+        * ``Criterion Sequence``
+        * ``Designentry``
+        * ``Runinfo Meta``
+        * ``Runinfo``
+        * ``Designpoints``
     password : Optional[str], optional
         Password. Defaults to ``None``.
 
@@ -350,6 +375,31 @@ def create_output_slot(
         Name of the slot.
     type_hint: Optional[str], optional
         Type of the hint, by default ``None``.
+        Available types:
+
+        * ``Undefined``, undefined type
+        * ``Bool``
+        * ``Integer``
+        * ``Unsigned Integer``
+        * ``Unsigned Integer Vector``
+        * ``Real``
+        * ``String``
+        * ``String List``
+        * ``Variant``
+        * ``Path``
+        * ``Parameter``
+        * ``Parameter Set``
+        * ``Parameter Manager``
+        * ``Design``
+        * ``Designpoint``
+        * ``Design Container``
+        * ``Bool Vector``
+        * ``Criterion``
+        * ``Criterion Sequence``
+        * ``Designentry``
+        * ``Runinfo Meta``
+        * ``Runinfo``
+        * ``Designpoints``
     password : Optional[str], optional
         Password, by default ``None``.
 

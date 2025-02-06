@@ -694,6 +694,102 @@ class TcpNodeProxy(Node):
         """
         self._osl_server.set_actor_property(actor_uid=self.uid, name=name, value=value)
 
+    def create_input_slot(self, slot_name: str, type_hint: Optional[str] = None) -> None:
+        """Create dynamic input slot.
+
+        Parameters
+        ----------
+        slot_name : str
+            Name of the slot to be created. By default ``None``.
+        type_hint: Optional[str], optional
+            Type of the slot. By default ``None``.
+            Available types:
+
+            * ``Undefined``, undefined type
+            * ``Bool``
+            * ``Integer``
+            * ``Unsigned Integer``
+            * ``Unsigned Integer Vector``
+            * ``Real``
+            * ``String``
+            * ``String List``
+            * ``Variant``
+            * ``Path``
+            * ``Parameter``
+            * ``Parameter Set``
+            * ``Parameter Manager``
+            * ``Design``
+            * ``Designpoint``
+            * ``Design Container``
+            * ``Bool Vector``
+            * ``Criterion``
+            * ``Criterion Sequence``
+            * ``Designentry``
+            * ``Runinfo Meta``
+            * ``Runinfo``
+            * ``Designpoints``
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        self._osl_server.create_input_slot(
+            actor_uid=self.uid, slot_name=slot_name, type_hint=type_hint
+        )
+
+    def create_output_slot(self, slot_name: str, type_hint: Optional[str] = None) -> None:
+        """Create dynamic output slot.
+
+        Parameters
+        ----------
+        slot_name : str
+            Name of the slot to be created.
+        type_hint: Optional[str], optional
+            Type of the slot. By default ``None``.
+            Available types:
+
+            * ``Undefined``, undefined type
+            * ``Bool``
+            * ``Integer``
+            * ``Unsigned Integer``
+            * ``Unsigned Integer Vector``
+            * ``Real``
+            * ``String``
+            * ``String List``
+            * ``Variant``
+            * ``Path``
+            * ``Parameter``
+            * ``Parameter Set``
+            * ``Parameter Manager``
+            * ``Design``
+            * ``Designpoint``
+            * ``Design Container``
+            * ``Bool Vector``
+            * ``Criterion``
+            * ``Criterion Sequence``
+            * ``Designentry``
+            * ``Runinfo Meta``
+            * ``Runinfo``
+            * ``Designpoints``
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        self._osl_server.create_output_slot(
+            actor_uid=self.uid, slot_name=slot_name, type_hint=type_hint
+        )
+
     def _filter_connections(
         self,
         connections: List[dict],
@@ -3082,6 +3178,31 @@ class TcpSlotProxy(Slot):
             Slot type.
         type_hint : Optional[str], optional
             Slot's expected data type, by default ``None``.
+            Available data types:
+
+            * ``Undefined``, undefined type
+            * ``Bool``
+            * ``Integer``
+            * ``Unsigned Integer``
+            * ``Unsigned Integer Vector``
+            * ``Real``
+            * ``String``
+            * ``String List``
+            * ``Variant``
+            * ``Path``
+            * ``Parameter``
+            * ``Parameter Set``
+            * ``Parameter Manager``
+            * ``Design``
+            * ``Designpoint``
+            * ``Design Container``
+            * ``Bool Vector``
+            * ``Criterion``
+            * ``Criterion Sequence``
+            * ``Designentry``
+            * ``Runinfo Meta``
+            * ``Runinfo``
+            * ``Designpoints``
 
         Returns
         -------

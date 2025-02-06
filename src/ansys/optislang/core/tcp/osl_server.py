@@ -1533,7 +1533,31 @@ class TcpOslServer(OslServer):
             Name of the slot to be created.
         type_hint: Optional[str], optional
             Type of the slot. By default ``None``.
+            Available types:
 
+            * ``Undefined``, undefined type
+            * ``Bool``
+            * ``Integer``
+            * ``Unsigned Integer``
+            * ``Unsigned Integer Vector``
+            * ``Real``
+            * ``String``
+            * ``String List``
+            * ``Variant``
+            * ``Path``
+            * ``Parameter``
+            * ``Parameter Set``
+            * ``Parameter Manager``
+            * ``Design``
+            * ``Designpoint``
+            * ``Design Container``
+            * ``Bool Vector``
+            * ``Criterion``
+            * ``Criterion Sequence``
+            * ``Designentry``
+            * ``Runinfo Meta``
+            * ``Runinfo``
+            * ``Designpoints``
 
         Raises
         ------
@@ -1569,7 +1593,31 @@ class TcpOslServer(OslServer):
             Name of the slot to be created.
         type_hint: Optional[str], optional
             Type of the slot. By default ``None``.
+            Available types:
 
+            * ``Undefined``, undefined type
+            * ``Bool``
+            * ``Integer``
+            * ``Unsigned Integer``
+            * ``Unsigned Integer Vector``
+            * ``Real``
+            * ``String``
+            * ``String List``
+            * ``Variant``
+            * ``Path``
+            * ``Parameter``
+            * ``Parameter Set``
+            * ``Parameter Manager``
+            * ``Design``
+            * ``Designpoint``
+            * ``Design Container``
+            * ``Bool Vector``
+            * ``Criterion``
+            * ``Criterion Sequence``
+            * ``Designentry``
+            * ``Runinfo Meta``
+            * ``Runinfo``
+            * ``Designpoints``
 
         Raises
         ------
