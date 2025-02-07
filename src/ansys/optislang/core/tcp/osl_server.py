@@ -4384,6 +4384,7 @@ class TcpOslServer(OslServer):
             while listener.is_listening():
                 exit_code = self.__osl_process.wait_for_finished(timeout=0.1)
                 if exit_code is not None:
+                    self.__osl_process = None
                     if exit_code == 11:
                         raise OslServerLicensingError(
                             f"optiSLang process start failed due to licensing issues "
@@ -4406,8 +4407,8 @@ class TcpOslServer(OslServer):
         finally:
             if self.__port is None:
                 if self.__osl_process is not None:
-                    self.__osl_process.terminate()
                     returncode = self.__osl_process.returncode
+                    self.__osl_process.terminate()
                     self.__osl_process = None
                     if returncode is None:
                         raise RuntimeError("optiSLang server process start timed out.")
