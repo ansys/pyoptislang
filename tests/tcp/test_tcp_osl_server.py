@@ -65,7 +65,11 @@ def create_osl_server_process(shutdown_on_finished=False, project_path=None) -> 
         start_timeout = 180
         start = time.time()
         while not os.path.exists(server_info_file):
-            time.sleep(0.1)
+            osl_process_exit_code = osl_server_process.wait_for_finished(timeout=0.1)
+            if osl_process_exit_code is not None:                
+                raise RuntimeError(
+                    f"optiSLang Process start failed (returncode: {osl_process_exit_code})."
+                )                    
             if time.time() - start > start_timeout:
                 break
 
