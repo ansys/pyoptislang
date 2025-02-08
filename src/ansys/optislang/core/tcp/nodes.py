@@ -3238,7 +3238,7 @@ class TcpInputSlotProxy(TcpSlotProxy, InputSlot):
         TimeoutError
             Raised when the timeout float value expires.
         """
-        if not isinstance(from_slot, InnerOutputSlot) or self._osl_server.osl_version.major >= 24:
+        if self._osl_server.osl_version.major >= 24:
             self._osl_server.connect_nodes(
                 from_actor_uid=from_slot.node.uid,
                 from_slot=from_slot.name,
@@ -3250,11 +3250,21 @@ class TcpInputSlotProxy(TcpSlotProxy, InputSlot):
             self._osl_server.run_python_script(script=python_script)
         return Edge(from_slot=from_slot, to_slot=self)
 
-    def disconnect(self) -> None:
-        """Remove all connections for the current slot.
+    def disconnect(self, sending_slot: Optional[TcpSlotProxy] = None) -> None:
+        """Remove a specific or all connections for the current slot.
+
+        Parameters
+        ----------
+        sending_slot: Optional[TcpSlotProxy], optional
+            Sending (output) slot to disconnect from.
+            If not provided, all connections ar removed. Defaults to ``None``.
+
+            .. note:: Argument is supported for Ansys optiSLang version >= 24.1 only.
 
         Raises
         ------
+        NotImplementedError
+            Raised when unsupported optiSLang server is used.
         OslCommunicationError
             Raised when an error occurs while communicating with the server.
         OslCommandError
@@ -3262,9 +3272,20 @@ class TcpInputSlotProxy(TcpSlotProxy, InputSlot):
         TimeoutError
             Raised when the timeout float value expires.
         """
-        self._osl_server.disconnect_slot(
-            uid=self.node.uid, slot_name=self.name, direction="sdInputs"
-        )
+        if sending_slot is not None:
+            if self._osl_server.osl_version.major >= 24:
+                self._osl_server.disconnect_nodes(
+                    from_actor_uid=sending_slot.node.uid,
+                    from_slot=sending_slot.name,
+                    to_actor_uid=self.node.uid,
+                    to_slot=self.name,
+                )
+            else:
+                raise NotImplementedError("Method is supported for optiSLang version >= 24.1.")
+        else:
+            self._osl_server.disconnect_slot(
+                uid=self.node.uid, slot_name=self.name, direction="sdInputs"
+            )
 
 
 class TcpOutputSlotProxy(TcpSlotProxy, OutputSlot):
@@ -3323,7 +3344,7 @@ class TcpOutputSlotProxy(TcpSlotProxy, OutputSlot):
         TimeoutError
             Raised when the timeout float value expires.
         """
-        if not isinstance(to_slot, InnerInputSlot) or self._osl_server.osl_version.major >= 24:
+        if self._osl_server.osl_version.major >= 24:
             self._osl_server.connect_nodes(
                 from_actor_uid=self.node.uid,
                 from_slot=self.name,
@@ -3335,11 +3356,21 @@ class TcpOutputSlotProxy(TcpSlotProxy, OutputSlot):
             self._osl_server.run_python_script(script=python_script)
         return Edge(from_slot=self, to_slot=to_slot)
 
-    def disconnect(self) -> None:
-        """Remove all connections for the current slot.
+    def disconnect(self, receiving_slot: Optional[TcpSlotProxy] = None) -> None:
+        """Remove a specific or all connections for the current slot.
+
+        Parameters
+        ----------
+        receiving_slot: Optional[TcpSlotProxy], optional
+            Receiving (input) slot to disconnect from.
+            If not provided, all connections ar removed. Defaults to ``None``.
+
+            .. note:: Argument is supported for Ansys optiSLang version >= 24.1 only.
 
         Raises
         ------
+        NotImplementedError
+            Raised when unsupported optiSLang server is used.
         OslCommunicationError
             Raised when an error occurs while communicating with the server.
         OslCommandError
@@ -3347,9 +3378,20 @@ class TcpOutputSlotProxy(TcpSlotProxy, OutputSlot):
         TimeoutError
             Raised when the timeout float value expires.
         """
-        self._osl_server.disconnect_slot(
-            uid=self.node.uid, slot_name=self.name, direction="sdOutputs"
-        )
+        if receiving_slot is not None:
+            if self._osl_server.osl_version.major >= 24:
+                self._osl_server.disconnect_nodes(
+                    from_actor_uid=self.node.uid,
+                    from_slot=self.name,
+                    to_actor_uid=receiving_slot.node.uid,
+                    to_slot=receiving_slot.name,
+                )
+            else:
+                raise NotImplementedError("Method is supported for optiSLang version >= 24.1.")
+        else:
+            self._osl_server.disconnect_slot(
+                uid=self.node.uid, slot_name=self.name, direction="sdOutputs"
+            )
 
 
 class TcpInnerInputSlotProxy(TcpSlotProxy, InnerInputSlot):
@@ -3420,6 +3462,43 @@ class TcpInnerInputSlotProxy(TcpSlotProxy, InnerInputSlot):
             self._osl_server.run_python_script(script=python_script)
         return Edge(from_slot=from_slot, to_slot=self)
 
+    def disconnect(self, sending_slot: Optional[TcpSlotProxy] = None) -> None:
+        """Remove a specific or all connections for the current slot.
+
+        Parameters
+        ----------
+        sending_slot: Optional[TcpSlotProxy], optional
+            Sending (output) slot to disconnect from.
+            If not provided, all connections ar removed. Defaults to ``None``.
+
+            .. note:: Argument is supported for Ansys optiSLang version >= 24.1 only.
+
+        Raises
+        ------
+        NotImplementedError
+            Raised when unsupported optiSLang server is used.
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        if sending_slot is not None:
+            if self._osl_server.osl_version.major >= 24:
+                self._osl_server.disconnect_nodes(
+                    from_actor_uid=sending_slot.node.uid,
+                    from_slot=sending_slot.name,
+                    to_actor_uid=self.node.uid,
+                    to_slot=self.name,
+                )
+            else:
+                raise NotImplementedError("Method is supported for optiSLang version >= 24.1.")
+        else:
+            self._osl_server.disconnect_slot(
+                uid=self.node.uid, slot_name=self.name, direction="sdInputs"
+            )
+
 
 class TcpInnerOutputSlotProxy(TcpSlotProxy, InnerOutputSlot):
     """Provides for creating and operating on inner output slots."""
@@ -3488,6 +3567,43 @@ class TcpInnerOutputSlotProxy(TcpSlotProxy, InnerOutputSlot):
             python_script = self._create_connection_script(from_slot=self, to_slot=to_slot)
             self._osl_server.run_python_script(script=python_script)
         return Edge(from_slot=self, to_slot=to_slot)
+
+    def disconnect(self, receiving_slot: Optional[TcpSlotProxy] = None) -> None:
+        """Remove a specific or all connections for the current slot.
+
+        Parameters
+        ----------
+        receiving_slot: Optional[TcpSlotProxy], optional
+            Receiving (input) slot to disconnect from.
+            If not provided, all connections ar removed. Defaults to ``None``.
+
+            .. note:: Argument is supported for Ansys optiSLang version >= 24.1 only.
+
+        Raises
+        ------
+        NotImplementedError
+            Raised when unsupported optiSLang server is used.
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        if receiving_slot is not None:
+            if self._osl_server.osl_version.major >= 24:
+                self._osl_server.disconnect_nodes(
+                    from_actor_uid=self.node.uid,
+                    from_slot=self.name,
+                    to_actor_uid=receiving_slot.node.uid,
+                    to_slot=receiving_slot.name,
+                )
+            else:
+                raise NotImplementedError("Method is supported for optiSLang version >= 24.1.")
+        else:
+            self._osl_server.disconnect_slot(
+                uid=self.node.uid, slot_name=self.name, direction="sdOutputs"
+            )
 
 
 # endregion
