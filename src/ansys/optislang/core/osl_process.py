@@ -569,6 +569,19 @@ class OslServerProcess:
         return None
 
     @property
+    def returncode(self) -> Optional[int]:
+        """Process return code.
+
+        Returns
+        -------
+        Optional[int]
+            Process return code, if exists; ``None`` otherwise.
+        """
+        if self.__process is not None:
+            return self.__process.returncode
+        return None
+
+    @property
     def shutdown_on_finished(self) -> bool:
         """Whether to shut down when execution is finished.
 
@@ -994,10 +1007,28 @@ class OslServerProcess:
 
         return self.__process.poll() is None
 
-    def wait_for_finished(self):
-        """Wait for the process to finish."""
-        if self.__process is not None and self.is_running():
-            self.__process.wait()
+    def wait_for_finished(self, timeout: float = None) -> Optional[int]:
+        """Wait for the process to finish.
+
+        Parameters
+        ----------
+        timeout : float, optional
+            Timeout for waiting on process finished.
+            Defaults to ``None``
+
+        Returns
+        -------
+        Optional[int]
+            Process return code, if exists; ``None`` otherwise.
+        """
+        if self.__process is not None:
+            if self.is_running():
+                try:
+                    self.__process.wait(timeout)
+                except:
+                    pass
+            return self.__process.returncode
+        return None
 
     def __start_process_output_thread(self):
         """Start new thread responsible for logging of STDOUT/STDERR of the optiSLang process."""
