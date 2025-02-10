@@ -4387,8 +4387,8 @@ class TcpOslServer(OslServer):
                     self.__osl_process = None
                     if exit_code == 11:
                         raise OslServerLicensingError(
-                            f"optiSLang process start failed due to licensing issues "
-                            " (returncode: {exit_code})."
+                            "optiSLang process start failed due to licensing issues"
+                            f" (returncode: {exit_code})."
                         )
                     else:
                         raise OslServerStartError(
