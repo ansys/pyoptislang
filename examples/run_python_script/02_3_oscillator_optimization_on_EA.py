@@ -1,4 +1,4 @@
-# Copyright (C) 2022 - 2024 ANSYS, Inc. and/or its affiliates.
+# Copyright (C) 2022 - 2025 ANSYS, Inc. and/or its affiliates.
 # SPDX-License-Identifier: MIT
 #
 #
@@ -30,7 +30,7 @@ This example demonstrates how to create and run a direct optimization.
 
 It uses the ``oscillator_optimization_ea.py`` file to create and
 run a direct optimization for an oscillator with the EA (Evolutionary
-Algorithm) optimizer. It then explains how you can optionally save 
+Algorithm) optimizer. It then explains how you can optionally save
 the project to a desired location.
 """
 
