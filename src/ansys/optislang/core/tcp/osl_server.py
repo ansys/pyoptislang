@@ -1423,7 +1423,7 @@ class TcpOslServer(OslServer):
     def connect_nodes(
         self, from_actor_uid: str, from_slot: str, to_actor_uid: str, to_slot: str
     ) -> None:
-        """Connect 2 nodes.
+        """Connect nodes.
 
         Parameters
         ----------
@@ -1448,6 +1448,44 @@ class TcpOslServer(OslServer):
         current_func_name = self.connect_nodes.__name__
         self.send_command(
             command=commands.connect_nodes(
+                from_actor_uid=from_actor_uid,
+                from_slot=from_slot,
+                to_actor_uid=to_actor_uid,
+                to_slot=to_slot,
+                password=self.__password,
+            ),
+            timeout=self.timeouts_register.get_value(current_func_name),
+            max_request_attempts=self.max_request_attempts_register.get_value(current_func_name),
+        )
+
+    def disconnect_nodes(
+        self, from_actor_uid: str, from_slot: str, to_actor_uid: str, to_slot: str
+    ) -> None:
+        """Disconnect nodes.
+
+        Parameters
+        ----------
+        from_actor_uid : str
+            Uid of the sending actor.
+        from_slot : str
+            Slot of the sending actor.
+        to_actor_uid : str
+            Uid of the receiving actor.
+        to_slot : str
+            Slot of the receiving actor.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        current_func_name = self.disconnect_nodes.__name__
+        self.send_command(
+            command=commands.disconnect_nodes(
                 from_actor_uid=from_actor_uid,
                 from_slot=from_slot,
                 to_actor_uid=to_actor_uid,
