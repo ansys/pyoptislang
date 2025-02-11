@@ -30,6 +30,7 @@ from typing import TYPE_CHECKING, Any, Optional, Tuple, Union
 from deprecated.sphinx import deprecated
 
 from ansys.optislang.core.io import File, FileOutputFormat, RegisteredFile
+from ansys.optislang.core.slot_types import SlotTypeHint
 from ansys.optislang.core.utils import enum_from_str
 
 if TYPE_CHECKING:
@@ -677,7 +678,7 @@ class Node(ABC):
 
     @abstractmethod
     def create_input_slot(
-        self, slot_name: str, type_hint: Optional[str] = None  # pragma: no cover
+        self, slot_name: str, type_hint: Optional[SlotTypeHint] = None  # pragma: no cover
     ) -> None:
         """Create dynamic input slot.
 
@@ -685,33 +686,8 @@ class Node(ABC):
         ----------
         slot_name : str
             Name of the slot to be created.
-        type_hint: Optional[str], optional
-            Type of the slot. By default ``None``.
-            Available types:
-
-            * ``Undefined``, undefined type
-            * ``Bool``
-            * ``Integer``
-            * ``Unsigned Integer``
-            * ``Unsigned Integer Vector``
-            * ``Real``
-            * ``String``
-            * ``String List``
-            * ``Variant``
-            * ``Path``
-            * ``Parameter``
-            * ``Parameter Set``
-            * ``Parameter Manager``
-            * ``Design``
-            * ``Designpoint``
-            * ``Design Container``
-            * ``Bool Vector``
-            * ``Criterion``
-            * ``Criterion Sequence``
-            * ``Designentry``
-            * ``Runinfo Meta``
-            * ``Runinfo``
-            * ``Designpoints``
+        type_hint: Optional[SlotTypeHint], optional
+            Type hint for the slot. By default ``None``.
 
         Raises
         ------
@@ -726,7 +702,7 @@ class Node(ABC):
 
     @abstractmethod
     def create_output_slot(
-        self, slot_name: str, type_hint: Optional[str] = None
+        self, slot_name: str, type_hint: Optional[SlotTypeHint] = None
     ) -> None:  # pragma: no cover
         """Create dynamic output slot.
 
@@ -734,33 +710,8 @@ class Node(ABC):
         ----------
         slot_name : str
             Name of the slot to be created.d
-        type_hint: Optional[str], optional
-            Type of the slot. By default ``None``.
-            Available types:
-
-            * ``Undefined``, undefined type
-            * ``Bool``
-            * ``Integer``
-            * ``Unsigned Integer``
-            * ``Unsigned Integer Vector``
-            * ``Real``
-            * ``String``
-            * ``String List``
-            * ``Variant``
-            * ``Path``
-            * ``Parameter``
-            * ``Parameter Set``
-            * ``Parameter Manager``
-            * ``Design``
-            * ``Designpoint``
-            * ``Design Container``
-            * ``Bool Vector``
-            * ``Criterion``
-            * ``Criterion Sequence``
-            * ``Designentry``
-            * ``Runinfo Meta``
-            * ``Runinfo``
-            * ``Designpoints``
+        type_hint: Optional[SlotTypeHint], optional
+            Type hint for the slot. By default ``None``.
 
         Raises
         ------
@@ -1551,6 +1502,7 @@ class ParametricSystem(System):
         """
         pass
 
+    @abstractmethod
     def save_designs_as_json(
         self, hid: str, file_path: Union[Path, str]
     ) -> File:  # pragma: no cover
@@ -1585,6 +1537,7 @@ class ParametricSystem(System):
         """
         pass
 
+    @abstractmethod
     def save_designs_as_csv(
         self, hid: str, file_path: Union[Path, str]
     ) -> File:  # pragma: no cover
@@ -1876,12 +1829,12 @@ class Slot(ABC):
 
     @property
     @abstractmethod
-    def type_hint(self) -> Optional[str]:  # pragma: no cover
+    def type_hint(self) -> Optional[SlotTypeHint]:  # pragma: no cover
         """Get type hint.
 
         Returns
         -------
-        Optional[str]
+        Optional[SlotTypeHint]
             Data type of the current slot, ``None`` if not specified.
         """
         pass
@@ -1898,12 +1851,12 @@ class Slot(ABC):
         pass
 
     @abstractmethod
-    def get_type_hint(self) -> str:  # pragma: no cover
+    def get_type_hint(self) -> SlotTypeHint:  # pragma: no cover
         """Get slot's expected data type.
 
         Returns
         -------
-        str
+        SlotTypeHint
             Type hint.
 
         Raises

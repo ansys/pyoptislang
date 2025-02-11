@@ -25,6 +25,7 @@ import json
 
 import pytest
 
+from ansys.optislang.core.slot_types import SlotTypeHint
 from ansys.optislang.core.tcp import server_commands as sc
 
 actor_uid = "5cdfb20b-bef6-4412-9985-89f5ded5ee95"
@@ -194,13 +195,13 @@ def test_create_input_slot():
     assert sorted(dictionary.items()) == sorted(requiered_string.items())
     # with optional values
     json_string = sc.create_input_slot(
-        actor_uid=actor_uid, slot_name="MyInputSlot", type_hint="DESIGN_TYPE"
+        actor_uid=actor_uid, slot_name="MyInputSlot", type_hint=SlotTypeHint.DESIGN
     )
     dictionary = json.loads(json_string)
     requiered_string = json.loads(
         '{ "projects": [ { "commands": [ { "type": "builtin", "command": "CREATE_INPUT_SLOT", '
         '"actor_uid": "5cdfb20b-bef6-4412-9985-89f5ded5ee95", "args": '
-        '{ "slot_name": "MyInputSlot", "type_hint": "DESIGN_TYPE" } } ] } ] }'
+        '{ "slot_name": "MyInputSlot", "type_hint": "Design" } } ] } ] }'
     )
     assert type(json_string) == str
     assert sorted(dictionary.items()) == sorted(requiered_string.items())
@@ -265,13 +266,13 @@ def test_create_output_slot():
     assert sorted(dictionary.items()) == sorted(requiered_string.items())
     # with optional values
     json_string = sc.create_output_slot(
-        actor_uid=actor_uid, slot_name="MyOutputSlot", type_hint="DESIGN_TYPE"
+        actor_uid=actor_uid, slot_name="MyOutputSlot", type_hint=SlotTypeHint.DESIGN
     )
     dictionary = json.loads(json_string)
     requiered_string = json.loads(
         '{ "projects": [ { "commands": [ { "type": "builtin", "command": "CREATE_OUTPUT_SLOT", '
         '"actor_uid": "5cdfb20b-bef6-4412-9985-89f5ded5ee95", "args": '
-        '{ "slot_name": "MyOutputSlot", "type_hint": "DESIGN_TYPE" } } ] } ] }'
+        '{ "slot_name": "MyOutputSlot", "type_hint": "Design" } } ] } ] }'
     )
     assert type(json_string) == str
     assert sorted(dictionary.items()) == sorted(requiered_string.items())

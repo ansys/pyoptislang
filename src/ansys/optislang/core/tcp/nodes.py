@@ -66,6 +66,7 @@ from ansys.optislang.core.project_parametric import (
     ObjectiveCriterion,
     VariableCriterion,
 )
+from ansys.optislang.core.slot_types import SlotTypeHint
 from ansys.optislang.core.tcp import server_commands as commands
 from ansys.optislang.core.tcp.managers import (
     TcpCriteriaManagerProxy,
@@ -73,6 +74,7 @@ from ansys.optislang.core.tcp.managers import (
     TcpResponseManagerProxy,
 )
 from ansys.optislang.core.tcp.osl_server import TcpOslServer
+from ansys.optislang.core.tcp.slot_types import SlotTypeHintTCP
 
 if TYPE_CHECKING:
     from ansys.optislang.core.project_parametric import Criterion
@@ -694,40 +696,15 @@ class TcpNodeProxy(Node):
         """
         self._osl_server.set_actor_property(actor_uid=self.uid, name=name, value=value)
 
-    def create_input_slot(self, slot_name: str, type_hint: Optional[str] = None) -> None:
+    def create_input_slot(self, slot_name: str, type_hint: Optional[SlotTypeHint] = None) -> None:
         """Create dynamic input slot.
 
         Parameters
         ----------
         slot_name : str
             Name of the slot to be created. By default ``None``.
-        type_hint: Optional[str], optional
-            Type of the slot. By default ``None``.
-            Available types:
-
-            * ``Undefined``, undefined type
-            * ``Bool``
-            * ``Integer``
-            * ``Unsigned Integer``
-            * ``Unsigned Integer Vector``
-            * ``Real``
-            * ``String``
-            * ``String List``
-            * ``Variant``
-            * ``Path``
-            * ``Parameter``
-            * ``Parameter Set``
-            * ``Parameter Manager``
-            * ``Design``
-            * ``Designpoint``
-            * ``Design Container``
-            * ``Bool Vector``
-            * ``Criterion``
-            * ``Criterion Sequence``
-            * ``Designentry``
-            * ``Runinfo Meta``
-            * ``Runinfo``
-            * ``Designpoints``
+        type_hint: Optional[SlotTypeHint], optional
+            Type hint for the slot. By default ``None``.
 
         Raises
         ------
@@ -742,40 +719,15 @@ class TcpNodeProxy(Node):
             actor_uid=self.uid, slot_name=slot_name, type_hint=type_hint
         )
 
-    def create_output_slot(self, slot_name: str, type_hint: Optional[str] = None) -> None:
+    def create_output_slot(self, slot_name: str, type_hint: Optional[SlotTypeHint] = None) -> None:
         """Create dynamic output slot.
 
         Parameters
         ----------
         slot_name : str
             Name of the slot to be created.
-        type_hint: Optional[str], optional
-            Type of the slot. By default ``None``.
-            Available types:
-
-            * ``Undefined``, undefined type
-            * ``Bool``
-            * ``Integer``
-            * ``Unsigned Integer``
-            * ``Unsigned Integer Vector``
-            * ``Real``
-            * ``String``
-            * ``String List``
-            * ``Variant``
-            * ``Path``
-            * ``Parameter``
-            * ``Parameter Set``
-            * ``Parameter Manager``
-            * ``Design``
-            * ``Designpoint``
-            * ``Design Container``
-            * ``Bool Vector``
-            * ``Criterion``
-            * ``Criterion Sequence``
-            * ``Designentry``
-            * ``Runinfo Meta``
-            * ``Runinfo``
-            * ``Designpoints``
+        type_hint: Optional[SlotTypeHint], optional
+            Type hint for the slot. By default ``None``.
 
         Raises
         ------
@@ -988,7 +940,7 @@ class TcpNodeProxy(Node):
                         node=self,
                         name=slot_dict["name"],
                         type_=SlotType.from_str(string=slot_type[0:-6]),
-                        type_hint=slot_dict["type"],
+                        type_hint=SlotTypeHintTCP.from_str(string=slot_dict["type"]).to_slot_type(),
                     )
                 )
         return tuple(slots_list)
@@ -3076,7 +3028,7 @@ class TcpSlotProxy(Slot):
         node: TcpNodeProxy,
         name: str,
         type_: SlotType,
-        type_hint: Optional[str] = None,
+        type_hint: Optional[SlotTypeHint] = None,
     ) -> None:
         """Create an ``TcpSlotProxy`` instance.
 
@@ -3090,8 +3042,8 @@ class TcpSlotProxy(Slot):
             Slot name.
         type_ : SlotType
             Slot type.
-        type_hint : Optional[str], optional
-            Data type of the slot, by default None.
+        type_hint : Optional[SlotTypeHint], optional
+            Type hint for the slot, by default None.
         """
         self._osl_server = osl_server
         self.__node = node
@@ -3101,6 +3053,8 @@ class TcpSlotProxy(Slot):
 
     def __str__(self):
         """Return formatted string."""
+        if self.type_hint is not None:
+            return f"Slot type: {self.type.name} Name: {self.name} Type hint: {self.type_hint.name}"
         return f"Slot type: {self.type.name} Name: {self.name}"
 
     @property
@@ -3173,13 +3127,13 @@ class TcpSlotProxy(Slot):
         return self.__type
 
     @property
-    def type_hint(self) -> Optional[str]:
+    def type_hint(self) -> Optional[SlotTypeHint]:
         """Get type hint.
 
         Returns
         -------
-        Optional[str]
-            Data type of the current slot, ``None`` if not specified.
+        Optional[SlotTypeHint]
+            Type hint for the current slot, ``None`` if not specified.
         """
         return self.__type_hint
 
@@ -3193,12 +3147,12 @@ class TcpSlotProxy(Slot):
         """
         return self.node.get_connections(slot_type=self.type, slot_name=self.name)
 
-    def get_type_hint(self) -> str:
+    def get_type_hint(self) -> SlotTypeHint:
         """Get slot's expected data type.
 
         Returns
         -------
-        str
+        SlotTypeHint
             Type hint.
 
         Raises
@@ -3215,7 +3169,7 @@ class TcpSlotProxy(Slot):
         slots_dict_list = info[key]
         for slot in slots_dict_list:
             if self.name == slot["name"]:
-                self.__type_hint = slot["type"]
+                self.__type_hint = SlotTypeHintTCP.from_str(string=slot["type"]).to_slot_type()
                 if self.__type_hint:
                     return self.__type_hint
         raise NameError(f"Current slot: ``{self.name}`` wasn't found in node: ``{self.node.uid}``.")
@@ -3226,7 +3180,7 @@ class TcpSlotProxy(Slot):
         node: TcpNodeProxy,
         name: str,
         type_: SlotType,
-        type_hint: Optional[str] = None,
+        type_hint: Optional[SlotTypeHint] = None,
     ) -> TcpSlotProxy:
         """Create instance of new slot.
 
@@ -3240,33 +3194,8 @@ class TcpSlotProxy(Slot):
             Slot name.
         type_ : SlotType
             Slot type.
-        type_hint : Optional[str], optional
+        type_hint : Optional[SlotTypeHint], optional
             Slot's expected data type, by default ``None``.
-            Available data types:
-
-            * ``Undefined``, undefined type
-            * ``Bool``
-            * ``Integer``
-            * ``Unsigned Integer``
-            * ``Unsigned Integer Vector``
-            * ``Real``
-            * ``String``
-            * ``String List``
-            * ``Variant``
-            * ``Path``
-            * ``Parameter``
-            * ``Parameter Set``
-            * ``Parameter Manager``
-            * ``Design``
-            * ``Designpoint``
-            * ``Design Container``
-            * ``Bool Vector``
-            * ``Criterion``
-            * ``Criterion Sequence``
-            * ``Designentry``
-            * ``Runinfo Meta``
-            * ``Runinfo``
-            * ``Designpoints``
 
         Returns
         -------
@@ -3376,7 +3305,7 @@ class TcpInputSlotProxy(TcpSlotProxy, InputSlot):
         node: TcpNodeProxy,
         name: str,
         type_: SlotType,
-        type_hint: Optional[str] = None,
+        type_hint: Optional[SlotTypeHint] = None,
     ) -> None:
         """Create an ``TcpInputSlotProxy`` instance.
 
@@ -3390,8 +3319,8 @@ class TcpInputSlotProxy(TcpSlotProxy, InputSlot):
             Slot name.
         type_ : SlotType
             Slot type.
-        type_hint : Optional[str], optional
-            Data type of the slot, by default None.
+        type_hint : Optional[SlotTypeHint], optional
+            Type hint for the slot, by default None.
         """
         super().__init__(
             osl_server=osl_server,
@@ -3467,7 +3396,7 @@ class TcpOutputSlotProxy(TcpSlotProxy, OutputSlot):
         node: TcpNodeProxy,
         name: str,
         type_: SlotType,
-        type_hint: Optional[str] = None,
+        type_hint: Optional[SlotTypeHint] = None,
     ) -> None:
         """Create an ``OutputSlotProxy`` instance.
 
@@ -3481,8 +3410,8 @@ class TcpOutputSlotProxy(TcpSlotProxy, OutputSlot):
             Slot name.
         type_ : SlotType
             Slot type.
-        type_hint : Optional[str], optional
-            Data type of the slot, by default None.
+        type_hint : Optional[SlotTypeHint], optional
+            Type hint for the slot, by default None.
         """
         super().__init__(
             osl_server=osl_server,
@@ -3558,7 +3487,7 @@ class TcpInnerInputSlotProxy(TcpSlotProxy, InnerInputSlot):
         node: TcpNodeProxy,
         name: str,
         type_: SlotType,
-        type_hint: Optional[str] = None,
+        type_hint: Optional[SlotTypeHint] = None,
     ) -> None:
         """Create a ``InnerInputSlotProxy`` instance.
 
@@ -3572,8 +3501,8 @@ class TcpInnerInputSlotProxy(TcpSlotProxy, InnerInputSlot):
             Slot name.
         type_ : SlotType
             Slot type.
-        type_hint : Optional[str], optional
-            Data type of the slot, by default None.
+        type_hint : Optional[SlotTypeHint], optional
+            Type hint for the slot, by default None.
         """
         super().__init__(
             osl_server=osl_server,
@@ -3633,7 +3562,7 @@ class TcpInnerOutputSlotProxy(TcpSlotProxy, InnerOutputSlot):
         node: TcpNodeProxy,
         name: str,
         type_: SlotType,
-        type_hint: Optional[str] = None,
+        type_hint: Optional[SlotTypeHint] = None,
     ) -> None:
         """Create a ``InnerOutputSlotProxy`` instance.
 
@@ -3647,8 +3576,8 @@ class TcpInnerOutputSlotProxy(TcpSlotProxy, InnerOutputSlot):
             Slot name.
         type_ : SlotType
             Slot type.
-        type_hint : Optional[str], optional
-            Data type of the slot, by default None.
+        type_hint : Optional[SlotTypeHint], optional
+            Type hint for the slot, by default None.
         """
         super().__init__(
             osl_server=osl_server,

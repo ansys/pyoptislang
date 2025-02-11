@@ -24,6 +24,9 @@
 import json
 from typing import Any, Dict, Iterable, Optional, Sequence, Union
 
+from ansys.optislang.core.slot_types import SlotTypeHint
+from ansys.optislang.core.tcp.slot_types import SlotTypeHintTCP
+
 CommandArgs = Dict[str, Any]
 
 _APPLY_WIZARD = "APPLY_WIZARD"
@@ -256,7 +259,10 @@ def connect_nodes(
 
 
 def create_input_slot(
-    actor_uid: str, slot_name: str, type_hint: Optional[str] = None, password: Optional[str] = None
+    actor_uid: str,
+    slot_name: str,
+    type_hint: Optional[SlotTypeHint] = None,
+    password: Optional[str] = None,
 ) -> str:
     """Generate JSON string of create_input_slot command.
 
@@ -266,33 +272,8 @@ def create_input_slot(
         Actor uid entry.
     slot_name: str
         Name of slot.
-    type_hint: Optional[str], optional
-        Type of hint. Defaults to ``None``.
-        Available types:
-
-        * ``Undefined``, undefined type
-        * ``Bool``
-        * ``Integer``
-        * ``Unsigned Integer``
-        * ``Unsigned Integer Vector``
-        * ``Real``
-        * ``String``
-        * ``String List``
-        * ``Variant``
-        * ``Path``
-        * ``Parameter``
-        * ``Parameter Set``
-        * ``Parameter Manager``
-        * ``Design``
-        * ``Designpoint``
-        * ``Design Container``
-        * ``Bool Vector``
-        * ``Criterion``
-        * ``Criterion Sequence``
-        * ``Designentry``
-        * ``Runinfo Meta``
-        * ``Runinfo``
-        * ``Designpoints``
+    type_hint: Optional[SlotTypeHint], optional
+        Type hint for the slot. Defaults to ``None``.
     password : Optional[str], optional
         Password. Defaults to ``None``.
 
@@ -304,7 +285,7 @@ def create_input_slot(
     args: CommandArgs = {}
     args["slot_name"] = slot_name
     if type_hint is not None:
-        args["type_hint"] = type_hint
+        args["type_hint"] = SlotTypeHintTCP[type_hint.name].value
 
     return _to_json(
         _gen_server_command(
@@ -373,7 +354,10 @@ def create_node(
 
 
 def create_output_slot(
-    actor_uid: str, slot_name: str, type_hint: Optional[str] = None, password: Optional[str] = None
+    actor_uid: str,
+    slot_name: str,
+    type_hint: Optional[SlotTypeHint] = None,
+    password: Optional[str] = None,
 ) -> str:
     """Generate JSON string of create_output_slot command.
 
@@ -383,33 +367,8 @@ def create_output_slot(
         Actor uid entry.
     slot_name: str
         Name of the slot.
-    type_hint: Optional[str], optional
-        Type of the hint, by default ``None``.
-        Available types:
-
-        * ``Undefined``, undefined type
-        * ``Bool``
-        * ``Integer``
-        * ``Unsigned Integer``
-        * ``Unsigned Integer Vector``
-        * ``Real``
-        * ``String``
-        * ``String List``
-        * ``Variant``
-        * ``Path``
-        * ``Parameter``
-        * ``Parameter Set``
-        * ``Parameter Manager``
-        * ``Design``
-        * ``Designpoint``
-        * ``Design Container``
-        * ``Bool Vector``
-        * ``Criterion``
-        * ``Criterion Sequence``
-        * ``Designentry``
-        * ``Runinfo Meta``
-        * ``Runinfo``
-        * ``Designpoints``
+    type_hint: Optional[SlotTypeHint], optional
+        Type hint for the slot, by default ``None``.
     password : Optional[str], optional
         Password, by default ``None``.
 
@@ -421,7 +380,7 @@ def create_output_slot(
     args: CommandArgs = {}
     args["slot_name"] = slot_name
     if type_hint is not None:
-        args["type_hint"] = type_hint
+        args["type_hint"] = SlotTypeHintTCP[type_hint.name].value
     return _to_json(
         _gen_server_command(
             command=_CREATE_OUTPUT_SLOT, actor_uid=actor_uid, args=args, password=password

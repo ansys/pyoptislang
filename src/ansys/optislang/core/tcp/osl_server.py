@@ -55,6 +55,7 @@ from ansys.optislang.core.errors import (
 )
 from ansys.optislang.core.osl_process import OslServerProcess, ServerNotification
 from ansys.optislang.core.osl_server import OslServer, OslVersion
+from ansys.optislang.core.slot_types import SlotTypeHint
 from ansys.optislang.core.tcp import server_commands as commands
 from ansys.optislang.core.tcp import server_queries as queries
 
@@ -1532,7 +1533,7 @@ class TcpOslServer(OslServer):
         return output[0].get("result_data", {}).get("actor_uid")
 
     def create_input_slot(
-        self, actor_uid: str, slot_name: str, type_hint: Optional[str] = None
+        self, actor_uid: str, slot_name: str, type_hint: Optional[SlotTypeHint] = None
     ) -> None:
         """Create dynamic input slot.
 
@@ -1542,33 +1543,8 @@ class TcpOslServer(OslServer):
             Uid of the actor.
         slot_name : str
             Name of the slot to be created.
-        type_hint: Optional[str], optional
-            Type of the slot. By default ``None``.
-            Available types:
-
-            * ``Undefined``, undefined type
-            * ``Bool``
-            * ``Integer``
-            * ``Unsigned Integer``
-            * ``Unsigned Integer Vector``
-            * ``Real``
-            * ``String``
-            * ``String List``
-            * ``Variant``
-            * ``Path``
-            * ``Parameter``
-            * ``Parameter Set``
-            * ``Parameter Manager``
-            * ``Design``
-            * ``Designpoint``
-            * ``Design Container``
-            * ``Bool Vector``
-            * ``Criterion``
-            * ``Criterion Sequence``
-            * ``Designentry``
-            * ``Runinfo Meta``
-            * ``Runinfo``
-            * ``Designpoints``
+        type_hint: Optional[SlotTypeHint], optional
+            Type hint for the slot. By default ``None``.
 
         Raises
         ------
@@ -1592,7 +1568,7 @@ class TcpOslServer(OslServer):
         )
 
     def create_output_slot(
-        self, actor_uid: str, slot_name: str, type_hint: Optional[str] = None
+        self, actor_uid: str, slot_name: str, type_hint: Optional[SlotTypeHint] = None
     ) -> None:
         """Create dynamic output slot.
 
@@ -1602,33 +1578,8 @@ class TcpOslServer(OslServer):
             Uid of the actor.
         slot_name : str
             Name of the slot to be created.
-        type_hint: Optional[str], optional
-            Type of the slot. By default ``None``.
-            Available types:
-
-            * ``Undefined``, undefined type
-            * ``Bool``
-            * ``Integer``
-            * ``Unsigned Integer``
-            * ``Unsigned Integer Vector``
-            * ``Real``
-            * ``String``
-            * ``String List``
-            * ``Variant``
-            * ``Path``
-            * ``Parameter``
-            * ``Parameter Set``
-            * ``Parameter Manager``
-            * ``Design``
-            * ``Designpoint``
-            * ``Design Container``
-            * ``Bool Vector``
-            * ``Criterion``
-            * ``Criterion Sequence``
-            * ``Designentry``
-            * ``Runinfo Meta``
-            * ``Runinfo``
-            * ``Designpoints``
+        type_hint: Optional[SlotTypeHint], optional
+            Type hint for the slot. By default ``None``.
 
         Raises
         ------
