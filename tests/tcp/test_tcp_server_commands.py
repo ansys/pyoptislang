@@ -181,6 +181,38 @@ def test_connect_nodes():
         sc.connect_nodes()
 
 
+def test_disconnect_nodes():
+    "Test connect_nodes."
+    # basic
+    json_string = sc.disconnect_nodes(
+        from_actor_uid=from_actor_uid,
+        from_slot="OMDBPath",
+        to_actor_uid=to_actor_uid,
+        to_slot="IMDBPath",
+    )
+    dictionary = json.loads(json_string)
+    requiered_string = json.loads(
+        '{ "projects": [ { "commands": [ { "type": "builtin", "command": "DISCONNECT_NODES", '
+        '"args": { "from_actor_uid": "3751b23c-3efb-459e-9b73-49cb4ae77e67", "from_slot": '
+        '"OMDBPath", "to_actor_uid": "e849f1e9-75b0-4472-8447-d076b33c47bf", "to_slot": '
+        '"IMDBPath" } } ] } ] }'
+    )
+    assert type(json_string) == str
+    assert sorted(dictionary.items()) == sorted(requiered_string.items())
+    # with password
+    json_string = sc.disconnect_nodes(
+        from_actor_uid=from_actor_uid,
+        from_slot="OMDBPath",
+        to_actor_uid=to_actor_uid,
+        to_slot="IMDBPath",
+        password=example_password,
+    )
+    dictionary = json.loads(json_string)
+    dictionary["Password"] == example_password
+    with pytest.raises(TypeError):
+        sc.disconnect_nodes()
+
+
 def test_create_input_slot():
     "Test create_input_slot."
     # basic

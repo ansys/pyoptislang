@@ -51,6 +51,8 @@ from ansys.optislang.core.errors import (
     OslCommandError,
     OslCommunicationError,
     OslDisposedError,
+    OslServerLicensingError,
+    OslServerStartError,
     ResponseFormatError,
 )
 from ansys.optislang.core.osl_process import OslServerProcess, ServerNotification
@@ -961,9 +963,7 @@ class TcpOslListener:
 
     def join(self) -> None:
         """Wait until self.__thread is finished."""
-        if not self.is_listening():
-            raise RuntimeError("Listener is not listening.")
-        if self.__thread is not None:
+        if self.is_listening() and self.__thread is not None:
             self.__thread.join()
 
     def cleanup_notifications(self, timeout: float = 1) -> None:
@@ -1134,6 +1134,10 @@ class TcpOslServer(OslServer):
         Port listener cannot be started.
         -or-
         optiSLang server port is not listened for specified timeout value.
+    OslServerStartError
+        Raised when optiSLang server process failed to start
+    OslServerLicensingError
+        Raised when optiSLang server process failed to start due to licensing issues
 
     Examples
     --------
@@ -1425,7 +1429,7 @@ class TcpOslServer(OslServer):
         to_slot: str,
         skip_rename_slot: bool = False,
     ) -> None:
-        """Connect 2 nodes.
+        """Connect nodes.
 
         Parameters
         ----------
@@ -1460,6 +1464,44 @@ class TcpOslServer(OslServer):
                 to_actor_uid=to_actor_uid,
                 to_slot=to_slot,
                 skip_rename_slot=skip_rename_slot,
+                password=self.__password,
+            ),
+            timeout=self.timeouts_register.get_value(current_func_name),
+            max_request_attempts=self.max_request_attempts_register.get_value(current_func_name),
+        )
+
+    def disconnect_nodes(
+        self, from_actor_uid: str, from_slot: str, to_actor_uid: str, to_slot: str
+    ) -> None:
+        """Disconnect nodes.
+
+        Parameters
+        ----------
+        from_actor_uid : str
+            Uid of the sending actor.
+        from_slot : str
+            Slot of the sending actor.
+        to_actor_uid : str
+            Uid of the receiving actor.
+        to_slot : str
+            Slot of the receiving actor.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        current_func_name = self.disconnect_nodes.__name__
+        self.send_command(
+            command=commands.disconnect_nodes(
+                from_actor_uid=from_actor_uid,
+                from_slot=from_slot,
+                to_actor_uid=to_actor_uid,
+                to_slot=to_slot,
                 password=self.__password,
             ),
             timeout=self.timeouts_register.get_value(current_func_name),
@@ -4422,6 +4464,10 @@ class TcpOslServer(OslServer):
             Port listener cannot be started.
             -or-
             optiSLang server port is not listened for specified timeout value.
+        OslServerStartError
+            Raised when optiSLang server process failed to start
+        OslServerLicensingError
+            Raised when optiSLang server process failed to start due to licensing issues
         """
         if self.__osl_process is not None:
             raise RuntimeError("optiSLang server is already started.")
@@ -4479,7 +4525,24 @@ class TcpOslServer(OslServer):
             )
             self.__osl_process.start()
 
+            # While waiting for optiSLang server to report back,
+            # monitor the process for pre-mature termination
+            while listener.is_listening():
+                exit_code = self.__osl_process.wait_for_finished(timeout=0.1)
+                if exit_code is not None:
+                    self.__osl_process = None
+                    if exit_code == 11:
+                        raise OslServerLicensingError(
+                            "optiSLang process start failed due to licensing issues"
+                            f" (returncode: {exit_code})."
+                        )
+                    else:
+                        raise OslServerStartError(
+                            f"optiSLang process start failed (returncode: {exit_code})."
+                        )
+
             listener.join()
+
             if not port_queue.empty():
                 self.__port = port_queue.get()
 
@@ -4490,9 +4553,11 @@ class TcpOslServer(OslServer):
         finally:
             if self.__port is None:
                 if self.__osl_process is not None:
+                    returncode = self.__osl_process.returncode
                     self.__osl_process.terminate()
                     self.__osl_process = None
-                    raise RuntimeError("Cannot get optiSLang server port.")
+                    if returncode is None:
+                        raise RuntimeError("optiSLang server process start timed out.")
 
         listener.refresh_listener_registration = True
         self.__listeners["main_listener"] = listener

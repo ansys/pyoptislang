@@ -37,6 +37,7 @@ _CREATE_INPUT_SLOT = "CREATE_INPUT_SLOT"
 _CREATE_NODE = "CREATE_NODE"
 _CREATE_OUTPUT_SLOT = "CREATE_OUTPUT_SLOT"
 _CREATE_START_DESIGNS = "CREATE_START_DESIGNS"
+_DISCONNECT_NODES = "DISCONNECT_NODES"
 _DISCONNECT_SLOT = "DISCONNECT_SLOT"
 _EVALUATE_DESIGN = "EVALUATE_DESIGN"
 _EXPORT_DESIGNS = "EXPORT_DESIGNS"
@@ -256,6 +257,42 @@ def connect_nodes(
     args["skip_rename_slot"] = skip_rename_slot
 
     return _to_json(_gen_server_command(command=_CONNECT_NODES, args=args, password=password))
+
+
+def disconnect_nodes(
+    from_actor_uid: str,
+    from_slot: str,
+    to_actor_uid: str,
+    to_slot: str,
+    password: Optional[str] = None,
+) -> str:
+    """Generate JSON string of disconnect_nodes command.
+
+    Parameters
+    ----------
+    from_actor_uid: str
+        Uid of connection source.
+    from_slot: str
+        Slot of connection source.
+    to_actor_uid: str
+        Uid of connection target.
+    to_slot: str
+        Slot of connection target.
+    password : Optional[str], optional
+        Password, by default ``None``.
+
+    Returns
+    -------
+    str
+        JSON string of disconnect_nodes command.
+    """
+    args: CommandArgs = {}
+    args["from_actor_uid"] = from_actor_uid
+    args["from_slot"] = from_slot
+    args["to_actor_uid"] = to_actor_uid
+    args["to_slot"] = to_slot
+
+    return _to_json(_gen_server_command(command=_DISCONNECT_NODES, args=args, password=password))
 
 
 def create_input_slot(
