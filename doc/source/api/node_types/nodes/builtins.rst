@@ -51,6 +51,7 @@ Built-in
     IntegrationPlugin
     LSDynaParameterize
     Matlab
+    Mop
     Mopsolver
     MultiplasParameterize
     Octave
@@ -82,4 +83,3 @@ Built-in
     VariantMonitoring
     VCollabProcess
     Wait
-

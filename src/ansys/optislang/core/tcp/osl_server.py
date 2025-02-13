@@ -51,6 +51,8 @@ from ansys.optislang.core.errors import (
     OslCommandError,
     OslCommunicationError,
     OslDisposedError,
+    OslServerLicensingError,
+    OslServerStartError,
     ResponseFormatError,
 )
 from ansys.optislang.core.osl_process import OslServerProcess, ServerNotification
@@ -704,6 +706,16 @@ class TcpOslListener:
             when started locally, by default ``None``.
         logger: Optional[Any], optional
             Preferably OslLogger should be given. If not given, default logging.Logger is used.
+        notifications: Optional[Iterable[ServerNotification]], optional
+            Notifications to subscribe to.
+            Either ["ALL"] or Sequence picked from below options:
+            Server: [ "SERVER_UP", "SERVER_DOWN" ] (always be sent by default).
+            Logging: [ "LOG_INFO", "LOG_WARNING", "LOG_ERROR", "LOG_DEBUG" ].
+            Project: [ "EXECUTION_STARTED", "PROCESSING_STARTED", "EXECUTION_FINISHED",
+                "NOTHING_PROCESSED", "CHECK_FAILED", "EXEC_FAILED" ].
+            Nodes: [ "ACTOR_STATE_CHANGED", "ACTOR_ACTIVE_CHANGED", "ACTOR_NAME_CHANGED",
+                "ACTOR_CONTENTS_CHANGED", "ACTOR_DATA_CHANGED" ].
+            Defaults to ``None``.
 
     Raises
     ------
@@ -737,6 +749,7 @@ class TcpOslListener:
         host: Optional[str] = None,
         uid: Optional[str] = None,
         logger: Optional[Any] = None,
+        notifications: Optional[List[ServerNotification]] = None,
     ):
         """Initialize a new instance of the ``TcpOslListener`` class."""
         self.__uid = uid
@@ -747,6 +760,7 @@ class TcpOslListener:
         self.__callbacks: List[Tuple[Callable, Any]] = []
         self.__run_listening_thread = False
         self.__refresh_listener_registration = False
+        self.__notifications = notifications
 
         if logger is None:
             self._logger = logging.getLogger(__name__)
@@ -825,6 +839,15 @@ class TcpOslListener:
             If True, listeners registration will be automatically renewed.
         """
         self.__refresh_listener_registration = refresh
+
+    @property
+    def notifications(self) -> Optional[List[ServerNotification]]:
+        """Notifications to subscribe to."""
+        return self.__notifications
+
+    @notifications.setter
+    def notifications(self, notifications: Optional[List[ServerNotification]]) -> None:
+        self.__notifications = notifications
 
     def add_callback(self, callback: Callable, args) -> None:
         """Add callback (method) that will be called after push notification is received.
@@ -939,9 +962,7 @@ class TcpOslListener:
 
     def join(self) -> None:
         """Wait until self.__thread is finished."""
-        if not self.is_listening():
-            raise RuntimeError("Listener is not listening.")
-        if self.__thread is not None:
+        if self.is_listening() and self.__thread is not None:
             self.__thread.join()
 
     def cleanup_notifications(self, timeout: float = 1) -> None:
@@ -1050,6 +1071,10 @@ class TcpOslServer(OslServer):
         Multiple remote listeners (plain TCP/IP based) to be registered at optiSLang server.
         Each listener is a combination of host, port and (optionally) listener ID.
         Defaults to ``None``.
+    listeners_refresh_interval : int, optional
+        Refresh interval for TCP listeners in seconds. Defaults to 10 s.
+    listeners_default_timeout : int, optional
+        Default timeout for TCP listeners in milliseconds. Defaults to 60000 ms.
     ini_timeout : float, optional
         Time in seconds to listen to the optiSLang server port. If the port is not listened
         for specified time, the optiSLang server is not started and RuntimeError is raised.
@@ -1108,6 +1133,10 @@ class TcpOslServer(OslServer):
         Port listener cannot be started.
         -or-
         optiSLang server port is not listened for specified timeout value.
+    OslServerStartError
+        Raised when optiSLang server process failed to start
+    OslServerLicensingError
+        Raised when optiSLang server process failed to start due to licensing issues
 
     Examples
     --------
@@ -1144,7 +1173,6 @@ class TcpOslServer(OslServer):
         "GENTLE_STOP_REQUESTED": 10,
     }
     _DEFAULT_PROJECT_FILE = "project.opf"
-    _DEFAULT_LISTENERS_REFRESH_INTERVAL = 20
 
     def __init__(
         self,
@@ -1162,6 +1190,8 @@ class TcpOslServer(OslServer):
         auto_relocate: bool = False,
         listener_id: Optional[str] = None,
         multi_listener: Optional[Iterable[Tuple[str, int, Optional[str]]]] = None,
+        listeners_refresh_interval: int = 10,
+        listeners_default_timeout: int = 60000,
         ini_timeout: float = 60,
         password: Optional[str] = None,
         logger: Optional[Any] = None,
@@ -1199,7 +1229,8 @@ class TcpOslServer(OslServer):
         self.__listeners: Dict[str, TcpOslListener] = {}
         self.__listeners_registration_thread: Optional[threading.Thread] = None
         self.__refresh_listeners_stopped = threading.Event()
-        self.__listeners_refresh_interval = self._DEFAULT_LISTENERS_REFRESH_INTERVAL
+        self.__listeners_refresh_interval = listeners_refresh_interval
+        self.__listeners_default_timeout = listeners_default_timeout
         self.__disposed = False
         self.__env_vars = env_vars
         self.__listener_id = listener_id
@@ -1235,14 +1266,16 @@ class TcpOslServer(OslServer):
                 timeout=None,
                 name="Main",
                 uid=self.__listener_id,
-            )
-            listener.uid = self.__register_listener(
-                host_addresses=listener.host_addresses,
-                port=listener.port,
                 notifications=[
                     ServerNotification.SERVER_UP,
                     ServerNotification.SERVER_DOWN,
                 ],
+            )
+            listener.uid = self.__register_listener(
+                host_addresses=listener.host_addresses,
+                port=listener.port,
+                timeout=self.__listeners_default_timeout,
+                notifications=listener.notifications,
             )
             listener.refresh_listener_registration = True
             self.__listeners["main_listener"] = listener
@@ -1390,7 +1423,7 @@ class TcpOslServer(OslServer):
     def connect_nodes(
         self, from_actor_uid: str, from_slot: str, to_actor_uid: str, to_slot: str
     ) -> None:
-        """Connect 2 nodes.
+        """Connect nodes.
 
         Parameters
         ----------
@@ -1415,6 +1448,44 @@ class TcpOslServer(OslServer):
         current_func_name = self.connect_nodes.__name__
         self.send_command(
             command=commands.connect_nodes(
+                from_actor_uid=from_actor_uid,
+                from_slot=from_slot,
+                to_actor_uid=to_actor_uid,
+                to_slot=to_slot,
+                password=self.__password,
+            ),
+            timeout=self.timeouts_register.get_value(current_func_name),
+            max_request_attempts=self.max_request_attempts_register.get_value(current_func_name),
+        )
+
+    def disconnect_nodes(
+        self, from_actor_uid: str, from_slot: str, to_actor_uid: str, to_slot: str
+    ) -> None:
+        """Disconnect nodes.
+
+        Parameters
+        ----------
+        from_actor_uid : str
+            Uid of the sending actor.
+        from_slot : str
+            Slot of the sending actor.
+        to_actor_uid : str
+            Uid of the receiving actor.
+        to_slot : str
+            Slot of the receiving actor.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        current_func_name = self.disconnect_nodes.__name__
+        self.send_command(
+            command=commands.disconnect_nodes(
                 from_actor_uid=from_actor_uid,
                 from_slot=from_slot,
                 to_actor_uid=to_actor_uid,
@@ -1492,16 +1563,16 @@ class TcpOslServer(OslServer):
         return output[0].get("result_data", {}).get("actor_uid")
 
     def create_input_slot(
-        self, actor_uid: str, slot_name: Optional[str] = None, type_hint: Optional[str] = None
+        self, actor_uid: str, slot_name: str, type_hint: Optional[str] = None
     ) -> None:
-        """Create custom input slot.
+        """Create dynamic input slot.
 
         Parameters
         ----------
         actor_uid : str
             Uid of the actor.
-        slot_name : Optional[str], optional
-            Name of the slot to be created. By default ``None``.
+        slot_name : str
+            Name of the slot to be created.
         type_hint: Optional[str], optional
             Type of the slot. By default ``None``.
 
@@ -1515,7 +1586,6 @@ class TcpOslServer(OslServer):
         TimeoutError
             Raised when the timeout float value expires.
         """
-        # TODO: test
         current_func_name = self.create_input_slot.__name__
         self.send_command(
             command=commands.create_input_slot(
@@ -1529,16 +1599,16 @@ class TcpOslServer(OslServer):
         )
 
     def create_output_slot(
-        self, actor_uid: str, slot_name: Optional[str] = None, type_hint: Optional[str] = None
+        self, actor_uid: str, slot_name: str, type_hint: Optional[str] = None
     ) -> None:
-        """Create custom output slot.
+        """Create dynamic output slot.
 
         Parameters
         ----------
         actor_uid : str
             Uid of the actor.
-        slot_name : Optional[str], optional
-            Name of the slot to be created. By default ``None``.
+        slot_name : str
+            Name of the slot to be created.
         type_hint: Optional[str], optional
             Type of the slot. By default ``None``.
 
@@ -1552,7 +1622,6 @@ class TcpOslServer(OslServer):
         TimeoutError
             Raised when the timeout float value expires.
         """
-        # TODO: test
         current_func_name = self.create_output_slot.__name__
         self.send_command(
             command=commands.create_output_slot(
@@ -4287,6 +4356,10 @@ class TcpOslServer(OslServer):
             Port listener cannot be started.
             -or-
             optiSLang server port is not listened for specified timeout value.
+        OslServerStartError
+            Raised when optiSLang server process failed to start
+        OslServerLicensingError
+            Raised when optiSLang server process failed to start due to licensing issues
         """
         if self.__osl_process is not None:
             raise RuntimeError("optiSLang server is already started.")
@@ -4295,6 +4368,10 @@ class TcpOslServer(OslServer):
             uid=self.__listener_id if self.__listener_id else str(uuid.uuid4()),
             timeout=None,
             name="Main",
+            notifications=[
+                ServerNotification.SERVER_UP,
+                ServerNotification.SERVER_DOWN,
+            ],
         )
         port_queue: Queue = Queue()
         listener.add_callback(self.__class__.__port_on_listended, (port_queue, self._logger))
@@ -4340,7 +4417,24 @@ class TcpOslServer(OslServer):
             )
             self.__osl_process.start()
 
+            # While waiting for optiSLang server to report back,
+            # monitor the process for pre-mature termination
+            while listener.is_listening():
+                exit_code = self.__osl_process.wait_for_finished(timeout=0.1)
+                if exit_code is not None:
+                    self.__osl_process = None
+                    if exit_code == 11:
+                        raise OslServerLicensingError(
+                            "optiSLang process start failed due to licensing issues"
+                            f" (returncode: {exit_code})."
+                        )
+                    else:
+                        raise OslServerStartError(
+                            f"optiSLang process start failed (returncode: {exit_code})."
+                        )
+
             listener.join()
+
             if not port_queue.empty():
                 self.__port = port_queue.get()
 
@@ -4351,9 +4445,11 @@ class TcpOslServer(OslServer):
         finally:
             if self.__port is None:
                 if self.__osl_process is not None:
+                    returncode = self.__osl_process.returncode
                     self.__osl_process.terminate()
                     self.__osl_process = None
-                    raise RuntimeError("Cannot get optiSLang server port.")
+                    if returncode is None:
+                        raise RuntimeError("optiSLang server process start timed out.")
 
         listener.refresh_listener_registration = True
         self.__listeners["main_listener"] = listener
@@ -4367,7 +4463,11 @@ class TcpOslServer(OslServer):
             return Path(file_path)
 
     def __create_listener(
-        self, timeout: float, name: str, uid: Optional[str] = None
+        self,
+        timeout: float,
+        name: str,
+        uid: Optional[str] = None,
+        notifications: Optional[List[ServerNotification]] = None,
     ) -> TcpOslListener:
         """Create new listener.
 
@@ -4377,6 +4477,16 @@ class TcpOslServer(OslServer):
             Timeout.
         Uid: Optional[str], optional
             Listener uid. Defaults to ``None``.
+        notifications: Optional[Iterable[ServerNotification]], optional
+            Notifications to subscribe to.
+            Either ["ALL"] or Sequence picked from below options:
+            Server: [ "SERVER_UP", "SERVER_DOWN" ] (always be sent by default).
+            Logging: [ "LOG_INFO", "LOG_WARNING", "LOG_ERROR", "LOG_DEBUG" ].
+            Project: [ "EXECUTION_STARTED", "PROCESSING_STARTED", "EXECUTION_FINISHED",
+                "NOTHING_PROCESSED", "CHECK_FAILED", "EXEC_FAILED" ].
+            Nodes: [ "ACTOR_STATE_CHANGED", "ACTOR_ACTIVE_CHANGED", "ACTOR_NAME_CHANGED",
+                "ACTOR_CONTENTS_CHANGED", "ACTOR_DATA_CHANGED" ].
+            Defaults to ``None``.
 
         Returns
         -------
@@ -4398,6 +4508,7 @@ class TcpOslServer(OslServer):
             name=name,
             uid=uid,
             logger=self._logger,
+            notifications=notifications,
         )
 
         if not listener.is_initialized():
@@ -4428,16 +4539,18 @@ class TcpOslServer(OslServer):
         exec_started_listener = self.__create_listener(
             timeout=timeout,
             name="ExecStarted",
-        )
-        exec_started_listener.uid = self.__register_listener(
-            host_addresses=exec_started_listener.host_addresses,
-            port=exec_started_listener.port,
             notifications=[
                 ServerNotification.PROCESSING_STARTED,
                 ServerNotification.NOTHING_PROCESSED,
                 ServerNotification.EXEC_FAILED,
                 ServerNotification.CHECK_FAILED,
             ],
+        )
+        exec_started_listener.uid = self.__register_listener(
+            host_addresses=exec_started_listener.host_addresses,
+            port=exec_started_listener.port,
+            timeout=self.__listeners_default_timeout,
+            notifications=exec_started_listener.notifications,
         )
         exec_started_listener.refresh_listener_registration = True
         self.__listeners["exec_started_listener"] = exec_started_listener
@@ -4466,16 +4579,18 @@ class TcpOslServer(OslServer):
         exec_finished_listener = self.__create_listener(
             timeout=timeout,
             name="ExecFinished",
-        )
-        exec_finished_listener.uid = self.__register_listener(
-            host_addresses=exec_finished_listener.host_addresses,
-            port=exec_finished_listener.port,
             notifications=[
                 ServerNotification.EXECUTION_FINISHED,
                 ServerNotification.NOTHING_PROCESSED,
                 ServerNotification.EXEC_FAILED,
                 ServerNotification.CHECK_FAILED,
             ],
+        )
+        exec_finished_listener.uid = self.__register_listener(
+            host_addresses=exec_finished_listener.host_addresses,
+            port=exec_finished_listener.port,
+            timeout=self.__listeners_default_timeout,
+            notifications=exec_finished_listener.notifications,
         )
         exec_finished_listener.refresh_listener_registration = True
         self.__listeners["exec_finished_listener"] = exec_finished_listener
@@ -4531,6 +4646,7 @@ class TcpOslServer(OslServer):
         host_addresses: Iterable[str],
         port: int,
         timeout: int = 60000,
+        explicit_listener_id: Optional[str] = None,
         notifications: Optional[List[ServerNotification]] = None,
     ) -> str:
         """Register a client, returning a reference ID.
@@ -4543,8 +4659,11 @@ class TcpOslServer(OslServer):
             A numeric port number of listener.
         timeout: float
             Listener will remain active for ``timeout`` ms unless refreshed.
-
+        explicit_listener_id: Optional[str], optional
+            Explicitly requested listener ID.
+            Defaults to ``None``.
         notifications: Optional[Iterable[ServerNotification]], optional
+            Notifications to subscribe to.
             Either ["ALL"] or Sequence picked from below options:
             Server: [ "SERVER_UP", "SERVER_DOWN" ] (always be sent by default).
             Logging: [ "LOG_INFO", "LOG_WARNING", "LOG_ERROR", "LOG_DEBUG" ].
@@ -4569,7 +4688,11 @@ class TcpOslServer(OslServer):
             Raised when the timeout float value expires.
         """
         current_func_name = self.__register_listener.__name__
-        listener_id = self.__listener_id if self.__listener_id is not None else str(uuid.uuid4())
+        listener_id = (
+            explicit_listener_id
+            if explicit_listener_id is not None
+            else self.__listener_id if self.__listener_id is not None else str(uuid.uuid4())
+        )
         notification_names = None
         if notifications is not None:
             notification_names = [ntf.name for ntf in notifications]
@@ -4612,15 +4735,42 @@ class TcpOslServer(OslServer):
             if counter >= self.__listeners_refresh_interval:
                 for listener in self.__listeners.values():
                     if listener.refresh_listener_registration:
-                        self.send_command(
-                            commands.refresh_listener_registration(
-                                uid=listener.uid, password=self.__password
-                            ),
-                            timeout=self.timeouts_register.get_value(current_func_name),
-                            max_request_attempts=self.max_request_attempts_register.get_value(
-                                current_func_name
-                            ),
-                        )
+                        try:
+                            self._logger.debug(
+                                "Refreshing registration for listener: %s", listener.uid
+                            )
+                            self.send_command(
+                                commands.refresh_listener_registration(
+                                    uid=listener.uid, password=self.__password
+                                ),
+                                timeout=self.timeouts_register.get_value(current_func_name),
+                                max_request_attempts=self.max_request_attempts_register.get_value(
+                                    current_func_name
+                                ),
+                            )
+                        except OslCommandError as e:
+                            self._logger.debug(
+                                "Refreshing registration for listener %s failed: %s",
+                                listener.uid,
+                                str(e),
+                            )
+                            if "No such listener" in str(e):
+                                self._logger.debug("Re-register listener: %s", listener.uid)
+                                try:
+                                    # re-register the listener
+                                    listener.uid = self.__register_listener(
+                                        host_addresses=listener.host_addresses,
+                                        port=listener.port,
+                                        timeout=self.__listeners_default_timeout,
+                                        explicit_listener_id=listener.uid,
+                                        notifications=listener.notifications,
+                                    )
+                                except Exception as e:
+                                    self._logger.debug(
+                                        "Re-registering listener %s failed: %s",
+                                        listener.uid,
+                                        str(e),
+                                    )
                 counter = 0
             counter += check_for_refresh
             self.__refresh_listeners_stopped.wait(check_for_refresh)

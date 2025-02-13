@@ -130,3 +130,47 @@ def test_connect_nodes(optislang: Optislang, tmp_path: Path):
     assert len(calc_i.get_connections()) == 2
     calc_i_input.disconnect()
     assert len(calc_i.get_connections()) == 1
+
+
+def test_disconnect_nodes(optislang: Optislang, tmp_path: Path):
+    """Test disconnecting nodes."""
+    rs: TcpRootSystemProxy = optislang.project.root_system
+    a: TcpNodeProxy = rs.find_nodes_by_name("A")[0]
+    b: TcpNodeProxy = rs.find_nodes_by_name("B")[0]
+    calc: TcpNodeProxy = rs.find_nodes_by_name("Calculator")[0]
+    sens: TcpParametricSystemProxy = rs.find_nodes_by_name("Sensitivity")[0]
+    calc_i: TcpNodeProxy = sens.find_nodes_by_name("Calculator")[0]
+
+    a_output = a.get_output_slots(name="OVar")[0]
+    b_output = b.get_output_slots(name="OVar")[0]
+    calc_inputA = calc.get_input_slots(name="A")[0]
+    calc_inputB = calc.get_input_slots(name="B")[0]
+    calc_inputRS = calc.get_input_slots(name="IDesign")[0]
+
+    sens_inner_output = sens.get_inner_output_slots(name="IODesign")[0]
+    sens_inner_input = sens.get_inner_input_slots(name="IIDesign")[0]
+    sens_output = sens.get_output_slots(name="OReferenceDesign")[0]
+    calc_i_output = calc_i.get_output_slots(name="ODesign")[0]
+    calc_i_input = calc_i.get_input_slots(name="IDesign")[0]
+
+    rs_output = rs.get_inner_output_slots(name="IODesign")[0]
+    rs_input = rs.get_inner_input_slots(name="IIDesign")[0]
+
+    a_output.connect_to(calc_inputA)
+    calc_inputB.connect_from(b_output)
+    sens_inner_output.connect_to(calc_i_input)
+    calc_i_output.connect_to(sens_inner_input)
+    rs_output.connect_to(calc_inputRS)
+    sens_output.connect_to(rs_input)
+
+    assert len(calc.get_connections()) == 4
+    assert len(calc.get_connections(slot_type=SlotType.INPUT)) == 3
+    assert len(calc.get_connections(slot_name="B")) == 1
+
+    assert len(calc_i.get_connections()) == 2
+
+    a_output.disconnect(calc_inputA)
+    sens_inner_output.disconnect(calc_i_input)
+
+    assert len(calc.get_connections()) == 3
+    assert len(calc_i.get_connections()) == 1
