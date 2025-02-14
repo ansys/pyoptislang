@@ -125,7 +125,7 @@ class Optislang:
         Each listener is a combination of host, port and (optionally) listener ID.
         Defaults to ``None``.
     ini_timeout : float, optional
-        Time in seconds to connect to the optiSLang server. The default is ``20``.
+        Time in seconds to connect to the optiSLang server. The default is ``60``.
     name : Optional[str], optional
         ID of the optiSLang instance. Defaults to ``None``.
     password : Optional[str], optional
@@ -192,6 +192,10 @@ class Optislang:
     RuntimeError
         Raised when the connection to the optiSLang server cannot be established
         before the specified timeout.
+    OslServerStartError
+        Raised when optiSLang server process failed to start
+    OslServerLicensingError
+        Raised when optiSLang server process failed to start due to licensing issues
 
     Examples
     --------
@@ -286,6 +290,10 @@ class Optislang:
         ------
         NotImplementedError
             Raised when the specified server type is not supported.
+        OslServerStartError
+            Raised when optiSLang server process failed to start
+        OslServerLicensingError
+            Raised when optiSLang server process failed to start due to licensing issues
         """
         if server_type.lower() == "tcp":
             return TcpOslServer(

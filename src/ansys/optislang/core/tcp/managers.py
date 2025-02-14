@@ -63,6 +63,8 @@ class TcpCriteriaManagerProxy(CriteriaManager):
     def add_criterion(self, criterion: Criterion) -> None:
         """Add criterion to the system.
 
+        .. note:: Method is supported for Ansys optiSLang version >= 23.2 only.
+
         Parameters
         ----------
         criterion: Criterion
@@ -145,6 +147,8 @@ class TcpCriteriaManagerProxy(CriteriaManager):
     def modify_criterion(self, criterion: Criterion) -> None:
         """Modify criterion in the system.
 
+        .. note:: Method is supported for Ansys optiSLang version >= 23.2 only.
+
         Parameters
         ----------
         criterion : Criterion
@@ -186,6 +190,8 @@ class TcpCriteriaManagerProxy(CriteriaManager):
     ) -> None:
         """Modify property of criterion in the system.
 
+        .. note:: Method is supported for Ansys optiSLang version >= 23.2 only.
+
         Parameters
         ----------
         criterion_name : str
@@ -219,6 +225,8 @@ class TcpCriteriaManagerProxy(CriteriaManager):
     def remove_all_criteria(self) -> None:
         """Remove all criteria from the system.
 
+        .. note:: Method is supported for Ansys optiSLang version >= 23.2 only.
+
         Raises
         ------
         NotImplementedError
@@ -237,6 +245,8 @@ class TcpCriteriaManagerProxy(CriteriaManager):
 
     def remove_criterion(self, criterion_name: str) -> None:
         """Remove criterion from the system.
+
+        .. note:: Method is supported for Ansys optiSLang version >= 23.2 only.
 
         Parameters
         ----------

@@ -466,7 +466,9 @@ def get_localhost_addresses() -> List[str]:
     List[str]
         List of addresses of the localhost machine.
     """
-    return [i[4][0] for i in socket.getaddrinfo(socket.gethostname(), None)]
+    return [
+        i[4][0] for i in socket.getaddrinfo(socket.gethostname(), None, type=socket.SOCK_STREAM)
+    ]
 
 
 def is_localhost(host: str) -> bool:
