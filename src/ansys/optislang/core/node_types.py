@@ -192,6 +192,7 @@ CatiaProcess = NodeType(
 CetolInput = NodeType(
     id="CetolInput", subtype=AddinType.BUILT_IN, osl_class_type=NodeClassType.NODE
 )
+"""Class :py:class:`~ansys.optislang.core.nodes.Node` is created from this node type."""
 CFturboInput = NodeType(
     id="CFturboInput", subtype=AddinType.BUILT_IN, osl_class_type=NodeClassType.NODE
 )
@@ -199,7 +200,6 @@ CFturboInput = NodeType(
 Compare = NodeType(
     id="Compare",
     subtype=AddinType.BUILT_IN,
-    osl_class_type=NodeClassType.NODE,
     osl_class_type=NodeClassType.NODE,
 )
 """Class :py:class:`~ansys.optislang.core.nodes.Node` is created from this node type."""
@@ -226,6 +226,7 @@ DataExport = NodeType(
 DataImport = NodeType(
     id="DataImport", subtype=AddinType.BUILT_IN, osl_class_type=NodeClassType.NODE
 )
+"""Class :py:class:`~ansys.optislang.core.nodes.Node` is created from this node type."""
 DataMining = NodeType(
     id="DataMining", subtype=AddinType.BUILT_IN, osl_class_type=NodeClassType.INTEGRATION_NODE
 )
@@ -239,6 +240,7 @@ DesignImport = NodeType(
 )
 """Class :py:class:`~ansys.optislang.core.nodes.Node` is created from this node type."""
 DPS = NodeType(id="DPS", subtype=AddinType.BUILT_IN, osl_class_type=NodeClassType.NODE)
+"""Class :py:class:`~ansys.optislang.core.nodes.Node` is created from this node type."""
 ETKAbaqus = NodeType(
     id="ETKAbaqus", subtype=AddinType.BUILT_IN, osl_class_type=NodeClassType.INTEGRATION_NODE
 )
@@ -372,11 +374,13 @@ PMOPPostprocessing = NodeType(
 PMopsolver = NodeType(
     id="PMopsolver", subtype=AddinType.BUILT_IN, osl_class_type=NodeClassType.NODE
 )
+"""Class :py:class:`~ansys.optislang.core.nodes.Node` is created from this node type."""
 Postprocessing = NodeType(
     id="Postprocessing", subtype=AddinType.BUILT_IN, osl_class_type=NodeClassType.NODE
 )
 """Class :py:class:`~ansys.optislang.core.nodes.Node` is created from this node type."""
-Process = NodeType(id="Process", subtype=AddinType.BUILT_IN)
+Process = NodeType(id="Process", subtype=AddinType.BUILT_IN, osl_class_type=NodeClassType.NODE)
+"""Class :py:class:`~ansys.optislang.core.nodes.Node` is created from this node type."""
 ProEParameterize = NodeType(
     id="ProEParameterize", subtype=AddinType.BUILT_IN, osl_class_type=NodeClassType.INTEGRATION_NODE
 )
@@ -905,14 +909,12 @@ MOP = NodeType(id="MOP", subtype=AddinType.PYTHON_BASED_MOP_NODE_PLUGIN)
 System = NodeType(id="System", subtype=AddinType.BUILT_IN, osl_class_type=NodeClassType.SYSTEM)
 """Class :py:class:`~ansys.optislang.core.nodes.System` is created from this node type.
 note:: Creation of this specific node is not supported."""
+While = NodeType(id="While", subtype=AddinType.BUILT_IN, osl_class_type=NodeClassType.SYSTEM)
+"""Class :py:class:`~ansys.optislang.core.nodes.System` is created from this node type."""
 # endregion
 # endregion
 # region PARAMETRIC SYSTEMS
 # region Builtins
-While = NodeType(id="While", subtype=AddinType.BUILT_IN, osl_class_type=NodeClassType.SYSTEM)
-"""Class :py:class:`~ansys.optislang.core.nodes.System` is created from this node type."""
-While = NodeType(id="While", subtype=AddinType.BUILT_IN, osl_class_type=NodeClassType.SYSTEM)
-"""Class :py:class:`~ansys.optislang.core.nodes.System` is created from this node type."""
 AlgorithmSystemPlugin = NodeType(
     id="AlgorithmSystemPlugin",
     subtype=AddinType.BUILT_IN,
