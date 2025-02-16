@@ -4199,7 +4199,7 @@ class TcpOslServer(OslServer):
 
         if self.__get_project_status() == "PROCESSING":
             already_running = True
-            self._logger.debug("Status PROCESSING")
+            self._logger.warning("Project is already PROCESSING, `start` command was not sent.")
 
         if not already_running and (wait_for_started or wait_for_finished):
             exec_started_listener = self.__create_exec_started_listener(
