@@ -3377,6 +3377,34 @@ class Design:
         if responses:
             self.__responses = self.__parse_responses_to_designvariables(responses=responses)
 
+    def __eq__(self, other) -> bool:
+        """Compare properties of two instances of the ``Design`` class.
+
+        Parameters
+        ----------
+        other: Design
+            Design for comparison.
+
+        Returns
+        -------
+        bool
+            ``True`` if all properties match; ``False`` otherwise.
+        """
+        return (
+            type(self) == type(other)
+            and self.parameters == other.parameters
+            and self.constraints == other.constraints
+            and self.limit_states == other.limit_states
+            and self.objectives == other.objectives
+            and self.variables == other.variables
+            and self.responses == other.responses
+            and self.feasibility == other.feasibility
+            and self.id == other.id
+            and self.status == other.status
+            # NOTE: pareto_design not provided by `get_design` query
+            and self.__pareto_design == other.pareto_design
+        )
+
     @property
     def constraints(self) -> Tuple[DesignVariable, ...]:
         """Tuple of all constraints."""

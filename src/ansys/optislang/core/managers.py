@@ -24,14 +24,20 @@
 from __future__ import annotations
 
 from abc import abstractmethod
-from typing import TYPE_CHECKING, Any, Optional, Tuple, Union
+from typing import TYPE_CHECKING, Any, Iterable, Optional, Tuple, Union
 
 if TYPE_CHECKING:
     from pathlib import Path
 
     from ansys.optislang.core.io import File
     from ansys.optislang.core.osl_server import OslServer
-    from ansys.optislang.core.project_parametric import Criterion, Design, Parameter, Response
+    from ansys.optislang.core.project_parametric import (
+        Criterion,
+        Design,
+        DesignStatus,
+        Parameter,
+        Response,
+    )
 
 
 class CriteriaManager:
@@ -304,7 +310,55 @@ class DesignManager:
         ValueError
             Raised when ``hid`` does not exist.
         """
-        return self.__save_designs_as(hid, file_path, FileOutputFormat.CSV)
+        pass
+
+    @staticmethod
+    @abstractmethod
+    def filter_designs_by(
+        designs: Iterable[Design],
+        hid: Optional[str] = None,
+        status: Optional[DesignStatus] = None,
+        pareto_design: Optional[str] = None,
+        feasible: Optional[bool] = None,
+    ) -> Tuple[Design]:  # pragma: no cover
+        """Filter designs by given parameters.
+
+        Parameters
+        ----------
+        designs : Iterable[Design]
+            Designs to be filtered.
+        hid : Optional[str], optional
+            State/Design hierarchical id. By default ``None``.
+        status : Optional[DesignStatus], optional
+            Design status. By default ``None``.
+        pareto_design : Optional[str], optional
+            Pareto flag. By default ``None``.
+        feasible : Optional[bool], optional
+            Feasibility of design. By default ``None``.
+
+        Returns
+        -------
+        Tuple[Design]
+            Tuple of filtered designs
+        """
+        pass
+
+    @staticmethod
+    @abstractmethod
+    def sort_designs_by_hid(designs: Iterable[Design]) -> Tuple[Design]:  # pragma: no cover
+        """Sort designs by hierarchical id.
+
+        Parameters
+        ----------
+        designs : Iterable[Design]
+            Designs to be sorted.
+
+        Returns
+        -------
+        Tuple[Design]
+            Tuple of sorted designs.
+        """
+        pass
 
 
 class ParameterManager:

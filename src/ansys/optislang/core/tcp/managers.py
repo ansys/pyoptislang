@@ -337,6 +337,10 @@ class TcpDesignManagerProxy(DesignManager):
         -------
         Design
             Design object.
+
+        Notes
+        -----
+        The `pareto_design` information is not provided by this query.
         """
         design = self.__osl_server.get_result_design(
             uid=self.__uid,
@@ -382,6 +386,8 @@ class TcpDesignManagerProxy(DesignManager):
         if include_design_values:
             design_values = designs.get("values")
             for design_value, design_state in zip(design_values, design_states):
+                if design_value["hid"] != design_state["id"]:
+                    raise ValueError(f'{design_value["hid"]} != {design_state["id"]}')
                 design_classes.append(
                     Design(
                         parameters=dict(
@@ -430,7 +436,7 @@ class TcpDesignManagerProxy(DesignManager):
                         pareto_design=design_state["pareto_design"],
                     )
                 )
-        return design_classes
+        return tuple(design_classes)
 
     def save_designs_as_json(self, hid: str, file_path: Union[Path, str]) -> File:
         """Save designs for a given state to JSON file.
@@ -542,9 +548,21 @@ class TcpDesignManagerProxy(DesignManager):
                 f"`{type(file_path)}`."
             )
 
-        designs = self._get_status_info(hid=hid, include_designs=True, include_design_values=True)[
-            "designs"
-        ]
+        status_info = self._get_status_info(
+            hid=hid,
+            include_designs=True,
+            include_design_values=True,
+            include_algorithm_info=False,
+        )
+        designs = status_info["designs"]
+        design_states = status_info["design_status"]
+        for design, state in zip(designs["values"], design_states):
+            if design["hid"] != state["id"]:
+                raise ValueError(f'{design["hid"]} != {status_info["id"]}')
+            to_append = {
+                key: state[key] for key in ("feasible", "status", "pareto_design", "directory")
+            }
+            design.update(to_append)
 
         if format == FileOutputFormat.JSON:
             file_output = json.dumps(designs)
