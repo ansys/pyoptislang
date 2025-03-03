@@ -47,7 +47,7 @@ from ansys.optislang.core.project_parametric import (
     VariableCriterion,
 )
 
-# pytestmark = pytest.mark.local_osl
+pytestmark = pytest.mark.local_osl
 
 
 @pytest.fixture()
