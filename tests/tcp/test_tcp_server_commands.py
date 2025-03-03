@@ -25,6 +25,7 @@ import json
 
 import pytest
 
+from ansys.optislang.core.slot_types import SlotTypeHint
 from ansys.optislang.core.tcp import server_commands as sc
 
 actor_uid = "5cdfb20b-bef6-4412-9985-89f5ded5ee95"
@@ -161,7 +162,8 @@ def test_connect_nodes():
     requiered_string = json.loads(
         '{ "projects": [ { "commands": [ { "type": "builtin", "command": "CONNECT_NODES", "args": '
         '{ "from_actor_uid": "3751b23c-3efb-459e-9b73-49cb4ae77e67", "from_slot": "OMDBPath", '
-        '"to_actor_uid": "e849f1e9-75b0-4472-8447-d076b33c47bf", "to_slot": "IMDBPath" } } ] } ] }'
+        '"to_actor_uid": "e849f1e9-75b0-4472-8447-d076b33c47bf", "to_slot": "IMDBPath", '
+        '"skip_rename_slot": false } } ] } ] }'
     )
     assert type(json_string) == str
     assert sorted(dictionary.items()) == sorted(requiered_string.items())
@@ -225,13 +227,13 @@ def test_create_input_slot():
     assert sorted(dictionary.items()) == sorted(requiered_string.items())
     # with optional values
     json_string = sc.create_input_slot(
-        actor_uid=actor_uid, slot_name="MyInputSlot", type_hint="DESIGN_TYPE"
+        actor_uid=actor_uid, slot_name="MyInputSlot", type_hint=SlotTypeHint.DESIGN
     )
     dictionary = json.loads(json_string)
     requiered_string = json.loads(
         '{ "projects": [ { "commands": [ { "type": "builtin", "command": "CREATE_INPUT_SLOT", '
         '"actor_uid": "5cdfb20b-bef6-4412-9985-89f5ded5ee95", "args": '
-        '{ "slot_name": "MyInputSlot", "type_hint": "DESIGN_TYPE" } } ] } ] }'
+        '{ "slot_name": "MyInputSlot", "type_hint": "Design" } } ] } ] }'
     )
     assert type(json_string) == str
     assert sorted(dictionary.items()) == sorted(requiered_string.items())
@@ -296,13 +298,13 @@ def test_create_output_slot():
     assert sorted(dictionary.items()) == sorted(requiered_string.items())
     # with optional values
     json_string = sc.create_output_slot(
-        actor_uid=actor_uid, slot_name="MyOutputSlot", type_hint="DESIGN_TYPE"
+        actor_uid=actor_uid, slot_name="MyOutputSlot", type_hint=SlotTypeHint.DESIGN
     )
     dictionary = json.loads(json_string)
     requiered_string = json.loads(
         '{ "projects": [ { "commands": [ { "type": "builtin", "command": "CREATE_OUTPUT_SLOT", '
         '"actor_uid": "5cdfb20b-bef6-4412-9985-89f5ded5ee95", "args": '
-        '{ "slot_name": "MyOutputSlot", "type_hint": "DESIGN_TYPE" } } ] } ] }'
+        '{ "slot_name": "MyOutputSlot", "type_hint": "Design" } } ] } ] }'
     )
     assert type(json_string) == str
     assert sorted(dictionary.items()) == sorted(requiered_string.items())
