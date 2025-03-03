@@ -11,7 +11,7 @@ its content and to execute operations on it:
 
     from ansys.optislang.core import Optislang
     from ansys.optislang.core import examples
-    from pathlib.Path import Path
+    from pathlib import Path
 
     example = examples.get_files("calculator_with_params")[1][0]
     osl = Optislang(project_path=example)
@@ -208,6 +208,52 @@ method for returning tuple with detailed information for instance of the
     response_manager = root_system.response_manager
     responses = response_manager.get_responses()
     responses_names = response_manager.get_responses_names()
+
+
+Designs
+-------
+To obtain defined designs of any parametric system, an instance of the
+:py:class:`DesignManager <ansys.optislang.core.managers.DesignManager>`
+class can be used. This class contains the
+:py:meth:`get_designs() <ansys.optislang.core.managers.DesignManager.get_designs>`,
+method for returning tuple with detailed information for instance of the
+:py:class:`Design <ansys.optislang.core.project_parametric.Design>` class for given state.
+To obtain single design, use method
+:py:meth:`get_design() <ansys.optislang.core.managers.DesignManager.get_design>`.
+
+.. code:: python
+
+    # ...
+
+    parametric_system: ParametricSystem
+    hids = parametric_system.get_states_ids()
+    design_manager = parametric_system.design_manager
+    designs = design_manager.get_designs(hids[0])
+    design = design_manager.get_design(hids[0] + ".1")
+
+Designs are returned in order provided by the optiSLang server. To sort designs by id, use method
+:py:meth:`sort_designs_by_id() <ansys.optislang.core.managers.DesignManager.sort_designs_by_id>`.
+
+.. code:: python
+    
+    # ...
+
+    sorted_designs = design_manager.sort_designs_by_id(designs)
+
+To filter designs by a single or multiple properties values, use method
+:py:meth:`filter_designs() <ansys.optislang.core.managers.DesignManager.filter_designs>`.
+
+.. code:: python
+
+    # ...
+
+    filtered_designs = design_manager.filter_designs(
+        designs=designs,
+        hid=None,
+        status=DesignStatus.SUCCEEDED,
+        pareto_design=None,
+        feasible=True,
+    )
 
 
 When the :py:class:`Optislang <ansys.optislang.core.optislang.Optislang>` instance is no longer 
