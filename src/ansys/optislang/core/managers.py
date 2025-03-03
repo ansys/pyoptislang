@@ -318,7 +318,7 @@ class DesignManager:
         designs: Iterable[Design],
         hid: Optional[str] = None,
         status: Optional[DesignStatus] = None,
-        pareto_design: Optional[str] = None,
+        pareto_design: Optional[bool] = None,
         feasible: Optional[bool] = None,
     ) -> Tuple[Design]:  # pragma: no cover
         """Filter designs by given parameters.
@@ -331,7 +331,7 @@ class DesignManager:
             State/Design hierarchical id. By default ``None``.
         status : Optional[DesignStatus], optional
             Design status. By default ``None``.
-        pareto_design : Optional[str], optional
+        pareto_design : Optional[bool], optional
             Pareto flag. By default ``None``.
         feasible : Optional[bool], optional
             Feasibility of design. By default ``None``.
