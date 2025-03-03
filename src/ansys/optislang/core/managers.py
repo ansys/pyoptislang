@@ -219,6 +219,10 @@ class DesignManager:
         -------
         Design
             Design object.
+
+        Notes
+        -----
+        Information about `pareto_design` property is not provided by this query.
         """
         pass
 

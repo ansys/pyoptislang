@@ -350,7 +350,7 @@ class TcpDesignManagerProxy(DesignManager):
 
         Notes
         -----
-        The `pareto_design` information is not provided by this query.
+        Information about `pareto_design` property is not provided by this query.
         """
         design = self.__osl_server.get_result_design(
             uid=self.__uid,
