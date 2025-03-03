@@ -28,7 +28,12 @@ from ansys.optislang.core import Optislang
 from ansys.optislang.core.io import File, RegisteredFile
 from ansys.optislang.core.node_types import AddinType, NodeType, Sensitivity, optislang_node
 from ansys.optislang.core.osl_server import OslVersion
-from ansys.optislang.core.tcp.managers import CriteriaManager, ParameterManager, ResponseManager
+from ansys.optislang.core.tcp.managers import (
+    CriteriaManager,
+    DesignManager,
+    ParameterManager,
+    ResponseManager,
+)
 from ansys.optislang.core.tcp.nodes import (
     DesignFlow,
     Edge,
@@ -431,6 +436,9 @@ def test_managers(optislang: Optislang, tmp_example_project):
     response_manager = parametric_system.response_manager
     assert isinstance(response_manager, ResponseManager)
     print(response_manager)
+
+    design_manager = parametric_system.design_manager
+    assert isinstance(design_manager, DesignManager)
 
 
 def test_get_inner_slots(optislang: Optislang, tmp_example_project):
