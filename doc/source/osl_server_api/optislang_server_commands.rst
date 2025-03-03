@@ -18,6 +18,7 @@ and can be used to generate commands to the optiSLang server:
    create_node
    create_output_slot
    create_start_designs
+   disconnect_nodes
    disconnect_slot
    evaluate_design
    export_designs

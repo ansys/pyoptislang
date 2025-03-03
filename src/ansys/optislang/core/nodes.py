@@ -1834,11 +1834,21 @@ class InputSlot(Slot):
         pass
 
     @abstractmethod
-    def disconnect(self) -> None:  # pragma: no cover
-        """Remove all connections for the current slot.
+    def disconnect(self, sending_slot: Optional[Slot] = None) -> None:  # pragma: no cover
+        """Remove a specific or all connections for the current slot.
+
+        Parameters
+        ----------
+        sending_slot: Optional[Slot], optional
+            Sending (output) slot to disconnect from.
+            If not provided, all connections ar removed. Defaults to ``None``.
+
+            .. note:: Argument is supported for Ansys optiSLang version >= 24.1 only.
 
         Raises
         ------
+        NotImplementedError
+            Raised when unsupported optiSLang server is used.
         OslCommunicationError
             Raised when an error occurs while communicating with the server.
         OslCommandError
@@ -1883,11 +1893,21 @@ class OutputSlot(Slot):
         pass
 
     @abstractmethod
-    def disconnect(self) -> None:  # pragma: no cover
-        """Remove all connections for the current slot.
+    def disconnect(self, receiving_slot: Optional[Slot] = None) -> None:  # pragma: no cover
+        """Remove a specific or all connections for the current slot.
+
+        Parameters
+        ----------
+        receiving_slot: Optional[Slot], optional
+            Receiving (input) slot to disconnect from.
+            If not provided, all connections ar removed. Defaults to ``None``.
+
+            .. note:: Argument is supported for Ansys optiSLang version >= 24.1 only.
 
         Raises
         ------
+        NotImplementedError
+            Raised when unsupported optiSLang server is used.
         OslCommunicationError
             Raised when an error occurs while communicating with the server.
         OslCommandError
@@ -1931,6 +1951,31 @@ class InnerInputSlot(Slot):
         """
         pass
 
+    @abstractmethod
+    def disconnect(self, sending_slot: Optional[Slot] = None) -> None:  # pragma: no cover
+        """Remove a specific or all connections for the current slot.
+
+        Parameters
+        ----------
+        sending_slot: Optional[Slot], optional
+            Sending (output) slot to disconnect from.
+            If not provided, all connections ar removed. Defaults to ``None``.
+
+            .. note:: Argument is supported for Ansys optiSLang version >= 24.1 only.
+
+        Raises
+        ------
+        NotImplementedError
+            Raised when unsupported optiSLang server is used.
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        pass
+
 
 class InnerOutputSlot(Slot):
     """Provides for creating and operating on inner output slots."""
@@ -1956,6 +2001,31 @@ class InnerOutputSlot(Slot):
 
         Raises
         ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        pass
+
+    @abstractmethod
+    def disconnect(self, receiving_slot: Optional[Slot] = None) -> None:  # pragma: no cover
+        """Remove a specific or all connections for the current slot.
+
+        Parameters
+        ----------
+        receiving_slot: Optional[Slot], optional
+            Receiving (input) slot to disconnect from.
+            If not provided, all connections ar removed. Defaults to ``None``.
+
+            .. note:: Argument is supported for Ansys optiSLang version >= 24.1 only.
+
+        Raises
+        ------
+        NotImplementedError
+            Raised when unsupported optiSLang server is used.
         OslCommunicationError
             Raised when an error occurs while communicating with the server.
         OslCommandError
