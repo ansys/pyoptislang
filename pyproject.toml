@@ -43,7 +43,7 @@ tests = [
 ]
 doc = [
     "ansys-sphinx-theme==1.3.2",
-    "matplotlib==3.10.0",
+    "matplotlib==3.10.1",
     "numpydoc==1.8.0",
     "pypandoc==1.15",
     "Sphinx==8.2.3",
