@@ -241,13 +241,13 @@ Designs are returned in order provided by the optiSLang server. To sort designs 
     sorted_designs = design_manager.sort_designs_by_id(designs)
 
 To filter designs by a single or multiple properties values, use method
-:py:meth:`filter_designs() <ansys.optislang.core.managers.DesignManager.filter_designs>`.
+:py:meth:`filter_designs_by() <ansys.optislang.core.managers.DesignManager.filter_designs_by>`.
 
 .. code:: python
 
     # ...
 
-    filtered_designs = design_manager.filter_designs(
+    filtered_designs = design_manager.filter_designs_by(
         designs=designs,
         hid=None,
         status=DesignStatus.SUCCEEDED,
