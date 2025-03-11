@@ -1,4 +1,4 @@
-# Copyright (C) 2022 - 2024 ANSYS, Inc. and/or its affiliates.
+# Copyright (C) 2022 - 2025 ANSYS, Inc. and/or its affiliates.
 # SPDX-License-Identifier: MIT
 #
 #
@@ -84,6 +84,7 @@ def test_design_flow(name: str):
         "PARAMETRIC_SYSTEM",
         "ROOT_SYSTEM",
         "INTEGRATION_NODE",
+        "PROXY_SOLVER",
     ],
 )
 def test_node_class_type(name: str):

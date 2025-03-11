@@ -1,4 +1,4 @@
-# Copyright (C) 2022 - 2024 ANSYS, Inc. and/or its affiliates.
+# Copyright (C) 2022 - 2025 ANSYS, Inc. and/or its affiliates.
 # SPDX-License-Identifier: MIT
 #
 #
@@ -25,13 +25,14 @@ from pathlib import Path
 import pytest
 
 from ansys.optislang.core import Optislang
-from ansys.optislang.core.io import File, FileOutputFormat, RegisteredFile
+from ansys.optislang.core.io import File, RegisteredFile
 from ansys.optislang.core.node_types import AddinType, NodeType, Sensitivity, optislang_node
 from ansys.optislang.core.osl_server import OslVersion
 from ansys.optislang.core.tcp.managers import CriteriaManager, ParameterManager, ResponseManager
 from ansys.optislang.core.tcp.nodes import (
     DesignFlow,
     Edge,
+    ExecutionOption,
     TcpInnerInputSlotProxy,
     TcpInnerOutputSlotProxy,
     TcpInputSlotProxy,
@@ -214,6 +215,31 @@ def test_set_property(optislang: Optislang, tmp_example_project):
     set_int_property = 2
     node.set_property("ExecutionOptions", set_int_property)
     assert node.get_property("ExecutionOptions") == set_int_property
+
+
+def test_node_execution_options(optislang: Optislang, tmp_example_project):
+    """Test `set_execution_options` and `get_execution_options` methods."""
+    optislang.application.open(file_path=tmp_example_project("calculator_with_params"))
+    root_system = optislang.project.root_system
+    node: TcpNodeProxy = root_system.find_nodes_by_name("Calculator")[0]
+
+    execution_options_list = [
+        ExecutionOption.INACTIVE,
+        ExecutionOption.ACTIVE,
+        ExecutionOption.STARTING_POINT,
+        ExecutionOption.ACTIVE | ExecutionOption.STARTING_POINT,
+        ExecutionOption.END_POINT,
+        ExecutionOption.ACTIVE | ExecutionOption.END_POINT,
+        ExecutionOption.SAVE_POINT,
+        ExecutionOption.ACTIVE | ExecutionOption.SAVE_POINT,
+        ExecutionOption.RECYCLE_RESULTS,
+        ExecutionOption.ACTIVE | ExecutionOption.RECYCLE_RESULTS,
+    ]
+
+    for execution_options in execution_options_list:
+        node.set_execution_options(execution_options)
+        recv_execution_options = node.get_execution_options()
+        assert execution_options == recv_execution_options
 
 
 # endregion
@@ -447,32 +473,39 @@ def test_get_omdb_files(optislang: Optislang, tmp_example_project):
 
 
 def test_save_designs_as(tmp_path: Path, tmp_example_project):
-    """Test `save_designs_as` method."""
-    optislang = Optislang(project_path=tmp_example_project("omdb_files"))
-    optislang.timeout = 60
-    optislang.application.project.reset()
-    optislang.application.project.start()
+    """Test `save_designs_as_json` and `save_designs_as_csv` methods."""
+    with Optislang(project_path=tmp_example_project("omdb_files")) as osl:
+        osl.timeout = 60
+        osl.application.project.reset()
+        osl.application.project.start()
 
-    project = optislang.project
-    root_system = project.root_system
+        project = osl.project
+        root_system = project.root_system
 
+        __test_save_designs_as_csv(tmp_path, root_system)
+        __test_save_designs_as_json(tmp_path, root_system)
+
+
+def __test_save_designs_as_csv(tmp_path: Path, root_system: TcpRootSystemProxy):
+    """Test `save_designs_as_csv` method."""
     sensitivity: TcpParametricSystemProxy = root_system.find_nodes_by_name("Sensitivity")[0]
     s_hids = sensitivity.get_states_ids()
-    s_file = sensitivity.save_designs_as(s_hids[0], "FirstDesign", FileOutputFormat.CSV, tmp_path)
-    assert isinstance(s_file, File)
-    assert s_file.exists
-    assert s_file.path.suffix == ".csv"
+    csv_file_path = tmp_path / "FirstDesign.csv"
+    csv_file = sensitivity.save_designs_as_csv(s_hids[0], csv_file_path)
+    assert isinstance(csv_file, File)
+    assert csv_file.exists
 
+
+def __test_save_designs_as_json(tmp_path: Path, root_system: TcpRootSystemProxy):
+    """Test `save_designs_as_json` method."""
     most_inner_sensitivity: TcpParametricSystemProxy = root_system.find_nodes_by_name(
         "MostInnerSensitivity", 3
     )[0]
     mis_hids = most_inner_sensitivity.get_states_ids()
-    mis_file = most_inner_sensitivity.save_designs_as(mis_hids[0], "InnerDesign")
-    assert isinstance(mis_file, File)
-    assert mis_file.exists
-    assert mis_file.path.suffix == ".json"
-    mis_file.path.unlink()
-    assert not mis_file.exists
+    json_file_path = tmp_path / "InnerDesign.json"
+    json_file = most_inner_sensitivity.save_designs_as_json(mis_hids[0], json_file_path)
+    assert isinstance(json_file, File)
+    assert json_file.exists
 
 
 # endregion

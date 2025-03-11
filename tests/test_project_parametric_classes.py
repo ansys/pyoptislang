@@ -1,4 +1,4 @@
-# Copyright (C) 2022 - 2024 ANSYS, Inc. and/or its affiliates.
+# Copyright (C) 2022 - 2025 ANSYS, Inc. and/or its affiliates.
 # SPDX-License-Identifier: MIT
 #
 #
@@ -71,7 +71,7 @@ DEPENDENT_PARAMETER_DICT = {
     "name": "dependent",
     "reference_value": 0.0,
     "removable": True,
-    "type": {"value": "dependent"},
+    "type": "dependent",
     "unit": "",
 }
 OPTIMIZATION_PARAMETER = OptimizationParameter(
@@ -81,8 +81,8 @@ OPTIMIZATION_PARAMETER_DICT = {
     "active": True,
     "const": False,
     "deterministic_property": {
-        "domain_type": {"value": "real"},
-        "kind": {"value": "continuous"},
+        "domain_type": "real",
+        "kind": "continuous",
         "lower_bound": -1.0,
         "upper_bound": 1.0,
     },
@@ -91,7 +91,7 @@ OPTIMIZATION_PARAMETER_DICT = {
     "name": "optimization",
     "reference_value": 0.0,
     "removable": True,
-    "type": {"value": "deterministic"},
+    "type": "deterministic",
     "unit": "",
 }
 STOCHASTIC_PARAMETER = StochasticParameter(
@@ -106,11 +106,11 @@ STOCHASTIC_PARAMETER_DICT = {
     "reference_value": 0.0,
     "removable": True,
     "stochastic_property": {
-        "kind": {"value": "marginaldistribution"},
+        "kind": "marginaldistribution",
         "statistical_moments": [0.0, 1.0],
-        "type": {"value": "normal"},
+        "type": "normal",
     },
-    "type": {"value": "stochastic"},
+    "type": "stochastic",
     "unit": "",
 }
 STOCHASTIC_PARAMETER_2 = StochasticParameter(
@@ -159,8 +159,8 @@ MIXED_PARAMETER_DICT = {
     "active": True,
     "const": False,
     "deterministic_property": {
-        "domain_type": {"value": "real"},
-        "kind": {"value": "continuous"},
+        "domain_type": "real",
+        "kind": "continuous",
         "lower_bound": -1.0,
         "upper_bound": 1.0,
     },
@@ -170,11 +170,11 @@ MIXED_PARAMETER_DICT = {
     "reference_value": 0.0,
     "removable": True,
     "stochastic_property": {
-        "kind": {"value": "marginaldistribution"},
+        "kind": "marginaldistribution",
         "statistical_moments": [0.0, 1.0],
-        "type": {"value": "normal"},
+        "type": "normal",
     },
-    "type": {"value": "mixed"},
+    "type": "mixed",
     "unit": "",
 }
 CONSTRAINT_CRITERION = ConstraintCriterion(
@@ -191,35 +191,17 @@ CONSTRAINT_CRITERION_DICT = {
     "Second": {
         "lhs": "0",
         "lhs_value": {
-            "kind": {
-                "enum": ["uninitialized", "bool", "scalar", "vector", "matrix", "signal", "xydata"],
-                "value": "scalar",
-            },
+            "kind": "scalar",
             "scalar": {"imag": 0.0, "real": 0.0},
         },
         "need_eval": False,
         "rhs": "0",
         "rhs_value": {
-            "kind": {
-                "enum": ["uninitialized", "bool", "scalar", "vector", "matrix", "signal", "xydata"],
-                "value": "scalar",
-            },
+            "kind": "scalar",
             "scalar": {"imag": 0.0, "real": 0.0},
         },
-        "type": {
-            "enum": [
-                "ignore",
-                "min",
-                "max",
-                "lessequal",
-                "equal",
-                "greaterequal",
-                "lesslimitstate",
-                "greaterlimitstate",
-            ],
-            "value": "lessequal",
-        },
-        "value": {"kind": {"enum": [...], "value": "scalar"}, "scalar": {"imag": 0.0, "real": 0.0}},
+        "type": "lessequal",
+        "value": {"kind": "scalar", "scalar": {"imag": 0.0, "real": 0.0}},
     },
 }
 OBJECTIVE_CRITERION = ObjectiveCriterion(
@@ -276,10 +258,7 @@ LIMIT_STATE_CRITERION_DICT = {
     "Second": {
         "lhs": "0",
         "lhs_value": {
-            "kind": {
-                "enum": ["uninitialized", "bool", "scalar", "vector", "matrix", "signal", "xydata"],
-                "value": "scalar",
-            },
+            "kind": "scalar",
             "scalar": {"imag": 0.0, "real": 0.0},
         },
         "need_eval": False,
@@ -291,19 +270,7 @@ LIMIT_STATE_CRITERION_DICT = {
             },
             "scalar": {"imag": 0.0, "real": 0.0},
         },
-        "type": {
-            "enum": [
-                "ignore",
-                "min",
-                "max",
-                "lessequal",
-                "equal",
-                "greaterequal",
-                "lesslimitstate",
-                "greaterlimitstate",
-            ],
-            "value": "lesslimitstate",
-        },
+        "type": "lesslimitstate",
         "value": {
             "kind": {
                 "enum": ["uninitialized", "bool", "scalar", "vector", "matrix", "signal", "xydata"],
@@ -647,7 +614,7 @@ def test_parameter():
     parameter.id = "xxx-12-55"
     assert parameter.id == "xxx-12-55"
     parameter.const = False
-    assert parameter.const == False
+    assert parameter.const is False
 
     with pytest.raises(AttributeError):
         parameter.type = ParameterType.DEPENDENT
@@ -680,7 +647,7 @@ def test_parameter():
     mixed_parameter_from_dict = Parameter.from_dict(MIXED_PARAMETER_DICT)
     assert isinstance(mixed_parameter_from_dict, MixedParameter)
     with pytest.raises((ValueError, KeyError)):
-        Parameter.from_dict({"type": {"value": "invalid"}})
+        Parameter.from_dict({"type": "invalid"})
 
 
 def test_optimization_parameter():
@@ -717,9 +684,9 @@ def test_optimization_parameter():
     optimization_parameter_copy.deterministic_resolution = ParameterResolution.CONTINUOUS
     assert optimization_parameter_copy.deterministic_resolution == ParameterResolution.CONTINUOUS
 
-    optimization_parameter_copy.range = [[1, 2, 3]]
-    assert optimization_parameter_copy.range == ((1, 2, 3),)
-    optimization_parameter_copy.range = [1, 2]
+    optimization_parameter_copy.range = [1, 2, 3]
+    assert optimization_parameter_copy.range == [1, 2, 3]
+    optimization_parameter_copy.range = (1, 2)
     assert optimization_parameter_copy.range == (1, 2)
 
     print(optimization_parameter_from_dict)
@@ -741,10 +708,10 @@ def test_stochastic_parameter():
     assert isinstance(stochastic_parameter_copy.reference_value_type, ParameterValueType)
     assert isinstance(stochastic_parameter_copy.stochastic_resolution, ParameterResolution)
     assert isinstance(stochastic_parameter_copy.distribution_type, DistributionType)
-    assert isinstance(stochastic_parameter_copy.statistical_moments, tuple)
+    assert isinstance(stochastic_parameter_copy.statistical_moments, list)
 
-    assert stochastic_parameter_copy.distribution_parameters == None
-    assert stochastic_parameter_copy.cov == None
+    assert stochastic_parameter_copy.distribution_parameters is None
+    assert stochastic_parameter_copy.cov is None
 
     with pytest.raises(AttributeError):
         stochastic_parameter_copy.reference_value_type = "REAL"
@@ -752,7 +719,7 @@ def test_stochastic_parameter():
 
     with pytest.raises(TypeError):
         stochastic_parameter_copy.stochastic_resolution = ["deterministic"]
-    stochastic_parameter_copy.stochastic_resolution == "marginaldistribution"
+    stochastic_parameter_copy.stochastic_resolution = "marginaldistribution"
     assert (
         stochastic_parameter_copy.stochastic_resolution == ParameterResolution.MARGINALDISTRIBUTION
     )
@@ -769,9 +736,9 @@ def test_stochastic_parameter():
     assert stochastic_parameter_copy.distribution_type == DistributionType.BERNOULLI
 
     stochastic_parameter_copy.statistical_moments = [1, 2]
-    assert stochastic_parameter_copy.statistical_moments == (1, 2)
+    assert stochastic_parameter_copy.statistical_moments == [1, 2]
     stochastic_parameter_copy.statistical_moments = [1]
-    assert stochastic_parameter_copy.statistical_moments == (1,)
+    assert stochastic_parameter_copy.statistical_moments == [1]
 
     print(stochastic_parameter_from_dict)
 
@@ -792,7 +759,7 @@ def test_stochastic_parameter_2():
     assert isinstance(stochastic_parameter_copy.reference_value_type, ParameterValueType)
     assert isinstance(stochastic_parameter_copy.stochastic_resolution, ParameterResolution)
     assert isinstance(stochastic_parameter_copy.distribution_type, DistributionType)
-    assert isinstance(stochastic_parameter_copy.statistical_moments, tuple)
+    assert isinstance(stochastic_parameter_copy.statistical_moments, list)
     assert isinstance(stochastic_parameter_copy.cov, float)
 
     assert stochastic_parameter_copy.distribution_parameters == None
@@ -803,7 +770,7 @@ def test_stochastic_parameter_2():
 
     with pytest.raises(TypeError):
         stochastic_parameter_copy.stochastic_resolution = ["deterministic"]
-    stochastic_parameter_copy.stochastic_resolution == "marginaldistribution"
+    stochastic_parameter_copy.stochastic_resolution = "marginaldistribution"
     assert (
         stochastic_parameter_copy.stochastic_resolution == ParameterResolution.MARGINALDISTRIBUTION
     )
@@ -820,9 +787,9 @@ def test_stochastic_parameter_2():
     assert stochastic_parameter_copy.distribution_type == DistributionType.BERNOULLI
 
     stochastic_parameter_copy.statistical_moments = [1, 2]
-    assert stochastic_parameter_copy.statistical_moments == (1, 2)
+    assert stochastic_parameter_copy.statistical_moments == [1, 2]
     stochastic_parameter_copy.statistical_moments = [1]
-    assert stochastic_parameter_copy.statistical_moments == (1,)
+    assert stochastic_parameter_copy.statistical_moments == [1]
 
     print(stochastic_parameter_from_dict)
 
@@ -843,7 +810,7 @@ def test_stochastic_parameter_3():
     assert isinstance(stochastic_parameter_copy.reference_value_type, ParameterValueType)
     assert isinstance(stochastic_parameter_copy.stochastic_resolution, ParameterResolution)
     assert isinstance(stochastic_parameter_copy.distribution_type, DistributionType)
-    assert isinstance(stochastic_parameter_copy.distribution_parameters, tuple)
+    assert isinstance(stochastic_parameter_copy.distribution_parameters, list)
 
     assert stochastic_parameter_copy.statistical_moments == None
     assert stochastic_parameter_copy.cov == None
@@ -854,7 +821,7 @@ def test_stochastic_parameter_3():
 
     with pytest.raises(TypeError):
         stochastic_parameter_copy.stochastic_resolution = ["deterministic"]
-    stochastic_parameter_copy.stochastic_resolution == "marginaldistribution"
+    stochastic_parameter_copy.stochastic_resolution = "marginaldistribution"
     assert (
         stochastic_parameter_copy.stochastic_resolution == ParameterResolution.MARGINALDISTRIBUTION
     )
@@ -871,9 +838,9 @@ def test_stochastic_parameter_3():
     assert stochastic_parameter_copy.distribution_type == DistributionType.BERNOULLI
 
     stochastic_parameter_copy.distribution_parameters = [1, 2]
-    assert stochastic_parameter_copy.distribution_parameters == (1, 2)
+    assert stochastic_parameter_copy.distribution_parameters == [1, 2]
     stochastic_parameter_copy.distribution_parameters = [1]
-    assert stochastic_parameter_copy.distribution_parameters == (1,)
+    assert stochastic_parameter_copy.distribution_parameters == [1]
 
     print(stochastic_parameter_from_dict)
 
@@ -896,7 +863,7 @@ def test_mixed_parameter():
     assert isinstance(mixed_parameter_copy.range, tuple)
     assert isinstance(mixed_parameter_copy.stochastic_resolution, ParameterResolution)
     assert isinstance(mixed_parameter_copy.distribution_type, DistributionType)
-    assert isinstance(mixed_parameter_copy.statistical_moments, tuple)
+    assert isinstance(mixed_parameter_copy.statistical_moments, list)
 
     assert mixed_parameter_copy.distribution_parameters == None
 
@@ -911,14 +878,14 @@ def test_mixed_parameter():
     mixed_parameter_copy.deterministic_resolution = ParameterResolution.CONTINUOUS
     assert mixed_parameter_copy.deterministic_resolution == ParameterResolution.CONTINUOUS
 
-    mixed_parameter_copy.range = [[1, 2, 3]]
-    assert mixed_parameter_copy.range == ((1, 2, 3),)
-    mixed_parameter_copy.range = [1, 2]
+    mixed_parameter_copy.range = [1, 2, 3]
+    assert mixed_parameter_copy.range == [1, 2, 3]
+    mixed_parameter_copy.range = (1, 2)
     assert mixed_parameter_copy.range == (1, 2)
 
     with pytest.raises(TypeError):
         mixed_parameter_copy.stochastic_resolution = ["deterministic"]
-    mixed_parameter_copy.stochastic_resolution == "marginaldistribution"
+    mixed_parameter_copy.stochastic_resolution = "marginaldistribution"
     assert mixed_parameter_copy.stochastic_resolution == ParameterResolution.MARGINALDISTRIBUTION
     mixed_parameter_copy.stochastic_resolution = ParameterResolution.EMPIRICAL_CONTINUOUS
     assert mixed_parameter_copy.stochastic_resolution == ParameterResolution.EMPIRICAL_CONTINUOUS
@@ -931,9 +898,9 @@ def test_mixed_parameter():
     assert mixed_parameter_copy.distribution_type == DistributionType.BERNOULLI
 
     mixed_parameter_copy.distribution_parameters = [1, 2]
-    assert mixed_parameter_copy.distribution_parameters == (1, 2)
+    assert mixed_parameter_copy.distribution_parameters == [1, 2]
     mixed_parameter_copy.distribution_parameters = [1]
-    assert mixed_parameter_copy.distribution_parameters == (1,)
+    assert mixed_parameter_copy.distribution_parameters == [1]
 
     print(mixed_parameter_from_dict)
 
@@ -1009,7 +976,7 @@ def test_criterion():
     assert isinstance(variable_criterion_from_dict, VariableCriterion)
 
     with pytest.raises(TypeError):
-        Criterion.from_dict({"Second": {"type": {"value": "invalid"}}})
+        Criterion.from_dict({"Second": {"type": "invalid"}})
 
     with pytest.raises(AttributeError):
         criterion.type = CriterionType.LIMIT_STATE

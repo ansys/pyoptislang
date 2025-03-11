@@ -1,4 +1,4 @@
-# Copyright (C) 2022 - 2024 ANSYS, Inc. and/or its affiliates.
+# Copyright (C) 2022 - 2025 ANSYS, Inc. and/or its affiliates.
 # SPDX-License-Identifier: MIT
 #
 #
@@ -381,6 +381,24 @@ def test_get_criterion():
     json_string = sq.get_criterion(
         uid=example_uid,
         name="obj2",
+        password=example_password,
+    )
+    dictionary = json.loads(json_string)
+    assert dictionary["Password"] == example_password
+
+
+def test_get_designs():
+    "Test get_designs."
+    json_string = sq.get_designs(uid=example_uid)
+    dictionary = json.loads(json_string)
+    requiered_string = json.loads(
+        '{"What": "GET_DESIGNS", "uid": "5cdfb20b-bef6-4412-9985-89f5ded5ee95"}'
+    )
+    assert type(json_string) == str
+    assert sorted(dictionary.items()) == sorted(requiered_string.items())
+    # with password
+    json_string = sq.get_designs(
+        uid=example_uid,
         password=example_password,
     )
     dictionary = json.loads(json_string)

@@ -1,4 +1,4 @@
-# Copyright (C) 2022 - 2024 ANSYS, Inc. and/or its affiliates.
+# Copyright (C) 2022 - 2025 ANSYS, Inc. and/or its affiliates.
 # SPDX-License-Identifier: MIT
 #
 #
@@ -24,10 +24,8 @@
 from __future__ import annotations
 
 from copy import copy
-from datetime import datetime
 import logging
 from typing import TYPE_CHECKING, Optional
-import weakref
 
 if TYPE_CHECKING:
     from ansys.optislang.core import Optislang
@@ -38,61 +36,7 @@ FILE_NAME = "pyOptislang.log"
 
 ## Formatting
 
-STDOUT_MSG_FORMAT = "%(levelname)s -  %(module)s - %(name)s -  %(funcName)s - %(message)s"
-FILE_MSG_FORMAT = STDOUT_MSG_FORMAT
-
-DEFAULT_STDOUT_HEADER = """
-LEVEL - MODULE - CLASS - FUNCTION - MESSAGE
-"""
-DEFAULT_FILE_HEADER = DEFAULT_STDOUT_HEADER
-NEW_SESSION_HEADER = f"""
-===============================================================================
-       NEW SESSION - {datetime.now().strftime("%m/%d/%Y, %H:%M:%S")}
-===============================================================================
-"""
-
-
-class OslCustomAdapter(logging.LoggerAdapter):
-    """Provides a customized logger with extra inputs."""
-
-    file_handler = None
-    std_out_handler = None
-    log_level = LOG_LEVEL
-
-    def __init__(
-        self,
-        logger: logging.Logger,
-        extra=None,
-    ) -> None:
-        """
-        Initialize the customized logger with extra inputs.
-
-        Parameters
-        ----------
-        logger : str, optional
-            Level of logging. The default is ``LOG_LEVEL``.
-        osl_instance : bool, optional
-            Whether to record logs to an output file. The default is ``True``.
-        """
-        self.logger = logger
-        if extra:
-            self.extra = weakref.proxy(extra)
-        else:
-            self.extra = None
-
-        self.file_handler = logger.file_handler
-        self.std_out_handler = logger.std_out_handler
-
-    def process(self, msg, kwargs):
-        """Modify the message and/or keyword arguments passed to a logging call."""
-        kwargs["extra"] = {}
-        # These are the extra parameters sent to the log.
-        # Here, self.extra is the argument passed to the log records.
-        try:
-            kwargs["extra"]["instance_name"] = self.extra.name
-        except ReferenceError:
-            kwargs["extra"]["instance_name"] = "Undefined"
-        return msg, kwargs
+LOG_MSG_FORMAT = "%(asctime)s - %(levelname)s - %(name)s - %(module)s.%(funcName)s - %(message)s"
 
 
 class OslLogger:
@@ -101,7 +45,6 @@ class OslLogger:
     file_handler = None
     std_out_handler = None
     log_level = LOG_LEVEL
-    instances = {}
 
     def __init__(
         self,
@@ -167,12 +110,10 @@ class OslLogger:
             Level of logging. The default is ``LOG_LEVEL``.
         """
         file_handler = logging.FileHandler(logfile_name)
-        file_handler.setFormatter(logging.Formatter(FILE_MSG_FORMAT))
+        file_handler.setFormatter(logging.Formatter(LOG_MSG_FORMAT))
         file_handler.setLevel(loglevel)
         self.logger.addHandler(file_handler)
         self.file_handler = file_handler
-        file_handler.stream.write(NEW_SESSION_HEADER)
-        file_handler.stream.write(DEFAULT_FILE_HEADER)
 
     def add_std_out_handler(
         self,
@@ -187,11 +128,9 @@ class OslLogger:
         """
         std_out_handler = logging.StreamHandler()
         std_out_handler.setLevel(loglevel)
-        std_out_handler.setFormatter(logging.Formatter(FILE_MSG_FORMAT))
+        std_out_handler.setFormatter(logging.Formatter(LOG_MSG_FORMAT))
         self.logger.addHandler(std_out_handler)
         self.std_out_handler = std_out_handler
-        std_out_handler.stream.write(NEW_SESSION_HEADER)
-        std_out_handler.stream.write(DEFAULT_STDOUT_HEADER)
 
     def create_logger(self, new_logger_name: str, level: Optional[str] = None) -> logging.Logger:
         """Create a logger for the Optislang instance.
@@ -206,7 +145,7 @@ class OslLogger:
         Returns
         -------
         logging.logger
-            Logger class.
+            Logger instance.
         """
         new_logger = logging.getLogger(new_logger_name)
         new_logger.std_out_handler = None
@@ -230,27 +169,9 @@ class OslLogger:
         new_logger.propagate = True
         return new_logger
 
-    def add_child_logger(
-        self,
-        child_logger_name: str,
-    ) -> None:
-        """Call the ``create_logger`` method to add a child logger.
-
-        This looger is more general than the main logger.
-
-        Parameters
-        ----------
-        child_logger_name : str
-            Name of the  child logger.
-        """
-        if type(child_logger_name) is not str:
-            raise ValueError("Expected input child_logger_name: str")
-        child_logger = self.logger.name + "." + child_logger_name
-        self.instances[child_logger] = self.create_logger(child_logger)
-
     def add_instance_logger(
         self, instance_name: str, osl_instance: Optislang, level: Optional[str] = None
-    ) -> OslCustomAdapter:
+    ) -> logging.Logger:
         """Add a logger for an Optislang instance.
 
         Parameters
@@ -265,8 +186,8 @@ class OslLogger:
 
         Returns
         -------
-        OslCustomAdapter
-            Customized logger with extra inputs.
+        logging.Logger
+            Logger instance.
         """
         if type(instance_name) is not str:
             raise ValueError("Expected input instance_name: str")
@@ -278,25 +199,4 @@ class OslLogger:
             counter += 1
             instance_name = name + str(counter)
 
-        self.instances[instance_name] = OslCustomAdapter(
-            self.create_logger(instance_name, level), osl_instance
-        )
-
-        return self.instances[instance_name]
-
-    def __getitem__(self, instance_name: str) -> logging.Logger:
-        """Get a logger by an instance name.
-
-        Parameters
-        ----------
-        instance_name : str
-            Name of the instance.
-        Returns
-        -------
-        self.instances[instance_name]: logging.Logger()
-            Logger class.
-        """
-        if instance_name in self.instances.keys():
-            return self.instances[instance_name]
-        else:
-            raise KeyError(f"There is no instances with name {instance_name}")
+        return self.create_logger(instance_name, level)

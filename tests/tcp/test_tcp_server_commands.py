@@ -1,4 +1,4 @@
-# Copyright (C) 2022 - 2024 ANSYS, Inc. and/or its affiliates.
+# Copyright (C) 2022 - 2025 ANSYS, Inc. and/or its affiliates.
 # SPDX-License-Identifier: MIT
 #
 #
@@ -177,6 +177,38 @@ def test_connect_nodes():
     dictionary["Password"] == example_password
     with pytest.raises(TypeError):
         sc.connect_nodes()
+
+
+def test_disconnect_nodes():
+    "Test connect_nodes."
+    # basic
+    json_string = sc.disconnect_nodes(
+        from_actor_uid=from_actor_uid,
+        from_slot="OMDBPath",
+        to_actor_uid=to_actor_uid,
+        to_slot="IMDBPath",
+    )
+    dictionary = json.loads(json_string)
+    requiered_string = json.loads(
+        '{ "projects": [ { "commands": [ { "type": "builtin", "command": "DISCONNECT_NODES", '
+        '"args": { "from_actor_uid": "3751b23c-3efb-459e-9b73-49cb4ae77e67", "from_slot": '
+        '"OMDBPath", "to_actor_uid": "e849f1e9-75b0-4472-8447-d076b33c47bf", "to_slot": '
+        '"IMDBPath" } } ] } ] }'
+    )
+    assert type(json_string) == str
+    assert sorted(dictionary.items()) == sorted(requiered_string.items())
+    # with password
+    json_string = sc.disconnect_nodes(
+        from_actor_uid=from_actor_uid,
+        from_slot="OMDBPath",
+        to_actor_uid=to_actor_uid,
+        to_slot="IMDBPath",
+        password=example_password,
+    )
+    dictionary = json.loads(json_string)
+    dictionary["Password"] == example_password
+    with pytest.raises(TypeError):
+        sc.disconnect_nodes()
 
 
 def test_create_input_slot():
@@ -1154,32 +1186,6 @@ def test_set_actor_property():
         sc.set_actor_property(name="MaxParallel", value="32")
 
 
-def test_set_criterion_property():
-    "Test set_criterion_property."
-    # basic
-    json_string = sc.set_criterion_property(
-        actor_uid=actor_uid, criterion_name="obj2", name="type", value="min"
-    )
-    dictionary = json.loads(json_string)
-    requiered_string = json.loads(
-        '{"projects": [{"commands": [{"actor_uid": "5cdfb20b-bef6-4412-9985-89f5ded5ee95", \
-        "args": {"criterion_name": "obj2", "name": "type", "value": "min"}, \
-        "command": "SET_CRITERION_PROPERTY", "type": "builtin"}]}]}'
-    )
-    assert type(json_string) == str
-    assert sorted(dictionary.items()) == sorted(requiered_string.items())
-    # with password
-    json_string = sc.set_criterion_property(
-        actor_uid=actor_uid,
-        criterion_name="obj2",
-        name="type",
-        value="min",
-        password=example_password,
-    )
-    dictionary = json.loads(json_string)
-    dictionary["Password"] == example_password
-
-
 def test_set_actor_setting():
     "Test set_actor_setting."
     # basic
@@ -1241,6 +1247,65 @@ def test_set_actor_state_property():
         sc.set_actor_state_property(actor_uid=actor_uid, value="true")
     with pytest.raises(TypeError):
         sc.set_actor_state_property(name="stop_after_execution", value="true")
+
+
+def test_set_criterion_property():
+    "Test set_criterion_property."
+    # basic
+    json_string = sc.set_criterion_property(
+        actor_uid=actor_uid, criterion_name="obj2", name="type", value="min"
+    )
+    dictionary = json.loads(json_string)
+    requiered_string = json.loads(
+        '{"projects": [{"commands": [{"actor_uid": "5cdfb20b-bef6-4412-9985-89f5ded5ee95", \
+        "args": {"criterion_name": "obj2", "name": "type", "value": "min"}, \
+        "command": "SET_CRITERION_PROPERTY", "type": "builtin"}]}]}'
+    )
+    assert type(json_string) == str
+    assert sorted(dictionary.items()) == sorted(requiered_string.items())
+    # with password
+    json_string = sc.set_criterion_property(
+        actor_uid=actor_uid,
+        criterion_name="obj2",
+        name="type",
+        value="min",
+        password=example_password,
+    )
+    dictionary = json.loads(json_string)
+    dictionary["Password"] == example_password
+
+
+def test_set_designs():
+    "Test set_designs."
+    # basic
+    designs = [
+        {
+            "hid": "0.1",
+            "responses": [{"name": "res1", "value": 1.0}],
+        },
+        {
+            "hid": "0.2",
+            "responses": [{"name": "res1", "value": 2.0}],
+        },
+    ]
+    json_string = sc.set_designs(actor_uid=actor_uid, designs=designs)
+    dictionary = json.loads(json_string)
+    requiered_string = json.loads(
+        '{"projects": [{"commands": [{"actor_uid": "5cdfb20b-bef6-4412-9985-89f5ded5ee95", \
+        "args": {"designs": [{"hid": "0.1", "responses": [{"name": "res1", "value": 1.0}]}, \
+        {"hid": "0.2","responses": [{"name": "res1", "value": 2.0}]}]}, \
+        "command": "SET_DESIGNS","type": "builtin"}]}]}'
+    )
+    assert type(json_string) == str
+    assert sorted(dictionary.items()) == sorted(requiered_string.items())
+    # with password
+    json_string = sc.set_designs(
+        actor_uid=actor_uid,
+        designs=designs,
+        password=example_password,
+    )
+    dictionary = json.loads(json_string)
+    dictionary["Password"] == example_password
 
 
 def test_set_placeholder_value():

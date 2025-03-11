@@ -1,4 +1,4 @@
-# Copyright (C) 2022 - 2024 ANSYS, Inc. and/or its affiliates.
+# Copyright (C) 2022 - 2025 ANSYS, Inc. and/or its affiliates.
 # SPDX-License-Identifier: MIT
 #
 #
@@ -42,6 +42,7 @@ from ansys.optislang.core.nodes import (
     PROJECT_COMMANDS_RETURN_STATES,
     DesignFlow,
     Edge,
+    ExecutionOption,
     InnerInputSlot,
     InnerOutputSlot,
     InputSlot,
@@ -50,6 +51,7 @@ from ansys.optislang.core.nodes import (
     NodeClassType,
     OutputSlot,
     ParametricSystem,
+    ProxySolverNode,
     RootSystem,
     Slot,
     SlotType,
@@ -287,6 +289,25 @@ class TcpNodeProxy(Node):
             properties_dicts_list=ancestors_line_dicts,
             logger=self._logger,
         )
+
+    def get_execution_options(self) -> ExecutionOption:
+        """Get execution options.
+
+        Returns
+        -------
+        ExecutionOption
+            Execution options of the ``Node``.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        return ExecutionOption(self.get_property("ExecutionOptions"))
 
     def get_connections(
         self, slot_type: Optional[SlotType] = None, slot_name: Optional[str] = None
@@ -622,6 +643,35 @@ class TcpNodeProxy(Node):
             include_integrations_registered_locations=False,
         )
         return get_node_type_from_str(node_id=actor_info["type"])
+
+    def set_execution_options(self, value: ExecutionOption) -> None:
+        """Set execution options.
+
+        Parameters
+        ----------
+        value : ExecutionOption
+            Execution options of the ``Node``. More execution options can be
+            combined using the bitwise operations.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+
+        Examples
+        --------
+        Combination of more execution options using the bitwise operation.
+
+        >>> ...
+        >>> node.set_execution_options(
+                ExecutionOption.ACTIVE | ExecutionOption.STARTING_POINT
+            )
+        """
+        return self.set_property("ExecutionOptions", value.value)
 
     def set_property(self, name: str, value: Any) -> None:
         """Set node's property.
@@ -1095,7 +1145,7 @@ class TcpIntegrationNodeProxy(TcpNodeProxy, IntegrationNode):
         type_: NodeType,
         logger=None,
     ) -> None:
-        """Create an ``TcpSystemProxy`` instance.
+        """Create an ``TcpIntegrationNodeProxy`` instance.
 
         Parameters
         ----------
@@ -1295,11 +1345,16 @@ class TcpIntegrationNodeProxy(TcpNodeProxy, IntegrationNode):
             )
         )
 
-    def load(self) -> None:
+    def load(self, args: Optional[Dict[str, Any]] = None) -> None:
         """Explicitly load the node.
 
         Some optiSLang nodes support/need an explicit LOAD prior to being able to register
         or to make registering more convenient.
+
+        Parameters
+        ----------
+        args: Optional[Dict[str, any]], optional
+            Additional arguments, by default ``None``.
 
         Raises
         ------
@@ -1311,7 +1366,7 @@ class TcpIntegrationNodeProxy(TcpNodeProxy, IntegrationNode):
             Raised when the timeout float value expires.
         """
         # TODO: test
-        self._osl_server.load(self.uid)
+        self._osl_server.load(uid=self.uid, args=args)
 
     def register_location_as_input_slot(
         self,
@@ -1547,6 +1602,80 @@ class TcpIntegrationNodeProxy(TcpNodeProxy, IntegrationNode):
         """
         # TODO: test
         self._osl_server.re_register_locations_as_response(uid=self.uid)
+
+
+class TcpProxySolverNodeProxy(TcpIntegrationNodeProxy, ProxySolverNode):
+    """Provides for creating and operating on integration nodes."""
+
+    def __init__(
+        self,
+        uid: str,
+        osl_server: TcpOslServer,
+        type_: NodeType,
+        logger=None,
+    ) -> None:
+        """Create an ``TcpProxySolverProxy`` instance.
+
+        Parameters
+        ----------
+        uid: str
+            Unique ID.
+        osl_server: TcpOslServer
+            Object providing access to the optiSLang server.
+        type_: NodeType
+            Instance of the ``NodeType`` class.
+        logger: Any, optional
+            Object for logging. If ``None``, standard logging object is used. Defaults to ``None``.
+        """
+        super().__init__(
+            uid=uid,
+            osl_server=osl_server,
+            type_=type_,
+            logger=logger,
+        )
+
+    def get_designs(self) -> List[dict]:
+        """Get pending designs from parent node.
+
+        Returns
+        -------
+        List[dict]
+           List of pending designs.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        return self._osl_server.get_designs(self.uid)
+
+    def set_designs(self, designs: Iterable[dict]) -> None:
+        """Set calculated designs.
+
+        Parameters
+        ----------
+        Iterable[dict]
+            Iterable of calculated designs.
+            Design format:
+            {
+                "hid": "0.1",
+                "responses": [{"name": "res1", "value": 1.0}, {...}, ...],
+            }
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        self._osl_server.set_designs(actor_uid=self.uid, designs=designs)
 
 
 # endregion
@@ -2060,6 +2189,9 @@ class TcpParametricSystemProxy(TcpSystemProxy, ParametricSystem):
     def get_omdb_files(self) -> Tuple[File]:
         """Get paths to omdb files.
 
+        This method is supported only when the client runs on the same file
+        system as the server, i.e., the server is not remote.
+
         Returns
         -------
         Tuple[File]
@@ -2073,7 +2205,14 @@ class TcpParametricSystemProxy(TcpSystemProxy, ParametricSystem):
             Raised when a command or query fails.
         TimeoutError
             Raised when the timeout float value expires.
+        RuntimeError
+            Raised when the server is remote.
         """
+        if self._osl_server.is_remote:
+            raise RuntimeError(
+                "Paths to omdb files cannot be provided when connected to the remote server."
+            )
+
         statuses_info = self._get_status_info()
         wdirs = [Path(status_info["working dir"]) for status_info in statuses_info]
         omdb_files = []
@@ -2081,6 +2220,138 @@ class TcpParametricSystemProxy(TcpSystemProxy, ParametricSystem):
             omdb_files.extend([File(path) for path in wdir.glob("*.omdb")])
         return tuple(omdb_files)
 
+    def save_designs_as_json(self, hid: str, file_path: Union[Path, str]) -> File:
+        """Save designs for a given state to JSON file.
+
+        Parameters
+        ----------
+        hid : str
+            Actor's state.
+        file_path : Union[Path, str]
+            Path to the file.
+
+        Returns
+        -------
+        File
+            Object representing saved file.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        TypeError
+            Raised when the `hid` is `None`
+            -or-
+            `file_path` is `None` or unsupported type.
+        ValueError
+            Raised when ``hid`` does not exist.
+        """
+        return self.__save_designs_as(hid, file_path, FileOutputFormat.JSON)
+
+    def save_designs_as_csv(self, hid: str, file_path: Union[Path, str]) -> File:
+        """Save designs for a given state to CSV file.
+
+        Parameters
+        ----------
+        hid : str
+            Actor's state.
+        file_path : Union[Path, str]
+            Path to the file.
+
+        Returns
+        -------
+        File
+            Object representing saved file.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        TypeError
+            Raised when the `hid` is `None`
+            -or-
+            `file_path` is `None` or unsupported type.
+        ValueError
+            Raised when ``hid`` does not exist.
+        """
+        return self.__save_designs_as(hid, file_path, FileOutputFormat.CSV)
+
+    def __save_designs_as(self, hid: str, file_path: Union[Path, str], format: FileOutputFormat):
+        """Save designs for a given state.
+
+        Parameters
+        ----------
+        hid : str
+            Actor's state.
+        file_path : Union[Path, str]
+            Path to the file.
+        format : FileOutputFormat
+            Format of the file.
+
+        Returns
+        -------
+        File
+            Object representing saved file.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        TypeError
+            Raised when the `hid` is `None`
+            -or-
+            `file_path` is `None` or unsupported type.
+        ValueError
+            Raised when ``format`` is not unsupported
+            -or-
+            ``hid`` does not exist.
+        """
+        if hid is None:
+            raise TypeError("Actor's state cannot be `None`.")
+        if file_path is None:
+            raise TypeError("Path to the file cannot be `None`.")
+        if isinstance(file_path, str):
+            file_path = Path(file_path)
+        if not isinstance(file_path, Path):
+            raise TypeError(
+                "Type of the `file_path` argument is not supported: `file_path` = "
+                f"`{type(file_path)}`."
+            )
+
+        designs = self._get_designs_dicts()
+        if not designs.get(hid):
+            raise ValueError(f"Design for given `hid` argument not available: `hid` = `{hid}.")
+
+        if format == FileOutputFormat.JSON:
+            file_output = json.dumps(designs[hid])
+            newline = None
+        elif format == FileOutputFormat.CSV:
+            file_output = self.__convert_design_dict_to_csv(designs[hid])
+            newline = ""
+        else:
+            raise ValueError(f"Output file format `{format}` is not supported.")
+
+        with open(file_path, "w", newline=newline) as f:
+            f.write(file_output)
+        return File(file_path)
+
+    @deprecated(
+        version="0.9.0",
+        reason="Use :py:meth:`TcpParametricSystemProxy.save_designs_as_json` or "
+        ":py:meth:`TcpParametricSystemProxy.save_designs_as_csv` instead.",
+    )
     def save_designs_as(
         self,
         hid: str,
@@ -2692,11 +2963,11 @@ class TcpSlotProxy(Slot):
         node : TcpNodeProxy
             Node to which the slot belongs.
         name : str
-           Slot name.
+            Slot name.
         type_ : SlotType
             Slot type.
         type_hint : Optional[str], optional
-            Description, by default None.
+            Data type of the slot, by default None.
         """
         self._osl_server = osl_server
         self.__node = node
@@ -2931,11 +3202,11 @@ class TcpInputSlotProxy(TcpSlotProxy, InputSlot):
         node : TcpNodeProxy
             Node to which the slot belongs.
         name : str
-           Slot name.
+            Slot name.
         type_ : SlotType
             Slot type.
         type_hint : Optional[str], optional
-            Description, by default None.
+            Data type of the slot, by default None.
         """
         super().__init__(
             osl_server=osl_server,
@@ -2967,7 +3238,7 @@ class TcpInputSlotProxy(TcpSlotProxy, InputSlot):
         TimeoutError
             Raised when the timeout float value expires.
         """
-        if not isinstance(from_slot, InnerOutputSlot) or self._osl_server.osl_version.major >= 24:
+        if self._osl_server.osl_version.major >= 24:
             self._osl_server.connect_nodes(
                 from_actor_uid=from_slot.node.uid,
                 from_slot=from_slot.name,
@@ -2979,11 +3250,21 @@ class TcpInputSlotProxy(TcpSlotProxy, InputSlot):
             self._osl_server.run_python_script(script=python_script)
         return Edge(from_slot=from_slot, to_slot=self)
 
-    def disconnect(self) -> None:
-        """Remove all connections for the current slot.
+    def disconnect(self, sending_slot: Optional[TcpSlotProxy] = None) -> None:
+        """Remove a specific or all connections for the current slot.
+
+        Parameters
+        ----------
+        sending_slot: Optional[TcpSlotProxy], optional
+            Sending (output) slot to disconnect from.
+            If not provided, all connections ar removed. Defaults to ``None``.
+
+            .. note:: Argument is supported for Ansys optiSLang version >= 24.1 only.
 
         Raises
         ------
+        NotImplementedError
+            Raised when unsupported optiSLang server is used.
         OslCommunicationError
             Raised when an error occurs while communicating with the server.
         OslCommandError
@@ -2991,9 +3272,20 @@ class TcpInputSlotProxy(TcpSlotProxy, InputSlot):
         TimeoutError
             Raised when the timeout float value expires.
         """
-        self._osl_server.disconnect_slot(
-            uid=self.node.uid, slot_name=self.name, direction="sdInputs"
-        )
+        if sending_slot is not None:
+            if self._osl_server.osl_version.major >= 24:
+                self._osl_server.disconnect_nodes(
+                    from_actor_uid=sending_slot.node.uid,
+                    from_slot=sending_slot.name,
+                    to_actor_uid=self.node.uid,
+                    to_slot=self.name,
+                )
+            else:
+                raise NotImplementedError("Method is supported for optiSLang version >= 24.1.")
+        else:
+            self._osl_server.disconnect_slot(
+                uid=self.node.uid, slot_name=self.name, direction="sdInputs"
+            )
 
 
 class TcpOutputSlotProxy(TcpSlotProxy, OutputSlot):
@@ -3016,11 +3308,11 @@ class TcpOutputSlotProxy(TcpSlotProxy, OutputSlot):
         node : TcpNodeProxy
             Node to which the slot belongs.
         name : str
-           Slot name.
+            Slot name.
         type_ : SlotType
             Slot type.
         type_hint : Optional[str], optional
-            Description, by default None.
+            Data type of the slot, by default None.
         """
         super().__init__(
             osl_server=osl_server,
@@ -3052,7 +3344,7 @@ class TcpOutputSlotProxy(TcpSlotProxy, OutputSlot):
         TimeoutError
             Raised when the timeout float value expires.
         """
-        if not isinstance(to_slot, InnerInputSlot) or self._osl_server.osl_version.major >= 24:
+        if self._osl_server.osl_version.major >= 24:
             self._osl_server.connect_nodes(
                 from_actor_uid=self.node.uid,
                 from_slot=self.name,
@@ -3064,11 +3356,21 @@ class TcpOutputSlotProxy(TcpSlotProxy, OutputSlot):
             self._osl_server.run_python_script(script=python_script)
         return Edge(from_slot=self, to_slot=to_slot)
 
-    def disconnect(self) -> None:
-        """Remove all connections for the current slot.
+    def disconnect(self, receiving_slot: Optional[TcpSlotProxy] = None) -> None:
+        """Remove a specific or all connections for the current slot.
+
+        Parameters
+        ----------
+        receiving_slot: Optional[TcpSlotProxy], optional
+            Receiving (input) slot to disconnect from.
+            If not provided, all connections ar removed. Defaults to ``None``.
+
+            .. note:: Argument is supported for Ansys optiSLang version >= 24.1 only.
 
         Raises
         ------
+        NotImplementedError
+            Raised when unsupported optiSLang server is used.
         OslCommunicationError
             Raised when an error occurs while communicating with the server.
         OslCommandError
@@ -3076,9 +3378,20 @@ class TcpOutputSlotProxy(TcpSlotProxy, OutputSlot):
         TimeoutError
             Raised when the timeout float value expires.
         """
-        self._osl_server.disconnect_slot(
-            uid=self.node.uid, slot_name=self.name, direction="sdOutputs"
-        )
+        if receiving_slot is not None:
+            if self._osl_server.osl_version.major >= 24:
+                self._osl_server.disconnect_nodes(
+                    from_actor_uid=self.node.uid,
+                    from_slot=self.name,
+                    to_actor_uid=receiving_slot.node.uid,
+                    to_slot=receiving_slot.name,
+                )
+            else:
+                raise NotImplementedError("Method is supported for optiSLang version >= 24.1.")
+        else:
+            self._osl_server.disconnect_slot(
+                uid=self.node.uid, slot_name=self.name, direction="sdOutputs"
+            )
 
 
 class TcpInnerInputSlotProxy(TcpSlotProxy, InnerInputSlot):
@@ -3101,11 +3414,11 @@ class TcpInnerInputSlotProxy(TcpSlotProxy, InnerInputSlot):
         node : TcpNodeProxy
             Node to which the slot belongs.
         name : str
-           Slot name.
+            Slot name.
         type_ : SlotType
             Slot type.
         type_hint : Optional[str], optional
-            Description, by default None.
+            Data type of the slot, by default None.
         """
         super().__init__(
             osl_server=osl_server,
@@ -3149,6 +3462,43 @@ class TcpInnerInputSlotProxy(TcpSlotProxy, InnerInputSlot):
             self._osl_server.run_python_script(script=python_script)
         return Edge(from_slot=from_slot, to_slot=self)
 
+    def disconnect(self, sending_slot: Optional[TcpSlotProxy] = None) -> None:
+        """Remove a specific or all connections for the current slot.
+
+        Parameters
+        ----------
+        sending_slot: Optional[TcpSlotProxy], optional
+            Sending (output) slot to disconnect from.
+            If not provided, all connections ar removed. Defaults to ``None``.
+
+            .. note:: Argument is supported for Ansys optiSLang version >= 24.1 only.
+
+        Raises
+        ------
+        NotImplementedError
+            Raised when unsupported optiSLang server is used.
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        if sending_slot is not None:
+            if self._osl_server.osl_version.major >= 24:
+                self._osl_server.disconnect_nodes(
+                    from_actor_uid=sending_slot.node.uid,
+                    from_slot=sending_slot.name,
+                    to_actor_uid=self.node.uid,
+                    to_slot=self.name,
+                )
+            else:
+                raise NotImplementedError("Method is supported for optiSLang version >= 24.1.")
+        else:
+            self._osl_server.disconnect_slot(
+                uid=self.node.uid, slot_name=self.name, direction="sdInputs"
+            )
+
 
 class TcpInnerOutputSlotProxy(TcpSlotProxy, InnerOutputSlot):
     """Provides for creating and operating on inner output slots."""
@@ -3170,11 +3520,11 @@ class TcpInnerOutputSlotProxy(TcpSlotProxy, InnerOutputSlot):
         node : TcpNodeProxy
             Node to which the slot belongs.
         name : str
-           Slot name.
+            Slot name.
         type_ : SlotType
             Slot type.
         type_hint : Optional[str], optional
-            Description, by default None.
+            Data type of the slot, by default None.
         """
         super().__init__(
             osl_server=osl_server,
@@ -3218,6 +3568,43 @@ class TcpInnerOutputSlotProxy(TcpSlotProxy, InnerOutputSlot):
             self._osl_server.run_python_script(script=python_script)
         return Edge(from_slot=self, to_slot=to_slot)
 
+    def disconnect(self, receiving_slot: Optional[TcpSlotProxy] = None) -> None:
+        """Remove a specific or all connections for the current slot.
+
+        Parameters
+        ----------
+        receiving_slot: Optional[TcpSlotProxy], optional
+            Receiving (input) slot to disconnect from.
+            If not provided, all connections ar removed. Defaults to ``None``.
+
+            .. note:: Argument is supported for Ansys optiSLang version >= 24.1 only.
+
+        Raises
+        ------
+        NotImplementedError
+            Raised when unsupported optiSLang server is used.
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        if receiving_slot is not None:
+            if self._osl_server.osl_version.major >= 24:
+                self._osl_server.disconnect_nodes(
+                    from_actor_uid=self.node.uid,
+                    from_slot=self.name,
+                    to_actor_uid=receiving_slot.node.uid,
+                    to_slot=receiving_slot.name,
+                )
+            else:
+                raise NotImplementedError("Method is supported for optiSLang version >= 24.1.")
+        else:
+            self._osl_server.disconnect_slot(
+                uid=self.node.uid, slot_name=self.name, direction="sdOutputs"
+            )
+
 
 # endregion
 
@@ -3228,6 +3615,7 @@ _NODE_CLASS_TYPE_TO_TCP_MAPPING: Dict[str, Type[TcpNodeProxy]] = {
     NodeClassType.INTEGRATION_NODE.name: TcpIntegrationNodeProxy,
     NodeClassType.SYSTEM.name: TcpSystemProxy,
     NodeClassType.PARAMETRIC_SYSTEM.name: TcpParametricSystemProxy,
+    NodeClassType.PROXY_SOLVER.name: TcpProxySolverNodeProxy,
     NodeClassType.ROOT_SYSTEM.name: TcpRootSystemProxy,
 }
 

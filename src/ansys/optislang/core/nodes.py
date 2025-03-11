@@ -1,4 +1,4 @@
-# Copyright (C) 2022 - 2024 ANSYS, Inc. and/or its affiliates.
+# Copyright (C) 2022 - 2025 ANSYS, Inc. and/or its affiliates.
 # SPDX-License-Identifier: MIT
 #
 #
@@ -24,8 +24,10 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from enum import Enum
+from enum import Enum, Flag
 from typing import TYPE_CHECKING, Any, Optional, Tuple, Union
+
+from deprecated.sphinx import deprecated
 
 from ansys.optislang.core.io import File, FileOutputFormat, RegisteredFile
 from ansys.optislang.core.utils import enum_from_str
@@ -87,6 +89,17 @@ class DesignFlow(Enum):
         return enum_from_str(string=string, enum_class=cls, replace=(" ", "_"))
 
 
+class ExecutionOption(Flag):
+    """Provides actor execution options."""
+
+    INACTIVE = 0
+    ACTIVE = 1
+    END_POINT = 2
+    STARTING_POINT = 4
+    SAVE_POINT = 8
+    RECYCLE_RESULTS = 16
+
+
 class NodeClassType(Enum):
     """Provides types of pyOSL classes."""
 
@@ -95,6 +108,7 @@ class NodeClassType(Enum):
     PARAMETRIC_SYSTEM = 2
     ROOT_SYSTEM = 3
     INTEGRATION_NODE = 4
+    PROXY_SOLVER = 5
 
     @classmethod
     def from_str(cls, string: str) -> NodeClassType:
@@ -333,6 +347,26 @@ class Node(ABC):
         -------
         Tuple[Node, ...]
             Tuple of ordered ancestors, starting from root system at position.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        pass
+
+    @abstractmethod
+    def get_execution_options(self) -> ExecutionOption:  # pragma: no cover
+        """Get execution options.
+
+        Returns
+        -------
+        ExecutionOption
+            Execution options of the ``Node``.
 
         Raises
         ------
@@ -590,6 +624,36 @@ class Node(ABC):
         pass
 
     @abstractmethod
+    def set_execution_options(self, value: ExecutionOption) -> None:  # pragma: no cover
+        """Set execution options.
+
+        Parameters
+        ----------
+        value : ExecutionOption
+            Execution options of the ``Node``. More execution options can be
+            combined using the bitwise operations.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+
+        Examples
+        --------
+        Combination of more execution options using the bitwise operation.
+
+        >>> ...
+        >>> node.set_execution_options(
+                ExecutionOption.ACTIVE | ExecutionOption.STARTING_POINT
+            )
+        """
+        pass
+
+    @abstractmethod
     def set_property(self, name: str, value: Any) -> None:  # pragma: no cover
         """Set node's property.
 
@@ -796,11 +860,16 @@ class IntegrationNode(Node):
         pass
 
     @abstractmethod
-    def load(self) -> None:  # pragma: no cover
+    def load(self, args: Optional[dict] = None) -> None:  # pragma: no cover
         """Explicitly load the node.
 
         Some optiSLang nodes support/need an explicit load prior to being able to register
         or to make registering more convenient.
+
+        Parameters
+        ----------
+        args: Optional[dict], optional
+            Additional arguments, by default ``None``.
 
         Raises
         ------
@@ -1044,6 +1113,55 @@ class IntegrationNode(Node):
         pass
 
 
+class ProxySolverNode(IntegrationNode):
+    """Base class for classes which provide for creating and operating on an proxy solver node."""
+
+    @abstractmethod
+    def __init__(self):  # pragma: no cover
+        """``ProxySolverNode`` class is an abstract base class and cannot be instantiated."""
+        pass
+
+    @abstractmethod
+    def get_designs(self) -> Any:  # pragma: no cover
+        """Get pending designs from parent node.
+
+        Returns
+        -------
+        Any
+            Pending designs.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        pass
+
+    @abstractmethod
+    def set_designs(self, designs: Any) -> None:  # pragma: no cover
+        """Set calculated designs.
+
+        Parameters
+        ----------
+        Any
+            Calculated designs.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        pass
+
+
 class System(Node):
     """Base class for classes which provide for creating and operating on a system."""
 
@@ -1077,6 +1195,12 @@ class System(Node):
 
         Raises
         ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
         TypeError
             Raised when unsupported type of ``type_`` is given.
         ValueError
@@ -1305,7 +1429,80 @@ class ParametricSystem(System):
         """
         pass
 
+    def save_designs_as_json(
+        self, hid: str, file_path: Union[Path, str]
+    ) -> File:  # pragma: no cover
+        """Save designs for a given state to JSON file.
+
+        Parameters
+        ----------
+        hid : str
+            Actor's state.
+        file_path : Union[Path, str]
+            Path to the file.
+
+        Returns
+        -------
+        File
+            Object representing saved file.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        TypeError
+            Raised when the `hid` is `None`
+            -or-
+            `file_path` is `None` or unsupported type.
+        ValueError
+            Raised when ``hid`` does not exist.
+        """
+        pass
+
+    def save_designs_as_csv(
+        self, hid: str, file_path: Union[Path, str]
+    ) -> File:  # pragma: no cover
+        """Save designs for a given state to CSV file.
+
+        Parameters
+        ----------
+        hid : str
+            Actor's state.
+        file_path : Union[Path, str]
+            Path to the file.
+
+        Returns
+        -------
+        File
+            Object representing saved file.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        TypeError
+            Raised when the `hid` is `None`
+            -or-
+            `file_path` is `None` or unsupported type.
+        ValueError
+            Raised when ``hid`` does not exist.
+        """
+        pass
+
     @abstractmethod
+    @deprecated(
+        version="0.9.0",
+        reason="Use :py:meth:`ParametricSystem.save_designs_as_json` or "
+        ":py:meth:`ParametricSystem.save_designs_as_csv` instead.",
+    )
     def save_designs_as(
         self,
         hid: str,
@@ -1608,11 +1805,21 @@ class InputSlot(Slot):
         pass
 
     @abstractmethod
-    def disconnect(self) -> None:  # pragma: no cover
-        """Remove all connections for the current slot.
+    def disconnect(self, sending_slot: Optional[Slot] = None) -> None:  # pragma: no cover
+        """Remove a specific or all connections for the current slot.
+
+        Parameters
+        ----------
+        sending_slot: Optional[Slot], optional
+            Sending (output) slot to disconnect from.
+            If not provided, all connections ar removed. Defaults to ``None``.
+
+            .. note:: Argument is supported for Ansys optiSLang version >= 24.1 only.
 
         Raises
         ------
+        NotImplementedError
+            Raised when unsupported optiSLang server is used.
         OslCommunicationError
             Raised when an error occurs while communicating with the server.
         OslCommandError
@@ -1657,11 +1864,21 @@ class OutputSlot(Slot):
         pass
 
     @abstractmethod
-    def disconnect(self) -> None:  # pragma: no cover
-        """Remove all connections for the current slot.
+    def disconnect(self, receiving_slot: Optional[Slot] = None) -> None:  # pragma: no cover
+        """Remove a specific or all connections for the current slot.
+
+        Parameters
+        ----------
+        receiving_slot: Optional[Slot], optional
+            Receiving (input) slot to disconnect from.
+            If not provided, all connections ar removed. Defaults to ``None``.
+
+            .. note:: Argument is supported for Ansys optiSLang version >= 24.1 only.
 
         Raises
         ------
+        NotImplementedError
+            Raised when unsupported optiSLang server is used.
         OslCommunicationError
             Raised when an error occurs while communicating with the server.
         OslCommandError
@@ -1705,6 +1922,31 @@ class InnerInputSlot(Slot):
         """
         pass
 
+    @abstractmethod
+    def disconnect(self, sending_slot: Optional[Slot] = None) -> None:  # pragma: no cover
+        """Remove a specific or all connections for the current slot.
+
+        Parameters
+        ----------
+        sending_slot: Optional[Slot], optional
+            Sending (output) slot to disconnect from.
+            If not provided, all connections ar removed. Defaults to ``None``.
+
+            .. note:: Argument is supported for Ansys optiSLang version >= 24.1 only.
+
+        Raises
+        ------
+        NotImplementedError
+            Raised when unsupported optiSLang server is used.
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        pass
+
 
 class InnerOutputSlot(Slot):
     """Provides for creating and operating on inner output slots."""
@@ -1730,6 +1972,31 @@ class InnerOutputSlot(Slot):
 
         Raises
         ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        pass
+
+    @abstractmethod
+    def disconnect(self, receiving_slot: Optional[Slot] = None) -> None:  # pragma: no cover
+        """Remove a specific or all connections for the current slot.
+
+        Parameters
+        ----------
+        receiving_slot: Optional[Slot], optional
+            Receiving (input) slot to disconnect from.
+            If not provided, all connections ar removed. Defaults to ``None``.
+
+            .. note:: Argument is supported for Ansys optiSLang version >= 24.1 only.
+
+        Raises
+        ------
+        NotImplementedError
+            Raised when unsupported optiSLang server is used.
         OslCommunicationError
             Raised when an error occurs while communicating with the server.
         OslCommandError

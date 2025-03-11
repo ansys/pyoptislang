@@ -1,4 +1,4 @@
-# Copyright (C) 2022 - 2024 ANSYS, Inc. and/or its affiliates.
+# Copyright (C) 2022 - 2025 ANSYS, Inc. and/or its affiliates.
 # SPDX-License-Identifier: MIT
 #
 #
@@ -25,6 +25,8 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from typing import NamedTuple, Optional
+
+from ansys.optislang.core import utils
 
 
 class OslVersion(NamedTuple):
@@ -54,6 +56,11 @@ class OslServer(ABC):
     def __init__(self):  # pragma: no cover
         """``OslServer`` class is an abstract base class and cannot be instantiated."""
         pass
+
+    @property
+    def is_remote(self) -> bool:
+        """Determines whether the optiSLang server does not run on localhost."""
+        return self.host is not None and self.port is not None and not utils.is_localhost(self.host)
 
     @property
     @abstractmethod

@@ -60,7 +60,7 @@ This is the best place to post questions and code.
 
 Installation
 ------------
-The ``ansys-optislang-core`` package supports Python 3.8 through 3.12 on
+The ``ansys-optislang-core`` package supports Python 3.9 through 3.13 on
 Windows and Linux. Three modes of installation are available:
 
 - User installation
@@ -114,12 +114,12 @@ assets and download the wheelhouse corresponding to your setup.
 You can then install PyOptiSLang and all of its dependencies from one single entry point
 that can be shared internally, which eases the security review of the PyOptiSLang package content.
 
-For example, on Linux with Python 3.8, unzip the wheelhouse and install PyOptiSLang with code
+For example, on Linux with Python 3.9, unzip the wheelhouse and install PyOptiSLang with code
 like this:
 
 .. code:: bash
 
-    unzip PyOptiSLang-v0.1.0-wheelhouse-Linux-3.8.zip wheelhouse
+    unzip PyOptiSLang-v0.1.0-wheelhouse-Linux-3.9.zip wheelhouse
     pip install ansys-optislang-core -f wheelhouse --no-index --upgrade --ignore-installed
 
 If you're on Windows with Python 3.9, unzip the wheelhouse to a wheelhouse directory and

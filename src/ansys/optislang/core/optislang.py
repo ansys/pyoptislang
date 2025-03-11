@@ -1,4 +1,4 @@
-# Copyright (C) 2022 - 2024 ANSYS, Inc. and/or its affiliates.
+# Copyright (C) 2022 - 2025 ANSYS, Inc. and/or its affiliates.
 # SPDX-License-Identifier: MIT
 #
 #
@@ -24,6 +24,7 @@
 from __future__ import annotations
 
 from importlib.metadata import version
+from logging import Logger
 from pathlib import Path
 from typing import TYPE_CHECKING, Iterable, Mapping, Optional, Sequence, Tuple, Union
 
@@ -35,7 +36,6 @@ from ansys.optislang.core.tcp.osl_server import TcpOslServer
 
 if TYPE_CHECKING:
     from ansys.optislang.core.application import Application
-    from ansys.optislang.core.logging import OslCustomAdapter
     from ansys.optislang.core.osl_server import OslServer, OslVersion
     from ansys.optislang.core.project import Project
 
@@ -125,7 +125,7 @@ class Optislang:
         Each listener is a combination of host, port and (optionally) listener ID.
         Defaults to ``None``.
     ini_timeout : float, optional
-        Time in seconds to connect to the optiSLang server. The default is ``20``.
+        Time in seconds to connect to the optiSLang server. The default is ``60``.
     name : Optional[str], optional
         ID of the optiSLang instance. Defaults to ``None``.
     password : Optional[str], optional
@@ -192,6 +192,10 @@ class Optislang:
     RuntimeError
         Raised when the connection to the optiSLang server cannot be established
         before the specified timeout.
+    OslServerStartError
+        Raised when optiSLang server process failed to start
+    OslServerLicensingError
+        Raised when optiSLang server process failed to start due to licensing issues
 
     Examples
     --------
@@ -286,6 +290,10 @@ class Optislang:
         ------
         NotImplementedError
             Raised when the specified server type is not supported.
+        OslServerStartError
+            Raised when optiSLang server process failed to start
+        OslServerLicensingError
+            Raised when optiSLang server process failed to start due to licensing issues
         """
         if server_type.lower() == "tcp":
             return TcpOslServer(
@@ -392,7 +400,7 @@ class Optislang:
         return self.application.project is not None
 
     @property
-    def log(self) -> OslCustomAdapter:
+    def log(self) -> Logger:
         """Instance logger."""
         return self.__logger
 

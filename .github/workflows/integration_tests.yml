@@ -10,7 +10,11 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        osl_version: [23.2.0, 24.1.0, 24.2.0]
+        osl_version:
+          - 23.2.0
+          - 24.1.0
+          - 24.2.0
+          - 25.1.0
     name: "optiSLang ${{ matrix.osl_version }}"
     if: github.event.name != 'pull_request' || github.event.pull_request.merged == true
     runs-on: public-ubuntu-latest-16-cores
@@ -24,8 +28,8 @@ jobs:
         env:
           PYOPTISLANG_DISABLE_OPTISLANG_OUTPUT: true
           ANSYSLMD_LICENSE_FILE: ${{ format('1055@{0}', secrets.LICENSE_SERVER) }}
-        uses: ansys/actions/tests-pytest@v6
+        uses: ansys/actions/tests-pytest@v8
         with:
-          python-version: "3.10"
+          python-version: "3.13"
           pytest-extra-args: "--local_osl -k 'not examples.py'"
           use-python-cache: false

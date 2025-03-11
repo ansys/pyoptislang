@@ -21,13 +21,16 @@ pyoptislang.BUILDING_GALLERY = True
 
 # Sphinx extensions
 extensions = [
+    "numpydoc",
     "sphinx.ext.autodoc",
     "sphinx.ext.autosummary",
-    "numpydoc",
+    "sphinx.ext.coverage",
+    "sphinx.ext.doctest",
+    "sphinx.ext.extlinks",
     "sphinx.ext.intersphinx",
     "sphinx_copybutton",
     "sphinx_gallery.gen_gallery",
-    "sphinxcontrib.images",
+    "ansys_sphinx_theme.extension.linkcode",
 ]
 
 # Intersphinx mapping
@@ -63,6 +66,20 @@ numpydoc_validation_checks = {
     # "SS05", # Summary must start with infinitive verb, not third person
     "RT02",  # The first line of the Returns section should contain only the
     # type, unless multiple values are being returned"
+}
+
+# Ignoring numpydoc validation on built-in methods from Python
+# or other libraries due to inheritance
+numpydoc_validation_exclude = {
+    "denominator",
+    "imag",
+    "numerator",
+    "real",
+    "__cause__",
+    "__context__",
+    "__abs__",
+    "__float__",
+    "__int__",
 }
 
 # Favicon

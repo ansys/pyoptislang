@@ -1,4 +1,4 @@
-# Copyright (C) 2022 - 2024 ANSYS, Inc. and/or its affiliates.
+# Copyright (C) 2022 - 2025 ANSYS, Inc. and/or its affiliates.
 # SPDX-License-Identifier: MIT
 #
 #
@@ -20,14 +20,16 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-"""Utitilies module."""
+"""Utilities module."""
 from __future__ import annotations
 
 import collections
 from enum import Enum
+import ipaddress
 import os
 from pathlib import Path
 import re
+import socket
 import sys
 from typing import (
     DefaultDict,
@@ -454,3 +456,45 @@ def iter_awp_roots() -> Iterator[Tuple[int, Path]]:
 def is_iron_python():
     """Whether current platform is IronPython."""
     return sys.platform == "cli"
+
+
+def get_localhost_addresses() -> List[str]:
+    """Get addresses of the localhost machine.
+
+    Returns
+    -------
+    List[str]
+        List of addresses of the localhost machine.
+    """
+    return [
+        i[4][0] for i in socket.getaddrinfo(socket.gethostname(), None, type=socket.SOCK_STREAM)
+    ]
+
+
+def is_localhost(host: str) -> bool:
+    """Determine whether the host is localhost.
+
+    Parameters
+    ----------
+    host : str
+        IPv4/v6 address or domain name of the host.
+
+    Returns
+    -------
+    bool
+        ``True`` if the provided ``host`` is localhost; ``False`` otherwise.
+    """
+    try:
+        addrinfo = socket.getaddrinfo(host=host, port=None)
+    except socket.gaierror:
+        return False
+
+    localhost_addresses = get_localhost_addresses()
+    for _, _, _, _, sockaddr in addrinfo:
+        try:
+            ip = sockaddr[0]
+            if not ipaddress.ip_address(ip).is_loopback and ip not in localhost_addresses:
+                return False
+        except ValueError:
+            return False
+    return True

@@ -1,4 +1,4 @@
-# Copyright (C) 2022 - 2024 ANSYS, Inc. and/or its affiliates.
+# Copyright (C) 2022 - 2025 ANSYS, Inc. and/or its affiliates.
 # SPDX-License-Identifier: MIT
 #
 #
@@ -67,5 +67,17 @@ class OslCommunicationError(Exception):
 
 class OslDisposedError(Exception):
     """Raised when command was sent and Optislang instance was already disposed."""
+
+    pass
+
+
+class OslServerStartError(Exception):
+    """Raised when optiSLang server process fails to start."""
+
+    pass
+
+
+class OslServerLicensingError(OslServerStartError):
+    """Raised when optiSLang server process fails to start due to licensing issues."""
 
     pass

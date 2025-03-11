@@ -1,4 +1,4 @@
-# Copyright (C) 2022 - 2024 ANSYS, Inc. and/or its affiliates.
+# Copyright (C) 2022 - 2025 ANSYS, Inc. and/or its affiliates.
 # SPDX-License-Identifier: MIT
 #
 #
@@ -62,10 +62,14 @@ def create_osl_server_process(shutdown_on_finished=False, project_path=None) -> 
         )
         osl_server_process.start()
 
-        start_timeout = 90
+        start_timeout = 180
         start = time.time()
         while not os.path.exists(server_info_file):
-            time.sleep(0.1)
+            osl_process_exit_code = osl_server_process.wait_for_finished(timeout=0.1)
+            if osl_process_exit_code is not None:
+                raise RuntimeError(
+                    f"optiSLang Process start failed (returncode: {osl_process_exit_code})."
+                )
             if time.time() - start > start_timeout:
                 break
 
@@ -334,6 +338,8 @@ def test_tcp_osl_properties(osl_server_process: OslServerProcess):
     assert tcp_osl_server.timeout == 60
     tcp_osl_server.timeout = 20
     assert tcp_osl_server.timeout == 20
+
+    assert not tcp_osl_server.is_remote
 
     with pytest.raises(ValueError):
         tcp_osl_server.timeout = -5

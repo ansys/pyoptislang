@@ -1,4 +1,4 @@
-# Copyright (C) 2022 - 2024 ANSYS, Inc. and/or its affiliates.
+# Copyright (C) 2022 - 2025 ANSYS, Inc. and/or its affiliates.
 # SPDX-License-Identifier: MIT
 #
 #
@@ -569,6 +569,19 @@ class OslServerProcess:
         return None
 
     @property
+    def returncode(self) -> Optional[int]:
+        """Process return code.
+
+        Returns
+        -------
+        Optional[int]
+            Process return code, if exists; ``None`` otherwise.
+        """
+        if self.__process is not None:
+            return self.__process.returncode
+        return None
+
+    @property
     def shutdown_on_finished(self) -> bool:
         """Whether to shut down when execution is finished.
 
@@ -994,10 +1007,28 @@ class OslServerProcess:
 
         return self.__process.poll() is None
 
-    def wait_for_finished(self):
-        """Wait for the process to finish."""
-        if self.__process is not None and self.is_running():
-            self.__process.wait()
+    def wait_for_finished(self, timeout: float = None) -> Optional[int]:
+        """Wait for the process to finish.
+
+        Parameters
+        ----------
+        timeout : float, optional
+            Timeout for waiting on process finished.
+            Defaults to ``None``
+
+        Returns
+        -------
+        Optional[int]
+            Process return code, if exists; ``None`` otherwise.
+        """
+        if self.__process is not None:
+            if self.is_running():
+                try:
+                    self.__process.wait(timeout)
+                except:
+                    pass
+            return self.__process.returncode
+        return None
 
     def __start_process_output_thread(self):
         """Start new thread responsible for logging of STDOUT/STDERR of the optiSLang process."""
@@ -1029,7 +1060,7 @@ class OslServerProcess:
         decode_streams: bool = True,
         logger=None,
     ):
-        """Handle STDOUT/STDERR of the specified process.
+        """Handle stdout/stderr of the specified process.
 
         Registers for notifications to lean that process output is ready to read, and dispatches
         lines to the respective line handlers. This function returns once the finalizer returns.
@@ -1039,19 +1070,19 @@ class OslServerProcess:
         Parameters
         ----------
         process : subprocess.Popen
-            Process which STDOUT or STDERR is supposed to be handled.
+            Process to read from.
 
         stdout_handler : Callable[[str], None], None
-            Handler for STDOUT.
+            Handler for stdout.
 
         stderr_handler : Callable[[str], None], None
-            Handler for STDERR. It is supposed to be a function with one argument of str.
+            Handler for stderr. It is supposed to be a function with one argument of str.
 
         finalizer : Callable[[subprocess.Popen,...], Any], optional
             Function which finalizes output process handling. Defaults to ``None``.
 
         decode_streams : bool, optional
-            Determines whether to safely decode STDOUT/STDERR streams before pushing their
+            Determines whether to safely decode standard streams before pushing their
             contents to handlers. Should be set to ``False`` if 'universal_newline == True'
             (then streams are in text-mode) or if decoding must happen later. Defaults to ``True``.
 
@@ -1065,7 +1096,7 @@ class OslServerProcess:
         """
         logger.debug("Start to handling optiSLang server process output.")
 
-        # Use 2 "pupm" threads and wait for both to finish.
+        # Use 2 "pump" threads and wait for both to finish.
         if utils.is_iron_python():
 
             def stream_reader(cmdline, name, stream, is_decode, handler):
@@ -1097,7 +1128,7 @@ class OslServerProcess:
                         if handler:
                             try:
                                 if is_decode:
-                                    line = encoding.force_text(line)
+                                    line = encoding.force_text(line).rstrip()
                                 handler("optiSLang " + name + ": " + line)
                             except:
                                 handler("optiSLang " + name + ": " + line)
@@ -1115,9 +1146,9 @@ class OslServerProcess:
 
         pumps = []
         if process.stdout and stdout_handler is not None:
-            pumps.append(("Stdout", process.stdout, stdout_handler))
+            pumps.append(("stdout", process.stdout, stdout_handler))
         if process.stderr and stderr_handler is not None:
-            pumps.append(("Stderr", process.stderr, stderr_handler))
+            pumps.append(("stderr", process.stderr, stderr_handler))
 
         threads = []
 
