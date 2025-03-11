@@ -228,7 +228,10 @@ class DesignManager:
 
     @abstractmethod
     def get_designs(
-        self, hid: Optional[str] = None, include_design_values=True
+        self,
+        hid: Optional[str] = None,
+        include_design_values=True,
+        include_non_scalar_design_values=False,
     ) -> Tuple[Design]:  # pragma: no cover
         """Get designs for a given state.
 
@@ -237,7 +240,9 @@ class DesignManager:
         hid : Optional[str], optional
             State/Design hierarchical id. By default ``None``.
         include_design_values : bool, optional
-            Include values in (result) designs. By default ``True``.
+            Include values. By default ``True``.
+        include_non_scalar_design_values : Optional[bool], optional
+            Include non scalar values. By default ``False``.
 
         Returns
         -------
