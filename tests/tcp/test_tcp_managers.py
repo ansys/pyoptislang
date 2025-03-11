@@ -20,14 +20,20 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+from pathlib import Path
+
 import pytest
 
 from ansys.optislang.core import Optislang
+from ansys.optislang.core.io import File
+from ansys.optislang.core.managers import DesignManager
+from ansys.optislang.core.nodes import ParametricSystem
 from ansys.optislang.core.project_parametric import (
     ComparisonType,
     ConstraintCriterion,
     Criterion,
     DependentParameter,
+    Design,
     DistributionType,
     LimitStateCriterion,
     MixedParameter,
@@ -374,6 +380,112 @@ def test_get_responses_names(optislang: Optislang):
     assert isinstance(responses_names, tuple)
     assert len(responses_names) > 0
     assert set(["c", "d"]) == set(responses_names)
+
+
+# endregion
+
+
+# region Designs
+def test_get_design_s(optislang: Optislang, tmp_example_project):
+    """Test ``get_design`` and ``get_designs`` method."""
+    with Optislang(project_path=tmp_example_project("omdb_files")) as osl:
+        project = osl.project
+        root_system = project.root_system
+        sensitivity_outer: ParametricSystem = root_system.find_nodes_by_name("Sensitivity")[0]
+        sensitivity_inner: ParametricSystem = root_system.find_nodes_by_name(
+            "MostInnerSensitivity", 3
+        )[0]
+        design_manager_outer = sensitivity_outer.design_manager
+        design_manager_inner = sensitivity_inner.design_manager
+        hids_outer = sensitivity_outer.get_states_ids()
+        hids_inner = sensitivity_inner.get_states_ids()
+
+        for design_manager, hids in [
+            (design_manager_outer, hids_outer),
+            (design_manager_inner, hids_inner),
+        ]:
+            designs = design_manager.get_designs(hids[0])
+            assert len(designs) > 0
+            assert isinstance(designs, tuple)
+            assert all(isinstance(d, Design) for d in designs)
+            __test_design_values(designs, True)
+
+            design = design_manager.get_design(hids[0] + ".1")
+            assert isinstance(design, Design)
+            filtered_design = design_manager.filter_designs_by(designs, hid=hids[0] + ".1")[0]
+            assert (
+                design.parameters == filtered_design.parameters
+                and design.constraints == filtered_design.constraints
+                and design.limit_states == filtered_design.limit_states
+                and design.objectives == filtered_design.objectives
+                and design.variables == filtered_design.variables
+                and design.responses == filtered_design.responses
+                and design.feasibility == filtered_design.feasibility
+                and design.id == filtered_design.id
+                and design.status == filtered_design.status
+            )
+            # TODO: replace above with below after `pareto_design` is provided by `get_design` query
+            # assert design == design_manager.filter_designs_by(designs, hid=hids[0] + ".1")[0]
+
+            sorted_designs = design_manager.sort_designs_by_hid(designs)
+            for idx, d in enumerate(sorted_designs[1:], start=1):
+                for idx, d in enumerate(sorted_designs[1:], start=1):
+                    prev_id_parts = sorted_designs[idx - 1].id.split(".")
+                    curr_id_parts = d.id.split(".")
+                    for prev_part, curr_part in zip(prev_id_parts, curr_id_parts):
+                        assert int(curr_part) >= int(prev_part)
+
+            designs_no_values = design_manager.get_designs(hids[0], include_design_values=False)
+            assert len(designs_no_values) > 0
+            assert isinstance(designs_no_values, tuple)
+            assert all(isinstance(d, Design) for d in designs_no_values)
+            __test_design_values(designs_no_values, False)
+
+
+def test_save_designs_as(tmp_path: Path, tmp_example_project):
+    """Test `save_designs_as_json` and `save_designs_as_csv` methods."""
+    with Optislang(project_path=tmp_example_project("omdb_files")) as osl:
+        project = osl.project
+        root_system = project.root_system
+        sensitivity_outer: ParametricSystem = root_system.find_nodes_by_name("Sensitivity")[0]
+        sensitivity_inner: ParametricSystem = root_system.find_nodes_by_name(
+            "MostInnerSensitivity", 3
+        )[0]
+        design_manager_outer = sensitivity_outer.design_manager
+        hids_outer = sensitivity_outer.get_states_ids()
+        design_manager_inner = sensitivity_inner.design_manager
+        hids_inner = sensitivity_inner.get_states_ids()
+        __test_save_designs_as_csv(tmp_path, "outerSensi_csv", design_manager_outer, hids_outer)
+        __test_save_designs_as_json(tmp_path, "outerSensi_json", design_manager_outer, hids_outer)
+        __test_save_designs_as_csv(tmp_path, "innerSensi_csv", design_manager_inner, hids_inner)
+        __test_save_designs_as_json(tmp_path, "innerSensi_json", design_manager_inner, hids_inner)
+
+
+def __test_design_values(designs, values):
+    for design in designs:
+        for attribute in ["parameters", "responses", "constraints", "limit_states", "objectives"]:
+            for item in getattr(design, attribute):
+                assert (item.value is not None) if values else (item.value is None)
+
+
+def __test_save_designs_as_csv(
+    tmp_path: Path, filename: str, design_manager: DesignManager, hids: tuple
+):
+    """Test `save_designs_as_csv` method."""
+    csv_file_path = tmp_path / (filename + ".csv")
+    csv_file = design_manager.save_designs_as_csv(hid=hids[0], file_path=csv_file_path)
+    assert isinstance(csv_file, File)
+    assert csv_file.exists
+
+
+def __test_save_designs_as_json(
+    tmp_path: Path, filename: str, design_manager: DesignManager, hids: tuple
+):
+    """Test `save_designs_as_json` method."""
+    json_file_path = tmp_path / (filename + ".json")
+    json_file = design_manager.save_designs_as_json(hids[0], json_file_path)
+    assert isinstance(json_file, File)
+    assert json_file.exists
 
 
 # endregion

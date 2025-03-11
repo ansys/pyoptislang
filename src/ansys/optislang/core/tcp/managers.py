@@ -23,12 +23,24 @@
 """Contains classes to obtain operate with project parametric."""
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple
+import csv
+from io import StringIO
+import json
+from pathlib import Path
+from typing import TYPE_CHECKING, Any, Dict, Iterable, List, Optional, Tuple, Union
 
-from ansys.optislang.core.managers import CriteriaManager, ParameterManager, ResponseManager
+from ansys.optislang.core.io import File, FileOutputFormat
+from ansys.optislang.core.managers import (
+    CriteriaManager,
+    DesignManager,
+    ParameterManager,
+    ResponseManager,
+)
 from ansys.optislang.core.project_parametric import (
     ConstraintCriterion,
     Criterion,
+    Design,
+    DesignStatus,
     LimitStateCriterion,
     Parameter,
     Response,
@@ -268,6 +280,412 @@ class TcpCriteriaManagerProxy(CriteriaManager):
             raise NotImplementedError("Method is supported for optiSLang version >= 23.2.")
         else:
             self.__osl_server.remove_criterion(uid=self.__uid, name=criterion_name)
+
+
+class TcpDesignManagerProxy(DesignManager):
+    """Contains methods for obtaining designs."""
+
+    def __init__(self, uid: str, osl_server: TcpOslServer) -> None:
+        """Initialize a new instance of the ``TcpDesignManagerProxy`` class.
+
+        Parameters
+        ----------
+        uid: str
+            Unique ID of the instance.
+        osl_server: TcpOslServer
+            Object providing access to the optiSLang server.
+        """
+        self.__uid = uid
+        self.__osl_server = osl_server
+
+    def _get_status_info(
+        self,
+        hid: str,
+        include_designs: bool = True,
+        include_design_values: Optional[bool] = True,
+        include_non_scalar_design_values: Optional[bool] = False,
+        include_algorithm_info: Optional[bool] = False,
+    ) -> Dict:
+        """Get status info about actor defined by actor uid and state hid.
+
+        Parameters
+        ----------
+        hid : str
+            State/Design hierarchical id.
+        include_designs : bool, optional
+           Include (result) designs in status info response. By default ``True``.
+        include_design_values : Optional[bool], optional
+            Include values in (result) designs. By default ``True``.
+        include_non_scalar_design_values : Optional[bool], optional
+            Include non scalar values in (result) designs. By default ``False``.
+        include_algorithm_info : Optional[bool], optional
+            Include algorithm result info in status info response, by default ``False``.
+
+        Returns
+        -------
+        Dict
+            Info about actor defined by uid.
+        """
+        return self.__osl_server.get_actor_status_info(
+            self.__uid,
+            hid=hid,
+            include_designs=include_designs,
+            include_design_values=include_design_values,
+            include_non_scalar_design_values=include_non_scalar_design_values,
+            include_algorithm_info=include_algorithm_info,
+        )
+
+    def get_design(self, id: str) -> Design:
+        """Get design by id.
+
+        Parameters
+        ----------
+        id : str
+            Design id.
+
+        Returns
+        -------
+        Design
+            Design object.
+
+        Notes
+        -----
+        Information about `pareto_design` property is not provided by this query.
+        """
+        design = self.__osl_server.get_result_design(
+            uid=self.__uid,
+            design_id=id,
+        )["design"]
+        return Design(
+            parameters=dict(zip(design["parameter_names"], design["parameter_values"])),
+            constraints=dict(zip(design["constraint_names"], design["constraint_values"])),
+            limit_states=dict(zip(design["limit_state_names"], design["limit_state_values"])),
+            objectives=dict(zip(design["objective_names"], design["objective_values"])),
+            responses=dict(zip(design["response_names"], design["response_values"])),
+            feasibility=design["feasible"],
+            design_id=design["hid"],
+            status=DesignStatus.from_str(design["status"]),
+            pareto_design=None,
+        )
+
+    def get_designs(
+        self,
+        hid: Optional[str] = None,
+        include_design_values=True,
+        include_non_scalar_design_values=False,
+    ) -> Tuple[Design]:
+        """Get designs for a given state.
+
+        Parameters
+        ----------
+        hid : Optional[str], optional
+            State/Design hierarchical id. By default ``None``.
+        include_design_values : bool, optional
+            Include values. By default ``True``.
+        include_non_scalar_design_values : Optional[bool], optional
+            Include non scalar values. By default ``False``.
+
+        Returns
+        -------
+        Tuple[Design]
+            Tuple of designs for a given state.
+        """
+        design_classes = []
+        status_info = self._get_status_info(
+            hid=hid,
+            include_designs=True,
+            include_design_values=include_design_values,
+            include_non_scalar_design_values=include_design_values
+            and include_non_scalar_design_values,
+            include_algorithm_info=False,
+        )
+        designs = status_info.get("designs", {})
+        design_states = status_info["design_status"]
+
+        if include_design_values:
+            design_values = designs.get("values")
+            for design_value, design_state in zip(design_values, design_states):
+                if design_value["hid"] != design_state["id"]:
+                    raise ValueError(f'{design_value["hid"]} != {design_state["id"]}')
+                design_classes.append(
+                    Design(
+                        parameters=dict(
+                            zip(
+                                designs.get("parameter_names", []),
+                                design_value.get("parameter_values", []),
+                            )
+                        ),
+                        constraints=dict(
+                            zip(
+                                designs.get("constraint_names", []),
+                                design_value.get("constraint_values", []),
+                            )
+                        ),
+                        limit_states=dict(
+                            zip(
+                                designs.get("limit_state_names", []),
+                                design_value.get("limit_state_values", []),
+                            )
+                        ),
+                        objectives=dict(
+                            zip(
+                                designs.get("objective_names", []),
+                                design_value.get("objective_values", []),
+                            )
+                        ),
+                        responses=dict(
+                            zip(
+                                designs.get("response_names", []),
+                                design_value.get("response_values", []),
+                            )
+                        ),
+                        feasibility=design_state["feasible"],
+                        design_id=design_state["id"],
+                        status=DesignStatus.from_str(design_state["status"]),
+                        pareto_design=design_state["pareto_design"],
+                    )
+                )
+        else:
+            for design_state in design_states:
+                design_classes.append(
+                    Design(
+                        feasibility=design_state["feasible"],
+                        design_id=design_state["id"],
+                        status=DesignStatus.from_str(design_state["status"]),
+                        pareto_design=design_state["pareto_design"],
+                    )
+                )
+        return tuple(design_classes)
+
+    def save_designs_as_json(self, hid: str, file_path: Union[Path, str]) -> File:
+        """Save designs for a given state to JSON file.
+
+        Parameters
+        ----------
+        hid : str
+            Actor's state.
+        file_path : Union[Path, str]
+            Path to the file.
+
+        Returns
+        -------
+        File
+            Object representing saved file.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        TypeError
+            Raised when the `hid` is `None`
+            -or-
+            `file_path` is `None` or unsupported type.
+        ValueError
+            Raised when ``hid`` does not exist.
+        """
+        return self.__save_designs_as(hid, file_path, FileOutputFormat.JSON)
+
+    def save_designs_as_csv(self, hid: str, file_path: Union[Path, str]) -> File:
+        """Save designs for a given state to CSV file.
+
+        Parameters
+        ----------
+        hid : str
+            Actor's state.
+        file_path : Union[Path, str]
+            Path to the file.
+
+        Returns
+        -------
+        File
+            Object representing saved file.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        TypeError
+            Raised when the `hid` is `None`
+            -or-
+            `file_path` is `None` or unsupported type.
+        ValueError
+            Raised when ``hid`` does not exist.
+        """
+        return self.__save_designs_as(hid, file_path, FileOutputFormat.CSV)
+
+    def __save_designs_as(self, hid: str, file_path: Union[Path, str], format: FileOutputFormat):
+        """Save designs for a given state.
+
+        Parameters
+        ----------
+        hid : str
+            Actor's state.
+        file_path : Union[Path, str]
+            Path to the file.
+        format : FileOutputFormat
+            Format of the file.
+
+        Returns
+        -------
+        File
+            Object representing saved file.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        TypeError
+            Raised when the `hid` is `None`
+            -or-
+            `file_path` is `None` or unsupported type.
+        ValueError
+            Raised when ``format`` is not unsupported
+            -or-
+            ``hid`` does not exist.
+        """
+        if hid is None:
+            raise TypeError("Actor's state cannot be `None`.")
+        if file_path is None:
+            raise TypeError("Path to the file cannot be `None`.")
+        if isinstance(file_path, str):
+            file_path = Path(file_path)
+        if not isinstance(file_path, Path):
+            raise TypeError(
+                "Type of the `file_path` argument is not supported: `file_path` = "
+                f"`{type(file_path)}`."
+            )
+
+        status_info = self._get_status_info(
+            hid=hid,
+            include_designs=True,
+            include_design_values=True,
+            include_non_scalar_design_values=(format == FileOutputFormat.JSON),
+            include_algorithm_info=False,
+        )
+        designs = status_info["designs"]
+        design_states = status_info["design_status"]
+        for design, state in zip(designs["values"], design_states):
+            if design["hid"] != state["id"]:
+                raise ValueError(f'{design["hid"]} != {status_info["id"]}')
+            to_append = {
+                key: state[key] for key in ("feasible", "status", "pareto_design", "directory")
+            }
+            design.update(to_append)
+
+        if format == FileOutputFormat.JSON:
+            file_output = json.dumps(designs)
+            newline = None
+        elif format == FileOutputFormat.CSV:
+            file_output = self.__convert_design_dict_to_csv(designs)
+            newline = ""
+        else:
+            raise ValueError(f"Output file format `{format}` is not supported.")
+
+        with open(file_path, "w", newline=newline) as f:
+            f.write(file_output)
+        return File(file_path)
+
+    @staticmethod
+    def filter_designs_by(
+        designs: Iterable[Design],
+        hid: Optional[str] = None,
+        status: Optional[DesignStatus] = None,
+        pareto_design: Optional[bool] = None,
+        feasible: Optional[bool] = None,
+    ) -> Tuple[Design]:
+        """Filter designs by given parameters.
+
+        Parameters
+        ----------
+        designs : Iterable[Design]
+            Designs to be filtered.
+        hid : Optional[str], optional
+            State/Design hierarchical id. By default ``None``.
+        status : Optional[DesignStatus], optional
+            Design status. By default ``None``.
+        pareto_design : Optional[bool], optional
+            Pareto flag. By default ``None``.
+        feasible : Optional[bool], optional
+            Feasibility of design. By default ``None``.
+
+        Returns
+        -------
+        Tuple[Design]
+            Tuple of filtered designs
+        """
+
+        def filter_condition(design: Design) -> bool:
+            conditions = [
+                hid is None or design.id == hid,
+                status is None or design.status == status,
+                pareto_design is None or design.pareto_design == pareto_design,
+                feasible is None or design.feasibility == feasible,
+            ]
+            return all(conditions)
+
+        return tuple([design for design in filter(filter_condition, designs)])
+
+    @staticmethod
+    def sort_designs_by_hid(designs: Iterable[Design]) -> Tuple[Design]:
+        """Sort designs by hierarchical id.
+
+        Parameters
+        ----------
+        designs : Iterable[Design]
+            Designs to be sorted.
+
+        Returns
+        -------
+        Tuple[Design]
+            Tuple of sorted designs.
+        """
+        sorted_designs = sorted(
+            designs, key=lambda design: [int(part) for part in design.id.split(".")]
+        )
+        return tuple(sorted_designs)
+
+    @staticmethod
+    def __convert_design_dict_to_csv(designs: dict) -> str:
+        csv_buffer = StringIO()
+        try:
+            csv_writer = csv.writer(csv_buffer)
+            header = ["Design"]
+            header.append("Feasible")
+            header.append("Status")
+            header.append("Pareto")
+            header.extend(designs["constraint_names"])
+            header.extend(designs["limit_state_names"])
+            header.extend(designs["objective_names"])
+            header.extend(designs["parameter_names"])
+            header.extend(designs["response_names"])
+            csv_writer.writerow(header)
+            for design in designs["values"]:
+                line = [design["hid"]]
+                line.append(design["feasible"])
+                line.append(design["status"])
+                line.append(design["pareto_design"])
+                line.extend(design["constraint_values"])
+                line.extend(design["limit_state_values"])
+                line.extend(design["objective_values"])
+                line.extend(design["parameter_values"])
+                line.extend(design["response_values"])
+                csv_writer.writerow(line)
+            return csv_buffer.getvalue()
+        finally:
+            if csv_buffer is not None:
+                csv_buffer.close()
 
 
 class TcpParameterManagerProxy(ParameterManager):

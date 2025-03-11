@@ -35,7 +35,12 @@ from ansys.optislang.core.utils import enum_from_str
 if TYPE_CHECKING:
     from pathlib import Path
 
-    from ansys.optislang.core.managers import CriteriaManager, ParameterManager, ResponseManager
+    from ansys.optislang.core.managers import (
+        CriteriaManager,
+        DesignManager,
+        ParameterManager,
+        ResponseManager,
+    )
     from ansys.optislang.core.node_types import NodeType
     from ansys.optislang.core.project_parametric import Design
 
@@ -1337,6 +1342,18 @@ class ParametricSystem(System):
 
     @property
     @abstractmethod
+    def design_manager(self) -> DesignManager:  # pragma: no cover
+        """Design manager of the current system.
+
+        Returns
+        -------
+        DesignManager
+            Instance of the ``DesignManager`` class.
+        """
+        pass
+
+    @property
+    @abstractmethod
     def parameter_manager(self) -> ParameterManager:  # pragma: no cover
         """Parameter manager of the current system.
 
@@ -1429,6 +1446,12 @@ class ParametricSystem(System):
         """
         pass
 
+    @abstractmethod
+    @deprecated(
+        version="0.9.3",
+        reason="Use :py:meth:`ParametricSystem.save_designs_as_json` or "
+        ":py:meth:`ParametricSystem.design_manager.save_designs_as_csv` instead.",
+    )
     def save_designs_as_json(
         self, hid: str, file_path: Union[Path, str]
     ) -> File:  # pragma: no cover
@@ -1463,6 +1486,12 @@ class ParametricSystem(System):
         """
         pass
 
+    @abstractmethod
+    @deprecated(
+        version="0.9.3",
+        reason="Use :py:meth:`ParametricSystem.save_designs_as_json` or "
+        ":py:meth:`ParametricSystem.design_manager.save_designs_as_csv` instead.",
+    )
     def save_designs_as_csv(
         self, hid: str, file_path: Union[Path, str]
     ) -> File:  # pragma: no cover
