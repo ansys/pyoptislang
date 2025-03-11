@@ -571,6 +571,7 @@ class TcpDesignManagerProxy(DesignManager):
             hid=hid,
             include_designs=True,
             include_design_values=True,
+            include_non_scalar_design_values=(format == FileOutputFormat.JSON),
             include_algorithm_info=False,
         )
         designs = status_info["designs"]
