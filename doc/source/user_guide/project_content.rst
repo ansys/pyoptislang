@@ -215,7 +215,7 @@ Designs
 To obtain result designs of any parametric system, an instance of the
 :py:class:`DesignManager <ansys.optislang.core.managers.DesignManager>`
 class can be used. This class provides the
-:py:meth:`get_designs() <ansys.optislang.core.managers.DesignManager.get_designs>`,
+:py:meth:`get_designs() <ansys.optislang.core.managers.DesignManager.get_designs>`
 method for returning all result designs for a given state. The objects returned are instances of the
 :py:class:`Design <ansys.optislang.core.project_parametric.Design>` class.
 To obtain a single design, use method
@@ -232,13 +232,13 @@ To obtain a single design, use method
     design = design_manager.get_design(hids[0] + ".1")
 
 Designs are returned in order provided by the optiSLang server. To sort designs by id, use method
-:py:meth:`sort_designs_by_id() <ansys.optislang.core.managers.DesignManager.sort_designs_by_id>`.
+:py:meth:`sort_designs_by_hid() <ansys.optislang.core.managers.DesignManager.sort_designs_by_hid>`.
 
 .. code:: python
 
     # ...
 
-    sorted_designs = design_manager.sort_designs_by_id(designs)
+    sorted_designs = design_manager.sort_designs_by_hid(designs)
 
 To filter designs by a single or multiple properties values, use method
 :py:meth:`filter_designs_by() <ansys.optislang.core.managers.DesignManager.filter_designs_by>`.

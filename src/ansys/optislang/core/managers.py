@@ -44,7 +44,7 @@ class CriteriaManager:
     """Base classes for classes that obtains and operate with criteria."""
 
     @abstractmethod
-    def __init__(self) -> None:  # pragma: no cover
+    def __init__(self, uid: str, osl_server: OslServer) -> None:  # pragma: no cover
         """``CriteriaManager`` class is an abstract base class and cannot be instantiated."""
         pass
 
