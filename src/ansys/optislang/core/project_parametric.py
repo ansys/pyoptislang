@@ -3256,7 +3256,7 @@ class Response:
 
 # region Design
 class Design:
-    """Stores information about the design point, exclusively for the root system.
+    """Stores information about the design point.
 
     Parameters
     ----------
@@ -3295,13 +3295,15 @@ class Design:
         Iterable[Union[Response, DesignVariable]],
     ], optional
         Dictionary of responses and their values {'name': value, ...}
-        or an iterable of design variables or responses. By default `[]``.
+        or an iterable of design variables or responses. By default ``[]``.
     feasibility: Optional[bool], optional
-        Determines whether design is feasible, defaults to `None` (no info about feasibility).
+        Determines whether design is feasible, by default ``None`` (no info about feasibility).
     design_id: Optional[int], optional
-        Design's id, defaults to `None`.
+        Design's id, by default ``None``.
     status: DesignStatus, optional
-        Design's status, defaults to `DesignStatus.IDLE`.
+        Design's status, by default ``DesignStatus.IDLE``.
+    pareto_design: Optional[bool], optional
+        Pareto design flag, by default ``None``.
 
     Examples
     --------
@@ -3345,6 +3347,7 @@ class Design:
         feasibility: Optional[bool] = None,
         design_id: Optional[int] = None,
         status: DesignStatus = DesignStatus.IDLE,
+        pareto_design: Optional[bool] = None,
     ) -> None:
         """Initialize a new instance of the ``Design`` class."""
         self.__constraints: List[DesignVariable] = []
@@ -3353,6 +3356,7 @@ class Design:
         self.__limit_states: List[DesignVariable] = []
         self.__objectives: List[DesignVariable] = []
         self.__parameters: List[DesignVariable] = []
+        self.__pareto_design: Optional[bool] = pareto_design
         self.__responses: List[DesignVariable] = []
         self.__status: DesignStatus = status
         self.__variables: List[DesignVariable] = []
@@ -3372,6 +3376,34 @@ class Design:
         # responses
         if responses:
             self.__responses = self.__parse_responses_to_designvariables(responses=responses)
+
+    def __eq__(self, other) -> bool:
+        """Compare properties of two instances of the ``Design`` class.
+
+        Parameters
+        ----------
+        other: Design
+            Design for comparison.
+
+        Returns
+        -------
+        bool
+            ``True`` if all properties match; ``False`` otherwise.
+        """
+        return (
+            type(self) == type(other)
+            and self.parameters == other.parameters
+            and self.constraints == other.constraints
+            and self.limit_states == other.limit_states
+            and self.objectives == other.objectives
+            and self.variables == other.variables
+            and self.responses == other.responses
+            and self.feasibility == other.feasibility
+            and self.id == other.id
+            and self.status == other.status
+            # NOTE: pareto_design not provided by `get_design` query
+            and self.__pareto_design == other.pareto_design
+        )
 
     @property
     def constraints(self) -> Tuple[DesignVariable, ...]:
@@ -3422,6 +3454,11 @@ class Design:
     def parameters_names(self) -> Tuple[str, ...]:
         """Tuple of all parameter names."""
         return tuple([parameter.name for parameter in self.__parameters])
+
+    @property
+    def pareto_design(self) -> Optional[bool]:
+        """Pareto design flag. If information is not provided, ``None`` is returned."""
+        return self.__pareto_design
 
     @property
     def responses(self) -> Tuple[DesignVariable, ...]:
@@ -3496,6 +3533,7 @@ class Design:
         """Reset the status and feasibility, clear output values."""
         self.__status = DesignStatus.IDLE
         self.__feasibility = None
+        self.__pareto_design = None
         self.__reset_output_value(self.constraints)
         self.__reset_output_value(self.limit_states)
         self.__reset_output_value(self.objectives)
