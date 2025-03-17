@@ -1,9 +1,9 @@
 name: Integration Tests
 on:
   workflow_dispatch:
-  #pull_request:
-    #types:
-      #- closed
+  pull_request:
+    types:
+      - closed
 
 jobs:
   test-suite:
@@ -17,7 +17,7 @@ jobs:
           - 25.1.0
     name: "optiSLang ${{ matrix.osl_version }}"
     if: github.event.name != 'pull_request' || github.event.pull_request.merged == true
-    runs-on: public-ubuntu-latest-16-cores
+    runs-on: ubuntu-22.04
     container:
       image: ${{ format('ghcr.io/ansys/optislang:{0}-jammy', matrix.osl_version) }}
       credentials:
