@@ -40,7 +40,6 @@ intersphinx_mapping = {
     "numpy": ("https://numpy.org/devdocs", None),
     "matplotlib": ("https://matplotlib.org/stable", None),
     "imageio": ("https://imageio.readthedocs.io/en/stable", None),
-    "pandas": ("https://pandas.pydata.org/pandas-docs/stable", None),
     "pytest": ("https://docs.pytest.org/en/stable", None),
 }
 suppress_warnings = ["label.*", "config.cache"]

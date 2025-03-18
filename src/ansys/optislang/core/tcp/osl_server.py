@@ -57,6 +57,7 @@ from ansys.optislang.core.errors import (
 )
 from ansys.optislang.core.osl_process import OslServerProcess, ServerNotification
 from ansys.optislang.core.osl_server import OslServer, OslVersion
+from ansys.optislang.core.slot_types import SlotTypeHint
 from ansys.optislang.core.tcp import server_commands as commands
 from ansys.optislang.core.tcp import server_queries as queries
 
@@ -1421,7 +1422,12 @@ class TcpOslServer(OslServer):
         )
 
     def connect_nodes(
-        self, from_actor_uid: str, from_slot: str, to_actor_uid: str, to_slot: str
+        self,
+        from_actor_uid: str,
+        from_slot: str,
+        to_actor_uid: str,
+        to_slot: str,
+        skip_rename_slot: bool = False,
     ) -> None:
         """Connect nodes.
 
@@ -1435,6 +1441,11 @@ class TcpOslServer(OslServer):
             Uid of the receiving actor.
         to_slot : str
             Slot of the receiving actor.
+        skip_rename_slot: bool, optional
+            Skip automatic slot rename for untyped slots.
+            Defaults to False.
+
+            .. note:: Argument has effect for Ansys optiSLang version >= 25.2 only.
 
         Raises
         ------
@@ -1452,6 +1463,7 @@ class TcpOslServer(OslServer):
                 from_slot=from_slot,
                 to_actor_uid=to_actor_uid,
                 to_slot=to_slot,
+                skip_rename_slot=skip_rename_slot,
                 password=self.__password,
             ),
             timeout=self.timeouts_register.get_value(current_func_name),
@@ -1563,7 +1575,7 @@ class TcpOslServer(OslServer):
         return output[0].get("result_data", {}).get("actor_uid")
 
     def create_input_slot(
-        self, actor_uid: str, slot_name: str, type_hint: Optional[str] = None
+        self, actor_uid: str, slot_name: str, type_hint: Optional[SlotTypeHint] = None
     ) -> None:
         """Create dynamic input slot.
 
@@ -1573,9 +1585,8 @@ class TcpOslServer(OslServer):
             Uid of the actor.
         slot_name : str
             Name of the slot to be created.
-        type_hint: Optional[str], optional
-            Type of the slot. By default ``None``.
-
+        type_hint: Optional[SlotTypeHint], optional
+            Type hint for the slot. By default ``None``.
 
         Raises
         ------
@@ -1599,7 +1610,7 @@ class TcpOslServer(OslServer):
         )
 
     def create_output_slot(
-        self, actor_uid: str, slot_name: str, type_hint: Optional[str] = None
+        self, actor_uid: str, slot_name: str, type_hint: Optional[SlotTypeHint] = None
     ) -> None:
         """Create dynamic output slot.
 
@@ -1609,9 +1620,8 @@ class TcpOslServer(OslServer):
             Uid of the actor.
         slot_name : str
             Name of the slot to be created.
-        type_hint: Optional[str], optional
-            Type of the slot. By default ``None``.
-
+        type_hint: Optional[SlotTypeHint], optional
+            Type hint for the slot. By default ``None``.
 
         Raises
         ------
@@ -2532,7 +2542,9 @@ class TcpOslServer(OslServer):
             max_request_attempts=self.max_request_attempts_register.get_value(current_func_name),
         )
 
-    def get_input_slot_value(self, uid: str, hid: str, slot_name: str) -> Dict:
+    def get_input_slot_value(
+        self, uid: str, hid: str, slot_name: str, legacy_design_format: bool = False
+    ) -> Dict:
         """Get input slot value of actor defined by uid.
 
         Parameters
@@ -2543,6 +2555,11 @@ class TcpOslServer(OslServer):
             State/Design hierarchical id.
         slot_name: str
             Slot name.
+        legacy_design_format: bool, optional
+            Whether to use legacy format for designs and design container type slots.
+            Defaults to false.
+
+            .. note:: Argument has effect for Ansys optiSLang version >= 25.2 only.
 
         Returns
         -------
@@ -2561,13 +2578,19 @@ class TcpOslServer(OslServer):
         current_func_name = self.get_input_slot_value.__name__
         return self.send_command(
             command=queries.input_slot_value(
-                uid=uid, hid=hid, slot_name=slot_name, password=self.__password
+                uid=uid,
+                hid=hid,
+                slot_name=slot_name,
+                legacy_design_format=legacy_design_format,
+                password=self.__password,
             ),
             timeout=self.timeouts_register.get_value(current_func_name),
             max_request_attempts=self.max_request_attempts_register.get_value(current_func_name),
         )
 
-    def get_output_slot_value(self, uid: str, hid: str, slot_name: str) -> Dict:
+    def get_output_slot_value(
+        self, uid: str, hid: str, slot_name: str, legacy_design_format: bool = False
+    ) -> Dict:
         """Get output slot value of actor defined by uid.
 
         Parameters
@@ -2578,6 +2601,11 @@ class TcpOslServer(OslServer):
             State/Design hierarchical id.
         slot_name: str
             Slot name.
+        legacy_design_format: bool, optional
+            Whether to use legacy format for designs and design container type slots.
+            Defaults to false.
+
+            .. note:: Argument has effect for Ansys optiSLang version >= 25.2 only.
 
         Returns
         -------
@@ -2596,7 +2624,11 @@ class TcpOslServer(OslServer):
         current_func_name = self.get_output_slot_value.__name__
         return self.send_command(
             command=queries.output_slot_value(
-                uid=uid, hid=hid, slot_name=slot_name, password=self.__password
+                uid=uid,
+                hid=hid,
+                slot_name=slot_name,
+                legacy_design_format=legacy_design_format,
+                password=self.__password,
             ),
             timeout=self.timeouts_register.get_value(current_func_name),
             max_request_attempts=self.max_request_attempts_register.get_value(current_func_name),
@@ -3591,6 +3623,82 @@ class TcpOslServer(OslServer):
         current_func_name = self.remove_node.__name__
         self.send_command(
             command=commands.remove_node(actor_uid=actor_uid, password=self.__password),
+            timeout=self.timeouts_register.get_value(current_func_name),
+            max_request_attempts=self.max_request_attempts_register.get_value(current_func_name),
+        )
+
+    def rename_node(self, actor_uid: str, new_name: str) -> None:
+        """Rename node specified by uid.
+
+        .. note:: Method is supported for Ansys optiSLang version >= 25.2 only.
+
+        Parameters
+        ----------
+        actor_uid : str
+            Actor uid.
+        new_name: str
+            New node name.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        current_func_name = self.rename_node.__name__
+        self.send_command(
+            command=commands.rename_node(
+                actor_uid=actor_uid, new_name=new_name, password=self.__password
+            ),
+            timeout=self.timeouts_register.get_value(current_func_name),
+            max_request_attempts=self.max_request_attempts_register.get_value(current_func_name),
+        )
+
+    def rename_slot(
+        self,
+        actor_uid: str,
+        new_name: str,
+        slot_uid: Optional[str] = None,
+        slot_name: Optional[str] = None,
+    ) -> None:
+        """Rename node slot specified by uid or name.
+
+        .. note:: Method is supported for Ansys optiSLang version >= 25.2 only.
+
+        Parameters
+        ----------
+        actor_uid : str
+            Actor uid.
+        slot_uid: Optional[str], optional
+            UID of the slot to rename. Defaults to ``None``.
+            Either slot_uid or slot_name needs to be provided.
+        slot_name: Optional[str], optional
+            Name of the slot to rename. Defaults to ``None``.
+            Either slot_uid or slot_name needs to be provided.
+        new_name: str
+            New slot name.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        current_func_name = self.rename_slot.__name__
+        self.send_command(
+            command=commands.rename_slot(
+                actor_uid=actor_uid,
+                new_name=new_name,
+                slot_uid=slot_uid,
+                slot_name=slot_name,
+                password=self.__password,
+            ),
             timeout=self.timeouts_register.get_value(current_func_name),
             max_request_attempts=self.max_request_attempts_register.get_value(current_func_name),
         )
