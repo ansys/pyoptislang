@@ -26,6 +26,7 @@ import logging
 import os
 from pathlib import Path
 import subprocess
+import sys
 import tempfile
 from threading import Thread
 from typing import Callable, Dict, Iterable, List, Mapping, Optional, Tuple, Union
@@ -940,6 +941,8 @@ class OslServerProcess:
                 "start of the optiSLang process."
             )
 
+        creation_flags = subprocess.CREATE_NO_WINDOW if sys.platform == "win32" else 0
+
         self._logger.debug("Executing process %s", args)
         self.__process = subprocess.Popen(
             args,
@@ -948,6 +951,7 @@ class OslServerProcess:
             stderr=subprocess.PIPE,
             stdout=subprocess.PIPE,
             shell=False,
+            creationflags=creation_flags
         )
         self._logger.debug("optiSLang server process has started with PID: %d", self.__process.pid)
 
