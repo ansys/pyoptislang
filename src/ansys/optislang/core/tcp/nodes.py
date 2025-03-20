@@ -66,6 +66,7 @@ from ansys.optislang.core.project_parametric import (
     ObjectiveCriterion,
     VariableCriterion,
 )
+from ansys.optislang.core.slot_types import SlotTypeHint
 from ansys.optislang.core.tcp import server_commands as commands
 from ansys.optislang.core.tcp.managers import (
     TcpCriteriaManagerProxy,
@@ -74,6 +75,7 @@ from ansys.optislang.core.tcp.managers import (
     TcpResponseManagerProxy,
 )
 from ansys.optislang.core.tcp.osl_server import TcpOslServer
+from ansys.optislang.core.tcp.slot_types import SlotTypeHintTCP
 
 if TYPE_CHECKING:
     from ansys.optislang.core.project_parametric import Criterion
@@ -695,6 +697,80 @@ class TcpNodeProxy(Node):
         """
         self._osl_server.set_actor_property(actor_uid=self.uid, name=name, value=value)
 
+    def create_input_slot(self, slot_name: str, type_hint: Optional[SlotTypeHint] = None) -> None:
+        """Create dynamic input slot.
+
+        Parameters
+        ----------
+        slot_name : str
+            Name of the slot to be created. By default ``None``.
+        type_hint: Optional[SlotTypeHint], optional
+            Type hint for the slot. By default ``None``.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        self._osl_server.create_input_slot(
+            actor_uid=self.uid, slot_name=slot_name, type_hint=type_hint
+        )
+
+    def create_output_slot(self, slot_name: str, type_hint: Optional[SlotTypeHint] = None) -> None:
+        """Create dynamic output slot.
+
+        Parameters
+        ----------
+        slot_name : str
+            Name of the slot to be created.
+        type_hint: Optional[SlotTypeHint], optional
+            Type hint for the slot. By default ``None``.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        self._osl_server.create_output_slot(
+            actor_uid=self.uid, slot_name=slot_name, type_hint=type_hint
+        )
+
+    def set_name(self, new_name: str) -> None:
+        """Rename node.
+
+        .. note:: Method is supported for Ansys optiSLang version >= 25.2 only.
+
+        Parameters
+        ----------
+        new_name: str
+            New node name.
+
+        Raises
+        ------
+        NotImplementedError
+            Raised when unsupported optiSLang server is used.
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        if (
+            self._osl_server.osl_version.major == 25 and self._osl_server.osl_version.minor >= 2
+        ) or self._osl_server.osl_version.major > 25:
+            self._osl_server.rename_node(actor_uid=self.uid, new_name=new_name)
+        else:
+            raise NotImplementedError("Method is supported for Ansys optiSLang version >= 25.2.")
+
     def _filter_connections(
         self,
         connections: List[dict],
@@ -865,7 +941,7 @@ class TcpNodeProxy(Node):
                         node=self,
                         name=slot_dict["name"],
                         type_=SlotType.from_str(string=slot_type[0:-6]),
-                        type_hint=slot_dict["type"],
+                        type_hint=SlotTypeHintTCP.from_str(string=slot_dict["type"]).to_slot_type(),
                     )
                 )
         return tuple(slots_list)
@@ -2975,7 +3051,7 @@ class TcpSlotProxy(Slot):
         node: TcpNodeProxy,
         name: str,
         type_: SlotType,
-        type_hint: Optional[str] = None,
+        type_hint: Optional[SlotTypeHint] = None,
     ) -> None:
         """Create an ``TcpSlotProxy`` instance.
 
@@ -2989,8 +3065,8 @@ class TcpSlotProxy(Slot):
             Slot name.
         type_ : SlotType
             Slot type.
-        type_hint : Optional[str], optional
-            Data type of the slot, by default None.
+        type_hint : Optional[SlotTypeHint], optional
+            Type hint for the slot, by default None.
         """
         self._osl_server = osl_server
         self.__node = node
@@ -3000,6 +3076,8 @@ class TcpSlotProxy(Slot):
 
     def __str__(self):
         """Return formatted string."""
+        if self.type_hint is not None:
+            return f"Slot type: {self.type.name} Name: {self.name} Type hint: {self.type_hint.name}"
         return f"Slot type: {self.type.name} Name: {self.name}"
 
     @property
@@ -3012,6 +3090,42 @@ class TcpSlotProxy(Slot):
             Slot name.
         """
         return self.__name
+
+    @name.setter
+    def name(self, name: str) -> None:
+        """Set slot name.
+
+        .. note:: Setting slot names it only supported for dynamic slots.
+
+        .. note:: Method is supported for Ansys optiSLang version >= 25.2 only.
+
+        Parameters
+        ----------
+        name: str
+            Slot name.
+
+        Raises
+        ------
+        NotImplementedError
+            Raised when unsupported optiSLang server is used.
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        if (
+            self._osl_server.osl_version.major == 25 and self._osl_server.osl_version.minor >= 2
+        ) or self._osl_server.osl_version.major > 25:
+            self._osl_server.rename_slot(
+                actor_uid=self.__node.uid,
+                new_name=name,
+                slot_name=self.__name,
+            )
+            self.__name = name
+        else:
+            raise NotImplementedError("Method is supported for Ansys optiSLang version >= 25.2.")
 
     @property
     def node(self) -> TcpNodeProxy:
@@ -3036,13 +3150,13 @@ class TcpSlotProxy(Slot):
         return self.__type
 
     @property
-    def type_hint(self) -> Optional[str]:
+    def type_hint(self) -> Optional[SlotTypeHint]:
         """Get type hint.
 
         Returns
         -------
-        Optional[str]
-            Data type of the current slot, ``None`` if not specified.
+        Optional[SlotTypeHint]
+            Type hint for the current slot, ``None`` if not specified.
         """
         return self.__type_hint
 
@@ -3056,12 +3170,12 @@ class TcpSlotProxy(Slot):
         """
         return self.node.get_connections(slot_type=self.type, slot_name=self.name)
 
-    def get_type_hint(self) -> str:
+    def get_type_hint(self) -> SlotTypeHint:
         """Get slot's expected data type.
 
         Returns
         -------
-        str
+        SlotTypeHint
             Type hint.
 
         Raises
@@ -3078,7 +3192,7 @@ class TcpSlotProxy(Slot):
         slots_dict_list = info[key]
         for slot in slots_dict_list:
             if self.name == slot["name"]:
-                self.__type_hint = slot["type"]
+                self.__type_hint = SlotTypeHintTCP.from_str(string=slot["type"]).to_slot_type()
                 if self.__type_hint:
                     return self.__type_hint
         raise NameError(f"Current slot: ``{self.name}`` wasn't found in node: ``{self.node.uid}``.")
@@ -3089,7 +3203,7 @@ class TcpSlotProxy(Slot):
         node: TcpNodeProxy,
         name: str,
         type_: SlotType,
-        type_hint: Optional[str] = None,
+        type_hint: Optional[SlotTypeHint] = None,
     ) -> TcpSlotProxy:
         """Create instance of new slot.
 
@@ -3103,7 +3217,7 @@ class TcpSlotProxy(Slot):
             Slot name.
         type_ : SlotType
             Slot type.
-        type_hint : Optional[str], optional
+        type_hint : Optional[SlotTypeHint], optional
             Slot's expected data type, by default ``None``.
 
         Returns
@@ -3214,7 +3328,7 @@ class TcpInputSlotProxy(TcpSlotProxy, InputSlot):
         node: TcpNodeProxy,
         name: str,
         type_: SlotType,
-        type_hint: Optional[str] = None,
+        type_hint: Optional[SlotTypeHint] = None,
     ) -> None:
         """Create an ``TcpInputSlotProxy`` instance.
 
@@ -3228,8 +3342,8 @@ class TcpInputSlotProxy(TcpSlotProxy, InputSlot):
             Slot name.
         type_ : SlotType
             Slot type.
-        type_hint : Optional[str], optional
-            Data type of the slot, by default None.
+        type_hint : Optional[SlotTypeHint], optional
+            Type hint for the slot, by default None.
         """
         super().__init__(
             osl_server=osl_server,
@@ -3239,13 +3353,18 @@ class TcpInputSlotProxy(TcpSlotProxy, InputSlot):
             type_hint=type_hint,
         )
 
-    def connect_from(self, from_slot: TcpSlotProxy) -> Edge:
+    def connect_from(self, from_slot: TcpSlotProxy, skip_rename_slot: bool = False) -> Edge:
         """Connect slot from another slot.
 
         Parameters
         ----------
         from_slot: TcpSlotProxy
             Sending (output) slot.
+        skip_rename_slot: bool, optional
+            Skip automatic slot rename for untyped slots.
+            Defaults to False.
+
+            .. note:: Argument has effect for Ansys optiSLang version >= 25.2 only.
 
         Returns
         -------
@@ -3267,6 +3386,7 @@ class TcpInputSlotProxy(TcpSlotProxy, InputSlot):
                 from_slot=from_slot.name,
                 to_actor_uid=self.node.uid,
                 to_slot=self.name,
+                skip_rename_slot=skip_rename_slot,
             )
         else:
             python_script = self._create_connection_script(from_slot=from_slot, to_slot=self)
@@ -3320,7 +3440,7 @@ class TcpOutputSlotProxy(TcpSlotProxy, OutputSlot):
         node: TcpNodeProxy,
         name: str,
         type_: SlotType,
-        type_hint: Optional[str] = None,
+        type_hint: Optional[SlotTypeHint] = None,
     ) -> None:
         """Create an ``OutputSlotProxy`` instance.
 
@@ -3334,8 +3454,8 @@ class TcpOutputSlotProxy(TcpSlotProxy, OutputSlot):
             Slot name.
         type_ : SlotType
             Slot type.
-        type_hint : Optional[str], optional
-            Data type of the slot, by default None.
+        type_hint : Optional[SlotTypeHint], optional
+            Type hint for the slot, by default None.
         """
         super().__init__(
             osl_server=osl_server,
@@ -3345,13 +3465,18 @@ class TcpOutputSlotProxy(TcpSlotProxy, OutputSlot):
             type_hint=type_hint,
         )
 
-    def connect_to(self, to_slot: TcpSlotProxy) -> Edge:
+    def connect_to(self, to_slot: TcpSlotProxy, skip_rename_slot: bool = False) -> Edge:
         """Connect slot to another slot.
 
         Parameters
         ----------
         to_slot: TcpSlotProxy
             Receiving (input) slot
+        skip_rename_slot: bool, optional
+            Skip automatic slot rename for untyped slots.
+            Defaults to False.
+
+            .. note:: Argument has effect for Ansys optiSLang version >= 25.2 only.
 
         Returns
         -------
@@ -3373,6 +3498,7 @@ class TcpOutputSlotProxy(TcpSlotProxy, OutputSlot):
                 from_slot=self.name,
                 to_actor_uid=to_slot.node.uid,
                 to_slot=to_slot.name,
+                skip_rename_slot=skip_rename_slot,
             )
         else:
             python_script = self._create_connection_script(from_slot=self, to_slot=to_slot)
@@ -3426,7 +3552,7 @@ class TcpInnerInputSlotProxy(TcpSlotProxy, InnerInputSlot):
         node: TcpNodeProxy,
         name: str,
         type_: SlotType,
-        type_hint: Optional[str] = None,
+        type_hint: Optional[SlotTypeHint] = None,
     ) -> None:
         """Create a ``InnerInputSlotProxy`` instance.
 
@@ -3440,8 +3566,8 @@ class TcpInnerInputSlotProxy(TcpSlotProxy, InnerInputSlot):
             Slot name.
         type_ : SlotType
             Slot type.
-        type_hint : Optional[str], optional
-            Data type of the slot, by default None.
+        type_hint : Optional[SlotTypeHint], optional
+            Type hint for the slot, by default None.
         """
         super().__init__(
             osl_server=osl_server,
@@ -3451,13 +3577,18 @@ class TcpInnerInputSlotProxy(TcpSlotProxy, InnerInputSlot):
             type_hint=type_hint,
         )
 
-    def connect_from(self, from_slot: TcpSlotProxy) -> Edge:
+    def connect_from(self, from_slot: TcpSlotProxy, skip_rename_slot: bool = False) -> Edge:
         """Connect slot from another slot.
 
         Parameters
         ----------
         from_slot: TcpSlotProxy
             Sending (output) slot
+        skip_rename_slot: bool, optional
+            Skip automatic slot rename for untyped slots.
+            Defaults to False.
+
+            .. note:: Argument has effect for Ansys optiSLang version >= 25.2 only.
 
         Returns
         -------
@@ -3479,6 +3610,7 @@ class TcpInnerInputSlotProxy(TcpSlotProxy, InnerInputSlot):
                 from_slot=from_slot.name,
                 to_actor_uid=self.node.uid,
                 to_slot=self.name,
+                skip_rename_slot=skip_rename_slot,
             )
         else:
             python_script = self._create_connection_script(from_slot=from_slot, to_slot=self)
@@ -3532,7 +3664,7 @@ class TcpInnerOutputSlotProxy(TcpSlotProxy, InnerOutputSlot):
         node: TcpNodeProxy,
         name: str,
         type_: SlotType,
-        type_hint: Optional[str] = None,
+        type_hint: Optional[SlotTypeHint] = None,
     ) -> None:
         """Create a ``InnerOutputSlotProxy`` instance.
 
@@ -3546,8 +3678,8 @@ class TcpInnerOutputSlotProxy(TcpSlotProxy, InnerOutputSlot):
             Slot name.
         type_ : SlotType
             Slot type.
-        type_hint : Optional[str], optional
-            Data type of the slot, by default None.
+        type_hint : Optional[SlotTypeHint], optional
+            Type hint for the slot, by default None.
         """
         super().__init__(
             osl_server=osl_server,
@@ -3557,13 +3689,18 @@ class TcpInnerOutputSlotProxy(TcpSlotProxy, InnerOutputSlot):
             type_hint=type_hint,
         )
 
-    def connect_to(self, to_slot: TcpSlotProxy) -> Edge:
+    def connect_to(self, to_slot: TcpSlotProxy, skip_rename_slot: bool = False) -> Edge:
         """Connect slot to another slot.
 
         Parameters
         ----------
         to_slot: TcpSlotProxy
             Receiving (input) slot
+        skip_rename_slot: bool, optional
+            Skip automatic slot rename for untyped slots.
+            Defaults to False.
+
+            .. note:: Argument has effect for Ansys optiSLang version >= 25.2 only.
 
         Returns
         -------
@@ -3585,6 +3722,7 @@ class TcpInnerOutputSlotProxy(TcpSlotProxy, InnerOutputSlot):
                 from_slot=self.name,
                 to_actor_uid=to_slot.node.uid,
                 to_slot=to_slot.name,
+                skip_rename_slot=skip_rename_slot,
             )
         else:
             python_script = self._create_connection_script(from_slot=self, to_slot=to_slot)
