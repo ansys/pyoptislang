@@ -951,7 +951,7 @@ class OslServerProcess:
             stderr=subprocess.PIPE,
             stdout=subprocess.PIPE,
             shell=False,
-            creationflags=creation_flags
+            creationflags=creation_flags,
         )
         self._logger.debug("optiSLang server process has started with PID: %d", self.__process.pid)
 
