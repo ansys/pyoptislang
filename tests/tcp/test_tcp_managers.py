@@ -28,6 +28,7 @@ from ansys.optislang.core import Optislang
 from ansys.optislang.core.io import File
 from ansys.optislang.core.managers import DesignManager
 from ansys.optislang.core.nodes import ParametricSystem
+from ansys.optislang.core.osl_server import OslVersion
 from ansys.optislang.core.project_parametric import (
     ComparisonType,
     ConstraintCriterion,
@@ -388,6 +389,11 @@ def test_get_responses_names(optislang: Optislang):
 # region Designs
 def test_get_design_s(optislang: Optislang, tmp_example_project):
     """Test ``get_design`` and ``get_designs`` method."""
+
+    # NOTE Skipping because tcp query for result design has changed in 24R2
+    if optislang.osl_version < OslVersion(24, 2, 0, 0):
+        pytest.skip(f"Not compatible with {optislang.osl_version_string}")
+
     with Optislang(project_path=tmp_example_project("omdb_files")) as osl:
         project = osl.project
         root_system = project.root_system
