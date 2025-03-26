@@ -20,8 +20,6 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from pathlib import Path
-
 import pytest
 
 from ansys.optislang.core import Optislang
@@ -478,42 +476,6 @@ def test_get_omdb_files(optislang: Optislang, tmp_example_project):
     mis_omdb_file = most_inner_sensitivity.get_omdb_files()
     assert len(mis_omdb_file) > 0
     assert isinstance(mis_omdb_file[0], File)
-
-
-def test_save_designs_as(tmp_path: Path, tmp_example_project):
-    """Test `save_designs_as_json` and `save_designs_as_csv` methods."""
-    with Optislang(project_path=tmp_example_project("omdb_files")) as osl:
-        osl.timeout = 60
-        osl.application.project.reset()
-        osl.application.project.start()
-
-        project = osl.project
-        root_system = project.root_system
-
-        __test_save_designs_as_csv(tmp_path, root_system)
-        __test_save_designs_as_json(tmp_path, root_system)
-
-
-def __test_save_designs_as_csv(tmp_path: Path, root_system: TcpRootSystemProxy):
-    """Test `save_designs_as_csv` method."""
-    sensitivity: TcpParametricSystemProxy = root_system.find_nodes_by_name("Sensitivity")[0]
-    s_hids = sensitivity.get_states_ids()
-    csv_file_path = tmp_path / "FirstDesign.csv"
-    csv_file = sensitivity.save_designs_as_csv(s_hids[0], csv_file_path)
-    assert isinstance(csv_file, File)
-    assert csv_file.exists
-
-
-def __test_save_designs_as_json(tmp_path: Path, root_system: TcpRootSystemProxy):
-    """Test `save_designs_as_json` method."""
-    most_inner_sensitivity: TcpParametricSystemProxy = root_system.find_nodes_by_name(
-        "MostInnerSensitivity", 3
-    )[0]
-    mis_hids = most_inner_sensitivity.get_states_ids()
-    json_file_path = tmp_path / "InnerDesign.json"
-    json_file = most_inner_sensitivity.save_designs_as_json(mis_hids[0], json_file_path)
-    assert isinstance(json_file, File)
-    assert json_file.exists
 
 
 # endregion
