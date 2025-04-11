@@ -91,3 +91,7 @@ output = ".cov/coverage.xml"
 markers = [
     "local_osl: local optiSLang process is used",
 ]
+
+[tool.codespell]
+ignore-words = "doc/styles/config/vocabularies/ANSYS/accept.txt"
+skip = "./CONTRIBUTORS.md"
