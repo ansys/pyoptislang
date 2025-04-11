@@ -94,4 +94,4 @@ markers = [
 
 [tool.codespell]
 ignore-words = "doc/styles/config/vocabularies/ANSYS/accept.txt"
-skip = "./CONTRIBUTORS.md"
+skip = "CONTRIBUTORS.md"
