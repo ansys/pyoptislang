@@ -7,6 +7,7 @@
 ## Individual Contributors
 
 * [Damon](https://github.com/Damon-Ansys)
+* [ekrja](https://github.com/ekrja)
 * [Ismael Azehaf](https://github.com/iazehaf)
 * [Jakob Schneider](https://github.com/optislangdeveloper)
 * [Jonas Norlin](https://github.com/jonas-norlin)
@@ -14,8 +15,7 @@
 * [Kathy Pippert](https://github.com/PipKat)
 * [Markus Schubert](https://github.com/widerschein)
 * [Maxime Rey](https://github.com/MaxJPRey)
+* [mañana](https://github.com/benjaminbendig)
 * [PanekOndrej](https://github.com/PanekOndrej)
 * [Roberto Pastor Muela](https://github.com/RobPasMue)
 * [Shrikant Chaudhari](https://github.com/shrik6548)
-* [ekrja](https://github.com/ekrja)
-* [mañana](https://github.com/benjaminbendig)
