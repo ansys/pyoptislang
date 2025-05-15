@@ -15,6 +15,7 @@ jobs:
           - 24.1.0
           - 24.2.0
           - 25.1.0
+          - 25.2.0
     name: "optiSLang ${{ matrix.osl_version }}"
     if: github.event.name != 'pull_request' || github.event.pull_request.merged == true
     runs-on: ubuntu-22.04
