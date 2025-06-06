@@ -2140,7 +2140,7 @@ class TcpSystemProxy(TcpNodeProxy, System):
 
 # region ParametricSystems
 class TcpParametricSystemProxy(TcpSystemProxy, ParametricSystem):
-    """Provides for creating and operationg on parametric system."""
+    """Provides for creating and operating on parametric system."""
 
     def __init__(
         self,
