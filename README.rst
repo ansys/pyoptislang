@@ -39,13 +39,13 @@ PyOptiSLang is a Python wrapper for Ansys optiSLang. It supports Pythonic
 access to Ansys optiSLang to be able to communicate with Ansys optiSLang directly from Python.
 The latest ``ansys-optislang`` package provides these capabilities:
 
-- Starting and managing local instances of Ansys optiSLang
+- Start and manage local instances of Ansys optiSLang
 - Remote connections to Ansys optiSLang instances via TCP/IP
-- Create new Ansys optiSLang project
-- Open existing Ansys optiSLang project
+- Create new Ansys optiSLang projects
+- Open existing Ansys optiSLang projects
 - Control Ansys optiSLang project execution
-- Save Ansys optiSLang project
-- Execute classic Ansys optiSLang Python API script on backend side
+- Save Ansys optiSLang projects
+- Execute Ansys optiSLang Python API scripts on backend side
 - Evaluate designs on root project level
 - Create and connect nodes
 
