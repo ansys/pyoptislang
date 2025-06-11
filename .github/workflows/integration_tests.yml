@@ -33,5 +33,6 @@ jobs:
         with:
           use-uv: false
           python-version: "3.13"
+          pytest-postargs: ''
           pytest-extra-args: --local_osl -k 'not test_run_python_script_example and not test_evaluate_design_01_ten_bar_truss'
           use-python-cache: false
