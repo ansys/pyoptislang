@@ -68,7 +68,7 @@ jobs:
 
     steps:
       - name: "Run pytest with desired markers and extra arguments"
-        uses: ansys/actions/tests-pytest@v10
+        uses: ansys/actions/tests-pytest@fix/variable-resolution
         with:
           python-version: ${{ matrix.python-version }}
           pytest-extra-args: ${{ env.PYTEST_EXTRA_ARGS }}
