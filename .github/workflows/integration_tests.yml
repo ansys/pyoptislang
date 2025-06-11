@@ -29,8 +29,8 @@ jobs:
         env:
           PYOPTISLANG_DISABLE_OPTISLANG_OUTPUT: true
           ANSYSLMD_LICENSE_FILE: ${{ format('1055@{0}', secrets.LICENSE_SERVER) }}
-        uses: ansys/actions/tests-pytest@v10
+        uses: ansys/actions/tests-pytest@test/pytest-args
         with:
           python-version: "3.13"
-          pytest-extra-args: "--local_osl -k 'not examples.py'"
+          pytest-extra-args: '--local_osl -k "not examples.py"'
           use-python-cache: false
