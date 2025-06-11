@@ -31,6 +31,7 @@ jobs:
           ANSYSLMD_LICENSE_FILE: ${{ format('1055@{0}', secrets.LICENSE_SERVER) }}
         uses: ansys/actions/tests-pytest@fix/variable-resolution
         with:
+          use-uv: false
           python-version: "3.13"
           pytest-extra-args: --local_osl -k 'not test_run_python_script_example and not test_evaluate_design_01_ten_bar_truss'
           use-python-cache: false
