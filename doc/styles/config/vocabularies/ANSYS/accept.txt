@@ -9,3 +9,4 @@ Pythonic
 Ansys
 design_flow
 integration_plugins
+THIRDPARTY
