@@ -55,6 +55,7 @@ from ansys.optislang.core.errors import (
     OslServerStartError,
     ResponseFormatError,
 )
+from ansys.optislang.core.node_types import AddinType, NodeType
 from ansys.optislang.core.osl_process import OslServerProcess, ServerNotification
 from ansys.optislang.core.osl_server import OslServer, OslVersion
 from ansys.optislang.core.slot_types import SlotTypeHint
@@ -2128,6 +2129,9 @@ class TcpOslServer(OslServer):
             max_request_attempts=self.max_request_attempts_register.get_value(current_func_name),
         )["available_input_locations"]
 
+    @deprecated(
+        version="1.1.0", reason="Use :py:attr:`TcpOslServer.get_available_node_types` instead."
+    )
     def get_available_nodes(self) -> Dict[str, List[str]]:
         """Get available node types for current oSL server.
 
@@ -2154,6 +2158,85 @@ class TcpOslServer(OslServer):
         available_nodes.pop("message")
         available_nodes.pop("status")
         return available_nodes
+
+    def get_available_node_types(self) -> List[NodeType]:
+        """Get available node types for current oSL server.
+
+        Returns
+        -------
+        List[NodeType]
+            Available nodes types
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        current_func_name = self.get_available_nodes.__name__
+        available_nodes = self.send_command(
+            command=queries.available_nodes(self.__password),
+            timeout=self.timeouts_register.get_value(current_func_name),
+            max_request_attempts=self.max_request_attempts_register.get_value(current_func_name),
+        )
+        available_nodes.pop("message")
+        available_nodes.pop("status")
+        node_types: List[NodeType] = []
+        for node_sub_type, node_type_list in available_nodes.items():
+            for node_type in node_type_list:
+                if node_sub_type == "algorithm_plugins":
+                    node_types.append(
+                        NodeType(
+                            id=node_type,
+                            subtype=AddinType.ALGORITHM_PLUGIN,
+                        )
+                    )
+                elif node_sub_type == "builtin_nodes":
+                    node_types.append(
+                        NodeType(
+                            id=node_type,
+                            subtype=AddinType.BUILT_IN,
+                        )
+                    )
+                elif node_sub_type == "integration_plugins":
+                    node_types.append(
+                        NodeType(
+                            id=node_type,
+                            subtype=AddinType.INTEGRATION_PLUGIN,
+                        )
+                    )
+                elif node_sub_type == "python_based_algorithm_plugins":
+                    node_types.append(
+                        NodeType(
+                            id=node_type,
+                            subtype=AddinType.PYTHON_BASED_ALGORITHM_PLUGIN,
+                        )
+                    )
+                elif node_sub_type == "python_based_integration_plugins":
+                    node_types.append(
+                        NodeType(
+                            id=node_type,
+                            subtype=AddinType.PYTHON_BASED_INTEGRATION_PLUGIN,
+                        )
+                    )
+                elif node_sub_type == "python_based_mop_node_plugins":
+                    node_types.append(
+                        NodeType(
+                            id=node_type,
+                            subtype=AddinType.PYTHON_BASED_MOP_NODE_PLUGIN,
+                        )
+                    )
+                elif node_sub_type == "python_based_node_plugins":
+                    node_types.append(
+                        NodeType(
+                            id=node_type,
+                            subtype=AddinType.PYTHON_BASED_NODE_PLUGIN,
+                        )
+                    )
+        return node_types
 
     def get_available_output_locations(self, uid: str) -> List[dict]:
         """Get available output locations for a certain (integration) actor, if supported.
