@@ -2176,7 +2176,7 @@ class TcpOslServer(OslServer):
         TimeoutError
             Raised when the timeout float value expires.
         """
-        current_func_name = self.get_available_nodes.__name__
+        current_func_name = self.get_available_node_types.__name__
         available_nodes = self.send_command(
             command=queries.available_nodes(self.__password),
             timeout=self.timeouts_register.get_value(current_func_name),
