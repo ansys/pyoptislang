@@ -140,6 +140,9 @@ class OslServerProcess:
         Multiple remote listeners (plain TCP/IP based) to be registered at optiSLang server.
         Each listener is a combination of host, port and (optionally) listener ID.
         Defaults to ``None``.
+    listeners_default_timeout : Optional[int], optional
+        Default timeout for TCP listeners in milliseconds. Defaults to ``None`` which results in
+        optiSLang using the default timeout value of 60000 milliseconds.
     notifications : Optional[Iterable[ServerNotification]], optional
         Notifications to be sent to the listener. Defaults to ``None``.
     shutdown_on_finished: bool, optional
@@ -232,6 +235,7 @@ class OslServerProcess:
         listener: Optional[Tuple[str, int]] = None,
         listener_id: Optional[str] = None,
         multi_listener: Optional[Iterable[Tuple[str, int, Optional[str]]]] = None,
+        listeners_default_timeout: Optional[int] = None,
         notifications: Optional[Iterable[ServerNotification]] = None,
         shutdown_on_finished: bool = True,
         env_vars: Optional[Mapping[str, str]] = None,
@@ -302,6 +306,7 @@ class OslServerProcess:
         self.__listener = listener
         self.__listener_id = listener_id
         self.__multi_listener = multi_listener
+        self.__listeners_default_timeout = listeners_default_timeout
         self.__notifications = tuple(notifications) if notifications is not None else None
         self.__shutdown_on_finished = shutdown_on_finished
         self.__env_vars = dict(env_vars) if env_vars is not None else None
@@ -477,7 +482,7 @@ class OslServerProcess:
     def multi_listener(self) -> Optional[Iterable[Tuple[str, int, Optional[str]]]]:
         """Multi remote listener definitions.
 
-        Aeach listener (plain TCP/IP based) is registered at optiSLang server.
+        Each listener (plain TCP/IP based) is registered at optiSLang server.
 
         Returns
         -------
@@ -803,6 +808,10 @@ class OslServerProcess:
                     args.append(f"{listener[0]}:{listener[1]}+{listener[2]}")
                 else:
                     args.append(f"{listener[0]}:{listener[1]}")
+
+        if self.__listeners_default_timeout is not None:
+            args.append("--listener-timeout")
+            args.append(str(self.__listeners_default_timeout))
 
         if self.__notifications is not None:
             # Subscribe to push notifications sent to the listener.
