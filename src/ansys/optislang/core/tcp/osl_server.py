@@ -1278,7 +1278,6 @@ class TcpOslServer(OslServer):
                 for k, v in {
                     "timeout": self.__listeners_default_timeout,
                     "notifications": listener.notifications,
-                    "explicit_listener_id": None,
                 }.items()
                 if v is not None
             }
@@ -4669,7 +4668,6 @@ class TcpOslServer(OslServer):
             for k, v in {
                 "timeout": self.__listeners_default_timeout,
                 "notifications": exec_started_listener.notifications,
-                "explicit_listener_id": None,
             }.items()
             if v is not None
         }
@@ -4717,7 +4715,6 @@ class TcpOslServer(OslServer):
             for k, v in {
                 "timeout": self.__listeners_default_timeout,
                 "notifications": exec_finished_listener.notifications,
-                "explicit_listener_id": None,
             }.items()
             if v is not None
         }

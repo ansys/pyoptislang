@@ -143,6 +143,9 @@ class OslServerProcess:
     listeners_default_timeout : Optional[int], optional
         Default timeout for TCP listeners in milliseconds. Defaults to ``None`` which results in
         optiSLang using the default timeout value of 60000 milliseconds.
+
+        .. note:: Argument is supported for Ansys optiSLang version >= 25.2 only.
+
     notifications : Optional[Iterable[ServerNotification]], optional
         Notifications to be sent to the listener. Defaults to ``None``.
     shutdown_on_finished: bool, optional
