@@ -32,6 +32,7 @@ import uuid
 import pytest
 
 from ansys.optislang.core import OslServerProcess, errors
+from ansys.optislang.core.node_types import NodeType
 from ansys.optislang.core.osl_server import OslVersion
 import ansys.optislang.core.tcp.osl_server as tos
 
@@ -681,6 +682,17 @@ def test_get_available_nodes(osl_server_process: OslServerProcess):
     builtins = available_nodes["builtin_nodes"]
     assert len(builtins) > 0
     assert isinstance(builtins[0], str)
+    tcp_osl_server.shutdown()
+    tcp_osl_server.dispose()
+
+
+def test_get_available_node_types(osl_server_process: OslServerProcess):
+    """Test ``get_available_nodes`` query."""
+    tcp_osl_server = create_tcp_osl_server(osl_server_process)
+    available_nodes = tcp_osl_server.get_available_node_types()
+    assert len(available_nodes) > 0
+    available_node = next(iter(available_nodes))
+    assert isinstance(available_node, NodeType)
     tcp_osl_server.shutdown()
     tcp_osl_server.dispose()
 
