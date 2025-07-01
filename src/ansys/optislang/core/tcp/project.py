@@ -209,7 +209,7 @@ class TcpProjectProxy(Project):
         TimeoutError
             Raised when the timeout float value expires.
         """
-        return self.__osl_server.get_available_nodes()
+        return self.__osl_server.get_available_node_types()
 
     def get_description(self) -> str:
         """Get the description of the optiSLang project.
