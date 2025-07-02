@@ -674,7 +674,8 @@ def test_get_available_locations(tmp_example_project):
 def test_get_available_nodes(osl_server_process: OslServerProcess):
     """Test ``get_available_nodes`` query."""
     tcp_osl_server = create_tcp_osl_server(osl_server_process)
-    available_nodes = tcp_osl_server.get_available_nodes()
+    with pytest.deprecated_call():
+        available_nodes = tcp_osl_server.get_available_nodes()
     assert len(available_nodes) > 0
     key, value = next(iter(available_nodes.items()))
     assert isinstance(key, str)

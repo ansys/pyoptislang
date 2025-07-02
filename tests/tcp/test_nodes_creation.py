@@ -54,15 +54,16 @@ def test_all_nodes_creation(optislang: Optislang):
     rs = optislang.application.project.root_system
     rs.delete_children_nodes()
 
-    for node_group in optislang.osl_server.get_available_nodes().values():
-        if node_group == "builtin_nodes" or node_group == "integration_plugins":
-            for node in node_group:
-                print(f"Creating node {node}")
-                node = rs.create_node(type_=node_types.get_node_type_from_str(node))
-                nodes_in_rs = rs.get_nodes()
-                assert node.uid == nodes_in_rs[0].uid
-                assert node.type == nodes_in_rs[0].type
-                node.delete()
+    with pytest.deprecated_call():
+        for node_group in optislang.osl_server.get_available_nodes().values():
+            if node_group == "builtin_nodes" or node_group == "integration_plugins":
+                for node in node_group:
+                    print(f"Creating node {node}")
+                    node = rs.create_node(type_=node_types.get_node_type_from_str(node))
+                    nodes_in_rs = rs.get_nodes()
+                    assert node.uid == nodes_in_rs[0].uid
+                    assert node.type == nodes_in_rs[0].type
+                    node.delete()
 
 
 def test_create_node_in_system(optislang: Optislang):
