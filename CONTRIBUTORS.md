@@ -16,6 +16,7 @@
 * [Markus Schubert](https://github.com/widerschein)
 * [Maxime Rey](https://github.com/MaxJPRey)
 * [mañana](https://github.com/benjaminbendig)
+* [Ondrej Panek](https://github.com/OndrejPanek-ext)
 * [PanekOndrej](https://github.com/PanekOndrej)
 * [Roberto Pastor Muela](https://github.com/RobPasMue)
 * [Shrikant Chaudhari](https://github.com/shrik6548)
