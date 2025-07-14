@@ -301,10 +301,10 @@ class TcpDesignManagerProxy(DesignManager):
     def _get_status_info(
         self,
         hid: str,
-        include_designs: bool = True,
-        include_design_values: Optional[bool] = True,
-        include_non_scalar_design_values: Optional[bool] = False,
-        include_algorithm_info: Optional[bool] = False,
+        include_designs: bool,
+        include_design_values: bool,
+        include_non_scalar_design_values: bool,
+        include_algorithm_info: bool,
     ) -> Dict:
         """Get status info about actor defined by actor uid and state hid.
 
@@ -312,14 +312,14 @@ class TcpDesignManagerProxy(DesignManager):
         ----------
         hid : str
             State/Design hierarchical id.
-        include_designs : bool, optional
-           Include (result) designs in status info response. By default ``True``.
-        include_design_values : Optional[bool], optional
-            Include values in (result) designs. By default ``True``.
-        include_non_scalar_design_values : Optional[bool], optional
-            Include non scalar values in (result) designs. By default ``False``.
-        include_algorithm_info : Optional[bool], optional
-            Include algorithm result info in status info response, by default ``False``.
+        include_designs : bool
+           Include (result) designs in status info response.
+        include_design_values : bool
+            Include values in (result) designs.
+        include_non_scalar_design_values : bool
+            Include non scalar values in (result) designs.
+        include_algorithm_info : bool
+            Include algorithm result info in status info response.
 
         Returns
         -------
