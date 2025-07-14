@@ -25,7 +25,7 @@ from __future__ import annotations
 
 from copy import copy
 import logging
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING, Optional, cast
 
 if TYPE_CHECKING:
     from ansys.optislang.core import Optislang
@@ -147,7 +147,14 @@ class OslLogger:
         logging.logger
             Logger instance.
         """
-        new_logger = logging.getLogger(new_logger_name)
+
+        class BaseLogger(logging.Logger):
+            # TODO Added preliminarily to silence type errors
+            std_out_handler: logging.StreamHandler | None
+            file_handler: logging.FileHandler | None
+
+        new_logger = cast(BaseLogger, logging.getLogger(new_logger_name))
+
         new_logger.std_out_handler = None
         new_logger.file_handler = None
 
