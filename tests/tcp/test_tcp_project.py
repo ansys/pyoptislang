@@ -58,8 +58,12 @@ def test_project_queries(optislang: Optislang, tmp_example_project):
     project: TcpProjectProxy = optislang.project
     assert project is not None
 
-    available_nodes = project.get_available_nodes()
+    with pytest.deprecated_call():
+        available_nodes = project.get_available_nodes()
     assert isinstance(available_nodes, dict)
+
+    available_node_types = project.get_available_node_types()
+    assert isinstance(available_node_types, list)
 
     description = project.get_description()
     assert isinstance(description, str)

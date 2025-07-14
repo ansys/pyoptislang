@@ -27,7 +27,10 @@ import logging
 from pathlib import Path
 from typing import TYPE_CHECKING, Dict, List, Optional, Sequence, Tuple, Union
 
+from deprecated.sphinx import deprecated
+
 from ansys.optislang.core.io import RegisteredFile, RegisteredFileUsage
+from ansys.optislang.core.node_types import NodeType
 from ansys.optislang.core.project import Project
 from ansys.optislang.core.tcp.nodes import TcpRootSystemProxy
 
@@ -167,6 +170,9 @@ class TcpProjectProxy(Project):
         """
         return self.root_system.evaluate_design(design=design)
 
+    @deprecated(
+        version="1.1.0", reason="Use :py:attr:`TcpProjectProxy.get_available_node_types` instead."
+    )
     def get_available_nodes(self) -> Dict[str, List[str]]:
         """Get raw dictionary of available nodes sorted by subtypes.
 
@@ -185,6 +191,25 @@ class TcpProjectProxy(Project):
             Raised when the timeout float value expires.
         """
         return self.__osl_server.get_available_nodes()
+
+    def get_available_node_types(self) -> List[NodeType]:
+        """Get raw dictionary of available node types sorted by subtypes.
+
+        Returns
+        -------
+        List[NodeType]
+            Available nodes types
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        return self.__osl_server.get_available_node_types()
 
     def get_description(self) -> str:
         """Get the description of the optiSLang project.

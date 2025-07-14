@@ -809,7 +809,7 @@ def register_listener(
         IP of the TCP listener, by default ``None``.
     port: Optional[int], optional
         Port of the TCP listener, by default ``None``.
-    time_out: Optional[int], optional
+    timeout: Optional[int], optional
         Unregister policy timeout in ms, default 60000 ms, by default ``None``.
     notifications: Optional[Sequence], optional
         Notifications, by default ``None``.

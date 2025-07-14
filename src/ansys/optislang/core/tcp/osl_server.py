@@ -55,6 +55,7 @@ from ansys.optislang.core.errors import (
     OslServerStartError,
     ResponseFormatError,
 )
+from ansys.optislang.core.node_types import AddinType, NodeType
 from ansys.optislang.core.osl_process import OslServerProcess, ServerNotification
 from ansys.optislang.core.osl_server import OslServer, OslVersion
 from ansys.optislang.core.slot_types import SlotTypeHint
@@ -1074,8 +1075,9 @@ class TcpOslServer(OslServer):
         Defaults to ``None``.
     listeners_refresh_interval : int, optional
         Refresh interval for TCP listeners in seconds. Defaults to 10 s.
-    listeners_default_timeout : int, optional
-        Default timeout for TCP listeners in milliseconds. Defaults to 60000 ms.
+    listeners_default_timeout : Optional[int], optional
+        Default timeout for TCP listeners in milliseconds. Defaults to ``None`` which results in
+        optiSLang using the default timeout value of 60000 milliseconds.
     ini_timeout : float, optional
         Time in seconds to listen to the optiSLang server port. If the port is not listened
         for specified time, the optiSLang server is not started and RuntimeError is raised.
@@ -1192,7 +1194,7 @@ class TcpOslServer(OslServer):
         listener_id: Optional[str] = None,
         multi_listener: Optional[Iterable[Tuple[str, int, Optional[str]]]] = None,
         listeners_refresh_interval: int = 10,
-        listeners_default_timeout: int = 60000,
+        listeners_default_timeout: Optional[int] = None,
         ini_timeout: float = 60,
         password: Optional[str] = None,
         logger: Optional[Any] = None,
@@ -1272,11 +1274,18 @@ class TcpOslServer(OslServer):
                     ServerNotification.SERVER_DOWN,
                 ],
             )
+            register_listener_options = {
+                k: v
+                for k, v in {
+                    "timeout": self.__listeners_default_timeout,
+                    "notifications": listener.notifications,
+                }.items()
+                if v is not None
+            }
             listener.uid = self.__register_listener(
                 host_addresses=listener.host_addresses,
                 port=listener.port,
-                timeout=self.__listeners_default_timeout,
-                notifications=listener.notifications,
+                **register_listener_options,
             )
             listener.refresh_listener_registration = True
             self.__listeners["main_listener"] = listener
@@ -2128,6 +2137,9 @@ class TcpOslServer(OslServer):
             max_request_attempts=self.max_request_attempts_register.get_value(current_func_name),
         )["available_input_locations"]
 
+    @deprecated(
+        version="1.1.0", reason="Use :py:attr:`TcpOslServer.get_available_node_types` instead."
+    )
     def get_available_nodes(self) -> Dict[str, List[str]]:
         """Get available node types for current oSL server.
 
@@ -2154,6 +2166,85 @@ class TcpOslServer(OslServer):
         available_nodes.pop("message")
         available_nodes.pop("status")
         return available_nodes
+
+    def get_available_node_types(self) -> List[NodeType]:
+        """Get available node types for current oSL server.
+
+        Returns
+        -------
+        List[NodeType]
+            Available nodes types
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        current_func_name = self.get_available_node_types.__name__
+        available_nodes = self.send_command(
+            command=queries.available_nodes(self.__password),
+            timeout=self.timeouts_register.get_value(current_func_name),
+            max_request_attempts=self.max_request_attempts_register.get_value(current_func_name),
+        )
+        available_nodes.pop("message")
+        available_nodes.pop("status")
+        node_types: List[NodeType] = []
+        for node_sub_type, node_type_list in available_nodes.items():
+            for node_type in node_type_list:
+                if node_sub_type == "algorithm_plugins":
+                    node_types.append(
+                        NodeType(
+                            id=node_type,
+                            subtype=AddinType.ALGORITHM_PLUGIN,
+                        )
+                    )
+                elif node_sub_type == "builtin_nodes":
+                    node_types.append(
+                        NodeType(
+                            id=node_type,
+                            subtype=AddinType.BUILT_IN,
+                        )
+                    )
+                elif node_sub_type == "integration_plugins":
+                    node_types.append(
+                        NodeType(
+                            id=node_type,
+                            subtype=AddinType.INTEGRATION_PLUGIN,
+                        )
+                    )
+                elif node_sub_type == "python_based_algorithm_plugins":
+                    node_types.append(
+                        NodeType(
+                            id=node_type,
+                            subtype=AddinType.PYTHON_BASED_ALGORITHM_PLUGIN,
+                        )
+                    )
+                elif node_sub_type == "python_based_integration_plugins":
+                    node_types.append(
+                        NodeType(
+                            id=node_type,
+                            subtype=AddinType.PYTHON_BASED_INTEGRATION_PLUGIN,
+                        )
+                    )
+                elif node_sub_type == "python_based_mop_node_plugins":
+                    node_types.append(
+                        NodeType(
+                            id=node_type,
+                            subtype=AddinType.PYTHON_BASED_MOP_NODE_PLUGIN,
+                        )
+                    )
+                elif node_sub_type == "python_based_node_plugins":
+                    node_types.append(
+                        NodeType(
+                            id=node_type,
+                            subtype=AddinType.PYTHON_BASED_NODE_PLUGIN,
+                        )
+                    )
+        return node_types
 
     def get_available_output_locations(self, uid: str) -> List[dict]:
         """Get available output locations for a certain (integration) actor, if supported.
@@ -4500,6 +4591,7 @@ class TcpOslServer(OslServer):
                 no_save=self.__no_save,
                 password=self.__password,
                 multi_listener=multi_listener,
+                listeners_default_timeout=self.__listeners_default_timeout,
                 notifications=[
                     ServerNotification.SERVER_UP,
                     ServerNotification.SERVER_DOWN,
@@ -4654,11 +4746,18 @@ class TcpOslServer(OslServer):
                 ServerNotification.CHECK_FAILED,
             ],
         )
+        register_listener_options = {
+            k: v
+            for k, v in {
+                "timeout": self.__listeners_default_timeout,
+                "notifications": exec_started_listener.notifications,
+            }.items()
+            if v is not None
+        }
         exec_started_listener.uid = self.__register_listener(
             host_addresses=exec_started_listener.host_addresses,
             port=exec_started_listener.port,
-            timeout=self.__listeners_default_timeout,
-            notifications=exec_started_listener.notifications,
+            **register_listener_options,
         )
         exec_started_listener.refresh_listener_registration = True
         self.__listeners["exec_started_listener"] = exec_started_listener
@@ -4694,11 +4793,18 @@ class TcpOslServer(OslServer):
                 ServerNotification.CHECK_FAILED,
             ],
         )
+        register_listener_options = {
+            k: v
+            for k, v in {
+                "timeout": self.__listeners_default_timeout,
+                "notifications": exec_finished_listener.notifications,
+            }.items()
+            if v is not None
+        }
         exec_finished_listener.uid = self.__register_listener(
             host_addresses=exec_finished_listener.host_addresses,
             port=exec_finished_listener.port,
-            timeout=self.__listeners_default_timeout,
-            notifications=exec_finished_listener.notifications,
+            **register_listener_options,
         )
         exec_finished_listener.refresh_listener_registration = True
         self.__listeners["exec_finished_listener"] = exec_finished_listener
@@ -4866,12 +4972,19 @@ class TcpOslServer(OslServer):
                                 self._logger.debug("Re-register listener: %s", listener.uid)
                                 try:
                                     # re-register the listener
+                                    register_listener_options = {
+                                        k: v
+                                        for k, v in {
+                                            "timeout": self.__listeners_default_timeout,
+                                            "notifications": listener.notifications,
+                                            "explicit_listener_id": listener.uid,
+                                        }.items()
+                                        if v is not None
+                                    }
                                     listener.uid = self.__register_listener(
                                         host_addresses=listener.host_addresses,
                                         port=listener.port,
-                                        timeout=self.__listeners_default_timeout,
-                                        explicit_listener_id=listener.uid,
-                                        notifications=listener.notifications,
+                                        **register_listener_options,
                                     )
                                 except Exception as e:
                                     self._logger.debug(

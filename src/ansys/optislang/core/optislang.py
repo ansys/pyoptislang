@@ -124,6 +124,11 @@ class Optislang:
         Multiple remote listeners (plain TCP/IP based) to be registered at optiSLang server.
         Each listener is a combination of host, port and (optionally) listener ID.
         Defaults to ``None``.
+    listeners_refresh_interval : int, optional
+        Refresh interval for TCP listeners in seconds. Defaults to 10 s.
+    listeners_default_timeout : Optional[int], optional
+        Default timeout for TCP listeners in milliseconds. Defaults to ``None`` which results in
+        optiSLang using the default timeout value of 60000 milliseconds.
     ini_timeout : float, optional
         Time in seconds to connect to the optiSLang server. The default is ``60``.
     name : Optional[str], optional
@@ -225,6 +230,8 @@ class Optislang:
         auto_relocate: bool = False,
         listener_id: Optional[str] = None,
         multi_listener: Optional[Iterable[Tuple[str, int, Optional[str]]]] = None,
+        listeners_refresh_interval: int = 10,
+        listeners_default_timeout: Optional[int] = None,
         ini_timeout: Union[int, float] = 60,
         name: Optional[str] = None,
         password: Optional[str] = None,
@@ -260,6 +267,8 @@ class Optislang:
         self.__env_vars = env_vars
         self.__listener_id = listener_id
         self.__multi_listener = multi_listener
+        self.__listeners_refresh_interval = listeners_refresh_interval
+        self.__listeners_default_timeout = listeners_default_timeout
         self.__import_project_properties_file = import_project_properties_file
         self.__export_project_properties_file = export_project_properties_file
         self.__import_placeholders_file = import_placeholders_file
@@ -323,6 +332,8 @@ class Optislang:
                 opx_project_definition_file=self.__opx_project_definition_file,
                 listener_id=self.__listener_id,
                 multi_listener=self.__multi_listener,
+                listeners_refresh_interval=self.__listeners_refresh_interval,
+                listeners_default_timeout=self.__listeners_default_timeout,
                 additional_args=self.__additional_args,
             )
         else:
