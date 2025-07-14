@@ -953,7 +953,9 @@ class OslServerProcess:
                 "start of the optiSLang process."
             )
 
-        creation_flags = subprocess.CREATE_NO_WINDOW if sys.platform == "win32" else 0
+        creation_flags = (
+            subprocess.CREATE_NO_WINDOW if sys.platform == "win32" else 0  #  type: ignore
+        )
 
         self._logger.debug("Executing process %s", args)
         self.__process = subprocess.Popen(
@@ -1023,7 +1025,7 @@ class OslServerProcess:
 
         return self.__process.poll() is None
 
-    def wait_for_finished(self, timeout: float = None) -> Optional[int]:
+    def wait_for_finished(self, timeout: Optional[float] = None) -> Optional[int]:
         """Wait for the process to finish.
 
         Parameters
