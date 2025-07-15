@@ -531,7 +531,7 @@ class Criterion:
         if not isinstance(expression, str):
             raise TypeError(f"Type `str` was expected, but type: `{type(expression)}` was given.")
         self.__expression = expression
-        self.expression_value = None
+        self.expression_value = None  # type: ignore[assignment]
         self.value = None
 
     @property
@@ -1096,7 +1096,7 @@ class ConstraintCriterion(Criterion):
                 f"Type `str` was expected, but type: `{type(limit_expression)}` was given."
             )
         self.__limit_expression = limit_expression
-        self.limit_expression_value = None
+        self.limit_expression_value = None  # type: ignore[assignment]
         self.value = None
 
     @property
@@ -1296,7 +1296,7 @@ class LimitStateCriterion(Criterion):
                 f"Type `str` was expected, but type: `{type(limit_expression)}` was given."
             )
         self.__limit_expression = limit_expression
-        self.limit_expression_value = None
+        self.limit_expression_value = None  # type: ignore[assignment]
         self.value = None
 
     @property
@@ -2268,7 +2268,7 @@ class MixedParameter(Parameter):
         """Reference value of the parameter."""
         return self.__reference_value
 
-    @reference_value.setter
+    @reference_value.setter  # type: ignore[override]
     def reference_value(
         self,
         reference_value: float,
@@ -2851,7 +2851,7 @@ class StochasticParameter(Parameter):
         """Reference value of the parameter."""
         return self.__reference_value
 
-    @reference_value.setter
+    @reference_value.setter  # type: ignore[override]
     def reference_value(
         self,
         reference_value: float,
