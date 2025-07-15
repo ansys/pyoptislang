@@ -391,8 +391,9 @@ class TcpDesignManagerProxy(DesignManager):
             Tuple of designs for a given state.
         """
         design_classes = []
+        assert hid is not None
         status_info = self._get_status_info(
-            hid=hid,  # type: ignore[arg-type]
+            hid=hid,
             include_designs=True,
             include_design_values=include_design_values,
             include_non_scalar_design_values=include_design_values

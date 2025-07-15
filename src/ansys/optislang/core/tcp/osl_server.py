@@ -980,8 +980,9 @@ class TcpOslListener:
         while True:
             client = None
             try:
-                self.__listener_socket.settimeout(timeout)  # type: ignore[union-attr]
-                clientsocket, address = self.__listener_socket.accept()  # type: ignore[union-attr]
+                assert self.__listener_socket is not None
+                self.__listener_socket.settimeout(timeout)
+                clientsocket, address = self.__listener_socket.accept()
                 client = TcpClient(clientsocket)
                 message = client.receive_msg(timeout)
                 data_dict = json.loads(message)
@@ -1266,7 +1267,7 @@ class TcpOslServer(OslServer):
             self.__shutdown_on_finished = shutdown_on_finished
             self._start_local(ini_timeout, shutdown_on_finished)
         else:
-            self.__shutdown_on_finished = None  # type: ignore[assignment]
+            self.__shutdown_on_finished = False
             listener = self.__create_listener(
                 timeout=None,  # type:ignore[arg-type]
                 name="Main",
@@ -1419,13 +1420,15 @@ class TcpOslServer(OslServer):
             Raised when the timeout float value expires.
         """
         current_func_name = self.add_criterion.__name__
+
+        assert limit is not None
         self.send_command(
             command=commands.add_criterion(
                 actor_uid=uid,
                 criterion_type=criterion_type,
                 expression=expression,
                 name=name,
-                limit=limit,  # type: ignore[arg-type]
+                limit=limit,
                 password=self.__password,
             ),
             timeout=self.timeouts_register.get_value(current_func_name),
@@ -1566,7 +1569,7 @@ class TcpOslServer(OslServer):
             Raised when the timeout float value expires.
         """
         current_func_name = self.create_node.__name__
-        output: List[dict] = self.send_command(  # type: ignore[assignment]
+        output = self.send_command(
             commands.create_node(
                 type_=type_,
                 name=name,
@@ -3150,7 +3153,7 @@ class TcpOslServer(OslServer):
             ":py:class:`Project <ansys.optislang.core.project.Project>`."
         ),
     )
-    def get_working_dir(self) -> Path:
+    def get_working_dir(self) -> Optional[Path]:
         """Get path to the optiSLang project working directory.
 
         Returns
@@ -3170,7 +3173,7 @@ class TcpOslServer(OslServer):
         """
         project_info = self.get_basic_project_info()
         if len(project_info.get("projects", [])) == 0:
-            return None  # type: ignore[return-value]
+            return None
         return Path(project_info.get("projects", [{}])[0].get("working_dir", None))
 
     def load(self, uid: str, args: Optional[Dict[str, Any]] = None) -> None:
@@ -4056,7 +4059,8 @@ class TcpOslServer(OslServer):
 
         response_str = ""
 
-        for request_attempt in range(1, max_request_attempts + 1):  # type: ignore[operator]
+        assert isinstance(max_request_attempts, int)
+        for request_attempt in range(1, max_request_attempts + 1):
             start_time = time.time()
             try:
                 client.connect(
@@ -4959,9 +4963,10 @@ class TcpOslServer(OslServer):
                             self._logger.debug(
                                 "Refreshing registration for listener: %s", listener.uid
                             )
+                            assert listener.uid is not None
                             self.send_command(
                                 commands.refresh_listener_registration(
-                                    uid=listener.uid,  # type: ignore[arg-type]
+                                    uid=listener.uid,
                                     password=self.__password,
                                 ),
                                 timeout=self.timeouts_register.get_value(current_func_name),
