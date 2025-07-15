@@ -373,7 +373,7 @@ class TcpDesignManagerProxy(DesignManager):
         hid: Optional[str] = None,
         include_design_values=True,
         include_non_scalar_design_values=False,
-    ) -> Tuple[Design]:
+    ) -> Tuple[Design, ...]:
         """Get designs for a given state.
 
         Parameters
@@ -392,7 +392,7 @@ class TcpDesignManagerProxy(DesignManager):
         """
         design_classes = []
         status_info = self._get_status_info(
-            hid=hid,
+            hid=hid,  # type: ignore[arg-type]
             include_designs=True,
             include_design_values=include_design_values,
             include_non_scalar_design_values=include_design_values
@@ -604,7 +604,7 @@ class TcpDesignManagerProxy(DesignManager):
         status: Optional[DesignStatus] = None,
         pareto_design: Optional[bool] = None,
         feasible: Optional[bool] = None,
-    ) -> Tuple[Design]:
+    ) -> Tuple[Design, ...]:
         """Filter designs by given parameters.
 
         Parameters
@@ -635,10 +635,10 @@ class TcpDesignManagerProxy(DesignManager):
             ]
             return all(conditions)
 
-        return tuple([design for design in filter(filter_condition, designs)])
+        return tuple(design for design in filter(filter_condition, designs))
 
     @staticmethod
-    def sort_designs_by_hid(designs: Iterable[Design]) -> Tuple[Design]:
+    def sort_designs_by_hid(designs: Iterable[Design]) -> Tuple[Design, ...]:
         """Sort designs by hierarchical id.
 
         Parameters
@@ -652,7 +652,10 @@ class TcpDesignManagerProxy(DesignManager):
             Tuple of sorted designs.
         """
         sorted_designs = sorted(
-            designs, key=lambda design: [int(part) for part in design.id.split(".")]
+            designs,
+            key=lambda design: [
+                int(part) for part in design.id.split(".")  # type: ignore[union-attr]
+            ],
         )
         return tuple(sorted_designs)
 

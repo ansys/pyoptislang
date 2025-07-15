@@ -1110,7 +1110,7 @@ def get_node_type_from_str(node_id: str) -> NodeType:
         for custom in customs.keys():
             if node_id.startswith(custom):
                 id_ = node_id.replace(custom, "")
-                subtype = customs[custom]  # type: ignore
+                subtype = customs[custom]  # type: ignore[assignment]
                 was_found = True
                 break
         if not was_found:

@@ -824,6 +824,8 @@ class TcpOslListener:
     @property
     def port(self) -> int:
         """Port number associated with self.__listener_socket."""
+        if self.__listener_socket is None:
+            raise ConnectionNotEstablishedError("Socket not set.")
         return self.__listener_socket.getsockname()[1]
 
     @property
@@ -978,8 +980,8 @@ class TcpOslListener:
         while True:
             client = None
             try:
-                self.__listener_socket.settimeout(timeout)
-                clientsocket, address = self.__listener_socket.accept()
+                self.__listener_socket.settimeout(timeout)  # type: ignore[union-attr]
+                clientsocket, address = self.__listener_socket.accept()  # type: ignore[union-attr]
                 client = TcpClient(clientsocket)
                 message = client.receive_msg(timeout)
                 data_dict = json.loads(message)
@@ -1264,9 +1266,9 @@ class TcpOslServer(OslServer):
             self.__shutdown_on_finished = shutdown_on_finished
             self._start_local(ini_timeout, shutdown_on_finished)
         else:
-            self.__shutdown_on_finished = None
+            self.__shutdown_on_finished = None  # type: ignore[assignment]
             listener = self.__create_listener(
-                timeout=None,
+                timeout=None,  # type:ignore[arg-type]
                 name="Main",
                 uid=self.__listener_id,
                 notifications=[
@@ -1285,7 +1287,7 @@ class TcpOslServer(OslServer):
             listener.uid = self.__register_listener(
                 host_addresses=listener.host_addresses,
                 port=listener.port,
-                **register_listener_options,
+                **register_listener_options,  # type: ignore[arg-type]
             )
             listener.refresh_listener_registration = True
             self.__listeners["main_listener"] = listener
@@ -1423,7 +1425,7 @@ class TcpOslServer(OslServer):
                 criterion_type=criterion_type,
                 expression=expression,
                 name=name,
-                limit=limit,
+                limit=limit,  # type: ignore[arg-type]
                 password=self.__password,
             ),
             timeout=self.timeouts_register.get_value(current_func_name),
@@ -1564,7 +1566,7 @@ class TcpOslServer(OslServer):
             Raised when the timeout float value expires.
         """
         current_func_name = self.create_node.__name__
-        output: List[dict] = self.send_command(
+        output: List[dict] = self.send_command(  # type: ignore[assignment]
             commands.create_node(
                 type_=type_,
                 name=name,
@@ -1729,7 +1731,7 @@ class TcpOslServer(OslServer):
             Raised when the timeout float value expires.
         """
         current_func_name = self.evaluate_design.__name__
-        return self.send_command(
+        return self.send_command(  # type: ignore[return-value]
             command=commands.evaluate_design(evaluate_dict, self.__password),
             timeout=self.timeouts_register.get_value(current_func_name),
             max_request_attempts=self.max_request_attempts_register.get_value(current_func_name),
@@ -3168,7 +3170,7 @@ class TcpOslServer(OslServer):
         """
         project_info = self.get_basic_project_info()
         if len(project_info.get("projects", [])) == 0:
-            return None
+            return None  # type: ignore[return-value]
         return Path(project_info.get("projects", [{}])[0].get("working_dir", None))
 
     def load(self, uid: str, args: Optional[Dict[str, Any]] = None) -> None:
@@ -3852,7 +3854,11 @@ class TcpOslServer(OslServer):
         """
         current_func_name = self.run_python_script.__name__
         responses = self.send_command(
-            command=commands.run_python_script(script, args, self.__password),
+            command=commands.run_python_script(
+                script,
+                args,  # type: ignore[arg-type]
+                self.__password,
+            ),
             timeout=self.timeouts_register.get_value(current_func_name),
             max_request_attempts=self.max_request_attempts_register.get_value(current_func_name),
         )
@@ -4050,7 +4056,7 @@ class TcpOslServer(OslServer):
 
         response_str = ""
 
-        for request_attempt in range(1, max_request_attempts + 1):
+        for request_attempt in range(1, max_request_attempts + 1):  # type: ignore[operator]
             start_time = time.time()
             try:
                 client.connect(
@@ -4565,7 +4571,7 @@ class TcpOslServer(OslServer):
 
         listener = self.__create_listener(
             uid=self.__listener_id if self.__listener_id else str(uuid.uuid4()),
-            timeout=None,
+            timeout=None,  # type: ignore[arg-type]
             name="Main",
             notifications=[
                 ServerNotification.SERVER_UP,
@@ -4737,7 +4743,7 @@ class TcpOslServer(OslServer):
             Raised when the timeout float value expires.
         """
         exec_started_listener = self.__create_listener(
-            timeout=timeout,
+            timeout=timeout,  # type: ignore[arg-type]
             name="ExecStarted",
             notifications=[
                 ServerNotification.PROCESSING_STARTED,
@@ -4757,7 +4763,7 @@ class TcpOslServer(OslServer):
         exec_started_listener.uid = self.__register_listener(
             host_addresses=exec_started_listener.host_addresses,
             port=exec_started_listener.port,
-            **register_listener_options,
+            **register_listener_options,  # type: ignore[arg-type]
         )
         exec_started_listener.refresh_listener_registration = True
         self.__listeners["exec_started_listener"] = exec_started_listener
@@ -4784,7 +4790,7 @@ class TcpOslServer(OslServer):
             Raised when the timeout float value expires.
         """
         exec_finished_listener = self.__create_listener(
-            timeout=timeout,
+            timeout=timeout,  # type: ignore[arg-type]
             name="ExecFinished",
             notifications=[
                 ServerNotification.EXECUTION_FINISHED,
@@ -4804,7 +4810,7 @@ class TcpOslServer(OslServer):
         exec_finished_listener.uid = self.__register_listener(
             host_addresses=exec_finished_listener.host_addresses,
             port=exec_finished_listener.port,
-            **register_listener_options,
+            **register_listener_options,  # type: ignore[arg-type]
         )
         exec_finished_listener.refresh_listener_registration = True
         self.__listeners["exec_finished_listener"] = exec_finished_listener
@@ -4955,7 +4961,8 @@ class TcpOslServer(OslServer):
                             )
                             self.send_command(
                                 commands.refresh_listener_registration(
-                                    uid=listener.uid, password=self.__password
+                                    uid=listener.uid,  # type: ignore[arg-type]
+                                    password=self.__password,
                                 ),
                                 timeout=self.timeouts_register.get_value(current_func_name),
                                 max_request_attempts=self.max_request_attempts_register.get_value(
@@ -4984,7 +4991,7 @@ class TcpOslServer(OslServer):
                                     listener.uid = self.__register_listener(
                                         host_addresses=listener.host_addresses,
                                         port=listener.port,
-                                        **register_listener_options,
+                                        **register_listener_options,  # type: ignore[arg-type]
                                     )
                                 except Exception as e:
                                     self._logger.debug(

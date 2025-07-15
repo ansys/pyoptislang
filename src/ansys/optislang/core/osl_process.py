@@ -36,7 +36,7 @@ import psutil
 from ansys.optislang.core import encoding, utils
 
 if utils.is_iron_python():
-    import System  # type: ignore
+    import System  # type: ignore[import-not-found]
 
 
 class ServerNotification(Enum):
@@ -923,10 +923,10 @@ class OslServerProcess:
         start_info.Arguments = " ".join(args)
 
         self.__process = System.Diagnostics.Process()
-        self.__process.StartInfo = start_info  # type: ignore
+        self.__process.StartInfo = start_info  # type: ignore[union-attr]
 
         self._logger.debug("Executing process %s", args)
-        self.__process.Start()  # type: ignore
+        self.__process.Start()  # type: ignore[union-attr]
 
     def __start_in_python(self, args: List[str], env_vars: Dict[str, str]):
         """Start new optiSLang server process with Python interpreter.
@@ -954,7 +954,9 @@ class OslServerProcess:
             )
 
         creation_flags = (
-            subprocess.CREATE_NO_WINDOW if sys.platform == "win32" else 0  #  type: ignore
+            subprocess.CREATE_NO_WINDOW  #  type: ignore[attr-defined]
+            if sys.platform == "win32"
+            else 0
         )
 
         self._logger.debug("Executing process %s", args)
