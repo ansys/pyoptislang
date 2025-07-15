@@ -28,6 +28,27 @@ jobs:
         with:
           python-version: ${{ env.MAIN_PYTHON_VERSION }}
 
+  typing:
+    name: "Type check"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.MAIN_PYTHON_VERSION }}
+      - shell: bash
+        name: "Setup environment"
+        run: |
+          python -m venv venv
+          . ./venv/bin/activate
+          python -m pip install mypy .[typing]
+      - shell: bash
+        name: "Run mypy"
+        run: |
+          . ./venv/bin/activate
+          python -m mypy src
+
+
   doc-style:
     name: "Doc style check"
     runs-on: ubuntu-latest
