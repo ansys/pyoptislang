@@ -1264,10 +1264,8 @@ class TcpOslServer(OslServer):
 
         if self.__host is None or self.__port is None:
             self.__host = self._LOCALHOST
-            self.__shutdown_on_finished = shutdown_on_finished
             self._start_local(ini_timeout, shutdown_on_finished)
         else:
-            self.__shutdown_on_finished = False
             listener = self.__create_listener(
                 timeout=None,  # type:ignore[arg-type]
                 name="Main",
