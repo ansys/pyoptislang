@@ -104,7 +104,7 @@ class TcpCriteriaManagerProxy(CriteriaManager):
                 limit=(
                     criterion.limit_expression
                     if isinstance(criterion, (ConstraintCriterion, LimitStateCriterion))
-                    else None
+                    else ""
                 ),
             )
 
