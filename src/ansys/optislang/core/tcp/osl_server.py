@@ -1397,7 +1397,7 @@ class TcpOslServer(OslServer):
         return self.__timeouts_register
 
     def add_criterion(
-        self, uid: str, criterion_type: str, expression: str, name: str, limit: Optional[str] = None
+        self, uid: str, criterion_type: str, expression: str, name: str, limit: str = ""
     ) -> None:
         """Create criterion for the system.
 
@@ -1411,8 +1411,8 @@ class TcpOslServer(OslServer):
             Expression to be evaluated.
         name: str
             Criterion name.
-        limit: Optional[str], optional
-            Limit expression to be evaluated.
+        limit: str
+            Limit expression to be evaluated. Empty string by default.
 
         Raises
         ------
@@ -1421,7 +1421,6 @@ class TcpOslServer(OslServer):
         """
         current_func_name = self.add_criterion.__name__
 
-        assert limit is not None
         self.send_command(
             command=commands.add_criterion(
                 actor_uid=uid,
@@ -3830,7 +3829,7 @@ class TcpOslServer(OslServer):
     def run_python_script(
         self,
         script: str,
-        args: Union[Sequence[object], None] = None,
+        args: Optional[Sequence[object]] = None,
     ) -> Tuple[str, str]:
         """Load a Python script in a project context and execute it.
 
