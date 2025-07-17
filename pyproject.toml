@@ -54,6 +54,11 @@ build = [
     "build>=0.8.0",
     "twine>=4.0.1",
 ]
+typing = [
+    "mypy==1.17.0",
+    "types-Deprecated",
+    "types-psutil"
+]
 
 [tool.flit.module]
 name = "ansys.optislang.core"
@@ -94,3 +99,8 @@ markers = [
 [tool.codespell]
 ignore-words = "doc/styles/config/vocabularies/ANSYS/accept.txt"
 skip = "CONTRIBUTORS.md"
+
+[tool.mypy]
+mypy_path = "$MYPY_CONFIG_FILE_DIR/src"
+explicit_package_bases = true
+exclude = ["00_run_script"]

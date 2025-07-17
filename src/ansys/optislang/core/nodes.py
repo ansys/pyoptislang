@@ -1500,7 +1500,7 @@ class ParametricSystem(System):
         pass
 
     @abstractmethod
-    def get_omdb_files(self) -> Tuple[File]:  # pragma: no cover
+    def get_omdb_files(self) -> Tuple[File, ...]:  # pragma: no cover
         """Get paths to omdb files.
 
         Returns
