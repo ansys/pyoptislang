@@ -41,7 +41,7 @@ jobs:
         run: |
           python -m venv venv
           . ./venv/bin/activate
-          python -m pip install mypy .[typing]
+          python -m pip install .[typing]
       - shell: bash
         name: "Run mypy"
         run: |
