@@ -73,6 +73,7 @@ jobs:
           library-name: ${{ env.PACKAGE_NAME }}
           operating-system: ${{ matrix.os }}
           python-version: ${{ matrix.python-version }}
+          check-licenses: ${{ matrix.python-version != '3.9' }}
 
   tests:
     name: "Test ${{ matrix.os }} using Python ${{ matrix.python-version }}"
