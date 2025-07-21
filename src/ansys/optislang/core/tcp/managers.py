@@ -387,7 +387,7 @@ class TcpDesignManagerProxy(DesignManager):
 
         Returns
         -------
-        Tuple[Design]
+        Tuple[Design, ...]
             Tuple of designs for a given state.
         """
         design_classes = []
@@ -522,7 +522,9 @@ class TcpDesignManagerProxy(DesignManager):
         """
         return self.__save_designs_as(hid, file_path, FileOutputFormat.CSV)
 
-    def __save_designs_as(self, hid: str, file_path: Union[Path, str], format: FileOutputFormat):
+    def __save_designs_as(
+        self, hid: str, file_path: Union[Path, str], format: FileOutputFormat
+    ) -> File:
         """Save designs for a given state.
 
         Parameters
@@ -623,7 +625,7 @@ class TcpDesignManagerProxy(DesignManager):
 
         Returns
         -------
-        Tuple[Design]
+        Tuple[Design, ...]
             Tuple of filtered designs
         """
 
@@ -649,7 +651,7 @@ class TcpDesignManagerProxy(DesignManager):
 
         Returns
         -------
-        Tuple[Design]
+        Tuple[Design, ...]
             Tuple of sorted designs.
         """
         sorted_designs = sorted(

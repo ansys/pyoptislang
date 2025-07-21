@@ -220,17 +220,16 @@ class SlotType(Enum):
 
     @staticmethod
     def to_dir_str(type_: SlotType) -> str:
-        """Convert string to an instance of the ``SlotType`` class.
+        """Convert an instance of the ``SlotType`` class to string.
 
         Parameters
         ----------
-        string: str
-            String to be converted.
-
+        type_: SlotType
+            Instance of the ``SlotType`` class.
         Returns
         -------
-        SlotType
-            Instance of the ``SlotType`` class.
+        str
+            String representation of the slot type.
 
         Raises
         ------
@@ -1225,7 +1224,7 @@ class ProxySolverNode(IntegrationNode):
 
         Parameters
         ----------
-        Any
+        designs : Any
             Calculated designs.
 
         Raises
@@ -1263,8 +1262,8 @@ class System(Node):
             Type of created node.
         name : Optional[str], optional
             Name of created node, by default None.
-        design_flow : Optional[DesignFlow], optional
-            Design flow, by default None.
+        design_flow : DesignFlow, default: DesignFlow.NONE
+            Design flow.
 
         Returns
         -------
@@ -1485,7 +1484,7 @@ class ParametricSystem(System):
 
         Returns
         -------
-        Tuple[InnerOutpuSlot, ...]
+        Tuple[InnerOutputSlot, ...]
             Tuple of current node's inner output slots optionally filtered by name.
 
         Raises
@@ -1738,7 +1737,7 @@ class RootSystem(ParametricSystem):
 
         Parameters
         ----------
-        design: TcpDesign
+        design: Design
             Instance of the ``Design`` class with defined parameters.
 
         Returns
@@ -1765,7 +1764,7 @@ class RootSystem(ParametricSystem):
 
         Parameters
         ----------
-        design: TcpDesign
+        design: Design
             Instance of the ``Design`` class with defined parameters.
 
         Returns

@@ -708,7 +708,7 @@ class TcpOslListener:
             when started locally, by default ``None``.
         logger: Optional[Any], optional
             Preferably OslLogger should be given. If not given, default logging.Logger is used.
-        notifications: Optional[Iterable[ServerNotification]], optional
+        notifications: Optional[List[ServerNotification]], optional
             Notifications to subscribe to.
             Either ["ALL"] or Sequence picked from below options:
             Server: [ "SERVER_UP", "SERVER_DOWN" ] (always be sent by default).
@@ -745,7 +745,7 @@ class TcpOslListener:
 
     def __init__(
         self,
-        port_range: Tuple,
+        port_range: Tuple[int, int],
         timeout: float,
         name: str,
         host: Optional[str] = None,
@@ -1311,7 +1311,7 @@ class TcpOslServer(OslServer):
 
         Returns
         -------
-        timeout: Optional[int]
+        Optional[int]
             The IPv4/v6 address or domain name of the running optiSLang server, if applicable.
             Defaults to ``None``.
         """
@@ -1354,7 +1354,7 @@ class TcpOslServer(OslServer):
 
         Returns
         -------
-        timeout: Optional[int]
+        Optional[int]
             The port the osl server is listening on, if applicable.
             Defaults to ``None``.
         """
@@ -1366,7 +1366,7 @@ class TcpOslServer(OslServer):
 
         Returns
         -------
-        timeout: Optional[float]
+        Optional[float]
             Timeout in seconds to perform commands.
         """
         return self.timeouts_register.default_value
@@ -2600,7 +2600,7 @@ class TcpOslServer(OslServer):
 
         Returns
         -------
-        timeout: Optional[str]
+        Optional[str]
             The IPv4/v6 address or domain name of the running optiSLang server, if applicable.
             Defaults to ``None``.
         """
@@ -2776,7 +2776,7 @@ class TcpOslServer(OslServer):
 
         Returns
         -------
-        timeout: Optional[int]
+        Optional[int]
             The port the osl server is listening on, if applicable.
             Defaults to ``None``.
         """
@@ -2907,7 +2907,7 @@ class TcpOslServer(OslServer):
             ":py:class:`Project <ansys.optislang.core.project.Project>`."
         ),
     )
-    def get_project_uid(self) -> str:
+    def get_project_uid(self) -> Optional[str]:
         """Get project uid.
 
         Returns
@@ -2925,8 +2925,7 @@ class TcpOslServer(OslServer):
             Raised when the timeout float value expires.
         """
         project_tree = self.get_full_project_tree_with_properties()
-        project_uid = project_tree.get("projects", [{}])[0].get("system", {}).get("uid", None)
-        return project_uid
+        return project_tree.get("projects", [{}])[0].get("system", {}).get("uid", None)
 
     def get_project_tree_systems(self) -> Dict:
         """Get project tree systems without properties.
@@ -3155,7 +3154,7 @@ class TcpOslServer(OslServer):
 
         Returns
         -------
-        pathlib.Path
+        Optional[pathlib.Path]
             Path to the optiSLang project working directory. If no project is loaded
             in the optiSLang, returns ``None``.
 
@@ -4684,7 +4683,7 @@ class TcpOslServer(OslServer):
             Timeout.
         Uid: Optional[str], optional
             Listener uid. Defaults to ``None``.
-        notifications: Optional[Iterable[ServerNotification]], optional
+        notifications: Optional[List[ServerNotification]], optional
             Notifications to subscribe to.
             Either ["ALL"] or Sequence picked from below options:
             Server: [ "SERVER_UP", "SERVER_DOWN" ] (always be sent by default).
@@ -4883,7 +4882,7 @@ class TcpOslServer(OslServer):
         explicit_listener_id: Optional[str], optional
             Explicitly requested listener ID.
             Defaults to ``None``.
-        notifications: Optional[Iterable[ServerNotification]], optional
+        notifications: Optional[List[ServerNotification]], optional
             Notifications to subscribe to.
             Either ["ALL"] or Sequence picked from below options:
             Server: [ "SERVER_UP", "SERVER_DOWN" ] (always be sent by default).
