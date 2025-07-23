@@ -1017,8 +1017,8 @@ class TcpNodeProxy(Node):
 
         Returns
         -------
-        str
-            Unique ID of the parent node.
+        List[dict]
+            The ancestor line.
 
         Raises
         ------

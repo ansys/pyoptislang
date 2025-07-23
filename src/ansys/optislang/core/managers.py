@@ -246,7 +246,7 @@ class DesignManager:
 
         Returns
         -------
-        Tuple[Design]
+        Tuple[Design, ...]
             Tuple of designs for a given state.
         """
         pass
@@ -347,7 +347,7 @@ class DesignManager:
 
         Returns
         -------
-        Tuple[Design]
+        Tuple[Design, ...]
             Tuple of filtered designs
         """
         pass
@@ -364,7 +364,7 @@ class DesignManager:
 
         Returns
         -------
-        Tuple[Design]
+        Tuple[Design, ...]
             Tuple of sorted designs.
         """
         pass

@@ -211,7 +211,7 @@ class TcpProjectProxy(Project):
         """
         return self.__osl_server.get_available_node_types()
 
-    def get_description(self) -> str:
+    def get_description(self) -> Optional[str]:
         """Get the description of the optiSLang project.
 
         Returns
@@ -256,7 +256,7 @@ class TcpProjectProxy(Project):
         project_path = project_info.get("projects", [{}])[0].get("location", None)
         return None if not project_path else Path(project_path)
 
-    def get_name(self) -> str:
+    def get_name(self) -> Optional[str]:
         """Get the name of the optiSLang project.
 
         Returns
@@ -351,7 +351,7 @@ class TcpProjectProxy(Project):
             [file for file in registered_files if file.usage == RegisteredFileUsage.OUTPUT_FILE]
         )
 
-    def get_status(self) -> str:
+    def get_status(self) -> Optional[str]:
         """Get the status of the optiSLang project.
 
         Returns
