@@ -72,7 +72,7 @@ class OslServer(ABC):
 
         Returns
         -------
-        host: Optional[int]
+        host: Optional[str]
             The IPv4/v6 address or domain name of the running optiSLang server, if applicable.
             Defaults to ``None``.
         """

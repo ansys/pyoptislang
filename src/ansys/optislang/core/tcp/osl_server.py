@@ -708,7 +708,7 @@ class TcpOslListener:
             when started locally, by default ``None``.
         logger: Optional[Any], optional
             Preferably OslLogger should be given. If not given, default logging.Logger is used.
-        notifications: Optional[Iterable[ServerNotification]], optional
+        notifications: Optional[List[ServerNotification]], optional
             Notifications to subscribe to.
             Either ["ALL"] or Sequence picked from below options:
             Server: [ "SERVER_UP", "SERVER_DOWN" ] (always be sent by default).
@@ -745,7 +745,7 @@ class TcpOslListener:
 
     def __init__(
         self,
-        port_range: Tuple,
+        port_range: Tuple[int, int],
         timeout: float,
         name: str,
         host: Optional[str] = None,
@@ -824,6 +824,8 @@ class TcpOslListener:
     @property
     def port(self) -> int:
         """Port number associated with self.__listener_socket."""
+        if self.__listener_socket is None:
+            raise ConnectionNotEstablishedError("Socket not set.")
         return self.__listener_socket.getsockname()[1]
 
     @property
@@ -978,6 +980,7 @@ class TcpOslListener:
         while True:
             client = None
             try:
+                assert self.__listener_socket is not None
                 self.__listener_socket.settimeout(timeout)
                 clientsocket, address = self.__listener_socket.accept()
                 client = TcpClient(clientsocket)
@@ -1261,12 +1264,10 @@ class TcpOslServer(OslServer):
 
         if self.__host is None or self.__port is None:
             self.__host = self._LOCALHOST
-            self.__shutdown_on_finished = shutdown_on_finished
             self._start_local(ini_timeout, shutdown_on_finished)
         else:
-            self.__shutdown_on_finished = None
             listener = self.__create_listener(
-                timeout=None,
+                timeout=None,  # type:ignore[arg-type]
                 name="Main",
                 uid=self.__listener_id,
                 notifications=[
@@ -1285,7 +1286,7 @@ class TcpOslServer(OslServer):
             listener.uid = self.__register_listener(
                 host_addresses=listener.host_addresses,
                 port=listener.port,
-                **register_listener_options,
+                **register_listener_options,  # type: ignore[arg-type]
             )
             listener.refresh_listener_registration = True
             self.__listeners["main_listener"] = listener
@@ -1310,7 +1311,7 @@ class TcpOslServer(OslServer):
 
         Returns
         -------
-        timeout: Optional[int]
+        Optional[int]
             The IPv4/v6 address or domain name of the running optiSLang server, if applicable.
             Defaults to ``None``.
         """
@@ -1353,7 +1354,7 @@ class TcpOslServer(OslServer):
 
         Returns
         -------
-        timeout: Optional[int]
+        Optional[int]
             The port the osl server is listening on, if applicable.
             Defaults to ``None``.
         """
@@ -1365,7 +1366,7 @@ class TcpOslServer(OslServer):
 
         Returns
         -------
-        timeout: Optional[float]
+        Optional[float]
             Timeout in seconds to perform commands.
         """
         return self.timeouts_register.default_value
@@ -1394,7 +1395,7 @@ class TcpOslServer(OslServer):
         return self.__timeouts_register
 
     def add_criterion(
-        self, uid: str, criterion_type: str, expression: str, name: str, limit: Optional[str] = None
+        self, uid: str, criterion_type: str, expression: str, name: str, limit: str = ""
     ) -> None:
         """Create criterion for the system.
 
@@ -1408,8 +1409,8 @@ class TcpOslServer(OslServer):
             Expression to be evaluated.
         name: str
             Criterion name.
-        limit: Optional[str], optional
-            Limit expression to be evaluated.
+        limit: str
+            Limit expression to be evaluated. Empty string by default.
 
         Raises
         ------
@@ -1417,6 +1418,7 @@ class TcpOslServer(OslServer):
             Raised when the timeout float value expires.
         """
         current_func_name = self.add_criterion.__name__
+
         self.send_command(
             command=commands.add_criterion(
                 actor_uid=uid,
@@ -1564,7 +1566,7 @@ class TcpOslServer(OslServer):
             Raised when the timeout float value expires.
         """
         current_func_name = self.create_node.__name__
-        output: List[dict] = self.send_command(
+        output = self.send_command(
             commands.create_node(
                 type_=type_,
                 name=name,
@@ -1729,7 +1731,7 @@ class TcpOslServer(OslServer):
             Raised when the timeout float value expires.
         """
         current_func_name = self.evaluate_design.__name__
-        return self.send_command(
+        return self.send_command(  # type: ignore[return-value]
             command=commands.evaluate_design(evaluate_dict, self.__password),
             timeout=self.timeouts_register.get_value(current_func_name),
             max_request_attempts=self.max_request_attempts_register.get_value(current_func_name),
@@ -2598,7 +2600,7 @@ class TcpOslServer(OslServer):
 
         Returns
         -------
-        timeout: Optional[str]
+        Optional[str]
             The IPv4/v6 address or domain name of the running optiSLang server, if applicable.
             Defaults to ``None``.
         """
@@ -2774,7 +2776,7 @@ class TcpOslServer(OslServer):
 
         Returns
         -------
-        timeout: Optional[int]
+        Optional[int]
             The port the osl server is listening on, if applicable.
             Defaults to ``None``.
         """
@@ -2905,7 +2907,7 @@ class TcpOslServer(OslServer):
             ":py:class:`Project <ansys.optislang.core.project.Project>`."
         ),
     )
-    def get_project_uid(self) -> str:
+    def get_project_uid(self) -> Optional[str]:
         """Get project uid.
 
         Returns
@@ -2923,8 +2925,7 @@ class TcpOslServer(OslServer):
             Raised when the timeout float value expires.
         """
         project_tree = self.get_full_project_tree_with_properties()
-        project_uid = project_tree.get("projects", [{}])[0].get("system", {}).get("uid", None)
-        return project_uid
+        return project_tree.get("projects", [{}])[0].get("system", {}).get("uid", None)
 
     def get_project_tree_systems(self) -> Dict:
         """Get project tree systems without properties.
@@ -3148,12 +3149,12 @@ class TcpOslServer(OslServer):
             ":py:class:`Project <ansys.optislang.core.project.Project>`."
         ),
     )
-    def get_working_dir(self) -> Path:
+    def get_working_dir(self) -> Optional[Path]:
         """Get path to the optiSLang project working directory.
 
         Returns
         -------
-        pathlib.Path
+        Optional[pathlib.Path]
             Path to the optiSLang project working directory. If no project is loaded
             in the optiSLang, returns ``None``.
 
@@ -3825,7 +3826,7 @@ class TcpOslServer(OslServer):
     def run_python_script(
         self,
         script: str,
-        args: Union[Sequence[object], None] = None,
+        args: Optional[Sequence[object]] = None,
     ) -> Tuple[str, str]:
         """Load a Python script in a project context and execute it.
 
@@ -3852,7 +3853,11 @@ class TcpOslServer(OslServer):
         """
         current_func_name = self.run_python_script.__name__
         responses = self.send_command(
-            command=commands.run_python_script(script, args, self.__password),
+            command=commands.run_python_script(
+                script,
+                args,  # type: ignore[arg-type]
+                self.__password,
+            ),
             timeout=self.timeouts_register.get_value(current_func_name),
             max_request_attempts=self.max_request_attempts_register.get_value(current_func_name),
         )
@@ -4050,6 +4055,7 @@ class TcpOslServer(OslServer):
 
         response_str = ""
 
+        assert isinstance(max_request_attempts, int)
         for request_attempt in range(1, max_request_attempts + 1):
             start_time = time.time()
             try:
@@ -4565,7 +4571,7 @@ class TcpOslServer(OslServer):
 
         listener = self.__create_listener(
             uid=self.__listener_id if self.__listener_id else str(uuid.uuid4()),
-            timeout=None,
+            timeout=None,  # type: ignore[arg-type]
             name="Main",
             notifications=[
                 ServerNotification.SERVER_UP,
@@ -4677,7 +4683,7 @@ class TcpOslServer(OslServer):
             Timeout.
         Uid: Optional[str], optional
             Listener uid. Defaults to ``None``.
-        notifications: Optional[Iterable[ServerNotification]], optional
+        notifications: Optional[List[ServerNotification]], optional
             Notifications to subscribe to.
             Either ["ALL"] or Sequence picked from below options:
             Server: [ "SERVER_UP", "SERVER_DOWN" ] (always be sent by default).
@@ -4737,7 +4743,7 @@ class TcpOslServer(OslServer):
             Raised when the timeout float value expires.
         """
         exec_started_listener = self.__create_listener(
-            timeout=timeout,
+            timeout=timeout,  # type: ignore[arg-type]
             name="ExecStarted",
             notifications=[
                 ServerNotification.PROCESSING_STARTED,
@@ -4757,7 +4763,7 @@ class TcpOslServer(OslServer):
         exec_started_listener.uid = self.__register_listener(
             host_addresses=exec_started_listener.host_addresses,
             port=exec_started_listener.port,
-            **register_listener_options,
+            **register_listener_options,  # type: ignore[arg-type]
         )
         exec_started_listener.refresh_listener_registration = True
         self.__listeners["exec_started_listener"] = exec_started_listener
@@ -4784,7 +4790,7 @@ class TcpOslServer(OslServer):
             Raised when the timeout float value expires.
         """
         exec_finished_listener = self.__create_listener(
-            timeout=timeout,
+            timeout=timeout,  # type: ignore[arg-type]
             name="ExecFinished",
             notifications=[
                 ServerNotification.EXECUTION_FINISHED,
@@ -4804,7 +4810,7 @@ class TcpOslServer(OslServer):
         exec_finished_listener.uid = self.__register_listener(
             host_addresses=exec_finished_listener.host_addresses,
             port=exec_finished_listener.port,
-            **register_listener_options,
+            **register_listener_options,  # type: ignore[arg-type]
         )
         exec_finished_listener.refresh_listener_registration = True
         self.__listeners["exec_finished_listener"] = exec_finished_listener
@@ -4876,7 +4882,7 @@ class TcpOslServer(OslServer):
         explicit_listener_id: Optional[str], optional
             Explicitly requested listener ID.
             Defaults to ``None``.
-        notifications: Optional[Iterable[ServerNotification]], optional
+        notifications: Optional[List[ServerNotification]], optional
             Notifications to subscribe to.
             Either ["ALL"] or Sequence picked from below options:
             Server: [ "SERVER_UP", "SERVER_DOWN" ] (always be sent by default).
@@ -4953,9 +4959,11 @@ class TcpOslServer(OslServer):
                             self._logger.debug(
                                 "Refreshing registration for listener: %s", listener.uid
                             )
+                            assert listener.uid is not None
                             self.send_command(
                                 commands.refresh_listener_registration(
-                                    uid=listener.uid, password=self.__password
+                                    uid=listener.uid,
+                                    password=self.__password,
                                 ),
                                 timeout=self.timeouts_register.get_value(current_func_name),
                                 max_request_attempts=self.max_request_attempts_register.get_value(
@@ -4984,7 +4992,7 @@ class TcpOslServer(OslServer):
                                     listener.uid = self.__register_listener(
                                         host_addresses=listener.host_addresses,
                                         port=listener.port,
-                                        **register_listener_options,
+                                        **register_listener_options,  # type: ignore[arg-type]
                                     )
                                 except Exception as e:
                                     self._logger.debug(

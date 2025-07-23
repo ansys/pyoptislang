@@ -148,8 +148,8 @@ class OslLogger:
             Logger instance.
         """
         new_logger = logging.getLogger(new_logger_name)
-        new_logger.std_out_handler = None
-        new_logger.file_handler = None
+        new_logger.std_out_handler = None  # type: ignore[attr-defined]
+        new_logger.file_handler = None  # type: ignore[attr-defined]
 
         if level is None:
             level = self.log_level
@@ -157,14 +157,14 @@ class OslLogger:
         new_logger.setLevel(level)
 
         if self.file_handler:
-            new_logger.file_handler = copy(self.file_handler)
-            new_logger.addHandler(new_logger.file_handler)
-            new_logger.file_handler.setLevel(level)
+            new_logger.file_handler = copy(self.file_handler)  # type: ignore[attr-defined]
+            new_logger.addHandler(new_logger.file_handler)  # type: ignore[attr-defined]
+            new_logger.file_handler.setLevel(level)  # type: ignore[attr-defined]
 
         if self.std_out_handler:
-            new_logger.std_out_handler = copy(self.std_out_handler)
-            new_logger.addHandler(new_logger.std_out_handler)
-            new_logger.std_out_handler.setLevel(level)
+            new_logger.std_out_handler = copy(self.std_out_handler)  # type: ignore[attr-defined]
+            new_logger.addHandler(new_logger.std_out_handler)  # type: ignore[attr-defined]
+            new_logger.std_out_handler.setLevel(level)  # type: ignore[attr-defined]
 
         new_logger.propagate = True
         return new_logger

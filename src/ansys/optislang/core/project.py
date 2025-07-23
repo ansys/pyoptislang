@@ -145,7 +145,7 @@ class Project(ABC):
         pass
 
     @abstractmethod
-    def get_name(self) -> str:  # pragma: no cover
+    def get_name(self) -> Optional[str]:  # pragma: no cover
         """Get the name of the optiSLang project.
 
         Returns
@@ -226,7 +226,7 @@ class Project(ABC):
         pass
 
     @abstractmethod
-    def get_status(self) -> str:  # pragma: no cover
+    def get_status(self) -> Optional[str]:  # pragma: no cover
         """Get the status of the optiSLang project.
 
         Returns

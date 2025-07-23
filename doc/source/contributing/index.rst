@@ -71,3 +71,15 @@ This way, it's not possible for you to push code that fails the style checks::
   isort....................................................................Passed
   flake8...................................................................Passed
   codespell................................................................Passed
+
+Static type checking
+--------------------
+
+Type-safety is currently assured with workflow job that runs mypy. To run it
+locally, activate the virtual environment and install the required packages::
+
+  python -m pip install ".[typing]"
+ 
+Then run mypy on the source folder::
+
+  python -m mypy src

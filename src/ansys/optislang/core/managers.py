@@ -232,7 +232,7 @@ class DesignManager:
         hid: Optional[str] = None,
         include_design_values=True,
         include_non_scalar_design_values=False,
-    ) -> Tuple[Design]:  # pragma: no cover
+    ) -> Tuple[Design, ...]:  # pragma: no cover
         """Get designs for a given state.
 
         Parameters
@@ -246,7 +246,7 @@ class DesignManager:
 
         Returns
         -------
-        Tuple[Design]
+        Tuple[Design, ...]
             Tuple of designs for a given state.
         """
         pass
@@ -329,7 +329,7 @@ class DesignManager:
         status: Optional[DesignStatus] = None,
         pareto_design: Optional[bool] = None,
         feasible: Optional[bool] = None,
-    ) -> Tuple[Design]:  # pragma: no cover
+    ) -> Tuple[Design, ...]:  # pragma: no cover
         """Filter designs by given parameters.
 
         Parameters
@@ -347,14 +347,14 @@ class DesignManager:
 
         Returns
         -------
-        Tuple[Design]
+        Tuple[Design, ...]
             Tuple of filtered designs
         """
         pass
 
     @staticmethod
     @abstractmethod
-    def sort_designs_by_hid(designs: Iterable[Design]) -> Tuple[Design]:  # pragma: no cover
+    def sort_designs_by_hid(designs: Iterable[Design]) -> Tuple[Design, ...]:  # pragma: no cover
         """Sort designs by hierarchical id.
 
         Parameters
@@ -364,7 +364,7 @@ class DesignManager:
 
         Returns
         -------
-        Tuple[Design]
+        Tuple[Design, ...]
             Tuple of sorted designs.
         """
         pass

@@ -104,7 +104,7 @@ class TcpCriteriaManagerProxy(CriteriaManager):
                 limit=(
                     criterion.limit_expression
                     if isinstance(criterion, (ConstraintCriterion, LimitStateCriterion))
-                    else None
+                    else ""
                 ),
             )
 
@@ -301,10 +301,10 @@ class TcpDesignManagerProxy(DesignManager):
     def _get_status_info(
         self,
         hid: str,
-        include_designs: bool = True,
-        include_design_values: Optional[bool] = True,
-        include_non_scalar_design_values: Optional[bool] = False,
-        include_algorithm_info: Optional[bool] = False,
+        include_designs: bool,
+        include_design_values: bool,
+        include_non_scalar_design_values: bool,
+        include_algorithm_info: bool,
     ) -> Dict:
         """Get status info about actor defined by actor uid and state hid.
 
@@ -312,14 +312,14 @@ class TcpDesignManagerProxy(DesignManager):
         ----------
         hid : str
             State/Design hierarchical id.
-        include_designs : bool, optional
-           Include (result) designs in status info response. By default ``True``.
-        include_design_values : Optional[bool], optional
-            Include values in (result) designs. By default ``True``.
-        include_non_scalar_design_values : Optional[bool], optional
-            Include non scalar values in (result) designs. By default ``False``.
-        include_algorithm_info : Optional[bool], optional
-            Include algorithm result info in status info response, by default ``False``.
+        include_designs : bool
+           Include (result) designs in status info response.
+        include_design_values : bool
+            Include values in (result) designs.
+        include_non_scalar_design_values : bool
+            Include non scalar values in (result) designs.
+        include_algorithm_info : bool
+            Include algorithm result info in status info response.
 
         Returns
         -------
@@ -373,7 +373,7 @@ class TcpDesignManagerProxy(DesignManager):
         hid: Optional[str] = None,
         include_design_values=True,
         include_non_scalar_design_values=False,
-    ) -> Tuple[Design]:
+    ) -> Tuple[Design, ...]:
         """Get designs for a given state.
 
         Parameters
@@ -387,10 +387,11 @@ class TcpDesignManagerProxy(DesignManager):
 
         Returns
         -------
-        Tuple[Design]
+        Tuple[Design, ...]
             Tuple of designs for a given state.
         """
         design_classes = []
+        assert hid is not None
         status_info = self._get_status_info(
             hid=hid,
             include_designs=True,
@@ -521,7 +522,9 @@ class TcpDesignManagerProxy(DesignManager):
         """
         return self.__save_designs_as(hid, file_path, FileOutputFormat.CSV)
 
-    def __save_designs_as(self, hid: str, file_path: Union[Path, str], format: FileOutputFormat):
+    def __save_designs_as(
+        self, hid: str, file_path: Union[Path, str], format: FileOutputFormat
+    ) -> File:
         """Save designs for a given state.
 
         Parameters
@@ -604,7 +607,7 @@ class TcpDesignManagerProxy(DesignManager):
         status: Optional[DesignStatus] = None,
         pareto_design: Optional[bool] = None,
         feasible: Optional[bool] = None,
-    ) -> Tuple[Design]:
+    ) -> Tuple[Design, ...]:
         """Filter designs by given parameters.
 
         Parameters
@@ -622,7 +625,7 @@ class TcpDesignManagerProxy(DesignManager):
 
         Returns
         -------
-        Tuple[Design]
+        Tuple[Design, ...]
             Tuple of filtered designs
         """
 
@@ -635,10 +638,10 @@ class TcpDesignManagerProxy(DesignManager):
             ]
             return all(conditions)
 
-        return tuple([design for design in filter(filter_condition, designs)])
+        return tuple(design for design in filter(filter_condition, designs))
 
     @staticmethod
-    def sort_designs_by_hid(designs: Iterable[Design]) -> Tuple[Design]:
+    def sort_designs_by_hid(designs: Iterable[Design]) -> Tuple[Design, ...]:
         """Sort designs by hierarchical id.
 
         Parameters
@@ -648,11 +651,14 @@ class TcpDesignManagerProxy(DesignManager):
 
         Returns
         -------
-        Tuple[Design]
+        Tuple[Design, ...]
             Tuple of sorted designs.
         """
         sorted_designs = sorted(
-            designs, key=lambda design: [int(part) for part in design.id.split(".")]
+            designs,
+            key=lambda design: [
+                int(part) for part in design.id.split(".")  # type: ignore[union-attr]
+            ],
         )
         return tuple(sorted_designs)
 

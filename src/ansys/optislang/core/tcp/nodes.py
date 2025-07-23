@@ -1017,8 +1017,8 @@ class TcpNodeProxy(Node):
 
         Returns
         -------
-        str
-            Unique ID of the parent node.
+        List[dict]
+            The ancestor line.
 
         Raises
         ------
@@ -2069,7 +2069,7 @@ class TcpSystemProxy(TcpNodeProxy, System):
         return tuple(children_dicts_list)
 
     @staticmethod
-    def _find_subtree(tree: dict, uid: str, nodes_tree: List[dict]) -> dict:
+    def _find_subtree(tree: dict, uid: str, nodes_tree: List[dict]) -> List[dict]:
         """Find the subtree with a root node matching a specified unique ID.
 
         Parameters
@@ -2275,7 +2275,7 @@ class TcpParametricSystemProxy(TcpSystemProxy, ParametricSystem):
             self._get_slots(type_=SlotType.INNER_OUTPUT, name=name),
         )
 
-    def get_omdb_files(self) -> Tuple[File]:
+    def get_omdb_files(self) -> Tuple[File, ...]:
         """Get paths to omdb files.
 
         This method is supported only when the client runs on the same file
@@ -2544,8 +2544,8 @@ class TcpParametricSystemProxy(TcpSystemProxy, ParametricSystem):
         """
         statuses_info = self._get_status_info()
         if not statuses_info:
-            return {}
-        designs = {}
+            return OrderedDict()
+        designs = OrderedDict()
         # TODO: sort by hid? -> delete / use OrderedDict
         for status_info in statuses_info:
             designs[status_info["hid"]] = status_info["designs"]
@@ -2609,7 +2609,7 @@ class TcpParametricSystemProxy(TcpSystemProxy, ParametricSystem):
         return sorted(unsorted_list, key=sort_key)
 
     @staticmethod
-    def __sort_dict_by_key_hid(unsorted_dict: dict, sort_by_position: int) -> dict:
+    def __sort_dict_by_key_hid(unsorted_dict: dict, sort_by_position: int) -> OrderedDict:
         sort_key = lambda item: int(item[0].split(".")[sort_by_position])
         return OrderedDict(sorted(unsorted_dict.items(), key=sort_key))
 
@@ -2732,7 +2732,9 @@ class TcpRootSystemProxy(TcpParametricSystemProxy, RootSystem):
         for parameter in design.parameters:
             evaluate_dict[parameter.name] = parameter.value
 
-        output_dict = self._osl_server.evaluate_design(evaluate_dict=evaluate_dict)
+        output_dict = self._osl_server.evaluate_design(
+            evaluate_dict=evaluate_dict  # type: ignore[arg-type]
+        )
         return self.__create_evaluated_design(
             input_design=design, evaluate_dict=evaluate_dict, results=output_dict[0]
         )
@@ -2789,10 +2791,10 @@ class TcpRootSystemProxy(TcpParametricSystemProxy, RootSystem):
         sorted_criteria = self.__categorize_criteria(criteria=criteria)
         return Design(
             parameters=parameters,
-            constraints=sorted_criteria.get("constraints", []),
-            limit_states=sorted_criteria.get("limit_states", []),
-            objectives=sorted_criteria.get("objectives", []),
-            variables=sorted_criteria.get("variables", []),
+            constraints=sorted_criteria.get("constraints", []),  # type: ignore[arg-type]
+            limit_states=sorted_criteria.get("limit_states", []),  # type: ignore[arg-type]
+            objectives=sorted_criteria.get("objectives", []),  # type: ignore[arg-type]
+            variables=sorted_criteria.get("variables", []),  # type: ignore[arg-type]
             responses=responses,
         )
 
@@ -2978,10 +2980,10 @@ class TcpRootSystemProxy(TcpParametricSystemProxy, RootSystem):
             else:
                 raise TypeError(f"Invalid type of criterion: `{type(criterion)}`.")
         return {
-            "constraints": constraints,
-            "limit_states": limit_states,
-            "objectives": objectives,
-            "variables": variables,
+            "constraints": constraints,  # type: ignore[dict-item]
+            "limit_states": limit_states,  # type: ignore[dict-item]
+            "objectives": objectives,  # type: ignore[dict-item]
+            "variables": variables,  # type: ignore[dict-item]
         }
 
     @staticmethod
@@ -3011,7 +3013,7 @@ class TcpRootSystemProxy(TcpParametricSystemProxy, RootSystem):
             output_value = processed["result_design"]["parameter_values"][index]
             if input_value and input_value != output_value:
                 differences.append((parameter_name, input_value, output_value))
-        return tuple(differences)
+        return tuple(differences)  # type: ignore[return-value]
 
     @staticmethod
     def __get_sorted_difference_of_sets(
@@ -3353,7 +3355,9 @@ class TcpInputSlotProxy(TcpSlotProxy, InputSlot):
             type_hint=type_hint,
         )
 
-    def connect_from(self, from_slot: TcpSlotProxy, skip_rename_slot: bool = False) -> Edge:
+    def connect_from(
+        self, from_slot: TcpSlotProxy, skip_rename_slot: bool = False  # type: ignore[override]
+    ) -> Edge:
         """Connect slot from another slot.
 
         Parameters
@@ -3393,7 +3397,9 @@ class TcpInputSlotProxy(TcpSlotProxy, InputSlot):
             self._osl_server.run_python_script(script=python_script)
         return Edge(from_slot=from_slot, to_slot=self)
 
-    def disconnect(self, sending_slot: Optional[TcpSlotProxy] = None) -> None:
+    def disconnect(
+        self, sending_slot: Optional[TcpSlotProxy] = None  # type: ignore[override]
+    ) -> None:
         """Remove a specific or all connections for the current slot.
 
         Parameters
@@ -3465,7 +3471,9 @@ class TcpOutputSlotProxy(TcpSlotProxy, OutputSlot):
             type_hint=type_hint,
         )
 
-    def connect_to(self, to_slot: TcpSlotProxy, skip_rename_slot: bool = False) -> Edge:
+    def connect_to(
+        self, to_slot: TcpSlotProxy, skip_rename_slot: bool = False  # type: ignore[override]
+    ) -> Edge:
         """Connect slot to another slot.
 
         Parameters
@@ -3505,7 +3513,9 @@ class TcpOutputSlotProxy(TcpSlotProxy, OutputSlot):
             self._osl_server.run_python_script(script=python_script)
         return Edge(from_slot=self, to_slot=to_slot)
 
-    def disconnect(self, receiving_slot: Optional[TcpSlotProxy] = None) -> None:
+    def disconnect(
+        self, receiving_slot: Optional[TcpSlotProxy] = None  # type: ignore[override]
+    ) -> None:
         """Remove a specific or all connections for the current slot.
 
         Parameters
@@ -3577,7 +3587,9 @@ class TcpInnerInputSlotProxy(TcpSlotProxy, InnerInputSlot):
             type_hint=type_hint,
         )
 
-    def connect_from(self, from_slot: TcpSlotProxy, skip_rename_slot: bool = False) -> Edge:
+    def connect_from(
+        self, from_slot: TcpSlotProxy, skip_rename_slot: bool = False  # type: ignore[override]
+    ) -> Edge:
         """Connect slot from another slot.
 
         Parameters
@@ -3617,7 +3629,9 @@ class TcpInnerInputSlotProxy(TcpSlotProxy, InnerInputSlot):
             self._osl_server.run_python_script(script=python_script)
         return Edge(from_slot=from_slot, to_slot=self)
 
-    def disconnect(self, sending_slot: Optional[TcpSlotProxy] = None) -> None:
+    def disconnect(
+        self, sending_slot: Optional[TcpSlotProxy] = None  # type: ignore[override]
+    ) -> None:
         """Remove a specific or all connections for the current slot.
 
         Parameters
@@ -3689,7 +3703,9 @@ class TcpInnerOutputSlotProxy(TcpSlotProxy, InnerOutputSlot):
             type_hint=type_hint,
         )
 
-    def connect_to(self, to_slot: TcpSlotProxy, skip_rename_slot: bool = False) -> Edge:
+    def connect_to(
+        self, to_slot: TcpSlotProxy, skip_rename_slot: bool = False  # type: ignore[override]
+    ) -> Edge:
         """Connect slot to another slot.
 
         Parameters
@@ -3729,7 +3745,9 @@ class TcpInnerOutputSlotProxy(TcpSlotProxy, InnerOutputSlot):
             self._osl_server.run_python_script(script=python_script)
         return Edge(from_slot=self, to_slot=to_slot)
 
-    def disconnect(self, receiving_slot: Optional[TcpSlotProxy] = None) -> None:
+    def disconnect(
+        self, receiving_slot: Optional[TcpSlotProxy] = None  # type: ignore[override]
+    ) -> None:
         """Remove a specific or all connections for the current slot.
 
         Parameters
