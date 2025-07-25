@@ -1037,8 +1037,14 @@ class TcpOslServer(OslServer):
 
         ..note:: Cannot be used in combination with batch mode.
 
+    server_address : Optional[str], optional
+        In case an optiSLang server is to be started, this defines the address
+        of the optiSLang server. If not specified, optiSLang will be listening on
+        local host only. Defaults to ``None``.
     port_range : Optional[Tuple[int, int]], optional
-        Defines the port range for optiSLang server. Defaults to ``None``.
+        In case an optiSLang server is to be started, this restricts the port range
+        for the optiSLang server. If not specified, optiSLang will be allowed to
+        listen on any port. Defaults to ``None``.
     no_run : Optional[bool], optional
         Determines whether not to run the specified project when started in batch mode.
         Defaults to ``None``.
@@ -1185,6 +1191,7 @@ class TcpOslServer(OslServer):
         project_path: Optional[Union[str, Path]] = None,
         batch: bool = True,
         service: bool = False,
+        server_address: Optional[str] = None,
         port_range: Optional[Tuple[int, int]] = None,
         no_run: Optional[bool] = None,
         no_save: bool = False,
@@ -1221,6 +1228,7 @@ class TcpOslServer(OslServer):
         self.__project_path = Path(project_path) if project_path is not None else None
         self.__batch = batch
         self.__service = service
+        self.__server_address = server_address
         self.__port_range = port_range
         self.__no_run = no_run
         self.__no_save = no_save
@@ -1260,7 +1268,7 @@ class TcpOslServer(OslServer):
         atexit.register(self.dispose)
 
         if self.__host is None or self.__port is None:
-            self.__host = self._LOCALHOST
+            self.__host = self.__server_address if self.__server_address else self._LOCALHOST
             self.__shutdown_on_finished = shutdown_on_finished
             self._start_local(ini_timeout, shutdown_on_finished)
         else:
@@ -4600,6 +4608,7 @@ class TcpOslServer(OslServer):
                 logger=self._logger,
                 batch=self.__batch,
                 service=self.__service,
+                server_address=self.__server_address,
                 port_range=self.__port_range,
                 no_run=self.__no_run,
                 force=self.__force,
