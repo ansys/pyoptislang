@@ -1271,7 +1271,7 @@ class TcpOslServer(OslServer):
         atexit.register(self.dispose)
 
         if self.__host is None or self.__port is None:
-            self.__host = self.__server_address if self.__server_address else self._LOCALHOST
+            self.__host = self.__server_address or self._LOCALHOST
             self._start_local(ini_timeout, shutdown_on_finished)
         else:
             listener = self.__create_listener(
