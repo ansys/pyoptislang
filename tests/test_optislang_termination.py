@@ -32,7 +32,7 @@ import pytest
 from ansys.optislang.core import Optislang, OslServerProcess
 from ansys.optislang.core.errors import ConnectionNotEstablishedError, OslCommunicationError
 
-_host = socket.gethostbyname(socket.gethostname())
+_host = "127.0.0.1"
 
 
 def find_free_port():
