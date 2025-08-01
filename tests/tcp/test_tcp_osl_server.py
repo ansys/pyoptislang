@@ -36,7 +36,7 @@ from ansys.optislang.core.node_types import NodeType
 from ansys.optislang.core.osl_server import OslVersion
 import ansys.optislang.core.tcp.osl_server as tos
 
-_host = socket.gethostbyname(socket.gethostname())
+_host = "127.0.0.1"
 
 
 def find_free_port():
