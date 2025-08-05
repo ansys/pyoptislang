@@ -49,6 +49,11 @@ local_location = {
     "base_path_mode": "ABSOLUTE_PATH",
 }
 notifications = ["LOG_ERROR", "LOG_WARNING"]
+# Placeholder test constants
+placeholder_id = "test_placeholder"
+new_placeholder_id = "renamed_placeholder"
+placeholder_value = "test_value"
+property_name = "test_property"
 value = {
     "split_path": {"head": "", "tail": "C:/samples_path/result.txt"},
     "base_path": "",
@@ -1313,7 +1318,7 @@ def test_set_designs():
 def test_set_placeholder_value():
     "Test set_placeholder_value."
     # basic
-    json_string = sc.set_placeholder_value(name="model_name", value="model1")
+    json_string = sc.set_placeholder_value(placeholder_id="model_name", value="model1")
     dictionary = json.loads(json_string)
     requiered_string = json.loads(
         '{ "projects": [ { "commands": [ { "type": "builtin", "command": "SET_PLACEHOLDER_VALUE", '
@@ -1323,12 +1328,20 @@ def test_set_placeholder_value():
     assert sorted(dictionary.items()) == sorted(requiered_string.items())
     # with password
     json_string = sc.set_placeholder_value(
-        name="model_name", value="model1", password=example_password
+        placeholder_id="model_name", value="model1", password=example_password
     )
     dictionary = json.loads(json_string)
     dictionary["Password"] == example_password
+    # test with different value types
+    json_string = sc.set_placeholder_value(placeholder_id="numeric_param", value=42.5)
+    dictionary = json.loads(json_string)
+    assert dictionary["projects"][0]["commands"][0]["args"]["value"] == 42.5
+    json_string = sc.set_placeholder_value(placeholder_id="bool_param", value=True)
+    dictionary = json.loads(json_string)
+    assert dictionary["projects"][0]["commands"][0]["args"]["value"] is True
+    # test required parameters
     with pytest.raises(TypeError):
-        sc.set_placeholder_value(name="model_name")
+        sc.set_placeholder_value(placeholder_id="model_name")
     with pytest.raises(TypeError):
         sc.set_placeholder_value(value="model1")
     with pytest.raises(TypeError):
@@ -1750,6 +1763,257 @@ def test_write_monitoring_database():
     json_string = sc.write_monitoring_database(actor_uid=actor_uid, password=example_password)
     dictionary = json.loads(json_string)
     dictionary["Password"] == example_password
+
+
+# =============================================================================
+# Placeholder functionality tests
+# =============================================================================
+
+
+def test_create_placeholder():
+    """Test create_placeholder."""
+    # basic with minimal args
+    json_string = sc.create_placeholder(value=placeholder_value)
+    dictionary = json.loads(json_string)
+    required_string = json.loads(
+        '{ "projects": [ { "commands": [ { "type": "builtin", "command": "CREATE_PLACEHOLDER", '
+        '"args": { "value": "test_value" } } ] } ] }'
+    )
+    assert type(json_string) == str
+    assert sorted(dictionary.items()) == sorted(required_string.items())
+
+    # with placeholder_id
+    json_string = sc.create_placeholder(value=placeholder_value, placeholder_id=placeholder_id)
+    dictionary = json.loads(json_string)
+    required_string = json.loads(
+        '{ "projects": [ { "commands": [ { "type": "builtin", "command": "CREATE_PLACEHOLDER", '
+        '"args": { "value": "test_value", "placeholder_id": "test_placeholder" } } ] } ] }'
+    )
+    assert sorted(dictionary.items()) == sorted(required_string.items())
+
+    # with all optional parameters
+    json_string = sc.create_placeholder(
+        value=42.5,
+        placeholder_id="numeric_param",
+        overwrite=True,
+        user_level="expert",
+        description="Test parameter",
+        range_="[0,100]",
+        type_="real",
+        expression="x*2",
+    )
+    dictionary = json.loads(json_string)
+    args = dictionary["projects"][0]["commands"][0]["args"]
+    assert args["value"] == 42.5
+    assert args["placeholder_id"] == "numeric_param"
+    assert args["overwrite"] is True
+    assert args["user_level"] == "expert"
+    assert args["description"] == "Test parameter"
+    assert args["range"] == "[0,100]"
+    assert args["type"] == "real"
+    assert args["expression"] == "x*2"
+
+    # with password
+    json_string = sc.create_placeholder(value=placeholder_value, password=example_password)
+    dictionary = json.loads(json_string)
+    assert dictionary["Password"] == example_password
+
+
+def test_create_placeholder_from_actor_property():
+    """Test create_placeholder_from_actor_property."""
+    # basic
+    json_string = sc.create_placeholder_from_actor_property(
+        actor_uid=actor_uid, property_name=property_name
+    )
+    dictionary = json.loads(json_string)
+    required_string = json.loads(
+        '{ "projects": [ { "commands": [ { "type": "builtin", "command": '
+        '"CREATE_PLACEHOLDER_FROM_ACTOR_PROPERTY", '
+        '"actor_uid": "5cdfb20b-bef6-4412-9985-89f5ded5ee95", '
+        '"args": { "property_name": "test_property", "create_as_expression": false } } ] } ] }'
+    )
+    assert type(json_string) == str
+    assert sorted(dictionary.items()) == sorted(required_string.items())
+
+    # with placeholder_id
+    json_string = sc.create_placeholder_from_actor_property(
+        actor_uid=actor_uid, property_name=property_name, placeholder_id=placeholder_id
+    )
+    dictionary = json.loads(json_string)
+    required_string = json.loads(
+        '{ "projects": [ { "commands": [ { "type": "builtin", "command": '
+        '"CREATE_PLACEHOLDER_FROM_ACTOR_PROPERTY", '
+        '"actor_uid": "5cdfb20b-bef6-4412-9985-89f5ded5ee95", '
+        '"args": { "property_name": "test_property", "placeholder_id": "test_placeholder", '
+        '"create_as_expression": false } } ] } ] }'
+    )
+    assert sorted(dictionary.items()) == sorted(required_string.items())
+
+    # with create_as_expression=True
+    json_string = sc.create_placeholder_from_actor_property(
+        actor_uid=actor_uid, property_name=property_name, create_as_expression=True
+    )
+    dictionary = json.loads(json_string)
+    required_string = json.loads(
+        '{ "projects": [ { "commands": [ { "type": "builtin", "command": '
+        '"CREATE_PLACEHOLDER_FROM_ACTOR_PROPERTY", '
+        '"actor_uid": "5cdfb20b-bef6-4412-9985-89f5ded5ee95", '
+        '"args": { "property_name": "test_property", "create_as_expression": true } } ] } ] }'
+    )
+    assert sorted(dictionary.items()) == sorted(required_string.items())
+
+    # with all parameters
+    json_string = sc.create_placeholder_from_actor_property(
+        actor_uid=actor_uid,
+        property_name=property_name,
+        placeholder_id=placeholder_id,
+        create_as_expression=True,
+    )
+    dictionary = json.loads(json_string)
+    required_string = json.loads(
+        '{ "projects": [ { "commands": [ { "type": "builtin", "command": '
+        '"CREATE_PLACEHOLDER_FROM_ACTOR_PROPERTY", '
+        '"actor_uid": "5cdfb20b-bef6-4412-9985-89f5ded5ee95", '
+        '"args": { "property_name": "test_property", "placeholder_id": "test_placeholder", '
+        '"create_as_expression": true } } ] } ] }'
+    )
+    assert sorted(dictionary.items()) == sorted(required_string.items())
+
+    # with password
+    json_string = sc.create_placeholder_from_actor_property(
+        actor_uid=actor_uid, property_name=property_name, password=example_password
+    )
+    dictionary = json.loads(json_string)
+    assert dictionary["Password"] == example_password
+
+    # test required parameters
+    with pytest.raises(TypeError):
+        sc.create_placeholder_from_actor_property(property_name=property_name)
+    with pytest.raises(TypeError):
+        sc.create_placeholder_from_actor_property(actor_uid=actor_uid)
+    with pytest.raises(TypeError):
+        sc.create_placeholder_from_actor_property()
+
+
+def test_remove_placeholder():
+    """Test remove_placeholder."""
+    # basic
+    json_string = sc.remove_placeholder(placeholder_id=placeholder_id)
+    dictionary = json.loads(json_string)
+    required_string = json.loads(
+        '{ "projects": [ { "commands": [ { "type": "builtin", "command": "REMOVE_PLACEHOLDER", '
+        '"args": { "placeholder_id": "test_placeholder" } } ] } ] }'
+    )
+    assert type(json_string) == str
+    assert sorted(dictionary.items()) == sorted(required_string.items())
+
+    # with password
+    json_string = sc.remove_placeholder(placeholder_id=placeholder_id, password=example_password)
+    dictionary = json.loads(json_string)
+    assert dictionary["Password"] == example_password
+
+    # test required parameters
+    with pytest.raises(TypeError):
+        sc.remove_placeholder()
+
+
+def test_rename_placeholder():
+    """Test rename_placeholder."""
+    # basic
+    json_string = sc.rename_placeholder(
+        placeholder_id=placeholder_id, new_placeholder_id=new_placeholder_id
+    )
+    dictionary = json.loads(json_string)
+    required_string = json.loads(
+        '{ "projects": [ { "commands": [ { "type": "builtin", "command": "RENAME_PLACEHOLDER", '
+        '"args": { "placeholder_id": "test_placeholder", '
+        '"new_placeholder_id": "renamed_placeholder" } } ] } ] }'
+    )
+    assert type(json_string) == str
+    assert sorted(dictionary.items()) == sorted(required_string.items())
+
+    # with password
+    json_string = sc.rename_placeholder(
+        placeholder_id=placeholder_id,
+        new_placeholder_id=new_placeholder_id,
+        password=example_password,
+    )
+    dictionary = json.loads(json_string)
+    assert dictionary["Password"] == example_password
+
+    # test required parameters
+    with pytest.raises(TypeError):
+        sc.rename_placeholder(placeholder_id=placeholder_id)
+    with pytest.raises(TypeError):
+        sc.rename_placeholder(new_placeholder_id=new_placeholder_id)
+    with pytest.raises(TypeError):
+        sc.rename_placeholder()
+
+
+def test_assign_placeholder():
+    """Test assign_placeholder."""
+    # basic
+    json_string = sc.assign_placeholder(
+        actor_uid=actor_uid, property_name=property_name, placeholder_id=placeholder_id
+    )
+    dictionary = json.loads(json_string)
+    required_string = json.loads(
+        '{ "projects": [ { "commands": [ { "type": "builtin", "command": "ASSIGN_PLACEHOLDER", '
+        '"actor_uid": "5cdfb20b-bef6-4412-9985-89f5ded5ee95", '
+        '"args": { "property_name": "test_property", '
+        '"placeholder_id": "test_placeholder" } } ] } ] }'
+    )
+    assert type(json_string) == str
+    assert sorted(dictionary.items()) == sorted(required_string.items())
+
+    # with password
+    json_string = sc.assign_placeholder(
+        actor_uid=actor_uid,
+        property_name=property_name,
+        placeholder_id=placeholder_id,
+        password=example_password,
+    )
+    dictionary = json.loads(json_string)
+    assert dictionary["Password"] == example_password
+
+    # test required parameters
+    with pytest.raises(TypeError):
+        sc.assign_placeholder(property_name=property_name, placeholder_id=placeholder_id)
+    with pytest.raises(TypeError):
+        sc.assign_placeholder(actor_uid=actor_uid, placeholder_id=placeholder_id)
+    with pytest.raises(TypeError):
+        sc.assign_placeholder(actor_uid=actor_uid, property_name=property_name)
+    with pytest.raises(TypeError):
+        sc.assign_placeholder()
+
+
+def test_unassign_placeholder():
+    """Test unassign_placeholder."""
+    # basic
+    json_string = sc.unassign_placeholder(actor_uid=actor_uid, property_name=property_name)
+    dictionary = json.loads(json_string)
+    required_string = json.loads(
+        '{ "projects": [ { "commands": [ { "type": "builtin", "command": "UNASSIGN_PLACEHOLDER", '
+        '"actor_uid": "5cdfb20b-bef6-4412-9985-89f5ded5ee95", '
+        '"args": { "property_name": "test_property" } } ] } ] }'
+    )
+    assert type(json_string) == str
+    assert sorted(dictionary.items()) == sorted(required_string.items())
+
+    # with password
+    json_string = sc.unassign_placeholder(
+        actor_uid=actor_uid, property_name=property_name, password=example_password
+    )
+    dictionary = json.loads(json_string)
+    assert dictionary["Password"] == example_password
+
+    # test required parameters
+    with pytest.raises(TypeError):
+        sc.unassign_placeholder(property_name=property_name)
+    with pytest.raises(TypeError):
+        sc.unassign_placeholder(actor_uid=actor_uid)
+    with pytest.raises(TypeError):
+        sc.unassign_placeholder()
     with pytest.raises(TypeError):
         sc.write_monitoring_database(path="C:/samples_path/result.omdb", hid=hid)
     with pytest.raises(TypeError):

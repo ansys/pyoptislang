@@ -31,11 +31,14 @@ CommandArgs = Dict[str, Any]
 
 _APPLY_WIZARD = "APPLY_WIZARD"
 _ADD_CRITERION = "ADD_CRITERION"
+_ASSIGN_PLACEHOLDER = "ASSIGN_PLACEHOLDER"
 _CLOSE = "CLOSE"
 _CONNECT_NODES = "CONNECT_NODES"
 _CREATE_INPUT_SLOT = "CREATE_INPUT_SLOT"
 _CREATE_NODE = "CREATE_NODE"
 _CREATE_OUTPUT_SLOT = "CREATE_OUTPUT_SLOT"
+_CREATE_PLACEHOLDER = "CREATE_PLACEHOLDER"
+_CREATE_PLACEHOLDER_FROM_ACTOR_PROPERTY = "CREATE_PLACEHOLDER_FROM_ACTOR_PROPERTY"
 _CREATE_START_DESIGNS = "CREATE_START_DESIGNS"
 _DISCONNECT_NODES = "DISCONNECT_NODES"
 _DISCONNECT_SLOT = "DISCONNECT_SLOT"
@@ -61,7 +64,9 @@ _REGISTER_LOCATIONS_AS_RESPONSE = "REGISTER_LOCATIONS_AS_RESPONSE"
 _REMOVE_CRITERIA = "REMOVE_CRITERIA"
 _REMOVE_CRITERION = "REMOVE_CRITERION"
 _REMOVE_NODE = "REMOVE_NODE"
+_REMOVE_PLACEHOLDER = "REMOVE_PLACEHOLDER"
 _RENAME_NODE = "RENAME_NODE"
+_RENAME_PLACEHOLDER = "RENAME_PLACEHOLDER"
 _RENAME_SLOT = "RENAME_SLOT"
 _RE_REGISTER_LOCATIONS_AS_PARAMETER = "RE_REGISTER_LOCATIONS_AS_PARAMETER"
 _RE_REGISTER_LOCATIONS_AS_RESPONSE = "RE_REGISTER_LOCATIONS_AS_RESPONSE"
@@ -91,6 +96,7 @@ _START = "START"
 _STOP = "STOP"
 _STOP_GENTLY = "STOP_GENTLY"
 _SUBSCRIBE_FOR_PUSH_NOTIFICATIONS = "SUBSCRIBE_FOR_PUSH_NOTIFICATIONS"
+_UNASSIGN_PLACEHOLDER = "UNASSIGN_PLACEHOLDER"
 _UNLINK_REGISTERED_FILE = "UNLINK_REGISTERED_FILE"
 _UNREGISTER_FILE = "UNREGISTER_FILE"
 _UNREGISTER_LISTENER = "UNREGISTER_LISTENER"
@@ -195,6 +201,45 @@ def apply_wizard(
     return _to_json(
         _gen_server_command(
             command=_APPLY_WIZARD, actor_uid=actor_uid, args=args, password=password
+        )
+    )
+
+
+def assign_placeholder(
+    actor_uid: str,
+    property_name: str,
+    placeholder_id: str,
+    password: Optional[str] = None,
+) -> str:
+    """Generate JSON string of assign_placeholder command.
+
+    .. note:: Command is supported for Ansys optiSLang version >= 26.1 only.
+
+    Parameters
+    ----------
+    actor_uid: str
+        Unique identifying actor of the object.
+    property_name: str
+        Name of the actor property to assign placeholder to.
+    placeholder_id: str
+        ID of the placeholder to assign.
+    password : Optional[str], optional
+        Password, by default ``None``.
+
+    Returns
+    -------
+    str
+        JSON string of assign_placeholder command.
+    """
+    return _to_json(
+        _gen_server_command(
+            command=_ASSIGN_PLACEHOLDER,
+            actor_uid=actor_uid,
+            args={
+                "property_name": property_name,
+                "placeholder_id": placeholder_id,
+            },
+            password=password,
         )
     )
 
@@ -421,6 +466,113 @@ def create_output_slot(
     return _to_json(
         _gen_server_command(
             command=_CREATE_OUTPUT_SLOT, actor_uid=actor_uid, args=args, password=password
+        )
+    )
+
+
+def create_placeholder(
+    value: Optional[Any] = None,
+    placeholder_id: Optional[str] = None,
+    overwrite: bool = False,
+    user_level: Optional[str] = None,
+    description: Optional[str] = None,
+    range_: Optional[str] = None,
+    type_: Optional[str] = None,
+    expression: Optional[str] = None,
+    password: Optional[str] = None,
+) -> str:
+    """Generate JSON string of create_placeholder command.
+
+    .. note:: Command is supported for Ansys optiSLang version >= 26.1 only.
+
+    Parameters
+    ----------
+    value: Optional[Any], optional
+        Value for the placeholder, by default ``None``.
+    placeholder_id: Optional[str], optional
+        Desired placeholder ID, by default ``None``.
+    overwrite: bool, optional
+        Whether to overwrite existing placeholder, by default ``False``.
+    user_level: Optional[str], optional
+        User level for the placeholder, by default ``None``.
+    description: Optional[str], optional
+        Description for the placeholder, by default ``None``.
+    range_: Optional[str], optional
+        Range for the placeholder, by default ``None``.
+    type_: Optional[str], optional
+        Type of the placeholder, by default ``None``.
+    expression: Optional[str], optional
+        Expression for the placeholder, by default ``None``.
+    password : Optional[str], optional
+        Password, by default ``None``.
+
+    Returns
+    -------
+    str
+        JSON string of create_placeholder command.
+    """
+    args: CommandArgs = {}
+    if value is not None:
+        args["value"] = value
+    if placeholder_id is not None:
+        args["placeholder_id"] = placeholder_id
+    if overwrite:
+        args["overwrite"] = overwrite
+    if user_level is not None:
+        args["user_level"] = user_level
+    if description is not None:
+        args["description"] = description
+    if range_ is not None:
+        args["range"] = range_
+    if type_ is not None:
+        args["type"] = type_
+    if expression is not None:
+        args["expression"] = expression
+
+    return _to_json(_gen_server_command(command=_CREATE_PLACEHOLDER, args=args, password=password))
+
+
+def create_placeholder_from_actor_property(
+    actor_uid: str,
+    property_name: str,
+    placeholder_id: Optional[str] = None,
+    create_as_expression: bool = False,
+    password: Optional[str] = None,
+) -> str:
+    """Generate JSON string of create_placeholder_from_actor_property command.
+
+    .. note:: Command is supported for Ansys optiSLang version >= 26.1 only.
+
+    Parameters
+    ----------
+    actor_uid: str
+        Unique identifying actor of the object.
+    property_name: str
+        Name of the actor property to create placeholder from.
+    placeholder_id: Optional[str], optional
+        Desired placeholder ID, by default ``None``.
+    create_as_expression: bool, optional
+        Whether to create the placeholder as an expression, by default ``False``.
+    password : Optional[str], optional
+        Password, by default ``None``.
+
+    Returns
+    -------
+    str
+        JSON string of create_placeholder_from_actor_property command.
+    """
+    args: CommandArgs = {}
+    args["property_name"] = property_name
+    if placeholder_id is not None:
+        args["placeholder_id"] = placeholder_id
+    args["create_as_expression"] = create_as_expression
+
+    return _to_json(
+        _gen_server_command(
+            command=_CREATE_PLACEHOLDER_FROM_ACTOR_PROPERTY,
+            actor_uid=actor_uid,
+            args=args,
+            password=password,
         )
     )
 
@@ -1177,6 +1329,32 @@ def remove_node(actor_uid: str, password: Optional[str] = None) -> str:
     )
 
 
+def remove_placeholder(placeholder_id: str, password: Optional[str] = None) -> str:
+    """Generate JSON string of remove_placeholder command.
+
+    .. note:: Command is supported for Ansys optiSLang version >= 26.1 only.
+
+    Parameters
+    ----------
+    placeholder_id: str
+        ID of the placeholder to remove.
+    password : Optional[str], optional
+        Password, by default ``None``.
+
+    Returns
+    -------
+    str
+        JSON string of remove_placeholder command.
+    """
+    return _to_json(
+        _gen_server_command(
+            command=_REMOVE_PLACEHOLDER,
+            args={"placeholder_id": placeholder_id},
+            password=password,
+        )
+    )
+
+
 def rename_node(actor_uid: str, new_name: str, password: Optional[str] = None) -> str:
     """Generate JSON string of ``rename_node`` command.
 
@@ -1199,6 +1377,36 @@ def rename_node(actor_uid: str, new_name: str, password: Optional[str] = None) -
     return _to_json(
         _gen_server_command(
             command=_RENAME_NODE, actor_uid=actor_uid, args={"name": new_name}, password=password
+        )
+    )
+
+
+def rename_placeholder(
+    placeholder_id: str, new_placeholder_id: str, password: Optional[str] = None
+) -> str:
+    """Generate JSON string of rename_placeholder command.
+
+    .. note:: Command is supported for Ansys optiSLang version >= 26.1 only.
+
+    Parameters
+    ----------
+    placeholder_id: str
+        ID of the placeholder to rename.
+    new_placeholder_id: str
+        New ID for the placeholder.
+    password : Optional[str], optional
+        Password, by default ``None``.
+
+    Returns
+    -------
+    str
+        JSON string of rename_placeholder command.
+    """
+    return _to_json(
+        _gen_server_command(
+            command=_RENAME_PLACEHOLDER,
+            args={"placeholder_id": placeholder_id, "new_placeholder_id": new_placeholder_id},
+            password=password,
         )
     )
 
@@ -1643,15 +1851,15 @@ def set_designs(actor_uid: str, designs: Iterable[dict], password: Optional[str]
     )
 
 
-def set_placeholder_value(name: str, value: str, password: Optional[str] = None) -> str:
+def set_placeholder_value(placeholder_id: str, value: Any, password: Optional[str] = None) -> str:
     """Generate JSON string of ``set placeholder value`` command.
 
     Parameters
     ----------
-    name: str
-        Property name.
-    value: str
-        Value.
+    placeholder_id: str
+        ID of the placeholder to set value for.
+    value: Any
+        Value to set for the placeholder.
     password : Optional[str], optional
         Password, by default ``None``.
 
@@ -1661,7 +1869,7 @@ def set_placeholder_value(name: str, value: str, password: Optional[str] = None)
         JSON string of ``set placeholder value`` command.
     """
     args: CommandArgs = {}
-    args["name"] = name
+    args["name"] = placeholder_id
     args["value"] = value
 
     return _to_json(
@@ -2075,6 +2283,39 @@ def subscribe_for_push_notifications(
 
     return _to_json(
         _gen_server_command(command=_SUBSCRIBE_FOR_PUSH_NOTIFICATIONS, args=args, password=password)
+    )
+
+
+def unassign_placeholder(
+    actor_uid: str,
+    property_name: str,
+    password: Optional[str] = None,
+) -> str:
+    """Generate JSON string of unassign_placeholder command.
+
+    .. note:: Command is supported for Ansys optiSLang version >= 26.1 only.
+
+    Parameters
+    ----------
+    actor_uid: str
+        Unique identifying actor of the object.
+    property_name: str
+        Name of the actor property to unassign placeholder from.
+    password : Optional[str], optional
+        Password, by default ``None``.
+
+    Returns
+    -------
+    str
+        JSON string of unassign_placeholder command.
+    """
+    return _to_json(
+        _gen_server_command(
+            command=_UNASSIGN_PLACEHOLDER,
+            actor_uid=actor_uid,
+            args={"property_name": property_name},
+            password=password,
+        )
     )
 
 
