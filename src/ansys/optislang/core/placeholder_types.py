@@ -25,6 +25,7 @@
 from __future__ import annotations
 
 from enum import Enum
+from typing import NamedTuple, Optional, Any, Union
 
 
 class PlaceholderType(Enum):
@@ -48,3 +49,32 @@ class UserLevel(Enum):
 
     COMPUTATION_ENGINEER = "computation_engineer"
     FLOW_ENGINEER = "flow_engineer"
+
+
+class PlaceholderInfo(NamedTuple):
+    """Information about a placeholder returned by get_placeholder method.
+    
+    Attributes
+    ----------
+    placeholder_id : str
+        The placeholder identifier (mapped from C++ 'name' field).
+    user_level : UserLevel
+        The user level for the placeholder.
+    type : PlaceholderType
+        The placeholder type.
+    description : str
+        Description of the placeholder.
+    range : str
+        Range specification for the placeholder.
+    value : Optional[Any]
+        Current value of the placeholder (if set).
+    expression : Optional[str]
+        Expression associated with the placeholder (if it's a macro).
+    """
+    placeholder_id: str
+    user_level: UserLevel
+    type: PlaceholderType
+    description: str
+    range: str
+    value: Optional[Any] = None
+    expression: Optional[str] = None

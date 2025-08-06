@@ -31,7 +31,7 @@ from deprecated.sphinx import deprecated
 
 from ansys.optislang.core.io import RegisteredFile, RegisteredFileUsage
 from ansys.optislang.core.node_types import NodeType
-from ansys.optislang.core.placeholder_types import PlaceholderType, UserLevel
+from ansys.optislang.core.placeholder_types import PlaceholderType, UserLevel, PlaceholderInfo
 from ansys.optislang.core.project import Project
 from ansys.optislang.core.tcp.nodes import TcpRootSystemProxy
 
@@ -548,7 +548,7 @@ class TcpProjectProxy(Project):
         """
         return self.__osl_server.get_placeholder_ids()
 
-    def get_placeholder(self, placeholder_id: str) -> dict:
+    def get_placeholder(self, placeholder_id: str) -> PlaceholderInfo:
         """Get placeholder information.
 
         .. note:: Method is supported for Ansys optiSLang version >= 26.1 only.
@@ -560,8 +560,9 @@ class TcpProjectProxy(Project):
 
         Returns
         -------
-        dict
-            Dictionary containing placeholder information.
+        PlaceholderInfo
+            Named tuple containing placeholder information with separate fields
+            for placeholder_id, user_level, type, description, range, value, and expression.
 
         Raises
         ------

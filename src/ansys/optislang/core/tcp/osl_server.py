@@ -58,10 +58,11 @@ from ansys.optislang.core.errors import (
 from ansys.optislang.core.node_types import AddinType, NodeType
 from ansys.optislang.core.osl_process import OslServerProcess, ServerNotification
 from ansys.optislang.core.osl_server import OslServer, OslVersion
-from ansys.optislang.core.placeholder_types import PlaceholderType, UserLevel
+from ansys.optislang.core.placeholder_types import PlaceholderType, UserLevel, PlaceholderInfo
 from ansys.optislang.core.slot_types import SlotTypeHint
 from ansys.optislang.core.tcp import server_commands as commands
 from ansys.optislang.core.tcp import server_queries as queries
+from ansys.optislang.core.tcp.placeholder_types import PlaceholderTypeTCP, UserLevelTCP
 
 
 def _get_current_timeout(initial_timeout: Optional[float], start_time: float) -> Optional[float]:
@@ -2908,7 +2909,7 @@ class TcpOslServer(OslServer):
             max_request_attempts=self.max_request_attempts_register.get_value(current_func_name),
         )["placeholder_ids"]
 
-    def get_placeholder(self, placeholder_id: str) -> Dict:
+    def get_placeholder(self, placeholder_id: str) -> PlaceholderInfo:
         """Get placeholder information by ID.
 
         .. note:: Method is supported for Ansys optiSLang version >= 26.1 only.
@@ -2920,8 +2921,9 @@ class TcpOslServer(OslServer):
 
         Returns
         -------
-        Dict
-            Placeholder information containing id, name, and reference_value.
+        PlaceholderInfo
+            Structured placeholder information with separate fields for placeholder_id,
+            user_level, type, description, range, value, and expression.
 
         Raises
         ------
@@ -2933,13 +2935,39 @@ class TcpOslServer(OslServer):
             Raised when the timeout float value expires.
         """
         current_func_name = self.get_placeholder.__name__
-        return self.send_command(
+        raw_data = self.send_command(
             command=queries.get_placeholder(
                 placeholder_id=placeholder_id, password=self.__password
             ),
             timeout=self.timeouts_register.get_value(current_func_name),
             max_request_attempts=self.max_request_attempts_register.get_value(current_func_name),
         )["placeholder"]
+        
+        # Transform raw C++ JSON response to structured PlaceholderInfo
+        # C++ returns "name" which we map to "placeholder_id"
+        ph_id = raw_data.get("name", placeholder_id)
+        
+        # Convert string values to proper enums
+        user_level_str = raw_data.get("user_level", "computation_engineer")
+        user_level = UserLevelTCP.from_str(user_level_str).to_user_level()
+        
+        type_str = raw_data.get("type", "string")
+        ph_type = PlaceholderTypeTCP.from_str(type_str).to_placeholder_type()
+        
+        description = raw_data.get("description", "")
+        range_val = raw_data.get("range", "")
+        value = raw_data.get("value")
+        expression = raw_data.get("expression")
+        
+        return PlaceholderInfo(
+            placeholder_id=ph_id,
+            user_level=user_level,
+            type=ph_type,
+            description=description,
+            range=range_val,
+            value=value,
+            expression=expression
+        )
 
     def create_placeholder(
         self,

@@ -222,7 +222,8 @@ def test_placeholder_methods(optislang: Optislang):
     # Test get_placeholder
     placeholder_info = project.get_placeholder("test_placeholder")
     assert placeholder_info is not None
-    assert isinstance(placeholder_info, dict)
+    assert hasattr(placeholder_info, 'placeholder_id')
+    assert placeholder_info.placeholder_id == "test_placeholder"
 
     # Test set_placeholder_value
     project.set_placeholder_value("test_placeholder", "updated_value")

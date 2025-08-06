@@ -43,7 +43,7 @@ FIRST_SUPPORTED_VERSION = 231
 
 from ansys.optislang.core.optislang import Optislang
 from ansys.optislang.core.osl_process import OslServerProcess, ServerNotification
-from ansys.optislang.core.placeholder_types import PlaceholderType, UserLevel
+from ansys.optislang.core.placeholder_types import PlaceholderType, UserLevel, PlaceholderInfo
 
 # Provide examples directory path
 EXAMPLES_MODULE = "ansys.optislang.core.examples"
