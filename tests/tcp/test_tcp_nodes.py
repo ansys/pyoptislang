@@ -22,7 +22,7 @@
 
 import pytest
 
-from ansys.optislang.core import Optislang
+from ansys.optislang.core import Optislang, node_types
 from ansys.optislang.core.io import File, RegisteredFile
 from ansys.optislang.core.node_types import AddinType, NodeType, Sensitivity, optislang_node
 from ansys.optislang.core.osl_server import OslVersion
@@ -484,7 +484,7 @@ def test_node_placeholder_methods(optislang: Optislang):
     root_system = project.root_system
 
     # Create a node
-    calculator_node = root_system.create_node(type_=NodeType.CALCULATOR_SET, name="TestCalculator")
+    calculator_node = root_system.create_node(type_=node_types.CalculatorSet, name="TestCalculator")
 
     # Test create_placeholder_from_property
     placeholder_id = calculator_node.create_placeholder_from_property(
