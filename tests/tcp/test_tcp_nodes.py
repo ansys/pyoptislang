@@ -500,7 +500,7 @@ def test_node_placeholder_methods(optislang: Optislang):
     assert len(expression_placeholder_id) > 0
 
     # Test assign_placeholder (create a simple placeholder first)
-    project.create_placeholder(value=True, placeholder_id="assign_test")
+    project.create_placeholder(value=True, placeholder_id="assign_test", type_="bool")
     calculator_node.assign_placeholder(property_name="RetryEnable", placeholder_id="assign_test")
 
     # Test unassign_placeholder
