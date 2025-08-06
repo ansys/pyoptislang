@@ -25,7 +25,7 @@ from __future__ import annotations
 
 import logging
 from pathlib import Path
-from typing import TYPE_CHECKING, Dict, List, Optional, Sequence, Tuple, Union
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Sequence, Tuple, Union
 
 from deprecated.sphinx import deprecated
 
@@ -525,6 +525,181 @@ class TcpProjectProxy(Project):
             Raised when the timeout float value expires.
         """
         self.__osl_server.stop(wait_for_finished=wait_for_finished)
+
+    def get_placeholder_ids(self) -> Tuple[str, ...]:
+        """Get IDs of all placeholders in the project.
+
+        .. note:: Method is supported for Ansys optiSLang version >= 26.1 only.
+
+        Returns
+        -------
+        Tuple[str, ...]
+            Tuple of placeholder IDs.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        return self.__osl_server.get_placeholder_ids()
+
+    def get_placeholder(self, placeholder_id: str) -> dict:
+        """Get placeholder information.
+
+        .. note:: Method is supported for Ansys optiSLang version >= 26.1 only.
+
+        Parameters
+        ----------
+        placeholder_id : str
+            ID of the placeholder.
+
+        Returns
+        -------
+        dict
+            Dictionary containing placeholder information.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        return self.__osl_server.get_placeholder(placeholder_id=placeholder_id)
+
+    def create_placeholder(
+        self,
+        value: Union[str, int, float, bool],
+        placeholder_id: Optional[str] = None,
+        overwrite: bool = False,
+        user_level: Optional[str] = None,
+        description: Optional[str] = None,
+        range_: Optional[str] = None,
+        type_: Optional[str] = None,
+        expression: Optional[str] = None,
+    ) -> str:
+        """Create a placeholder.
+
+        .. note:: Method is supported for Ansys optiSLang version >= 26.1 only.
+
+        Parameters
+        ----------
+        value : Union[str, int, float, bool]
+            Value of the placeholder.
+        placeholder_id : Optional[str], optional
+            Desired placeholder ID, by default ``None``.
+        overwrite : bool, optional
+            Whether to overwrite existing placeholder, by default ``False``.
+        user_level : Optional[str], optional
+            User level for the placeholder, by default ``None``.
+        description : Optional[str], optional
+            Description of the placeholder, by default ``None``.
+        range_ : Optional[str], optional
+            Range of the placeholder, by default ``None``.
+        type_ : Optional[str], optional
+            Type of the placeholder, by default ``None``.
+        expression : Optional[str], optional
+            Expression for the placeholder, by default ``None``.
+
+        Returns
+        -------
+        str
+            ID of the created placeholder.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        return self.__osl_server.create_placeholder(
+            value=value,
+            placeholder_id=placeholder_id,
+            overwrite=overwrite,
+            user_level=user_level,
+            description=description,
+            range_=range_,
+            type_=type_,
+            expression=expression,
+        )
+
+    def remove_placeholder(self, placeholder_id: str) -> None:
+        """Remove a placeholder.
+
+        .. note:: Method is supported for Ansys optiSLang version >= 26.1 only.
+
+        Parameters
+        ----------
+        placeholder_id : str
+            ID of the placeholder to remove.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        self.__osl_server.remove_placeholder(placeholder_id=placeholder_id)
+
+    def rename_placeholder(self, placeholder_id: str, new_placeholder_id: str) -> None:
+        """Rename a placeholder.
+
+        .. note:: Method is supported for Ansys optiSLang version >= 26.1 only.
+
+        Parameters
+        ----------
+        placeholder_id : str
+            Current ID of the placeholder.
+        new_placeholder_id : str
+            New ID for the placeholder.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        self.__osl_server.rename_placeholder(
+            placeholder_id=placeholder_id, new_placeholder_id=new_placeholder_id
+        )
+
+    def set_placeholder_value(self, placeholder_id: str, value: Any) -> None:
+        """Set the value of a placeholder.
+
+        .. note:: Method is supported for Ansys optiSLang version >= 26.1 only.
+
+        Parameters
+        ----------
+        placeholder_id : str
+            ID of the placeholder.
+        value : Any
+            New value for the placeholder.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        self.__osl_server.set_placeholder_value(placeholder_id=placeholder_id, value=value)
 
     def _get_project_tree(self) -> list:
         """Return the project tree in a list format.

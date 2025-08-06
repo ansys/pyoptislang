@@ -203,3 +203,37 @@ connect(python, "ODesign", sens, "IIDesign")
 #     project.stop_gently()
 #     optislang.dispose()
 #     time.sleep(3)
+
+
+def test_placeholder_methods(optislang: Optislang):
+    """Test placeholder management methods."""
+    project = optislang.project
+
+    # Test create_placeholder
+    placeholder_id = project.create_placeholder(
+        value="test_value", placeholder_id="test_placeholder", description="Test placeholder"
+    )
+    assert placeholder_id == "test_placeholder"
+
+    # Test get_placeholder_ids
+    placeholder_ids = project.get_placeholder_ids()
+    assert "test_placeholder" in placeholder_ids
+
+    # Test get_placeholder
+    placeholder_info = project.get_placeholder("test_placeholder")
+    assert placeholder_info is not None
+    assert isinstance(placeholder_info, dict)
+
+    # Test set_placeholder_value
+    project.set_placeholder_value("test_placeholder", "updated_value")
+
+    # Test rename_placeholder
+    project.rename_placeholder("test_placeholder", "renamed_placeholder")
+    updated_ids = project.get_placeholder_ids()
+    assert "renamed_placeholder" in updated_ids
+    assert "test_placeholder" not in updated_ids
+
+    # Test remove_placeholder
+    project.remove_placeholder("renamed_placeholder")
+    final_ids = project.get_placeholder_ids()
+    assert "renamed_placeholder" not in final_ids
