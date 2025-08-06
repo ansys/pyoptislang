@@ -55,6 +55,7 @@ from ansys.optislang.core.errors import (
     OslServerStartError,
     ResponseFormatError,
 )
+from ansys.optislang.core.json_utils import _get_enum_value
 from ansys.optislang.core.node_types import AddinType, NodeType
 from ansys.optislang.core.osl_process import OslServerProcess, ServerNotification
 from ansys.optislang.core.osl_server import OslServer, OslVersion
@@ -2949,10 +2950,10 @@ class TcpOslServer(OslServer):
         
         # Convert string values to proper enums
         user_level_str = raw_data.get("user_level", "computation_engineer")
-        user_level = UserLevelTCP.from_str(user_level_str).to_user_level()
+        user_level = UserLevelTCP.from_str(_get_enum_value(user_level_str)).to_user_level()
         
         type_str = raw_data.get("type", "string")
-        ph_type = PlaceholderTypeTCP.from_str(type_str).to_placeholder_type()
+        ph_type = PlaceholderTypeTCP.from_str(_get_enum_value(type_str)).to_placeholder_type()
         
         description = raw_data.get("description", "")
         range_val = raw_data.get("range", "")
