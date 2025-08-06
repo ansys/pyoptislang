@@ -24,7 +24,9 @@
 import json
 from typing import Any, Dict, Iterable, Optional, Sequence, Union
 
+from ansys.optislang.core.placeholder_types import PlaceholderType, UserLevel
 from ansys.optislang.core.slot_types import SlotTypeHint
+from ansys.optislang.core.tcp.placeholder_types import PlaceholderTypeTCP, UserLevelTCP
 from ansys.optislang.core.tcp.slot_types import SlotTypeHintTCP
 
 CommandArgs = Dict[str, Any]
@@ -474,10 +476,10 @@ def create_placeholder(
     value: Optional[Any] = None,
     placeholder_id: Optional[str] = None,
     overwrite: bool = False,
-    user_level: Optional[str] = None,
+    user_level: Optional[UserLevel] = None,
     description: Optional[str] = None,
     range_: Optional[str] = None,
-    type_: Optional[str] = None,
+    type_: Optional[PlaceholderType] = None,
     expression: Optional[str] = None,
     password: Optional[str] = None,
 ) -> str:
@@ -493,13 +495,13 @@ def create_placeholder(
         Desired placeholder ID, by default ``None``.
     overwrite: bool, optional
         Whether to overwrite existing placeholder, by default ``False``.
-    user_level: Optional[str], optional
+    user_level: Optional[UserLevel], optional
         User level for the placeholder, by default ``None``.
     description: Optional[str], optional
         Description for the placeholder, by default ``None``.
     range_: Optional[str], optional
         Range for the placeholder, by default ``None``.
-    type_: Optional[str], optional
+    type_: Optional[PlaceholderType], optional
         Type of the placeholder, by default ``None``.
     expression: Optional[str], optional
         Expression for the placeholder, by default ``None``.
@@ -519,13 +521,13 @@ def create_placeholder(
     if overwrite:
         args["overwrite"] = overwrite
     if user_level is not None:
-        args["user_level"] = user_level
+        args["user_level"] = UserLevelTCP[user_level.name].value
     if description is not None:
         args["description"] = description
     if range_ is not None:
         args["range"] = range_
     if type_ is not None:
-        args["type"] = type_
+        args["type"] = PlaceholderTypeTCP[type_.name].value
     if expression is not None:
         args["expression"] = expression
 

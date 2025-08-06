@@ -20,41 +20,31 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-"""
-optiSLang.
+"""Contains definitions for placeholder types and user levels."""
 
-core
-"""
+from __future__ import annotations
 
-import importlib.metadata
-import importlib.util
-import os
-import sys
+from enum import Enum
 
-from ansys.optislang.core.logging import OslLogger
 
-LOG = OslLogger(loglevel="ERROR", log_to_file=False, log_to_stdout=True)
-LOG.logger.debug("Loaded logging module as LOG")
+class PlaceholderType(Enum):
+    """Provides supported placeholder types."""
 
-__version__ = importlib.metadata.version(__name__.replace(".", "-"))
+    UNKNOWN = "unknown"
+    STRING = "string"
+    SPLIT_PATH = "split_path"
+    RELATIVE_SPLIT_PATH = "relative_split_path"
+    PATH = "path"
+    UINT = "uint"
+    INT = "int"
+    STRING_LIST = "string_list"
+    REAL = "real"
+    BOOL = "bool"
+    PROVIDED_PATH = "provided_path"
 
-# First supported version of optiSLang: 2023R1
-FIRST_SUPPORTED_VERSION = 231
 
-from ansys.optislang.core.optislang import Optislang
-from ansys.optislang.core.osl_process import OslServerProcess, ServerNotification
-from ansys.optislang.core.placeholder_types import PlaceholderType, UserLevel
+class UserLevel(Enum):
+    """Provides supported user levels for placeholders."""
 
-# Provide examples directory path
-EXAMPLES_MODULE = "ansys.optislang.core.examples"
-if spec := importlib.util.find_spec(EXAMPLES_MODULE):
-    if spec.origin:
-        os.environ["OSL_EXAMPLES"] = os.path.dirname(spec.origin)
-    else:
-        LOG.logger.warning(
-            f"Could not set path to examples. Missing spec for module {EXAMPLES_MODULE}."
-        )
-else:
-    LOG.logger.warning(
-        f"Could not set path to examples. Missing origin for module {EXAMPLES_MODULE}."
-    )
+    COMPUTATION_ENGINEER = "computation_engineer"
+    FLOW_ENGINEER = "flow_engineer"

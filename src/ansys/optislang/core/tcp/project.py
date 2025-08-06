@@ -31,6 +31,7 @@ from deprecated.sphinx import deprecated
 
 from ansys.optislang.core.io import RegisteredFile, RegisteredFileUsage
 from ansys.optislang.core.node_types import NodeType
+from ansys.optislang.core.placeholder_types import PlaceholderType, UserLevel
 from ansys.optislang.core.project import Project
 from ansys.optislang.core.tcp.nodes import TcpRootSystemProxy
 
@@ -578,10 +579,10 @@ class TcpProjectProxy(Project):
         value: Union[str, int, float, bool],
         placeholder_id: Optional[str] = None,
         overwrite: bool = False,
-        user_level: Optional[str] = None,
+        user_level: Optional[UserLevel] = None,
         description: Optional[str] = None,
         range_: Optional[str] = None,
-        type_: Optional[str] = None,
+        type_: Optional[PlaceholderType] = None,
         expression: Optional[str] = None,
     ) -> str:
         """Create a placeholder.
@@ -596,13 +597,13 @@ class TcpProjectProxy(Project):
             Desired placeholder ID, by default ``None``.
         overwrite : bool, optional
             Whether to overwrite existing placeholder, by default ``False``.
-        user_level : Optional[str], optional
+        user_level : Optional[UserLevel], optional
             User level for the placeholder, by default ``None``.
         description : Optional[str], optional
             Description of the placeholder, by default ``None``.
         range_ : Optional[str], optional
             Range of the placeholder, by default ``None``.
-        type_ : Optional[str], optional
+        type_ : Optional[PlaceholderType], optional
             Type of the placeholder, by default ``None``.
         expression : Optional[str], optional
             Expression for the placeholder, by default ``None``.

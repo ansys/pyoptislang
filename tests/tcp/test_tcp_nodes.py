@@ -26,6 +26,7 @@ from ansys.optislang.core import Optislang, node_types
 from ansys.optislang.core.io import File, RegisteredFile
 from ansys.optislang.core.node_types import AddinType, NodeType, Sensitivity, optislang_node
 from ansys.optislang.core.osl_server import OslVersion
+from ansys.optislang.core.placeholder_types import PlaceholderType, UserLevel
 from ansys.optislang.core.tcp.managers import (
     CriteriaManager,
     DesignManager,
@@ -500,7 +501,7 @@ def test_node_placeholder_methods(optislang: Optislang):
     assert len(expression_placeholder_id) > 0
 
     # Test assign_placeholder (create a simple placeholder first)
-    project.create_placeholder(value=True, placeholder_id="assign_test", type_="bool")
+    project.create_placeholder(value=True, placeholder_id="assign_test", type_=PlaceholderType.BOOL)
     calculator_node.assign_placeholder(property_name="RetryEnable", placeholder_id="assign_test")
 
     # Test unassign_placeholder

@@ -25,6 +25,7 @@ import json
 
 import pytest
 
+from ansys.optislang.core.placeholder_types import PlaceholderType, UserLevel
 from ansys.optislang.core.slot_types import SlotTypeHint
 from ansys.optislang.core.tcp import server_commands as sc
 
@@ -1796,10 +1797,10 @@ def test_create_placeholder():
         value=42.5,
         placeholder_id="numeric_param",
         overwrite=True,
-        user_level="expert",
+        user_level=UserLevel.COMPUTATION_ENGINEER,
         description="Test parameter",
         range_="[0,100]",
-        type_="real",
+        type_=PlaceholderType.REAL,
         expression="x*2",
     )
     dictionary = json.loads(json_string)
@@ -1807,7 +1808,7 @@ def test_create_placeholder():
     assert args["value"] == 42.5
     assert args["placeholder_id"] == "numeric_param"
     assert args["overwrite"] is True
-    assert args["user_level"] == "expert"
+    assert args["user_level"] == "computation_engineer"
     assert args["description"] == "Test parameter"
     assert args["range"] == "[0,100]"
     assert args["type"] == "real"
@@ -2018,3 +2019,45 @@ def test_unassign_placeholder():
         sc.write_monitoring_database(path="C:/samples_path/result.omdb", hid=hid)
     with pytest.raises(TypeError):
         sc.write_monitoring_database()
+
+
+def test_create_placeholder_with_enums():
+    """Test create_placeholder with enum types."""
+    # Test all PlaceholderType enum values
+    for placeholder_type in PlaceholderType:
+        json_string = sc.create_placeholder(
+            value=42,
+            placeholder_id=f"test_{placeholder_type.name.lower()}",
+            type_=placeholder_type,
+        )
+        dictionary = json.loads(json_string)
+        args = dictionary["projects"][0]["commands"][0]["args"]
+        assert args["type"] == placeholder_type.value
+        assert args["placeholder_id"] == f"test_{placeholder_type.name.lower()}"
+    
+    # Test all UserLevel enum values  
+    for user_level in UserLevel:
+        json_string = sc.create_placeholder(
+            value="test",
+            placeholder_id=f"test_{user_level.name.lower()}",
+            user_level=user_level,
+        )
+        dictionary = json.loads(json_string)
+        args = dictionary["projects"][0]["commands"][0]["args"]
+        assert args["user_level"] == user_level.value
+        assert args["placeholder_id"] == f"test_{user_level.name.lower()}"
+    
+    # Test combination of both enums
+    json_string = sc.create_placeholder(
+        value=3.14,
+        placeholder_id="combo_test",
+        type_=PlaceholderType.REAL,
+        user_level=UserLevel.FLOW_ENGINEER,
+        description="Combined enum test",
+    )
+    dictionary = json.loads(json_string)
+    args = dictionary["projects"][0]["commands"][0]["args"]
+    assert args["type"] == "real"
+    assert args["user_level"] == "flow_engineer"
+    assert args["placeholder_id"] == "combo_test"
+    assert args["description"] == "Combined enum test"
