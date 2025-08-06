@@ -526,15 +526,15 @@ class TcpProjectProxy(Project):
         """
         self.__osl_server.stop(wait_for_finished=wait_for_finished)
 
-    def get_placeholder_ids(self) -> Tuple[str, ...]:
+    def get_placeholder_ids(self) -> List[str]:
         """Get IDs of all placeholders in the project.
 
         .. note:: Method is supported for Ansys optiSLang version >= 26.1 only.
 
         Returns
         -------
-        Tuple[str, ...]
-            Tuple of placeholder IDs.
+        List[str]
+            List of placeholder IDs.
 
         Raises
         ------
