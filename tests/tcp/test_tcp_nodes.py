@@ -22,10 +22,11 @@
 
 import pytest
 
-from ansys.optislang.core import Optislang
+from ansys.optislang.core import Optislang, node_types
 from ansys.optislang.core.io import File, RegisteredFile
 from ansys.optislang.core.node_types import AddinType, NodeType, Sensitivity, optislang_node
 from ansys.optislang.core.osl_server import OslVersion
+from ansys.optislang.core.placeholder_types import PlaceholderType, UserLevel
 from ansys.optislang.core.tcp.managers import (
     CriteriaManager,
     DesignManager,
@@ -476,6 +477,35 @@ def test_get_omdb_files(optislang: Optislang, tmp_example_project):
     mis_omdb_file = most_inner_sensitivity.get_omdb_files()
     assert len(mis_omdb_file) > 0
     assert isinstance(mis_omdb_file[0], File)
+
+
+def test_node_placeholder_methods(optislang: Optislang):
+    """Test node placeholder management methods."""
+    project = optislang.project
+    root_system = project.root_system
+
+    # Create a node
+    calculator_node = root_system.create_node(type_=node_types.CalculatorSet, name="TestCalculator")
+
+    # Test create_placeholder_from_property
+    placeholder_id = calculator_node.create_placeholder_from_property(
+        property_name="RetryEnable", placeholder_id="node_placeholder"
+    )
+    assert placeholder_id == "node_placeholder"
+
+    # Test create_placeholder_from_property with expression
+    expression_placeholder_id = calculator_node.create_placeholder_from_property(
+        property_name="RetryEnable", create_as_expression=True
+    )
+    assert isinstance(expression_placeholder_id, str)
+    assert len(expression_placeholder_id) > 0
+
+    # Test assign_placeholder (create a simple placeholder first)
+    project.create_placeholder(value=True, placeholder_id="assign_test", type_=PlaceholderType.BOOL)
+    calculator_node.assign_placeholder(property_name="RetryEnable", placeholder_id="assign_test")
+
+    # Test unassign_placeholder
+    calculator_node.unassign_placeholder(property_name="RetryEnable")
 
 
 # endregion

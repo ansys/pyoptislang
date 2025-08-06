@@ -771,6 +771,97 @@ class TcpNodeProxy(Node):
         else:
             raise NotImplementedError("Method is supported for Ansys optiSLang version >= 25.2.")
 
+    def create_placeholder_from_property(
+        self,
+        property_name: str,
+        placeholder_id: Optional[str] = None,
+        create_as_expression: bool = False,
+    ) -> str:
+        """Create a placeholder from a node property.
+
+        .. note:: Method is supported for Ansys optiSLang version >= 26.1 only.
+
+        Parameters
+        ----------
+        property_name : str
+            Name of the node property to create placeholder from.
+        placeholder_id : Optional[str], optional
+            Desired placeholder ID, by default ``None``.
+        create_as_expression : bool, optional
+            Whether to create the placeholder as an expression, by default ``False``.
+
+        Returns
+        -------
+        str
+            ID of the created placeholder.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        return self._osl_server.create_placeholder_from_actor_property(
+            actor_uid=self.uid,
+            property_name=property_name,
+            placeholder_id=placeholder_id,
+            create_as_expression=create_as_expression,
+        )
+
+    def assign_placeholder(self, property_name: str, placeholder_id: str) -> None:
+        """Assign a placeholder to a node property.
+
+        .. note:: Method is supported for Ansys optiSLang version >= 26.1 only.
+
+        Parameters
+        ----------
+        property_name : str
+            Name of the node property to assign placeholder to.
+        placeholder_id : str
+            ID of the placeholder to assign.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        self._osl_server.assign_placeholder(
+            actor_uid=self.uid,
+            property_name=property_name,
+            placeholder_id=placeholder_id,
+        )
+
+    def unassign_placeholder(self, property_name: str) -> None:
+        """Remove placeholder assignment from a node property.
+
+        .. note:: Method is supported for Ansys optiSLang version >= 26.1 only.
+
+        Parameters
+        ----------
+        property_name : str
+            Name of the node property to remove placeholder assignment from.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        self._osl_server.unassign_placeholder(
+            actor_uid=self.uid,
+            property_name=property_name,
+        )
+
     def _filter_connections(
         self,
         connections: List[dict],
