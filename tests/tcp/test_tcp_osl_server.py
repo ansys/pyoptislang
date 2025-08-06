@@ -34,6 +34,7 @@ import pytest
 from ansys.optislang.core import OslServerProcess, errors
 from ansys.optislang.core.node_types import NodeType
 from ansys.optislang.core.osl_server import OslVersion
+from ansys.optislang.core.placeholder_types import PlaceholderType, UserLevel
 import ansys.optislang.core.tcp.osl_server as tos
 
 _host = "127.0.0.1"
@@ -1179,10 +1180,10 @@ def test_create_placeholder_with_all_options(osl_server_process: OslServerProces
         value=100.0,
         placeholder_id="full_param",
         overwrite=True,
-        user_level="computation_engineer",
+        user_level=UserLevel.COMPUTATION_ENGINEER,
         description="Full test parameter",
         range_="[0,1000]",
-        type_="real",
+        type_=PlaceholderType.REAL,
         expression="x*10",
     )
 
@@ -1322,7 +1323,7 @@ def test_assign_unassign_placeholder(osl_server_process: OslServerProcess):
     # Create a node and placeholder
     node_uid = tcp_osl_server.create_node(type_="CalculatorSet")
     placeholder_id = tcp_osl_server.create_placeholder(
-        type_="bool", value=True, placeholder_id="assign_test"
+        type_=PlaceholderType.BOOL, value=True, placeholder_id="assign_test"
     )
 
     # Assign placeholder to actor property
