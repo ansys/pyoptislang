@@ -13,7 +13,7 @@ In optiSlang, placeholders are variables that can be assigned to workflow compon
 Each placeholder has the following attributes:
 
 - **ID**: A unique identifier for the placeholder
-- **Data Type**: Specifies what kind of data the placeholder can hold (string, real number, bool, etc.)
+- **Data Type**: Specifies what kind of data the placeholder can hold
 - **User Level**: Controls which user roles can modify the placeholder
 - **Description**: Optional documentation about the placeholder's purpose
 
