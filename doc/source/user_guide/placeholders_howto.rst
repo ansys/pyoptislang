@@ -13,7 +13,7 @@ In optiSlang, placeholders are variables that can be assigned to workflow compon
 Each placeholder has the following attributes:
 
 - **ID**: A unique identifier for the placeholder
-- **Data Type**: Specifies what kind of data the placeholder can hold (string, real number, boolean, etc.)
+- **Data Type**: Specifies what kind of data the placeholder can hold (string, real number, bool, etc.)
 - **User Level**: Controls which user roles can modify the placeholder
 - **Description**: Optional documentation about the placeholder's purpose
 
@@ -149,7 +149,7 @@ The macro language slightly differs between the types, but all types share the s
 Unassigning placeholders from nodes
 -----------------------------------
 
-Placeholders can be unassigned from node properties when their parameterization is no longer needed by using :py:meth:`unassign_placeholder() <ansys.optislang.core.nodes.Node.unassign_placeholder>`.
+Placeholders can be unassigned from node properties when their parametrization is no longer needed by using :py:meth:`unassign_placeholder() <ansys.optislang.core.nodes.Node.unassign_placeholder>`.
 
 .. code-block:: python
 
