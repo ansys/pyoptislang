@@ -557,8 +557,6 @@ class Project(ABC):
     def set_placeholder_value(self, placeholder_id: str, value: Any) -> None:  # pragma: no cover
         """Set the value of a placeholder.
 
-        .. note:: Method is supported for Ansys optiSLang version >= 26.1 only.
-
         Parameters
         ----------
         placeholder_id : str

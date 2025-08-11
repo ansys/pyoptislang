@@ -31,7 +31,7 @@ from deprecated.sphinx import deprecated
 
 from ansys.optislang.core.io import RegisteredFile, RegisteredFileUsage
 from ansys.optislang.core.node_types import NodeType
-from ansys.optislang.core.placeholder_types import PlaceholderType, UserLevel, PlaceholderInfo
+from ansys.optislang.core.placeholder_types import PlaceholderInfo, PlaceholderType, UserLevel
 from ansys.optislang.core.project import Project
 from ansys.optislang.core.tcp.nodes import TcpRootSystemProxy
 
@@ -682,8 +682,6 @@ class TcpProjectProxy(Project):
 
     def set_placeholder_value(self, placeholder_id: str, value: Any) -> None:
         """Set the value of a placeholder.
-
-        .. note:: Method is supported for Ansys optiSLang version >= 26.1 only.
 
         Parameters
         ----------
