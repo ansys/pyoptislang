@@ -72,7 +72,7 @@ Variant 1 - Step 1: Create stand-alone placeholder
     global_max_parallel_id = osl.project.create_placeholder(
         value=8,
         placeholder_id="global_max_parallel",
-        type_=PlaceholderType.INT,
+        type_=PlaceholderType.UINT,
         user_level=UserLevel.FLOW_ENGINEER,
         description="Maximum number of parallel executions",
     )
@@ -84,7 +84,7 @@ Placeholders are type-specific. A placeholder can be assigned to a project prope
 
 .. code-block:: python
 
-    from ansys.optislang.core.placeholder_types import PlaceholderType, UserLevel
+    from ansys.optislang.core import node_types
 
     # Get a node reference
     root_system = osl.project.root_system
@@ -94,7 +94,7 @@ Placeholders are type-specific. A placeholder can be assigned to a project prope
 
     # Assign the placeholder to a node property
     mop_solver_node.assign_placeholder(
-        property_name="MaxParallel", placeholder_id="max_parallel"
+        property_name="MaxParallel", placeholder_id="global_max_parallel"
     )
 
 Variant 2: Creating placeholders directly from node properties
@@ -155,8 +155,8 @@ Placeholders can be unassigned from node properties when their parametrization i
 
     # Unassign a placeholder from a node property
     try:
-        calculator_node.unassign_placeholder(property_name="RetryEnable")
-        print("✓ Placeholder unassigned from RetryEnable property")
+        mop_solver_node.unassign_placeholder(property_name="MaxParallel")
+        print("✓ Placeholder unassigned from MaxParallel property")
     except Exception as e:
         print(f"✗ Failed to unassign placeholder: {e}")
 
