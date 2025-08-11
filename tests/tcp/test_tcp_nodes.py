@@ -26,7 +26,7 @@ from ansys.optislang.core import Optislang, node_types
 from ansys.optislang.core.io import File, RegisteredFile
 from ansys.optislang.core.node_types import AddinType, NodeType, Sensitivity, optislang_node
 from ansys.optislang.core.osl_server import OslVersion
-from ansys.optislang.core.placeholder_types import PlaceholderType, UserLevel
+from ansys.optislang.core.placeholder_types import PlaceholderType
 from ansys.optislang.core.tcp.managers import (
     CriteriaManager,
     DesignManager,
@@ -493,12 +493,22 @@ def test_node_placeholder_methods(optislang: Optislang):
     )
     assert placeholder_id == "node_placeholder"
 
-    # Test create_placeholder_from_property with expression
+    # Test create_placeholder_from_property with expression from property value
     expression_placeholder_id = calculator_node.create_placeholder_from_property(
         property_name="RetryEnable", create_as_expression=True
     )
     assert isinstance(expression_placeholder_id, str)
     assert len(expression_placeholder_id) > 0
+
+    # Test create_placeholder_from_property with custom expression
+    expression_placeholder_id_2 = calculator_node.create_placeholder_from_property(
+        property_name="RetryCount", expression="2*2"
+    )
+    assert isinstance(expression_placeholder_id_2, str)
+    assert len(expression_placeholder_id_2) > 0
+
+    expression_placeholder_2_info = project.get_placeholder(expression_placeholder_id_2)
+    assert expression_placeholder_2_info.expression == "2*2"
 
     # Test assign_placeholder (create a simple placeholder first)
     project.create_placeholder(value=True, placeholder_id="assign_test", type_=PlaceholderType.BOOL)

@@ -776,6 +776,7 @@ class TcpNodeProxy(Node):
         property_name: str,
         placeholder_id: Optional[str] = None,
         create_as_expression: bool = False,
+        expression: Optional[str] = None,
     ) -> str:
         """Create a placeholder from a node property.
 
@@ -789,6 +790,8 @@ class TcpNodeProxy(Node):
             Desired placeholder ID, by default ``None``.
         create_as_expression : bool, optional
             Whether to create the placeholder as an expression, by default ``False``.
+        expression : Optional[str], optional
+            Custom macro expression for the placeholder, by default ``None``.
 
         Returns
         -------
@@ -804,12 +807,24 @@ class TcpNodeProxy(Node):
         TimeoutError
             Raised when the timeout float value expires.
         """
-        return self._osl_server.create_placeholder_from_actor_property(
-            actor_uid=self.uid,
-            property_name=property_name,
-            placeholder_id=placeholder_id,
-            create_as_expression=create_as_expression,
-        )
+        if create_as_expression or expression is not None:
+            created_placeholder_id = self._osl_server.create_placeholder_from_actor_property(
+                actor_uid=self.uid,
+                property_name=property_name,
+                placeholder_id=placeholder_id,
+                create_as_expression=True,
+            )
+            if expression is not None:
+                self._osl_server.create_placeholder(
+                    placeholder_id=created_placeholder_id, expression=expression, overwrite=True
+                )
+            return created_placeholder_id
+        else:
+            return self._osl_server.create_placeholder_from_actor_property(
+                actor_uid=self.uid,
+                property_name=property_name,
+                placeholder_id=placeholder_id,
+            )
 
     def assign_placeholder(self, property_name: str, placeholder_id: str) -> None:
         """Assign a placeholder to a node property.
