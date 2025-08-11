@@ -752,6 +752,91 @@ class Node(ABC):
         """
         pass
 
+    @abstractmethod
+    def create_placeholder_from_property(
+        self,
+        property_name: str,
+        placeholder_id: Optional[str] = None,
+        create_as_expression: bool = False,
+        expression: Optional[str] = None,
+    ) -> str:
+        """Create a placeholder from a node property.
+
+        .. note:: Method is supported for Ansys optiSLang version >= 26.1 only.
+
+        Parameters
+        ----------
+        property_name : str
+            Name of the node property to create placeholder from.
+        placeholder_id : Optional[str], optional
+            Desired placeholder ID, by default ``None``.
+        create_as_expression : bool, optional
+            Whether to create the placeholder as an expression, by default ``False``.
+        expression : Optional[str], optional
+            Custom macro expression for the placeholder, by default ``None``.
+
+        Returns
+        -------
+        str
+            ID of the created placeholder.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        pass
+
+    @abstractmethod
+    def assign_placeholder(self, property_name: str, placeholder_id: str) -> None:
+        """Assign a placeholder to a node property.
+
+        .. note:: Method is supported for Ansys optiSLang version >= 26.1 only.
+
+        Parameters
+        ----------
+        property_name : str
+            Name of the node property to assign placeholder to.
+        placeholder_id : str
+            ID of the placeholder to assign.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        pass
+
+    @abstractmethod
+    def unassign_placeholder(self, property_name: str) -> None:
+        """Remove placeholder assignment from a node property.
+
+        .. note:: Method is supported for Ansys optiSLang version >= 26.1 only.
+
+        Parameters
+        ----------
+        property_name : str
+            Name of the node property to remove placeholder assignment from.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        pass
+
 
 class IntegrationNode(Node):
     """Base class for classes which provide for creating and operating on an integration node."""
