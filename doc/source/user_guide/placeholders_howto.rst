@@ -1,39 +1,46 @@
 .. _placeholders_howto:
 
-Working with Placeholders
+Working with placeholders
 =========================
 
-This guide provides comprehensive instructions for working with placeholders in the optiSLang Python API. Placeholders are named parameters that can be used throughout your optiSLang project to parameterize models and analyses.
+This guide provides instructions for working with placeholders in optiSLang.
 
 Overview
 --------
 
-Placeholders in optiSLang serve as named parameters that can store values of different data types and can be used throughout your optiSLang project to parameterize models and analyses. Each placeholder has:
+In optiSlang, placeholders are variables that can be assigned to workflow component (node) properties, allowing you to easily update properties in more than one workflow component at a time. You can also use placeholders to directly expose workflow component properties for external modification (for example, by a user of an optiSLang App or the command line interface).
 
+Each placeholder has the following attributes:
+
+- **ID**: A unique identifier for the placeholder
 - **Data Type**: Specifies what kind of data the placeholder can hold (string, real number, boolean, etc.)
 - **User Level**: Controls which user roles can modify the placeholder
+- **Description**: Optional documentation about the placeholder's purpose
+
+Depending on the desired use case, placeholders can either store fixed values or be composed out of other placeholders via a macro expression. The respective attributes are:
+
 - **Value**: The current value stored in the placeholder
 - **Range**: The range of allowed values
-- **Description**: Optional documentation about the placeholder's purpose
-- **Macro Expression**: Instead of storing a fixed value, a placeholder can be composed out of other placeholders via a macro expression
+- **Macro Expression**: The macro expression defining the placeholder's composition. See "Placeholder Macro Language" in the optiSLang documentation for more information.
 
-Placeholders can be:
+API capabilities for managing placeholders include:
 
-- Created with specific data types and user access levels
-- Assigned values appropriate to their data type
-- Queried and filtered by ID patterns
-- Renamed and removed
-- Assigned to and unassigned from node properties
+- Creating placeholders with specific data types and user access levels
+- Assigning values appropriate to their data type
+- Querying and filtering by ID patterns
+- Renaming and removing
+- Assigning to and unassigning from node properties
 
-The API supports both project-level operations for managing placeholders globally and node-level operations for creating placeholders from node properties and managing assignments to them.
+The API supports both project-level operations (via :py:class:`Project <ansys.optislang.core.project.Project>` class) for managing placeholders globally and node-level operations (via :py:class:`Node <ansys.optislang.core.nodes.Node>` class) for creating placeholders from node properties and managing assignments to them.
 
-Creating Placeholders
+Creating placeholders
 ---------------------
 
-Creating placeholders requires specifying a value, data type, and user level using the appropriate enums.
+Placeholders are intended to be values stored separately from the workflow components in the project and then assigned to one or multiple workflow component properties.
+Creating placeholders can be achieved by either creating a stand-alone (unassigned) one (via :py:meth:`create_placeholder() <ansys.optislang.core.project.Project.create_placeholder>`) and then assign it to a workflow component property (via :py:meth:`assign_placeholder() <ansys.optislang.core.nodes.Node.assign_placeholder>`) or directly creating the placeholder from a workflow component property (via via :py:meth:`create_placeholder_from_property() <ansys.optislang.core.nodes.Node.create_placeholder_from_property>`).
 
-Basic Example
-~~~~~~~~~~~~~
+Variant 1 - Step 1: Create stand-alone placeholder
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. code-block:: python
 
@@ -42,176 +49,56 @@ Basic Example
 
     # Connect to optiSLang
     osl = Optislang()
-    
+
     # Create a real number placeholder for thickness
     thickness_id = osl.project.create_placeholder(
         value=5.0,
         placeholder_id="thickness",
         type_=PlaceholderType.REAL,
         user_level=UserLevel.COMPUTATION_ENGINEER,
-        description="Plate thickness in mm"
+        description="Plate thickness in mm",
     )
-    
+
     # Create a string placeholder for material name
     material_id = osl.project.create_placeholder(
         value="Steel",
         placeholder_id="material_name",
         type_=PlaceholderType.STRING,
         user_level=UserLevel.FLOW_ENGINEER,
-        description="Material name"
+        description="Material name",
     )
-    
-    # Create a boolean placeholder for optimization flag
-    optimization_flag = osl.project.create_placeholder(
-        value=True,
-        placeholder_id="enable_optimization",
-        type_=PlaceholderType.BOOL,
-        user_level=UserLevel.COMPUTATION_ENGINEER,
-        description="Enable optimization process"
-    )
-    
-    # Create an integer placeholder for iteration count
-    max_iter_id = osl.project.create_placeholder(
-        value=100,
-        placeholder_id="max_iterations",
+
+    # Create an integer placeholder for maximum number of parallel executions
+    global_max_parallel_id = osl.project.create_placeholder(
+        value=8,
+        placeholder_id="global_max_parallel",
         type_=PlaceholderType.INT,
         user_level=UserLevel.FLOW_ENGINEER,
-        description="Maximum number of iterations"
+        description="Maximum number of parallel executions",
     )
 
-Querying Placeholders
----------------------
+Variant 1 - Step 2: Assigning existing placeholders
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-You can query existing placeholders to retrieve information about their properties, values, and assignments.
-
-Getting All Placeholder IDs
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Placeholders are type-specific. A placeholder can be assigned to a project property only if they share the same data type.
 
 .. code-block:: python
 
-    # Get all placeholder IDs in the project
-    placeholder_ids = osl.project.get_placeholder_ids()
-    
-    print(f"Found {len(placeholder_ids)} placeholders:")
-    for placeholder_id in placeholder_ids:
-        print(f"  - {placeholder_id}")
+    from ansys.optislang.core.placeholder_types import PlaceholderType, UserLevel
 
-Getting Placeholder Information
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    # Get a node reference
+    root_system = osl.project.root_system
+    mop_solver_node = root_system.create_node(
+        type_=node_types.Mopsolver, name="MOPSolver Node"
+    )
 
-.. code-block:: python
+    # Assign the placeholder to a node property
+    mop_solver_node.assign_placeholder(
+        property_name="MaxParallel", placeholder_id="max_parallel"
+    )
 
-    # Get detailed information about a specific placeholder
-    placeholder_info = osl.project.get_placeholder("thickness")
-    
-    print(f"Placeholder ID: {placeholder_info.placeholder_id}")
-    print(f"Type: {placeholder_info.type}")
-    print(f"User Level: {placeholder_info.user_level}")
-    print(f"Description: {placeholder_info.description}")
-    print(f"Current Value: {placeholder_info.value}")
-    
-    # Get information about all placeholders
-    placeholder_ids = osl.project.get_placeholder_ids()
-    for placeholder_id in placeholder_ids:
-        info = osl.project.get_placeholder(placeholder_id)
-        print(f"ID: {info.placeholder_id}, Type: {info.type}, Value: {info.value}")
-
-Setting Placeholder Values
---------------------------
-
-After creating placeholders, you can set their values using the available API methods.
-
-.. code-block:: python
-
-    # Set a placeholder value
-    osl.project.set_placeholder_value("thickness", 7.5)
-    
-    # Set different types of values
-    osl.project.set_placeholder_value("material_name", "Steel")
-    osl.project.set_placeholder_value("use_optimization", True)
-    osl.project.set_placeholder_value("load_factor", 1.25)
-
-Validating Placeholder Updates
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-.. code-block:: python
-
-    # Set a value and verify it was updated
-    new_value = 8.5
-    osl.project.set_placeholder_value("thickness", new_value)
-    
-    # Verify the update
-    placeholder_info = osl.project.get_placeholder("thickness")
-    current_value = placeholder_info.value
-    
-    if current_value == new_value:
-        print(f"✓ Successfully updated thickness to {new_value}")
-    else:
-        print(f"✗ Update failed. Expected {new_value}, got {current_value}")
-
-Renaming Placeholders
----------------------
-
-Placeholders can be renamed while preserving their values and assignments.
-
-.. code-block:: python
-
-    # Rename a placeholder
-    try:
-        osl.project.rename_placeholder("old_name", "new_name")
-        print("Placeholder renamed successfully")
-    except Exception as e:
-        print(f"Failed to rename placeholder: {e}")
-
-    # Rename with validation
-    old_id = "thickness"
-    new_id = "plate_thickness"
-    
-    # Check if old placeholder exists
-    placeholder_ids = osl.project.get_placeholder_ids()
-    if old_id in placeholder_ids:
-        try:
-            osl.project.rename_placeholder(old_id, new_id)
-            print(f"✓ Renamed '{old_id}' to '{new_id}'")
-        except Exception as e:
-            print(f"✗ Rename failed: {e}")
-    else:
-        print(f"✗ Placeholder '{old_id}' does not exist")
-
-Removing Placeholders
----------------------
-
-Placeholders can be removed from the project when no longer needed.
-
-.. code-block:: python
-
-    # Remove a placeholder by ID
-    try:
-        osl.project.remove_placeholder("unused_parameter")
-        print("Placeholder removed successfully")
-    except Exception as e:
-        print(f"Failed to remove placeholder: {e}")
-
-    # Remove with existence check
-    placeholder_id = "old_placeholder"
-    placeholder_ids = osl.project.get_placeholder_ids()
-    
-    if placeholder_id in placeholder_ids:
-        try:
-            osl.project.remove_placeholder(placeholder_id)
-            print(f"✓ Removed placeholder '{placeholder_id}'")
-        except Exception as e:
-            print(f"✗ Failed to remove '{placeholder_id}': {e}")
-    else:
-        print(f"Placeholder '{placeholder_id}' does not exist")
-
-Assigning Placeholders to Nodes
--------------------------------
-
-Placeholders can be assigned to specific node properties in your optiSLang workflow to parameterize their behavior.
-
-Creating Placeholders from Node Properties
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Variant 2: Creating placeholders directly from node properties
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. code-block:: python
 
@@ -219,64 +106,50 @@ Creating Placeholders from Node Properties
 
     # Get a node reference
     root_system = osl.project.root_system
-    calculator_node = root_system.create_node(
-        type_=node_types.CalculatorSet, 
-        name="Calculator"
+    mop_solver_node = root_system.create_node(
+        type_=node_types.Mopsolver, name="MOPSolver Node"
     )
-    
+
     # Create a placeholder from a node property
-    placeholder_id = calculator_node.create_placeholder_from_property(
-        property_name="RetryEnable",
-        placeholder_id="retry_enabled"
+    placeholder_id = mop_solver_node.create_placeholder_from_property(
+        property_name="MaxParallel", placeholder_id="max_parallel"
     )
     print(f"Created placeholder: {placeholder_id}")
-    
+
     # Create placeholder with auto-generated ID
-    auto_id = calculator_node.create_placeholder_from_property(
-        property_name="MaxIterations"
-    )
+    auto_id = mop_solver_node.create_placeholder_from_property(property_name="RetryCount")
     print(f"Auto-generated placeholder ID: {auto_id}")
 
-Creating Expression Placeholders
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Creating placeholders with macro expressions
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+optiSLang allows you to define macro expressions. Macro expressions create placeholder values composed of other user-defined placeholders or predefined constants. By using macro expressions, complex workflow component properties like algorithm systems parametric can be assembled out of separate placeholder values for e.g parameter reference values or ranges. The separate placeholders can then be configured to be accessible externally.
+The macro language slightly differs between the types, but all types share the same rules for placeholder substitution, text concatenation, and literal escaping. Please refer to the optiSLang documentation on more information on the macro language syntax.
 
 .. code-block:: python
 
-    # Create a placeholder as an expression from a node property
-    expression_id = calculator_node.create_placeholder_from_property(
-        property_name="RetryEnable",
-        placeholder_id="retry_expression",
-        create_as_expression=True
+    # Get a node reference
+    root_system = osl.project.root_system
+    mop_solver_node = root_system.create_node(
+        type_=node_types.Mopsolver, name="MOPSolver Node"
     )
-    print(f"Created expression placeholder: {expression_id}")
 
-Assigning Existing Placeholders
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-.. code-block:: python
-
-    from ansys.optislang.core.placeholder_types import PlaceholderType, UserLevel
-
-    # First create a boolean placeholder
-    placeholder_id = osl.project.create_placeholder(
-        value=True,
-        placeholder_id="global_retry_flag",
-        type_=PlaceholderType.BOOL,
-        user_level=UserLevel.COMPUTATION_ENGINEER,
-        description="Global retry flag for all calculations"
+    # Create a placeholder as an expression from a node property. The placeholder will be assigned to the node property. The property value will be used as expression value by default.
+    placeholder_id = mop_solver_node.create_placeholder_from_property(
+        property_name="MaxParallel", create_as_expression=True
     )
-    
-    # Assign the placeholder to a node property
-    calculator_node.assign_placeholder(
-        property_name="RetryEnable",
-        placeholder_id="global_retry_flag"
-    )
-    print("Placeholder assigned to node property")
+    print(f"Created expression placeholder: {placeholder_id}")
 
-Unassigning Placeholders from Nodes
+    # You can also directly specify the expression.
+    placeholder_id_2 = mop_solver_node.create_placeholder_from_property(
+        property_name="MaxParallel", expression="global_max_parallel/2"
+    )
+    print(f"Created expression placeholder: {placeholder_id_2}")
+
+Unassigning placeholders from nodes
 -----------------------------------
 
-Placeholders can be unassigned from node properties when their parameterization is no longer needed.
+Placeholders can be unassigned from node properties when their parameterization is no longer needed by using :py:meth:`unassign_placeholder() <ansys.optislang.core.nodes.Node.unassign_placeholder>`.
 
 .. code-block:: python
 
@@ -286,3 +159,108 @@ Placeholders can be unassigned from node properties when their parameterization 
         print("✓ Placeholder unassigned from RetryEnable property")
     except Exception as e:
         print(f"✗ Failed to unassign placeholder: {e}")
+
+
+Querying placeholders
+---------------------
+
+You can query existing placeholders to retrieve information about their configuration by using :py:meth:`get_placeholder_ids() <ansys.optislang.core.project.Project.get_placeholder_ids>` and :py:meth:`get_placeholder() <ansys.optislang.core.project.Project.get_placeholder>`.
+
+Getting all placeholder IDs
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. code-block:: python
+
+    # Get all placeholder IDs in the project
+    placeholder_ids = osl.project.get_placeholder_ids()
+
+    print(f"Found {len(placeholder_ids)} placeholders:")
+    for placeholder_id in placeholder_ids:
+        print(f"  - {placeholder_id}")
+
+Getting placeholder information
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. code-block:: python
+
+    # Get detailed information about a specific placeholder
+    placeholder_info = osl.project.get_placeholder("thickness")
+
+    print(f"Placeholder ID: {placeholder_info.placeholder_id}")
+    print(f"Type: {placeholder_info.type}")
+    print(f"User Level: {placeholder_info.user_level}")
+    print(f"Description: {placeholder_info.description}")
+    print(f"Current Value: {placeholder_info.value}")
+
+    # Get information about all placeholders
+    placeholder_ids = osl.project.get_placeholder_ids()
+    for placeholder_id in placeholder_ids:
+        info = osl.project.get_placeholder(placeholder_id)
+        print(f"ID: {info.placeholder_id}, Type: {info.type}, Value: {info.value}")
+
+Editing placeholder configuration and setting values
+----------------------------------------------------
+
+After creating placeholders, you can modify their configuration by using :py:meth:`create_placeholder() <ansys.optislang.core.project.Project.create_placeholder>` again and specifying the ``overwrite`` argument.
+As a convenience you can use :py:meth:`set_placeholder_value() <ansys.optislang.core.project.Project.set_placeholder_value>` to set their values specifically.
+
+.. code-block:: python
+
+    # Modify one or multiple configuration entries of a placeholder
+    osl.project.create_placeholder(
+        placeholder_id="global_max_parallel",
+        value=18,
+        description="Adapted description for maximum number of parallel executions",
+        overwrite=True,
+    )
+
+    # Set a placeholder value specifically
+    osl.project.set_placeholder_value("thickness", 7.5)
+
+Validating placeholder updates
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. code-block:: python
+
+    # Set a value and verify it was updated
+    new_value = 8.5
+    osl.project.set_placeholder_value("thickness", new_value)
+
+    # Verify the update
+    placeholder_info = osl.project.get_placeholder("thickness")
+    current_value = placeholder_info.value
+
+    if current_value == new_value:
+        print(f"✓ Successfully updated thickness to {new_value}")
+    else:
+        print(f"✗ Update failed. Expected {new_value}, got {current_value}")
+
+Renaming placeholders
+---------------------
+
+Placeholders can be renamed while preserving their values and assignments by using :py:meth:`rename_placeholder() <ansys.optislang.core.project.Project.rename_placeholder>`.
+
+.. code-block:: python
+
+    # Rename a placeholder
+    old_id = "thickness"
+    new_id = "plate_thickness"
+    try:
+        osl.project.rename_placeholder(old_id, new_id)
+        print(f"✓ Renamed '{old_id}' to '{new_id}'")
+    except Exception as e:
+        print(f"Failed to rename placeholder: {e}")
+
+Removing placeholders
+---------------------
+
+Placeholders can be removed from the project when no longer needed by using :py:meth:`remove_placeholder() <ansys.optislang.core.project.Project.remove_placeholder>`.
+
+.. code-block:: python
+
+    # Remove a placeholder by ID
+    try:
+        osl.project.remove_placeholder("plate_thickness")
+        print("Placeholder removed successfully")
+    except Exception as e:
+        print(f"Failed to remove placeholder: {e}")
