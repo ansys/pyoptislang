@@ -59,7 +59,7 @@ from ansys.optislang.core.json_utils import _get_enum_value
 from ansys.optislang.core.node_types import AddinType, NodeType
 from ansys.optislang.core.osl_process import OslServerProcess, ServerNotification
 from ansys.optislang.core.osl_server import OslServer, OslVersion
-from ansys.optislang.core.placeholder_types import PlaceholderType, UserLevel, PlaceholderInfo
+from ansys.optislang.core.placeholder_types import PlaceholderInfo, PlaceholderType, UserLevel
 from ansys.optislang.core.slot_types import SlotTypeHint
 from ansys.optislang.core.tcp import server_commands as commands
 from ansys.optislang.core.tcp import server_queries as queries
@@ -2943,23 +2943,23 @@ class TcpOslServer(OslServer):
             timeout=self.timeouts_register.get_value(current_func_name),
             max_request_attempts=self.max_request_attempts_register.get_value(current_func_name),
         )["placeholder"]
-        
+
         # Transform raw C++ JSON response to structured PlaceholderInfo
         # C++ returns "name" which we map to "placeholder_id"
         ph_id = raw_data.get("name", placeholder_id)
-        
+
         # Convert string values to proper enums
         user_level_str = raw_data.get("user_level", "computation_engineer")
         user_level = UserLevelTCP.from_str(_get_enum_value(user_level_str)).to_user_level()
-        
+
         type_str = raw_data.get("type", "string")
         ph_type = PlaceholderTypeTCP.from_str(_get_enum_value(type_str)).to_placeholder_type()
-        
+
         description = raw_data.get("description", "")
         range_val = raw_data.get("range", "")
         value = raw_data.get("value")
         expression = raw_data.get("expression")
-        
+
         return PlaceholderInfo(
             placeholder_id=ph_id,
             user_level=user_level,
@@ -2967,7 +2967,7 @@ class TcpOslServer(OslServer):
             description=description,
             range=range_val,
             value=value,
-            expression=expression
+            expression=expression,
         )
 
     def create_placeholder(

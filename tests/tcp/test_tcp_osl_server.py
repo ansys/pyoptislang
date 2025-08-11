@@ -1211,7 +1211,7 @@ def test_get_placeholder(osl_server_process: OslServerProcess):
     placeholder_info = tcp_osl_server.get_placeholder(placeholder_id)
 
     # Verify the result
-    assert hasattr(placeholder_info, 'placeholder_id')
+    assert hasattr(placeholder_info, "placeholder_id")
     assert placeholder_info.placeholder_id == placeholder_id
 
     tcp_osl_server.shutdown()

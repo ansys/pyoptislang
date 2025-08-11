@@ -27,7 +27,7 @@ from __future__ import annotations
 from enum import Enum
 from typing import cast
 
-from ansys.optislang.core.placeholder_types import PlaceholderType, UserLevel, PlaceholderInfo
+from ansys.optislang.core.placeholder_types import PlaceholderType, UserLevel
 
 
 class PlaceholderTypeTCP(Enum):

@@ -2034,8 +2034,8 @@ def test_create_placeholder_with_enums():
         args = dictionary["projects"][0]["commands"][0]["args"]
         assert args["type"] == placeholder_type.value
         assert args["placeholder_id"] == f"test_{placeholder_type.name.lower()}"
-    
-    # Test all UserLevel enum values  
+
+    # Test all UserLevel enum values
     for user_level in UserLevel:
         json_string = sc.create_placeholder(
             value="test",
@@ -2046,7 +2046,7 @@ def test_create_placeholder_with_enums():
         args = dictionary["projects"][0]["commands"][0]["args"]
         assert args["user_level"] == user_level.value
         assert args["placeholder_id"] == f"test_{user_level.name.lower()}"
-    
+
     # Test combination of both enums
     json_string = sc.create_placeholder(
         value=3.14,

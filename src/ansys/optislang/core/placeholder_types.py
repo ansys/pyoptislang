@@ -25,7 +25,7 @@
 from __future__ import annotations
 
 from enum import Enum
-from typing import NamedTuple, Optional, Any, Union
+from typing import Any, NamedTuple, Optional
 
 
 class PlaceholderType(Enum):
@@ -53,7 +53,7 @@ class UserLevel(Enum):
 
 class PlaceholderInfo(NamedTuple):
     """Information about a placeholder returned by get_placeholder method.
-    
+
     Attributes
     ----------
     placeholder_id : str
@@ -71,6 +71,7 @@ class PlaceholderInfo(NamedTuple):
     expression : Optional[str]
         Expression associated with the placeholder (if it's a macro).
     """
+
     placeholder_id: str
     user_level: UserLevel
     type: PlaceholderType
