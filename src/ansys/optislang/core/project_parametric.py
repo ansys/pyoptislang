@@ -378,7 +378,7 @@ class ResponseValueType(Enum):
         ValueError
             Raised when invalid value of ``string`` was given.
         """
-        return enum_from_str(string=string, enum_class=cls)
+        return enum_from_str(string=string, enum_class=cls, replace=("_", ""))
 
 
 # endregion
@@ -3173,7 +3173,9 @@ class Response:
         elif isinstance(reference_value, dict):
             if reference_value.get("type") == "signal":
                 return ResponseValueType.SIGNAL
-            elif reference_value.get("type") == "xydata":
+            elif (
+                reference_value.get("type") == "xydata" or reference_value.get("type") == "xy_data"
+            ):
                 return ResponseValueType.XYDATA
             else:
                 return ResponseValueType.UNINITIALIZED
