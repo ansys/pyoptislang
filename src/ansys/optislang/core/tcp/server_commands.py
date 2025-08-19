@@ -489,22 +489,28 @@ def create_placeholder(
 
     Parameters
     ----------
-    value: Optional[Any], optional
+    value : Optional[Any], optional
         Value for the placeholder, by default ``None``.
-    placeholder_id: Optional[str], optional
+        If neither value nor expression are specified, the placeholder will be created
+        with a suitable default value.
+        If specified, the value must be of a type compatible with the placeholder type.
+    placeholder_id : Optional[str], optional
         Desired placeholder ID, by default ``None``.
-    overwrite: bool, optional
+        If not specified, a unique ID will be generated.
+    overwrite : bool, optional
         Whether to overwrite existing placeholder, by default ``False``.
-    user_level: Optional[UserLevel], optional
+    user_level : Optional[UserLevel], optional
         User level for the placeholder, by default ``None``.
-    description: Optional[str], optional
-        Description for the placeholder, by default ``None``.
-    range_: Optional[str], optional
-        Range for the placeholder, by default ``None``.
-    type_: Optional[PlaceholderType], optional
+        If not specified, the default user level will be used.
+    description : Optional[str], optional
+        Description of the placeholder, by default ``None``.
+    range_ : Optional[str], optional
+        Range of the placeholder, by default ``None``.
+    type_ : Optional[PlaceholderType], optional
         Type of the placeholder, by default ``None``.
-    expression: Optional[str], optional
-        Expression for the placeholder, by default ``None``.
+        If not specified, the UNKNOWN type will be used.
+    expression : Optional[str], optional
+        Macro expression for the placeholder, by default ``None``.
     password : Optional[str], optional
         Password, by default ``None``.
 
