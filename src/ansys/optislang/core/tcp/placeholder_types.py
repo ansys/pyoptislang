@@ -25,7 +25,6 @@
 from __future__ import annotations
 
 from enum import Enum
-from typing import cast
 
 from ansys.optislang.core.placeholder_types import PlaceholderType, UserLevel
 
@@ -52,7 +51,7 @@ class PlaceholderTypeTCP(Enum):
         Parameters
         ----------
         string: str
-            String to be converted.
+            String representation of the enum to be converted.
 
         Returns
         -------
@@ -66,7 +65,12 @@ class PlaceholderTypeTCP(Enum):
         ValueError
             Raised when an invalid value of ``string`` is given.
         """
-        return cast(PlaceholderTypeTCP, cls._value2member_map_[string])
+        if not isinstance(string, str):
+            raise TypeError(f"String was expected, but `{type(string)}` was given.")
+        try:
+            return cls(string)
+        except ValueError as exc:
+            raise ValueError(f"{string} is not a valid {cls.__name__}") from exc
 
     def to_placeholder_type(self) -> PlaceholderType:
         """Convert instance of the ``PlaceholderTypeTCP`` class to general PlaceholderType.
@@ -92,7 +96,7 @@ class UserLevelTCP(Enum):
         Parameters
         ----------
         string: str
-            String to be converted.
+            String representation of the enum to be converted.
 
         Returns
         -------
@@ -106,7 +110,12 @@ class UserLevelTCP(Enum):
         ValueError
             Raised when an invalid value of ``string`` is given.
         """
-        return cast(UserLevelTCP, cls._value2member_map_[string])
+        if not isinstance(string, str):
+            raise TypeError(f"String was expected, but `{type(string)}` was given.")
+        try:
+            return cls(string)
+        except ValueError as exc:
+            raise ValueError(f"'{string}' is not a valid {cls.__name__}") from exc
 
     def to_user_level(self) -> UserLevel:
         """Convert instance of the ``UserLevelTCP`` class to general UserLevel.

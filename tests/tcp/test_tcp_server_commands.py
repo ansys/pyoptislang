@@ -28,6 +28,7 @@ import pytest
 from ansys.optislang.core.placeholder_types import PlaceholderType, UserLevel
 from ansys.optislang.core.slot_types import SlotTypeHint
 from ansys.optislang.core.tcp import server_commands as sc
+from ansys.optislang.core.tcp.placeholder_types import PlaceholderTypeTCP, UserLevelTCP
 
 actor_uid = "5cdfb20b-bef6-4412-9985-89f5ded5ee95"
 uid = "d2ab72dd-0d46-488a-aa05-0ddc19794c60"
@@ -2032,7 +2033,7 @@ def test_create_placeholder_with_enums():
         )
         dictionary = json.loads(json_string)
         args = dictionary["projects"][0]["commands"][0]["args"]
-        assert args["type"] == placeholder_type.value
+        assert args["type"] == PlaceholderTypeTCP[placeholder_type.name].value
         assert args["placeholder_id"] == f"test_{placeholder_type.name.lower()}"
 
     # Test all UserLevel enum values
@@ -2044,7 +2045,7 @@ def test_create_placeholder_with_enums():
         )
         dictionary = json.loads(json_string)
         args = dictionary["projects"][0]["commands"][0]["args"]
-        assert args["user_level"] == user_level.value
+        assert args["user_level"] == UserLevelTCP[user_level.name].value
         assert args["placeholder_id"] == f"test_{user_level.name.lower()}"
 
     # Test combination of both enums

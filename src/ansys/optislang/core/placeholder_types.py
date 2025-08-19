@@ -31,24 +31,24 @@ from typing import Any, NamedTuple, Optional
 class PlaceholderType(Enum):
     """Provides supported placeholder types."""
 
-    UNKNOWN = "unknown"
-    STRING = "string"
-    SPLIT_PATH = "split_path"
-    RELATIVE_SPLIT_PATH = "relative_split_path"
-    PATH = "path"
-    UINT = "uint"
-    INT = "int"
-    STRING_LIST = "string_list"
-    REAL = "real"
-    BOOL = "bool"
-    PROVIDED_PATH = "provided_path"
+    UNKNOWN = 0
+    STRING = 1
+    SPLIT_PATH = 2
+    RELATIVE_SPLIT_PATH = 3
+    PATH = 4
+    UINT = 5
+    INT = 6
+    STRING_LIST = 7
+    REAL = 8
+    BOOL = 9
+    PROVIDED_PATH = 10
 
 
 class UserLevel(Enum):
     """Provides supported user levels for placeholders."""
 
-    COMPUTATION_ENGINEER = "computation_engineer"
-    FLOW_ENGINEER = "flow_engineer"
+    COMPUTATION_ENGINEER = 0
+    FLOW_ENGINEER = 1
 
 
 class PlaceholderInfo(NamedTuple):
