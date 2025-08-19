@@ -577,7 +577,7 @@ class TcpProjectProxy(Project):
 
     def create_placeholder(
         self,
-        value: Union[str, int, float, bool],
+        value: Optional[Any] = None,
         placeholder_id: Optional[str] = None,
         overwrite: bool = False,
         user_level: Optional[UserLevel] = None,
@@ -592,8 +592,8 @@ class TcpProjectProxy(Project):
 
         Parameters
         ----------
-        value : Union[str, int, float, bool]
-            Value of the placeholder.
+        value : Optional[Any], optional
+            Value for the placeholder, by default ``None``.
         placeholder_id : Optional[str], optional
             Desired placeholder ID, by default ``None``.
         overwrite : bool, optional
