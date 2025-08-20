@@ -32,6 +32,8 @@ example_dict = {"feature": "CAN_FINALIZE"}
 example_hid = "0.1"
 example_slot = "MySlot"
 example_password = "otislang.-*123"
+# Placeholder test constants
+placeholder_id = "test_placeholder"
 
 
 def test_actor_info():
@@ -568,3 +570,44 @@ def test_systems_status_info():
     assert dictionary["Password"] == example_password
     with pytest.raises(TypeError):
         sq.systems_status_info(rand_arg=example_uid)
+
+
+# =============================================================================
+# Placeholder query tests
+# =============================================================================
+
+
+def test_get_placeholder_ids():
+    """Test get_placeholder_ids."""
+    # basic
+    json_string = sq.get_placeholder_ids()
+    dictionary = json.loads(json_string)
+    required_string = json.loads('{ "What": "GET_PLACEHOLDER_IDS" }')
+    assert type(json_string) == str
+    assert sorted(dictionary.items()) == sorted(required_string.items())
+
+    # with password
+    json_string = sq.get_placeholder_ids(password=example_password)
+    dictionary = json.loads(json_string)
+    assert dictionary["Password"] == example_password
+
+
+def test_get_placeholder():
+    """Test get_placeholder."""
+    # basic
+    json_string = sq.get_placeholder(placeholder_id=placeholder_id)
+    dictionary = json.loads(json_string)
+    required_string = json.loads(
+        '{ "What": "GET_PLACEHOLDER", "args": { "placeholder_id": "test_placeholder" } }'
+    )
+    assert type(json_string) == str
+    assert sorted(dictionary.items()) == sorted(required_string.items())
+
+    # with password
+    json_string = sq.get_placeholder(placeholder_id=placeholder_id, password=example_password)
+    dictionary = json.loads(json_string)
+    assert dictionary["Password"] == example_password
+
+    # test required parameters
+    with pytest.raises(TypeError):
+        sq.get_placeholder()
