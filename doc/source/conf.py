@@ -157,9 +157,12 @@ html_theme_options = {
 }
 
 html_context = {
-    "display_github": True,  # Integrate GitHub
+    "display_github": True,
     "github_user": "pyansys",
     "github_repo": "pyoptislang",
     "github_version": "main",
     "doc_path": "doc/source",
+    "pyansys_tags": [
+        "Connect"
+    ]
 }
