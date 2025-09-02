@@ -481,6 +481,9 @@ def test_get_omdb_files(optislang: Optislang, tmp_example_project):
 
 def test_node_placeholder_methods(optislang: Optislang):
     """Test node placeholder management methods."""
+    if optislang.osl_version < OslVersion(26, 1, 0, 0):
+        pytest.skip(f"Not compatible with {optislang.osl_version_string}")
+
     project = optislang.project
     root_system = project.root_system
 
