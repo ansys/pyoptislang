@@ -1141,6 +1141,8 @@ def test_force_shutdown_local_process():
 def test_get_placeholder_ids(osl_server_process: OslServerProcess):
     """Test get_placeholder_ids method."""
     tcp_osl_server = create_tcp_osl_server(osl_server_process)
+    if tcp_osl_server.osl_version < OslVersion(26, 1, 0, 0):
+        pytest.skip(f"Not compatible with {tcp_osl_server.osl_version_string}")
 
     # Get placeholder IDs (should return empty list for new project)
     placeholder_ids = tcp_osl_server.get_placeholder_ids()
@@ -1155,6 +1157,8 @@ def test_get_placeholder_ids(osl_server_process: OslServerProcess):
 def test_create_placeholder(osl_server_process: OslServerProcess):
     """Test create_placeholder method."""
     tcp_osl_server = create_tcp_osl_server(osl_server_process)
+    if tcp_osl_server.osl_version < OslVersion(26, 1, 0, 0):
+        pytest.skip(f"Not compatible with {tcp_osl_server.osl_version_string}")
 
     # Create a placeholder with minimal arguments
     placeholder_id = tcp_osl_server.create_placeholder(value=42.5)
@@ -1174,6 +1178,8 @@ def test_create_placeholder(osl_server_process: OslServerProcess):
 def test_create_placeholder_with_all_options(osl_server_process: OslServerProcess):
     """Test create_placeholder method with all optional parameters."""
     tcp_osl_server = create_tcp_osl_server(osl_server_process)
+    if tcp_osl_server.osl_version < OslVersion(26, 1, 0, 0):
+        pytest.skip(f"Not compatible with {tcp_osl_server.osl_version_string}")
 
     # Create a placeholder with all arguments
     placeholder_id = tcp_osl_server.create_placeholder(
@@ -1201,6 +1207,8 @@ def test_create_placeholder_with_all_options(osl_server_process: OslServerProces
 def test_get_placeholder(osl_server_process: OslServerProcess):
     """Test get_placeholder method."""
     tcp_osl_server = create_tcp_osl_server(osl_server_process)
+    if tcp_osl_server.osl_version < OslVersion(26, 1, 0, 0):
+        pytest.skip(f"Not compatible with {tcp_osl_server.osl_version_string}")
 
     # First create a placeholder
     placeholder_id = tcp_osl_server.create_placeholder(
@@ -1221,6 +1229,8 @@ def test_get_placeholder(osl_server_process: OslServerProcess):
 def test_set_placeholder_value(osl_server_process: OslServerProcess):
     """Test set_placeholder_value method."""
     tcp_osl_server = create_tcp_osl_server(osl_server_process)
+    if tcp_osl_server.osl_version < OslVersion(26, 1, 0, 0):
+        pytest.skip(f"Not compatible with {tcp_osl_server.osl_version_string}")
 
     # First create a placeholder
     placeholder_id = tcp_osl_server.create_placeholder(value="initial_value")
@@ -1237,6 +1247,8 @@ def test_set_placeholder_value(osl_server_process: OslServerProcess):
 def test_rename_placeholder(osl_server_process: OslServerProcess):
     """Test rename_placeholder method."""
     tcp_osl_server = create_tcp_osl_server(osl_server_process)
+    if tcp_osl_server.osl_version < OslVersion(26, 1, 0, 0):
+        pytest.skip(f"Not compatible with {tcp_osl_server.osl_version_string}")
 
     # First create a placeholder
     old_id = tcp_osl_server.create_placeholder(value="test_value", placeholder_id="old_param")
@@ -1256,6 +1268,8 @@ def test_rename_placeholder(osl_server_process: OslServerProcess):
 def test_remove_placeholder(osl_server_process: OslServerProcess):
     """Test remove_placeholder method."""
     tcp_osl_server = create_tcp_osl_server(osl_server_process)
+    if tcp_osl_server.osl_version < OslVersion(26, 1, 0, 0):
+        pytest.skip(f"Not compatible with {tcp_osl_server.osl_version_string}")
 
     # First create a placeholder
     placeholder_id = tcp_osl_server.create_placeholder(
@@ -1280,6 +1294,8 @@ def test_remove_placeholder(osl_server_process: OslServerProcess):
 def test_create_placeholder_from_actor_property(osl_server_process: OslServerProcess):
     """Test create_placeholder_from_actor_property method."""
     tcp_osl_server = create_tcp_osl_server(osl_server_process)
+    if tcp_osl_server.osl_version < OslVersion(26, 1, 0, 0):
+        pytest.skip(f"Not compatible with {tcp_osl_server.osl_version_string}")
 
     # Create a node first
     node_uid = tcp_osl_server.create_node(type_="CalculatorSet")
@@ -1319,6 +1335,8 @@ def test_create_placeholder_from_actor_property(osl_server_process: OslServerPro
 def test_assign_unassign_placeholder(osl_server_process: OslServerProcess):
     """Test assign_placeholder and unassign_placeholder methods."""
     tcp_osl_server = create_tcp_osl_server(osl_server_process)
+    if tcp_osl_server.osl_version < OslVersion(26, 1, 0, 0):
+        pytest.skip(f"Not compatible with {tcp_osl_server.osl_version_string}")
 
     # Create a node and placeholder
     node_uid = tcp_osl_server.create_node(type_="CalculatorSet")
