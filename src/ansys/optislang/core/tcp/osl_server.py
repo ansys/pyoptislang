@@ -35,6 +35,7 @@ import signal
 import socket
 import struct
 import sys
+import tempfile
 import threading
 import time
 from typing import Any, Callable, Dict, Iterable, List, Mapping, Optional, Sequence, Tuple, Union
@@ -43,6 +44,7 @@ import uuid
 from deprecated.sphinx import deprecated
 
 from ansys.optislang.core import utils
+from ansys.optislang.core.communication_channels import CommunicationChannel
 from ansys.optislang.core.encoding import force_bytes, force_text
 from ansys.optislang.core.errors import (
     ConnectionEstablishedError,
@@ -308,6 +310,52 @@ class TcpClient:
             True if the connection has been established; False otherwise.
         """
         return self.__socket is not None
+
+    def connect_local(self, local_server_id: str, timeout: Optional[float] = 2) -> None:
+        """Connect to a local domain server.
+
+        Parameters
+        ----------
+        local_server_id : str
+            The ID of a running optiSLang local domain server to connect.
+        timeout : Optional[float], optional
+            Timeout in seconds to establish a connection. If a non-zero value is given,
+            the function will raise a timeout exception if the timeout period value has elapsed
+            before the operation has completed. If zero is given, the non-blocking mode is used.
+            If ``None`` is given, the blocking mode is used. Defaults to 2 s.
+
+        Raises
+        ------
+        ConnectionEstablishedError
+            Raised when the connection is already established.
+        ConnectionRefusedError
+            Raised when the connection cannot be established.
+        """
+        if self.__socket is not None:
+            raise ConnectionEstablishedError("Connection is already established.")
+
+        start_time = time.time()
+
+        # TODO, for Windows this needs to be a named pipe
+
+        try:
+            self.__socket = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+        except OSError:
+            self.__socket = None
+
+        self.__socket.settimeout(_get_current_timeout(timeout, start_time))
+        try:
+            self.__socket.connect(local_server_id)
+        except OSError:
+            self.__socket.close()
+            self.__socket = None
+
+        if self.__socket is None:
+            raise ConnectionRefusedError(
+                f"Connection could not be established to local server {local_server_id}."
+            )
+
+        self._logger.debug("Connection has been established to local server %s.", local_server_id)
 
     def connect(self, host: str, port: int, timeout: Optional[float] = 2) -> None:
         """Connect to the plain TCP/IP server.
@@ -704,6 +752,8 @@ class TcpOslListener:
             is given, the blocking mode is used.
         name: str
             Name of listener.
+        communication_channel: CommunicationChannel, optional
+            Communication channel. Defaults to ``CommunicationChannel.LOCAL_DOMAIN``.
         host: Optional[str], optional
             Local IPv6 address, by default ``None``.
         uid: Optional[str], optional
@@ -746,11 +796,13 @@ class TcpOslListener:
     >>> )
     """
 
+    _PRIVATE_PORTS_RANGE = (49152, 65535)
+
     def __init__(
         self,
-        port_range: Tuple[int, int],
         timeout: float,
         name: str,
+        communication_channel: CommunicationChannel = CommunicationChannel.LOCAL_DOMAIN,
         host: Optional[str] = None,
         uid: Optional[str] = None,
         logger: Optional[Any] = None,
@@ -760,29 +812,26 @@ class TcpOslListener:
         self.__uid = uid
         self.__name = name
         self.__timeout = timeout
+        self.__communication_channel = communication_channel
         self.__listener_socket: Optional[socket.socket] = None
         self.__thread: Optional[threading.Thread] = None
         self.__callbacks: List[Tuple[Callable, Any]] = []
         self.__run_listening_thread = False
         self.__refresh_listener_registration = False
         self.__notifications = notifications
+        self._local_server_id = None
 
         if logger is None:
             self._logger = logging.getLogger(__name__)
         else:
             self._logger = logger
 
-        if len(port_range) != 2:
-            raise ValueError(f"Port ranges length must be 2 but: len = {len(port_range)}")
-        if isinstance(port_range, (int, int)):
-            raise TypeError(
-                "Port range not type Tuple[int, int] but:"
-                f"[{type(port_range[0])}, {port_range[1]}]."
+        if self.__communication_channel == CommunicationChannel.LOCAL_DOMAIN:
+            self.__init_local_listener_socket()
+        elif self.__communication_channel == CommunicationChannel.TCP:
+            self.__init_listener_socket(
+                host=host if host is not None else "", port_range=self._PRIVATE_PORTS_RANGE
             )
-        if port_range[0] > port_range[1]:
-            raise ValueError("First number is higher.")
-
-        self.__init_listener_socket(host=host if host is not None else "", port_range=port_range)
 
     def is_initialized(self) -> bool:
         """Return True if listener was initialized."""
@@ -792,6 +841,9 @@ class TcpOslListener:
         """Delete listeners socket if exists."""
         if self.__listener_socket is not None:
             self.__listener_socket.close()
+        # TODO, for Windows we need to clean the named pipe
+        if self._local_server_id is not None and os.path.exists(self._local_server_id):
+            os.remove(self._local_server_id)
 
     @property
     def uid(self) -> Optional[str]:
@@ -806,6 +858,11 @@ class TcpOslListener:
     def name(self) -> str:
         """Instance name used for naming self.__thread."""
         return self.__name
+
+    @property
+    def local_server_id(self) -> Optional[str]:
+        """Local server unique identifier."""
+        return self._local_server_id
 
     @property
     def timeout(self) -> Optional[float]:
@@ -893,6 +950,23 @@ class TcpOslListener:
         """Stop listening optiSLang server port."""
         self.__run_listening_thread = False
         self.__thread = None
+
+    def __init_local_listener_socket(self) -> None:
+        """Initialize local listener."""
+        self.__listener_socket = None
+        try:
+            # TODO Linux: It this in user space? Do we need to remove the "file" afterwards?
+            # TODO, for Windows this needs to be a named pipe
+            temp_dir = tempfile.mkdtemp()
+            self._local_server_id = os.path.join(temp_dir, f"{str(uuid.uuid4())}.sock")
+            self.__listener_socket = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+            self.__listener_socket.bind(self._local_server_id)
+            self.__listener_socket.listen(5)
+            self._logger.debug("Listening on: %s", self._local_server_id)
+        except IOError as ex:
+            if self.__listener_socket is not None:
+                self.__listener_socket.close()
+                self.__listener_socket = None
 
     def __init_listener_socket(self, host: str, port_range: Tuple[int, int]) -> None:
         """Initialize listener.
@@ -1017,11 +1091,13 @@ class TcpOslServer(OslServer):
 
     Parameters
     ----------
+    local_server_id: Optional[str], optional
+        The ID of a running optiSLang local domain server to connect. Defaults to ``None``.
     host : Optional[str], optional
-        A string representation of an IPv4/v6 address or domain name of running optiSLang server.
+        A string representation of an IPv4/v6 address of a running optiSLang remote server.
         Defaults to ``None``.
     port : Optional[int], optional
-        A numeric port number of running optiSLang server. Defaults to ``None``.
+        A numeric port number of a running optiSLang remote server. Defaults to ``None``.
     executable : Optional[Union[str, pathlib.Path]], optional
         Path to the optiSLang executable file which supposed to be executed on localhost.
         It is ignored when the host and port parameters are specified. Defaults to ``None``.
@@ -1043,6 +1119,10 @@ class TcpOslServer(OslServer):
 
         ..note:: Cannot be used in combination with batch mode.
 
+    communication_channel : CommunicationChannel, optional
+        Defines the communication channel to be used for the optiSLang server.
+        If not specified, local domain communication channel will be used.
+        Defaults to ``CommunicationChannel.LOCAL_DOMAIN``.
     server_address : Optional[str], optional
         In case an optiSLang server is to be started, this defines the address
         of the optiSLang server. If not specified, optiSLang will be listening on
@@ -1175,7 +1255,6 @@ class TcpOslServer(OslServer):
     """
 
     _LOCALHOST = "127.0.0.1"
-    _PRIVATE_PORTS_RANGE = (49152, 65535)
     _SHUTDOWN_WAIT = 5  # wait for local server to shutdown in second
     _STOPPED_STATES = ["IDLE", "FINISHED", "STOPPED", "ABORTED"]
     _STOP_REQUESTS_PRIORITIES = {
@@ -1191,12 +1270,14 @@ class TcpOslServer(OslServer):
 
     def __init__(
         self,
+        local_server_id: Optional[str] = None,
         host: Optional[str] = None,
         port: Optional[int] = None,
         executable: Optional[Union[str, Path]] = None,
         project_path: Optional[Union[str, Path]] = None,
         batch: bool = True,
         service: bool = False,
+        communication_channel: CommunicationChannel = CommunicationChannel.LOCAL_DOMAIN,
         server_address: Optional[str] = None,
         port_range: Optional[Tuple[int, int]] = None,
         no_run: Optional[bool] = None,
@@ -1234,6 +1315,8 @@ class TcpOslServer(OslServer):
         self.__project_path = Path(project_path) if project_path is not None else None
         self.__batch = batch
         self.__service = service
+        self.__communication_channel = communication_channel
+        self.__local_server_id = local_server_id
         self.__server_address = server_address
         self.__port_range = port_range
         self.__no_run = no_run
@@ -1273,13 +1356,18 @@ class TcpOslServer(OslServer):
 
         atexit.register(self.dispose)
 
-        if self.__host is None or self.__port is None:
-            self.__host = self.__server_address or self._LOCALHOST
-            self._start_local(ini_timeout, shutdown_on_finished)
-        else:
+        if (self.__local_server_id is not None) or (
+            self.__host is not None and self.__port is not None
+        ):
+            # If connect to existing TCP server requested, force TCP communication channel
+            if (self.__local_server_id is None) and (
+                self.__host is not None and self.__port is not None
+            ):
+                self.__communication_channel = CommunicationChannel.TCP
             listener = self.__create_listener(
                 timeout=None,  # type:ignore[arg-type]
                 name="Main",
+                communication_channel=self.__communication_channel,
                 uid=self.__listener_id,
                 notifications=[
                     ServerNotification.SERVER_UP,
@@ -1294,14 +1382,24 @@ class TcpOslServer(OslServer):
                 }.items()
                 if v is not None
             }
-            listener.uid = self.__register_listener(
-                host_addresses=listener.host_addresses,
-                port=listener.port,
-                **register_listener_options,  # type: ignore[arg-type]
-            )
+            if self.__communication_channel is CommunicationChannel.LOCAL_DOMAIN:
+                listener.uid = self.__register_local_listener(
+                    local_server_id=listener.local_server_id,
+                    **register_listener_options,  # type: ignore[arg-type]
+                )
+            else:
+                listener.uid = self.__register_listener(
+                    host_addresses=listener.host_addresses,
+                    port=listener.port,
+                    **register_listener_options,  # type: ignore[arg-type]
+                )
             listener.refresh_listener_registration = True
             self.__listeners["main_listener"] = listener
             self.__start_listeners_registration_thread()
+        else:
+            if self.__communication_channel is CommunicationChannel.TCP:
+                self.__host = self.__server_address or self._LOCALHOST
+            self._start_local(ini_timeout, shutdown_on_finished)
 
         self.__osl_version = self._get_osl_version()
         self.__osl_version_string = self._get_osl_version_string()
@@ -1312,6 +1410,18 @@ class TcpOslServer(OslServer):
                     f"The version of the used Ansys optiSLang ({self.__osl_version_string})"
                     " is not fully supported. Please use at least version 23.1."
                 )
+
+    @property
+    def local_server_id(self) -> Optional[str]:
+        """Get the local server ID.
+
+        Returns
+        -------
+        Optional[str]
+            The local server ID, if applicable.
+            Defaults to ``None``.
+        """
+        return self.__local_server_id
 
     @property
     def host(self) -> Optional[str]:
@@ -4421,7 +4531,7 @@ class TcpOslServer(OslServer):
         )
         if self.__disposed:
             raise OslDisposedError("Cannot send command, instance was already disposed.")
-        if self.__host is None or self.__port is None:
+        if self.__local_server_id is None and (self.__host is None or self.__port is None):
             raise RuntimeError("optiSLang server is not started.")
 
         self._logger.debug("Sending command or query to the server: %s", command)
@@ -4433,11 +4543,17 @@ class TcpOslServer(OslServer):
         for request_attempt in range(1, max_request_attempts + 1):
             start_time = time.time()
             try:
-                client.connect(
-                    self.__host,
-                    self.__port,
-                    timeout=_get_current_timeout(timeout, start_time),
-                )
+                if self.__communication_channel is CommunicationChannel.LOCAL_DOMAIN:
+                    client.connect_local(
+                        self.__local_server_id,
+                        timeout=_get_current_timeout(timeout, start_time),
+                    )
+                elif self.__communication_channel is CommunicationChannel.TCP:
+                    client.connect(
+                        self.__host,
+                        self.__port,
+                        timeout=_get_current_timeout(timeout, start_time),
+                    )
                 client.send_msg(command, timeout=_get_current_timeout(timeout, start_time))
                 response_str = client.receive_msg(timeout=_get_current_timeout(timeout, start_time))
                 break
@@ -4947,29 +5063,49 @@ class TcpOslServer(OslServer):
             uid=self.__listener_id if self.__listener_id else str(uuid.uuid4()),
             timeout=None,  # type: ignore[arg-type]
             name="Main",
+            communication_channel=self.__communication_channel,
             notifications=[
                 ServerNotification.SERVER_UP,
                 ServerNotification.SERVER_DOWN,
             ],
         )
-        port_queue: Queue = Queue()
-        listener.add_callback(self.__class__.__port_on_listended, (port_queue, self._logger))
+
+        wait_for_server_up_queue: Queue = Queue()
+
+        if self.__communication_channel is CommunicationChannel.LOCAL_DOMAIN:
+            listener.add_callback(
+                self.__class__.__local_listener_notification_received,
+                (wait_for_server_up_queue, self._logger),
+            )
+        elif self.__communication_channel is CommunicationChannel.TCP:
+            listener.add_callback(
+                self.__class__.__remote_listener_notification_received,
+                (wait_for_server_up_queue, self._logger),
+            )
+
+        listener_received_callback = False
 
         try:
             listener.start_listening(timeout=ini_timeout)
+
+            multi_local_listener = []
 
             multi_listener = (
                 list(self.__multi_listener) if self.__multi_listener is not None else []
             )
 
-            for host_address in listener.host_addresses:
-                multi_listener.append((host_address, listener.port, listener.uid))
+            if self.__communication_channel is CommunicationChannel.LOCAL_DOMAIN:
+                multi_local_listener.append((listener.local_server_id, listener.uid))
+            elif self.__communication_channel is CommunicationChannel.TCP:
+                for host_address in listener.host_addresses:
+                    multi_listener.append((host_address, listener.port, listener.uid))
 
             self.__osl_process = OslServerProcess(
                 executable=self.__executable,
                 project_path=self.__project_path,
                 no_save=self.__no_save,
                 password=self.__password,
+                multi_local_listener=multi_local_listener,
                 multi_listener=multi_listener,
                 listeners_default_timeout=self.__listeners_default_timeout,
                 notifications=[
@@ -4980,12 +5116,16 @@ class TcpOslServer(OslServer):
                 logger=self._logger,
                 batch=self.__batch,
                 service=self.__service,
+                local_server_id=self.__local_server_id,
                 server_address=self.__server_address,
                 port_range=self.__port_range,
                 no_run=self.__no_run,
                 force=self.__force,
                 reset=self.__reset,
                 auto_relocate=self.__auto_relocate,
+                enable_tcp_server=self.__communication_channel is CommunicationChannel.TCP,
+                enable_local_domain_server=self.__communication_channel
+                is CommunicationChannel.LOCAL_DOMAIN,
                 env_vars=self.__env_vars,
                 import_project_properties_file=self.__import_project_properties_file,
                 export_project_properties_file=self.__export_project_properties_file,
@@ -4997,6 +5137,12 @@ class TcpOslServer(OslServer):
                 additional_args=self.__additional_args,
             )
             self.__osl_process.start()
+
+            if (
+                self.__communication_channel is CommunicationChannel.LOCAL_DOMAIN
+                and self.__local_server_id is None
+            ):
+                self.__local_server_id = self.__osl_process.local_server_id
 
             # While waiting for optiSLang server to report back,
             # monitor the process for pre-mature termination
@@ -5016,15 +5162,17 @@ class TcpOslServer(OslServer):
 
             listener.join()
 
-            if not port_queue.empty():
-                self.__port = port_queue.get()
+            if not wait_for_server_up_queue.empty():
+                listener_received_callback = True
+                if self.__communication_channel is CommunicationChannel.TCP:
+                    self.__port = wait_for_server_up_queue.get()
 
         except Exception:
             listener.dispose()
             raise
 
         finally:
-            if self.__port is None:
+            if listener_received_callback is False:
                 if self.__osl_process is not None:
                     returncode = self.__osl_process.returncode
                     self.__osl_process.terminate()
@@ -5047,6 +5195,7 @@ class TcpOslServer(OslServer):
         self,
         timeout: float,
         name: str,
+        communication_channel: CommunicationChannel = CommunicationChannel.LOCAL_DOMAIN,
         uid: Optional[str] = None,
         notifications: Optional[List[ServerNotification]] = None,
     ) -> TcpOslListener:
@@ -5058,6 +5207,8 @@ class TcpOslServer(OslServer):
             Timeout.
         Uid: Optional[str], optional
             Listener uid. Defaults to ``None``.
+        communication_channel: CommunicationChannel, optional
+            Communication channel. Defaults to ``CommunicationChannel.LOCAL_DOMAIN``.
         notifications: Optional[List[ServerNotification]], optional
             Notifications to subscribe to.
             Either ["ALL"] or Sequence picked from below options:
@@ -5084,9 +5235,9 @@ class TcpOslServer(OslServer):
             optiSLang server port is not listened for specified timeout value.
         """
         listener = TcpOslListener(
-            port_range=self._PRIVATE_PORTS_RANGE,
             timeout=timeout,
             name=name,
+            communication_channel=communication_channel,
             uid=uid,
             logger=self._logger,
             notifications=notifications,
@@ -5120,6 +5271,7 @@ class TcpOslServer(OslServer):
         exec_started_listener = self.__create_listener(
             timeout=timeout,  # type: ignore[arg-type]
             name="ExecStarted",
+            communication_channel=self.__communication_channel,
             notifications=[
                 ServerNotification.PROCESSING_STARTED,
                 ServerNotification.NOTHING_PROCESSED,
@@ -5135,11 +5287,17 @@ class TcpOslServer(OslServer):
             }.items()
             if v is not None
         }
-        exec_started_listener.uid = self.__register_listener(
-            host_addresses=exec_started_listener.host_addresses,
-            port=exec_started_listener.port,
-            **register_listener_options,  # type: ignore[arg-type]
-        )
+        if self.__communication_channel is CommunicationChannel.LOCAL_DOMAIN:
+            exec_started_listener.uid = self.__register_local_listener(
+                local_server_id=exec_started_listener.local_server_id,
+                **register_listener_options,  # type: ignore[arg-type]
+            )
+        else:
+            exec_started_listener.uid = self.__register_listener(
+                host_addresses=exec_started_listener.host_addresses,
+                port=exec_started_listener.port,
+                **register_listener_options,  # type: ignore[arg-type]
+            )
         exec_started_listener.refresh_listener_registration = True
         self.__listeners["exec_started_listener"] = exec_started_listener
         return exec_started_listener
@@ -5167,6 +5325,7 @@ class TcpOslServer(OslServer):
         exec_finished_listener = self.__create_listener(
             timeout=timeout,  # type: ignore[arg-type]
             name="ExecFinished",
+            communication_channel=self.__communication_channel,
             notifications=[
                 ServerNotification.EXECUTION_FINISHED,
                 ServerNotification.NOTHING_PROCESSED,
@@ -5182,11 +5341,17 @@ class TcpOslServer(OslServer):
             }.items()
             if v is not None
         }
-        exec_finished_listener.uid = self.__register_listener(
-            host_addresses=exec_finished_listener.host_addresses,
-            port=exec_finished_listener.port,
-            **register_listener_options,  # type: ignore[arg-type]
-        )
+        if self.__communication_channel is CommunicationChannel.LOCAL_DOMAIN:
+            exec_finished_listener.uid = self.__register_local_listener(
+                local_server_id=exec_finished_listener.local_server_id,
+                **register_listener_options,  # type: ignore[arg-type]
+            )
+        else:
+            exec_finished_listener.uid = self.__register_listener(
+                host_addresses=exec_finished_listener.host_addresses,
+                port=exec_finished_listener.port,
+                **register_listener_options,  # type: ignore[arg-type]
+            )
         exec_finished_listener.refresh_listener_registration = True
         self.__listeners["exec_finished_listener"] = exec_finished_listener
         return exec_finished_listener
@@ -5235,6 +5400,72 @@ class TcpOslServer(OslServer):
         if len(project_info.get("projects", [])) == 0:
             return None
         return project_info.get("projects", [{}])[0].get("state", None)
+
+    def __register_local_listener(
+        self,
+        local_server_id: str,
+        timeout: int = 60000,
+        explicit_listener_id: Optional[str] = None,
+        notifications: Optional[List[ServerNotification]] = None,
+    ) -> str:
+        """Register a local client, returning a reference ID.
+
+        Parameters
+        ----------
+        local_server_id: str
+            The ID of the local server.
+        timeout: float
+            Listener will remain active for ``timeout`` ms unless refreshed.
+        explicit_listener_id: Optional[str], optional
+            Explicitly requested listener ID.
+            Defaults to ``None``.
+        notifications: Optional[List[ServerNotification]], optional
+            Notifications to subscribe to.
+            Either ["ALL"] or Sequence picked from below options:
+            Server: [ "SERVER_UP", "SERVER_DOWN" ] (always be sent by default).
+            Logging: [ "LOG_INFO", "LOG_WARNING", "LOG_ERROR", "LOG_DEBUG" ].
+            Project: [ "EXECUTION_STARTED", "PROCESSING_STARTED", "EXECUTION_FINISHED",
+                "NOTHING_PROCESSED", "CHECK_FAILED", "EXEC_FAILED" ].
+            Nodes: [ "ACTOR_STATE_CHANGED", "ACTOR_ACTIVE_CHANGED", "ACTOR_NAME_CHANGED",
+                "ACTOR_CONTENTS_CHANGED", "ACTOR_DATA_CHANGED" ].
+            Defaults to ``None``.
+
+        Returns
+        -------
+        str
+            Uid of registered listener created by optiSLang server.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        current_func_name = self.__register_local_listener.__name__
+        listener_id = (
+            explicit_listener_id
+            if explicit_listener_id is not None
+            else self.__listener_id if self.__listener_id is not None else str(uuid.uuid4())
+        )
+        notification_names = None
+        if notifications is not None:
+            notification_names = [ntf.name for ntf in notifications]
+
+        self.send_command(
+            command=commands.register_listener(
+                id=local_server_id,
+                timeout=timeout,
+                notifications=notification_names,
+                password=self.__password,
+                listener_uid=listener_id,
+            ),
+            timeout=self.timeouts_register.get_value(current_func_name),
+            max_request_attempts=self.max_request_attempts_register.get_value(current_func_name),
+        )
+        return listener_id
 
     def __register_listener(
         self,
@@ -5364,11 +5595,20 @@ class TcpOslServer(OslServer):
                                         }.items()
                                         if v is not None
                                     }
-                                    listener.uid = self.__register_listener(
-                                        host_addresses=listener.host_addresses,
-                                        port=listener.port,
-                                        **register_listener_options,  # type: ignore[arg-type]
-                                    )
+                                    if (
+                                        self.__communication_channel
+                                        is CommunicationChannel.LOCAL_DOMAIN
+                                    ):
+                                        listener.uid = self.__register_local_listener(
+                                            local_server_id=listener.local_server_id,
+                                            **register_listener_options,  # type: ignore[arg-type]
+                                        )
+                                    else:
+                                        listener.uid = self.__register_listener(
+                                            host_addresses=listener.host_addresses,
+                                            port=listener.port,
+                                            **register_listener_options,  # type: ignore[arg-type]
+                                        )
                                 except Exception as e:
                                     self._logger.debug(
                                         "Re-registering listener %s failed: %s",
@@ -5567,14 +5807,30 @@ class TcpOslServer(OslServer):
         return timeout_register
 
     @staticmethod
-    def __port_on_listended(
-        sender: TcpOslListener, response: dict, port_queue: Queue, logger
+    def __local_listener_notification_received(
+        sender: TcpOslListener, response: dict, results_queue: Queue, logger
     ) -> None:
         """Listen to the optiSLang server port."""
         try:
-            if "port" in response:
-                port = int(response["port"])
-                port_queue.put(port)
+            if "server_protocol" in response and response["server_protocol"] == "local":
+                if "server_address" in response:
+                    server_address = response["server_address"]
+                    results_queue.put(server_address)
+                sender.stop_listening()
+                sender.clear_callbacks()
+        except:
+            logger.debug("Server address cannot be received from response: %s", str(response))
+
+    @staticmethod
+    def __remote_listener_notification_received(
+        sender: TcpOslListener, response: dict, results_queue: Queue, logger
+    ) -> None:
+        """Listen to the optiSLang server port."""
+        try:
+            if "server_protocol" in response and response["server_protocol"] == "tcp":
+                if "port" in response:
+                    port = int(response["port"])
+                    results_queue.put(port)
                 sender.stop_listening()
                 sender.clear_callbacks()
         except:
