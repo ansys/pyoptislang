@@ -5,6 +5,8 @@ on:
     types:
       - closed
 
+permissions: {}
+
 jobs:
   test-suite:
     strategy:
