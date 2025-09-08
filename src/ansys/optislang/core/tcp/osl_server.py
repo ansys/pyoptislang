@@ -744,8 +744,9 @@ class TcpOslListener:
 
     Parameters
     ----------
-        port_range: Tuple
+        port_range: Optional[Tuple[int, int]], optional
             Range of ports for listener.
+            Defaults to ``(49152, 65535)``.
         timeout: float
             Timeout in seconds to receive a message. Timeout exception will be raised
             if the timeout period value has elapsed before the operation has completed. If ``None``
@@ -803,6 +804,7 @@ class TcpOslListener:
         timeout: float,
         name: str,
         communication_channel: CommunicationChannel = CommunicationChannel.LOCAL_DOMAIN,
+        port_range: Optional[Tuple[int, int]] = None,
         host: Optional[str] = None,
         uid: Optional[str] = None,
         logger: Optional[Any] = None,
@@ -829,8 +831,22 @@ class TcpOslListener:
         if self.__communication_channel == CommunicationChannel.LOCAL_DOMAIN:
             self.__init_local_listener_socket()
         elif self.__communication_channel == CommunicationChannel.TCP:
+            actually_used_port_range: Tuple[int, int] = (
+                port_range if port_range is not None else self._PRIVATE_PORTS_RANGE
+            )
+            if len(actually_used_port_range) != 2:
+                raise ValueError(
+                    f"Port ranges length must be 2 but: len = {len(actually_used_port_range)}"
+                )
+            if isinstance(actually_used_port_range, (int, int)):
+                raise TypeError(
+                    "Port range not type Tuple[int, int] but:"
+                    f"[{type(actually_used_port_range[0])}, {actually_used_port_range[1]}]."
+                )
+            if actually_used_port_range[0] > actually_used_port_range[1]:
+                raise ValueError("First number is higher.")
             self.__init_listener_socket(
-                host=host if host is not None else "", port_range=self._PRIVATE_PORTS_RANGE
+                host=host if host is not None else "", port_range=actually_used_port_range
             )
 
     def is_initialized(self) -> bool:
