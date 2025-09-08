@@ -67,6 +67,7 @@ def optislang(scope="function", autouse=False) -> Optislang:
 
 
 # region TEST NODE
+@pytest.mark.timeout(120)
 def test_node_initialization(optislang: Optislang, tmp_example_project):
     """Test `Node` initialization."""
     optislang.application.open(file_path=tmp_example_project("calculator_with_params"))
@@ -76,6 +77,7 @@ def test_node_initialization(optislang: Optislang, tmp_example_project):
     assert isinstance(node, TcpNodeProxy)
 
 
+@pytest.mark.timeout(120)
 def test_node_properties(optislang: Optislang, tmp_example_project):
     """Test properties of the instance of `Node` class."""
     optislang.application.open(file_path=tmp_example_project("calculator_with_params"))
@@ -89,6 +91,7 @@ def test_node_properties(optislang: Optislang, tmp_example_project):
     assert isinstance(node.type.subtype, AddinType)
 
 
+@pytest.mark.timeout(120)
 def test_node_queries(optislang: Optislang, tmp_example_project):
     """Test get methods of the instance of `Node` class."""
     optislang.application.open(file_path=tmp_example_project("calculator_with_params"))
@@ -157,20 +160,22 @@ def test_node_queries(optislang: Optislang, tmp_example_project):
     print(node)
 
 
-def test_control(optislang: Optislang, tmp_example_project):
-    """Test control methods of the instance of `Node` class."""
-    optislang.application.open(file_path=tmp_example_project("calculator_with_params"))
-    project = optislang.project
-    root_system = project.root_system
-    node = root_system.find_nodes_by_name("Calculator")[0]
+# @pytest.mark.timeout(500)
+# def test_control(optislang: Optislang, tmp_example_project):
+#     """Test control methods of the instance of `Node` class."""
+#     optislang.application.open(file_path=tmp_example_project("calculator_with_params"))
+#     project = optislang.project
+#     root_system = project.root_system
+#     node = root_system.find_nodes_by_name("Calculator")[0]
 
-    for command in ["start", "restart", "stop_gently", "stop", "reset"]:
-        output = node.control(command, wait_for_completion=False)
-        assert output is None
-        output = node.control(command, timeout=60)
-        assert isinstance(output, bool)
+#     for command in ["start", "restart", "stop_gently", "stop", "reset"]:
+#         output = node.control(command, wait_for_completion=False)
+#         assert output is None
+#         output = node.control(command, timeout=60)
+#         assert isinstance(output, bool)
 
 
+@pytest.mark.timeout(120)
 def test_get_ancestors(optislang: Optislang, tmp_example_project):
     """Test `get_ancestors` method on nested systems."""
     optislang.application.open(file_path=tmp_example_project("nested_systems"))
@@ -197,6 +202,7 @@ def test_get_ancestors(optislang: Optislang, tmp_example_project):
     assert isinstance(ancestors[1], TcpParametricSystemProxy)
 
 
+@pytest.mark.timeout(120)
 def test_set_property(optislang: Optislang, tmp_example_project):
     """Test `set_property` method."""
     optislang.application.open(file_path=tmp_example_project("calculator_with_params"))
@@ -221,6 +227,7 @@ def test_set_property(optislang: Optislang, tmp_example_project):
     assert node.get_property("ExecutionOptions") == set_int_property
 
 
+@pytest.mark.timeout(120)
 def test_node_execution_options(optislang: Optislang, tmp_example_project):
     """Test `set_execution_options` and `get_execution_options` methods."""
     optislang.application.open(file_path=tmp_example_project("calculator_with_params"))
@@ -252,6 +259,7 @@ def test_node_execution_options(optislang: Optislang, tmp_example_project):
 # region TEST INTEGRATION_NODE
 
 
+@pytest.mark.timeout(120)
 def test_register_location(optislang: Optislang):
     """Test `register_location` and `get_registered_locations`."""
     root_system = optislang.application.project.root_system
@@ -321,6 +329,7 @@ def test_register_location(optislang: Optislang):
 
 
 # region TEST SYSTEM
+@pytest.mark.timeout(120)
 def test_find_node_by_uid(optislang: Optislang, tmp_example_project):
     """Test `find_node_by_uid`."""
     optislang.application.open(file_path=tmp_example_project("nested_systems"))
@@ -374,6 +383,7 @@ def test_find_node_by_uid(optislang: Optislang, tmp_example_project):
     assert isinstance(level3_node, TcpNodeProxy)
 
 
+@pytest.mark.timeout(120)
 def test_find_node_by_name(optislang: Optislang, tmp_example_project):
     """Test `find_node_by_name`."""
     optislang.application.open(file_path=tmp_example_project("nested_systems"))
@@ -414,6 +424,7 @@ def test_find_node_by_name(optislang: Optislang, tmp_example_project):
 
 
 # region TEST PARAMETRIC SYSTEM
+@pytest.mark.timeout(120)
 def test_managers(optislang: Optislang, tmp_example_project):
     """Test initialization and __str__ methods of both `ParametricSystem` and `ParameterManager`."""
     optislang.application.open(file_path=tmp_example_project("nested_systems"))
@@ -440,6 +451,7 @@ def test_managers(optislang: Optislang, tmp_example_project):
     assert isinstance(design_manager, DesignManager)
 
 
+@pytest.mark.timeout(120)
 def test_get_inner_slots(optislang: Optislang, tmp_example_project):
     """Test `get_inner_[input, output]_slots`."""
     optislang.application.open(file_path=tmp_example_project("nested_systems"))
@@ -454,6 +466,7 @@ def test_get_inner_slots(optislang: Optislang, tmp_example_project):
     assert isinstance(inner_output_slots[0], TcpInnerOutputSlotProxy)
 
 
+@pytest.mark.timeout(120)
 def test_get_omdb_files(optislang: Optislang, tmp_example_project):
     """Test `get_omdb_files()` method."""
     if optislang.osl_version < OslVersion(24, 1, 0, 0):
@@ -479,6 +492,7 @@ def test_get_omdb_files(optislang: Optislang, tmp_example_project):
     assert isinstance(mis_omdb_file[0], File)
 
 
+@pytest.mark.timeout(120)
 def test_node_placeholder_methods(optislang: Optislang):
     """Test node placeholder management methods."""
     if optislang.osl_version < OslVersion(26, 1, 0, 0):

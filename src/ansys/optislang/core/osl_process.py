@@ -322,10 +322,6 @@ class OslServerProcess:
         self.__dump_project_state = validated_path(dump_project_state)
         self.__opx_project_definition_file = validated_path(opx_project_definition_file)
         self.__local_server_id = local_server_id
-        if self.__local_server_id is None:
-            # TODO, for Windows this needs to be a named pipe
-            temp_dir = tempfile.mkdtemp()
-            self.__local_server_id = os.path.join(temp_dir, f"{str(uuid.uuid4())}.sock")
         self.__server_address = server_address
         self.__port_range = port_range
         self.__password = password

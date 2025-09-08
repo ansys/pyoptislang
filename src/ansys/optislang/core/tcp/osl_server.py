@@ -66,6 +66,7 @@ from ansys.optislang.core.placeholder_types import PlaceholderInfo, PlaceholderT
 from ansys.optislang.core.slot_types import SlotTypeHint
 from ansys.optislang.core.tcp import server_commands as commands
 from ansys.optislang.core.tcp import server_queries as queries
+from ansys.optislang.core.tcp.local_socket import LocalClientSocket, LocalServerSocket, generate_local_server_id
 from ansys.optislang.core.tcp.placeholder_types import PlaceholderTypeTCP, UserLevelTCP
 
 
@@ -237,12 +238,14 @@ class FunctionsAttributeRegister:
 
 
 class TcpClient:
-    r"""Client of the plain TCP/IP communication.
+    r"""Client for both TCP/IP and local domain communication.
 
     Parameters
     ----------
     socket: Optional[socket.SocketType], optional
-        Client socket. Defaults to ``None``.
+        TCP client socket. Defaults to ``None``.
+    local_socket: Optional[LocalClientSocket], optional
+        Local domain client socket. Defaults to ``None``.
     logger: Any, optional
         Object for logging. If ``None``, standard logging object is used. Defaults to ``None``.
 
@@ -256,15 +259,22 @@ class TcpClient:
     >>> client = TcpClient()
     >>> client.connect('127.0.0.1', 49690)
     >>> client.send_msg('{ "What": "SYSTEMS_STATUS_INFO" }')
+    
+    Connect to a local domain server:
+    
+    >>> client = TcpClient()
+    >>> client.connect_local('server_id')
+    >>> client.send_msg('{ "What": "SYSTEMS_STATUS_INFO" }')
     """
 
     _BUFFER_SIZE = pow(2, 16)
     # Response size in bytes. Value is assumed to be binary 64Bit unsigned integer.
     _RESPONSE_SIZE_BYTES = 8
 
-    def __init__(self, socket: Optional[socket.SocketType] = None, logger=None) -> None:
+    def __init__(self, socket: Optional[socket.SocketType] = None, local_socket: Optional[LocalClientSocket] = None, logger=None) -> None:
         """Initialize a new instance of the ``TcpClient`` class."""
         self.__socket = socket
+        self.__local_socket = local_socket
 
         if logger is None:
             self._logger = logging.getLogger(__name__)
@@ -272,34 +282,38 @@ class TcpClient:
             self._logger = logger
 
     @property
-    def remote_address(self) -> Union[Tuple[str, int], None]:
+    def remote_address(self) -> Union[Tuple[str, int], str, None]:
         """Get the remote address of the connection.
 
         Returns
         -------
-        Tuple(str, int), None
-            Remote host address which consists of IP address and port number, if connection is
-            established; ``None`` otherwise.
+        Union[Tuple[str, int], str, None]
+            For TCP: Remote host address which consists of IP address and port number.
+            For local domain: Remote server identifier string.
+            None if no connection is established.
         """
-        if self.__socket is None:
-            return None
-
-        return self.__socket.getpeername()
+        if self.__socket is not None:
+            return self.__socket.getpeername()
+        elif self.__local_socket is not None:
+            return self.__local_socket.address
+        return None
 
     @property
-    def local_address(self) -> Union[Tuple[str, int], None]:
+    def local_address(self) -> Union[Tuple[str, int], str, None]:
         """Get the local address of the connection.
 
         Returns
         -------
-        Tuple(str, int), None
-            Local host address which consists of IP address and port number, if connection is
-            established; ``None`` otherwise.
+        Union[Tuple[str, int], str, None]
+            For TCP: Local host address which consists of IP address and port number.
+            For local domain: Local server identifier string.
+            None if no connection is established.
         """
-        if self.__socket is None:
-            return None
-
-        return self.__socket.getsockname()
+        if self.__socket is not None:
+            return self.__socket.getsockname()
+        elif self.__local_socket is not None:
+            return self.__local_socket.address
+        return None
 
     @property
     def is_connected(self) -> bool:
@@ -310,7 +324,7 @@ class TcpClient:
         bool
             True if the connection has been established; False otherwise.
         """
-        return self.__socket is not None
+        return self.__socket is not None or (self.__local_socket is not None and self.__local_socket.is_connected)
 
     def connect_local(self, local_server_id: str, timeout: Optional[float] = 2) -> None:
         """Connect to a local domain server.
@@ -332,31 +346,20 @@ class TcpClient:
         ConnectionRefusedError
             Raised when the connection cannot be established.
         """
-        if self.__socket is not None:
+        if self.is_connected:
             raise ConnectionEstablishedError("Connection is already established.")
 
-        start_time = time.time()
-
-        # TODO, for Windows this needs to be a named pipe
-
         try:
-            self.__socket = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-        except OSError:
-            self.__socket = None
-
-        self.__socket.settimeout(_get_current_timeout(timeout, start_time))
-        try:
-            self.__socket.connect(local_server_id)
-        except OSError:
-            self.__socket.close()
-            self.__socket = None
-
-        if self.__socket is None:
+            self.__local_socket = LocalClientSocket(self._logger)
+            self.__local_socket.connect(local_server_id, timeout)
+            self._logger.debug("Connection has been established to local server %s.", local_server_id)
+        except Exception as e:
+            if self.__local_socket:
+                self.__local_socket.close()
+                self.__local_socket = None
             raise ConnectionRefusedError(
-                f"Connection could not be established to local server {local_server_id}."
+                f"Connection could not be established to local server {local_server_id}: {e}"
             )
-
-        self._logger.debug("Connection has been established to local server %s.", local_server_id)
 
     def connect(self, host: str, port: int, timeout: Optional[float] = 2) -> None:
         """Connect to the plain TCP/IP server.
@@ -380,7 +383,7 @@ class TcpClient:
         ConnectionRefusedError
             Raised when the connection cannot be established.
         """
-        if self.__socket is not None:
+        if self.is_connected:
             raise ConnectionEstablishedError("Connection is already established.")
 
         start_time = time.time()
@@ -414,6 +417,9 @@ class TcpClient:
         if self.__socket is not None:
             self.__socket.close()
             self.__socket = None
+        if self.__local_socket is not None:
+            self.__local_socket.close()
+            self.__local_socket = None
 
     def send_msg(self, msg: str, timeout: Optional[float] = 5) -> None:
         """Send message to the server.
@@ -437,19 +443,30 @@ class TcpClient:
         OSError
             Raised when an error occurs while sending data.
         """
-        if self.__socket is None:
+        if not self.is_connected:
             raise ConnectionNotEstablishedError(
                 "Cannot send message. Connection is not established."
             )
 
-        self._logger.debug("Sending message to %s. Message: %s", self.__socket.getpeername(), msg)
         data = force_bytes(msg)
         data_len = len(data)
-
         header = struct.pack("!QQ", data_len, data_len)
 
-        self.__socket.settimeout(timeout)
-        self.__socket.sendall(header + data)
+        if self.__socket is not None:
+            self._logger.debug("Sending message to %s. Message: %s", self.__socket.getpeername(), msg)
+            self.__socket.settimeout(timeout)
+            self.__socket.sendall(header + data)
+        elif self.__local_socket is not None:
+            self._logger.debug("Sending message to local server %s. Message: %s", self.__local_socket.address, msg)
+            self.__local_socket.settimeout(timeout)
+            # Send header and data
+            total_data = header + data
+            bytes_sent = 0
+            while bytes_sent < len(total_data):
+                sent = self.__local_socket.send(total_data[bytes_sent:])
+                if sent == 0:
+                    raise ConnectionError("Socket connection broken")
+                bytes_sent += sent
 
     def send_file(self, file_path: Union[str, Path], timeout: Optional[float] = 5) -> None:
         """Send content of the file to the server.
@@ -474,27 +491,49 @@ class TcpClient:
         OSError
             Raised when an error occurs while sending data.
         """
-        if self.__socket is None:
+        if not self.is_connected:
             raise ConnectionNotEstablishedError("Cannot send file. Connection is not established.")
         if not os.path.isfile(file_path):
             raise FileNotFoundError(
                 "Cannot send file. The file does not exist. File path: %s", file_path
             )
 
-        self._logger.debug(
-            "Sending file to %s. File path: %s", self.__socket.getpeername(), file_path
-        )
         file_size = os.path.getsize(file_path)
-
         header = struct.pack("!QQ", file_size, file_size)
 
         with open(file_path, "rb") as file:
-            self.__socket.settimeout(timeout)
-            self.__socket.sendall(header)
-            load = file.read(self._BUFFER_SIZE)
-            while load:
-                self.__socket.send(load)
+            if self.__socket is not None:
+                self._logger.debug(
+                    "Sending file to %s. File path: %s", self.__socket.getpeername(), file_path
+                )
+                self.__socket.settimeout(timeout)
+                self.__socket.sendall(header)
                 load = file.read(self._BUFFER_SIZE)
+                while load:
+                    self.__socket.send(load)
+                    load = file.read(self._BUFFER_SIZE)
+            elif self.__local_socket is not None:
+                self._logger.debug(
+                    "Sending file to local server %s. File path: %s", self.__local_socket.address, file_path
+                )
+                self.__local_socket.settimeout(timeout)
+                # Send header
+                bytes_sent = 0
+                while bytes_sent < len(header):
+                    sent = self.__local_socket.send(header[bytes_sent:])
+                    if sent == 0:
+                        raise ConnectionError("Socket connection broken")
+                    bytes_sent += sent
+                # Send file content
+                load = file.read(self._BUFFER_SIZE)
+                while load:
+                    bytes_sent = 0
+                    while bytes_sent < len(load):
+                        sent = self.__local_socket.send(load[bytes_sent:])
+                        if sent == 0:
+                            raise ConnectionError("Socket connection broken")
+                        bytes_sent += sent
+                    load = file.read(self._BUFFER_SIZE)
 
     def receive_msg(self, timeout: Optional[float] = 5) -> str:
         """Receive message from the server.
@@ -524,7 +563,7 @@ class TcpClient:
         ValueError
             Raised if the timeout value is a number not greater than zero.
         """
-        if self.__socket is None:
+        if not self.is_connected:
             raise ConnectionNotEstablishedError(
                 "Cannot receive message. Connection is not established."
             )
@@ -615,10 +654,13 @@ class TcpClient:
         if isinstance(timeout, float) and timeout <= 0:
             raise ValueError("Timeout value must be greater than zero or None.")
 
-        if self.__socket is None:
+        if not self.is_connected:
             raise ConnectionNotEstablishedError("Socket not set.")
 
-        self.__socket.settimeout(timeout)
+        if self.__socket is not None:
+            self.__socket.settimeout(timeout)
+        elif self.__local_socket is not None:
+            self.__local_socket.settimeout(timeout)
 
         response_len = -1
         bytes_to_receive = self._RESPONSE_SIZE_BYTES
@@ -667,7 +709,7 @@ class TcpClient:
         if isinstance(timeout, float) and timeout <= 0:
             raise ValueError("Timeout value must be greater than zero or None.")
 
-        if self.__socket is None:
+        if not self.is_connected:
             raise ConnectionNotEstablishedError("Socket not set.")
 
         start_time = time.time()
@@ -681,8 +723,15 @@ class TcpClient:
             else:
                 buff = remain
 
-            self.__socket.settimeout(_get_current_timeout(timeout, start_time))
-            chunk = self.__socket.recv(buff)
+            if self.__socket is not None:
+                self.__socket.settimeout(_get_current_timeout(timeout, start_time))
+                chunk = self.__socket.recv(buff)
+            elif self.__local_socket is not None:
+                self.__local_socket.settimeout(_get_current_timeout(timeout, start_time))
+                chunk = self.__local_socket.recv(buff)
+            else:
+                chunk = b""
+                
             if not chunk:
                 break
             received += chunk
@@ -817,6 +866,7 @@ class TcpOslListener:
         self.__timeout = timeout
         self.__communication_channel = communication_channel
         self.__listener_socket: Optional[socket.socket] = None
+        self.__local_server_socket: Optional[LocalServerSocket] = None
         self.__thread: Optional[threading.Thread] = None
         self.__callbacks: List[Tuple[Callable, Any]] = []
         self.__run_listening_thread = False
@@ -852,14 +902,19 @@ class TcpOslListener:
 
     def is_initialized(self) -> bool:
         """Return True if listener was initialized."""
-        return self.__listener_socket is not None
+        return (self.__listener_socket is not None or 
+                (hasattr(self, '_TcpOslListener__local_server_socket') and 
+                 self.__local_server_socket is not None))
 
     def dispose(self) -> None:
         """Delete listeners socket if exists."""
         if self.__listener_socket is not None:
             self.__listener_socket.close()
-        # TODO, for Windows we need to clean the named pipe
-        if self._local_server_id is not None and os.path.exists(self._local_server_id):
+        if hasattr(self, '_TcpOslListener__local_server_socket') and self.__local_server_socket is not None:
+            self.__local_server_socket.close()
+        # Clean up Unix socket file if it exists
+        if (sys.platform != "win32" and self._local_server_id is not None and 
+            os.path.exists(self._local_server_id)):
             os.remove(self._local_server_id)
 
     @property
@@ -972,15 +1027,26 @@ class TcpOslListener:
         """Initialize local listener."""
         self.__listener_socket = None
         try:
-            # TODO Linux: It this in user space? Do we need to remove the "file" afterwards?
-            # TODO, for Windows this needs to be a named pipe
-            temp_dir = tempfile.mkdtemp()
-            self._local_server_id = os.path.join(temp_dir, f"{str(uuid.uuid4())}.sock")
-            self.__listener_socket = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-            self.__listener_socket.bind(self._local_server_id)
-            self.__listener_socket.listen(5)
+            self._local_server_id = generate_local_server_id()
+            if sys.platform == "win32":
+                # Use LocalServerSocket for Windows named pipes
+                self.__local_server_socket = LocalServerSocket(self._logger)
+                self.__local_server_socket.bind_and_listen(self._local_server_id)
+            else:
+                # Use regular Unix socket for Linux
+                self.__listener_socket = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+                # Remove existing socket file if it exists
+                if os.path.exists(self._local_server_id):
+                    os.remove(self._local_server_id)
+                self.__listener_socket.bind(self._local_server_id)
+                self.__listener_socket.listen(5)
+                # Restrict permissions to current user only
+                os.chmod(self._local_server_id, 0o600)
             self._logger.debug("Listening on: %s", self._local_server_id)
         except IOError as ex:
+            if hasattr(self, '__local_server_socket'):
+                self.__local_server_socket.close()
+                self.__local_server_socket = None
             if self.__listener_socket is not None:
                 self.__listener_socket.close()
                 self.__listener_socket = None
@@ -1016,7 +1082,7 @@ class TcpOslListener:
         timeout: float, optional
             Listener socket timeout.
         """
-        if self.__listener_socket is None:
+        if not self.is_initialized():
             raise ConnectionNotEstablishedError("Socket not set.")
 
         start_time = time.time()
@@ -1026,17 +1092,35 @@ class TcpOslListener:
         while self.__run_listening_thread:
             client = None
             try:
-                self.__listener_socket.settimeout(_get_current_timeout(timeout, start_time))
-                clientsocket, address = self.__listener_socket.accept()
-                self._logger.debug("Connection from %s has been established.", address)
+                if self.__communication_channel == CommunicationChannel.LOCAL_DOMAIN:
+                    # Handle local domain socket connections
+                    if sys.platform == "win32" and self.__local_server_socket is not None:
+                        # Windows named pipe
+                        current_timeout = _get_current_timeout(timeout, start_time)
+                        local_client, address = self.__local_server_socket.accept(current_timeout)
+                        self._logger.debug("Connection from local client %s has been established.", address)
+                        client = TcpClient(local_socket=local_client)
+                    elif sys.platform != "win32" and self.__listener_socket is not None:
+                        # Unix domain socket
+                        self.__listener_socket.settimeout(_get_current_timeout(timeout, start_time))
+                        clientsocket, address = self.__listener_socket.accept()
+                        self._logger.debug("Connection from %s has been established.", address)
+                        client = TcpClient(clientsocket)
+                else:
+                    # Handle TCP connections
+                    if self.__listener_socket is not None:
+                        self.__listener_socket.settimeout(_get_current_timeout(timeout, start_time))
+                        clientsocket, address = self.__listener_socket.accept()
+                        self._logger.debug("Connection from %s has been established.", address)
+                        client = TcpClient(clientsocket)
 
-                client = TcpClient(clientsocket)
-                message = client.receive_msg(timeout)
-                self._logger.debug("Received message from client: %s", message)
+                if client is not None:
+                    message = client.receive_msg(timeout)
+                    self._logger.debug("Received message from client: %s", message)
 
-                response = json.loads(message)
-                client.send_msg("")
-                self.__execute_callbacks(response)
+                    response = json.loads(message)
+                    client.send_msg("")
+                    self.__execute_callbacks(response)
 
             except (TimeoutError, socket.timeout):
                 self._logger.warning(f"Listener {self.uid} listening timed out.")
@@ -1074,12 +1158,27 @@ class TcpOslListener:
         while True:
             client = None
             try:
-                assert self.__listener_socket is not None
-                self.__listener_socket.settimeout(timeout)
-                clientsocket, address = self.__listener_socket.accept()
-                client = TcpClient(clientsocket)
-                message = client.receive_msg(timeout)
-                data_dict = json.loads(message)
+                if self.__communication_channel == CommunicationChannel.LOCAL_DOMAIN:
+                    # Handle local domain socket connections
+                    if sys.platform == "win32" and self.__local_server_socket is not None:
+                        # Windows named pipe
+                        local_client, address = self.__local_server_socket.accept(timeout)
+                        client = TcpClient(local_socket=local_client)
+                    elif sys.platform != "win32" and self.__listener_socket is not None:
+                        # Unix domain socket
+                        self.__listener_socket.settimeout(timeout)
+                        clientsocket, address = self.__listener_socket.accept()
+                        client = TcpClient(clientsocket)
+                else:
+                    # Handle TCP connections
+                    if self.__listener_socket is not None:
+                        self.__listener_socket.settimeout(timeout)
+                        clientsocket, address = self.__listener_socket.accept()
+                        client = TcpClient(clientsocket)
+
+                if client is not None:
+                    message = client.receive_msg(timeout)
+                    data_dict = json.loads(message)
                 self._logger.debug(f"CLEANUP: {data_dict}")
                 client.send_msg("")
             except socket.timeout:
@@ -5131,6 +5230,13 @@ class TcpOslServer(OslServer):
             elif self.__communication_channel is CommunicationChannel.TCP:
                 for host_address in listener.host_addresses:
                     multi_listener.append((host_address, listener.port, listener.uid))
+
+            if (
+                self.__communication_channel is CommunicationChannel.LOCAL_DOMAIN
+                and self.__local_server_id is None
+            ):
+                # Generate local server ID if not provided
+                self.__local_server_id = generate_local_server_id()
 
             self.__osl_process = OslServerProcess(
                 executable=self.__executable,

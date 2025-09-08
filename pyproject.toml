@@ -33,6 +33,7 @@ classifiers = [
 dependencies = [
     "psutil>=5.9",
     "Deprecated>=1.2.14",
+    "pywin32>=306; sys_platform == 'win32'",
 ]
 
 [project.optional-dependencies]
