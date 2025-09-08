@@ -295,7 +295,9 @@ def test_write_server_info(executable, project_file, server_info_file):
         Path to the server information file.
     """
     assert not os.path.isfile(server_info_file)
-    with OslServerProcess(executable, project_file, server_info=server_info_file) as osl_process:
+    with OslServerProcess(
+        executable, project_file, server_info=server_info_file, enable_tcp_server=True
+    ) as osl_process:
         osl_process.start()
         wait_for_file_creation(server_info_file)
         assert os.path.isfile(server_info_file)
@@ -320,7 +322,11 @@ def test_port_range(executable, project_file, server_info_file):
     assert not os.path.isfile(server_info_file)
     port_range = (49690, 49790)
     with OslServerProcess(
-        executable, project_file, server_info=server_info_file, port_range=port_range
+        executable,
+        project_file,
+        enable_tcp_server=True,
+        server_info=server_info_file,
+        port_range=port_range,
     ) as osl_process:
         osl_process.start()
         wait_for_file_creation(server_info_file)

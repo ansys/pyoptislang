@@ -30,6 +30,7 @@ import time
 import pytest
 
 from ansys.optislang.core import Optislang, OslServerProcess
+from ansys.optislang.core.communication_channels import CommunicationChannel
 from ansys.optislang.core.errors import ConnectionNotEstablishedError, OslCommunicationError
 
 _host = "127.0.0.1"
@@ -50,6 +51,7 @@ def create_osl_server_process(shutdown_on_finished=False) -> OslServerProcess:
             shutdown_on_finished=shutdown_on_finished,
             port_range=(port, port),
             server_info=server_info_file,
+            enable_tcp_server=True,
         )
         osl_server_process.start()
 
@@ -82,7 +84,9 @@ pytestmark = pytest.mark.local_osl
 )
 def test_local_default_cm(send_dispose, send_shutdown, osl_none):
     osl_port = None
-    with Optislang(shutdown_on_finished=True) as osl:
+    with Optislang(
+        shutdown_on_finished=True, communication_channel=CommunicationChannel.TCP
+    ) as osl:
         osl.project.start()
         osl_port = osl._Optislang__osl_server._TcpOslServer__port
         if send_dispose:
@@ -116,7 +120,9 @@ def test_local_default_cm(send_dispose, send_shutdown, osl_none):
 )
 def test_local_shutdown_on_finished_false_cm(send_dispose, send_shutdown, osl_none):
     osl_port = None
-    with Optislang(shutdown_on_finished=False) as osl:
+    with Optislang(
+        shutdown_on_finished=False, communication_channel=CommunicationChannel.TCP
+    ) as osl:
         osl.project.start()
         osl_port = osl._Optislang__osl_server._TcpOslServer__port
         if send_dispose:
@@ -192,7 +198,9 @@ def test_remote_cm(send_dispose, send_shutdown, osl_none):
     ],
 )
 def test_local_default_wocm(send_dispose, send_shutdown):
-    osl = Optislang(shutdown_on_finished=True, ini_timeout=90)
+    osl = Optislang(
+        shutdown_on_finished=True, ini_timeout=90, communication_channel=CommunicationChannel.TCP
+    )
     osl.project.start()
     osl_port = osl._Optislang__osl_server._TcpOslServer__port
     if send_dispose:
@@ -221,7 +229,9 @@ def test_local_default_wocm(send_dispose, send_shutdown):
     ],
 )
 def test_local_shutdown_on_finished_false_wocm(send_dispose, send_shutdown):
-    osl = Optislang(shutdown_on_finished=False, ini_timeout=60)
+    osl = Optislang(
+        shutdown_on_finished=False, ini_timeout=60, communication_channel=CommunicationChannel.TCP
+    )
     osl.project.start()
     osl_port = osl._Optislang__osl_server._TcpOslServer__port
     if send_dispose:
@@ -282,7 +292,7 @@ def test_remote_wocm(send_dispose, send_shutdown):
 
 def test_local_and_remote_simultaneously():
     """Test connection to locally started server, dispose locally started instance."""
-    osl_local = Optislang(ini_timeout=60)
+    osl_local = Optislang(ini_timeout=60, communication_channel=CommunicationChannel.TCP)
     osl_remote = Optislang(port=osl_local.osl_server.port, host=osl_local.osl_server.host)
     osl_local.dispose()
     time.sleep(1)
