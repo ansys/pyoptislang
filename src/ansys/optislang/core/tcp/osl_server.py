@@ -25,6 +25,7 @@ from __future__ import annotations
 
 import atexit
 from datetime import datetime
+from ipaddress import ip_address
 import json
 import logging
 import os
@@ -1174,7 +1175,8 @@ class TcpOslServer(OslServer):
     >>> osl_server.dispose()
     """
 
-    _LOCALHOST = "127.0.0.1"
+    _LOCALHOST_IPV4 = "127.0.0.1"
+    _LOCALHOST_IPV6 = "::1"
     _PRIVATE_PORTS_RANGE = (49152, 65535)
     _SHUTDOWN_WAIT = 5  # wait for local server to shutdown in second
     _STOPPED_STATES = ["IDLE", "FINISHED", "STOPPED", "ABORTED"]
@@ -1274,7 +1276,20 @@ class TcpOslServer(OslServer):
         atexit.register(self.dispose)
 
         if self.__host is None or self.__port is None:
-            self.__host = self.__server_address or self._LOCALHOST
+            if self.__server_address is not None:
+                # In case an IPV4/IPV6 Any address is specified,
+                # we still need to bind to localhost (as optiSLang is started locally),
+                # but we need to determine whether to use IPV4 or IPV6 localhost address.
+                if ip_address(self.__server_address) == ip_address("0.0.0.0"):
+                    self.__host = self._LOCALHOST_IPV4
+                elif ip_address(self.__server_address) == ip_address("::0"):
+                    self.__host = self._LOCALHOST_IPV6
+                else:
+                    # use specified server address as is
+                    self.__host = self.__server_address
+            else:
+                # use IPV4 localhost address by default
+                self.__host = self._LOCALHOST_IPV4
             self._start_local(ini_timeout, shutdown_on_finished)
         else:
             listener = self.__create_listener(
