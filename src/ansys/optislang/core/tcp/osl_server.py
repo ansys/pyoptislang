@@ -36,7 +36,6 @@ import signal
 import socket
 import struct
 import sys
-import tempfile
 import threading
 import time
 from typing import Any, Callable, Dict, Iterable, List, Mapping, Optional, Sequence, Tuple, Union
@@ -66,7 +65,11 @@ from ansys.optislang.core.placeholder_types import PlaceholderInfo, PlaceholderT
 from ansys.optislang.core.slot_types import SlotTypeHint
 from ansys.optislang.core.tcp import server_commands as commands
 from ansys.optislang.core.tcp import server_queries as queries
-from ansys.optislang.core.tcp.local_socket import LocalClientSocket, LocalServerSocket, generate_local_server_id
+from ansys.optislang.core.tcp.local_socket import (
+    LocalClientSocket,
+    LocalServerSocket,
+    generate_local_server_id,
+)
 from ansys.optislang.core.tcp.placeholder_types import PlaceholderTypeTCP, UserLevelTCP
 
 
@@ -259,9 +262,9 @@ class TcpClient:
     >>> client = TcpClient()
     >>> client.connect('127.0.0.1', 49690)
     >>> client.send_msg('{ "What": "SYSTEMS_STATUS_INFO" }')
-    
+
     Connect to a local domain server:
-    
+
     >>> client = TcpClient()
     >>> client.connect_local('server_id')
     >>> client.send_msg('{ "What": "SYSTEMS_STATUS_INFO" }')
@@ -271,7 +274,12 @@ class TcpClient:
     # Response size in bytes. Value is assumed to be binary 64Bit unsigned integer.
     _RESPONSE_SIZE_BYTES = 8
 
-    def __init__(self, socket: Optional[socket.SocketType] = None, local_socket: Optional[LocalClientSocket] = None, logger=None) -> None:
+    def __init__(
+        self,
+        socket: Optional[socket.SocketType] = None,
+        local_socket: Optional[LocalClientSocket] = None,
+        logger=None,
+    ) -> None:
         """Initialize a new instance of the ``TcpClient`` class."""
         self.__socket = socket
         self.__local_socket = local_socket
@@ -324,7 +332,9 @@ class TcpClient:
         bool
             True if the connection has been established; False otherwise.
         """
-        return self.__socket is not None or (self.__local_socket is not None and self.__local_socket.is_connected)
+        return self.__socket is not None or (
+            self.__local_socket is not None and self.__local_socket.is_connected
+        )
 
     def connect_local(self, local_server_id: str, timeout: Optional[float] = 2) -> None:
         """Connect to a local domain server.
@@ -352,7 +362,9 @@ class TcpClient:
         try:
             self.__local_socket = LocalClientSocket(self._logger)
             self.__local_socket.connect(local_server_id, timeout)
-            self._logger.debug("Connection has been established to local server %s.", local_server_id)
+            self._logger.debug(
+                "Connection has been established to local server %s.", local_server_id
+            )
         except Exception as e:
             if self.__local_socket:
                 self.__local_socket.close()
@@ -453,11 +465,15 @@ class TcpClient:
         header = struct.pack("!QQ", data_len, data_len)
 
         if self.__socket is not None:
-            self._logger.debug("Sending message to %s. Message: %s", self.__socket.getpeername(), msg)
+            self._logger.debug(
+                "Sending message to %s. Message: %s", self.__socket.getpeername(), msg
+            )
             self.__socket.settimeout(timeout)
             self.__socket.sendall(header + data)
         elif self.__local_socket is not None:
-            self._logger.debug("Sending message to local server %s. Message: %s", self.__local_socket.address, msg)
+            self._logger.debug(
+                "Sending message to local server %s. Message: %s", self.__local_socket.address, msg
+            )
             self.__local_socket.settimeout(timeout)
             # Send header and data
             total_data = header + data
@@ -514,7 +530,9 @@ class TcpClient:
                     load = file.read(self._BUFFER_SIZE)
             elif self.__local_socket is not None:
                 self._logger.debug(
-                    "Sending file to local server %s. File path: %s", self.__local_socket.address, file_path
+                    "Sending file to local server %s. File path: %s",
+                    self.__local_socket.address,
+                    file_path,
                 )
                 self.__local_socket.settimeout(timeout)
                 # Send header
@@ -731,7 +749,7 @@ class TcpClient:
                 chunk = self.__local_socket.recv(buff)
             else:
                 chunk = b""
-                
+
             if not chunk:
                 break
             received += chunk
@@ -902,20 +920,14 @@ class TcpOslListener:
 
     def is_initialized(self) -> bool:
         """Return True if listener was initialized."""
-        return (self.__listener_socket is not None or 
-                (hasattr(self, '_TcpOslListener__local_server_socket') and 
-                 self.__local_server_socket is not None))
+        return self.__listener_socket is not None or self.__local_server_socket is not None
 
     def dispose(self) -> None:
         """Delete listeners socket if exists."""
         if self.__listener_socket is not None:
             self.__listener_socket.close()
-        if hasattr(self, '_TcpOslListener__local_server_socket') and self.__local_server_socket is not None:
+        if self.__local_server_socket is not None:
             self.__local_server_socket.close()
-        # Clean up Unix socket file if it exists
-        if (sys.platform != "win32" and self._local_server_id is not None and 
-            os.path.exists(self._local_server_id)):
-            os.remove(self._local_server_id)
 
     @property
     def uid(self) -> Optional[str]:
@@ -1044,7 +1056,7 @@ class TcpOslListener:
                 os.chmod(self._local_server_id, 0o600)
             self._logger.debug("Listening on: %s", self._local_server_id)
         except IOError as ex:
-            if hasattr(self, '__local_server_socket'):
+            if self.__local_server_socket is not None:
                 self.__local_server_socket.close()
                 self.__local_server_socket = None
             if self.__listener_socket is not None:
@@ -1098,7 +1110,9 @@ class TcpOslListener:
                         # Windows named pipe
                         current_timeout = _get_current_timeout(timeout, start_time)
                         local_client, address = self.__local_server_socket.accept(current_timeout)
-                        self._logger.debug("Connection from local client %s has been established.", address)
+                        self._logger.debug(
+                            "Connection from local client %s has been established.", address
+                        )
                         client = TcpClient(local_socket=local_client)
                     elif sys.platform != "win32" and self.__listener_socket is not None:
                         # Unix domain socket
