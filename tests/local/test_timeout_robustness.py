@@ -27,17 +27,17 @@
 import threading
 import time
 
+from ansys.optislang.core import utils
 from ansys.optislang.core.tcp.local_socket import (
     LocalClientSocket,
     LocalServerSocket,
-    generate_local_server_id,
 )
 
 
 def test_connection_timeout():
     """Test connection timeout when server doesn't exist."""
     # Try to connect to non-existent server
-    non_existent_id = generate_local_server_id()
+    non_existent_id = utils.generate_local_server_id()
     client = LocalClientSocket()
 
     start_time = time.time()
@@ -53,7 +53,7 @@ def test_connection_timeout():
 
 def test_accept_timeout():
     """Test accept timeout when no client connects."""
-    server_id = generate_local_server_id()
+    server_id = utils.generate_local_server_id()
     server = LocalServerSocket()
     server.bind_and_listen(server_id)
 
@@ -70,7 +70,7 @@ def test_accept_timeout():
 
 def test_send_recv_timeout():
     """Test send/recv timeout functionality."""
-    server_id = generate_local_server_id()
+    server_id = utils.generate_local_server_id()
     server = LocalServerSocket()
     server.bind_and_listen(server_id)
 
@@ -113,7 +113,7 @@ def test_send_recv_timeout():
 
 def test_overlapped_io_robustness():
     """Test the robustness of overlapped I/O under concurrent operations."""
-    server_id = generate_local_server_id()
+    server_id = utils.generate_local_server_id()
     server = LocalServerSocket()
     server.bind_and_listen(server_id)
 

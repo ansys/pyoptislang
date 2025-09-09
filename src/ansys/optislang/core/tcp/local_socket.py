@@ -27,10 +27,8 @@ import logging
 import os
 import socket
 import sys
-import tempfile
 import time
 from typing import Optional, Tuple
-import uuid
 
 if sys.platform == "win32":
     import pywintypes
@@ -39,23 +37,6 @@ if sys.platform == "win32":
     import win32file
     import win32pipe
     import win32security
-
-
-def generate_local_server_id() -> str:
-    r"""Generate a platform-specific local server identifier.
-
-    Returns
-    -------
-    str
-        Platform-specific server identifier:
-        - Windows: Named pipe path (\\.\pipe\pyoptislang_{uuid})
-        - Linux/Unix: Unix domain socket path in temp directory
-    """
-    if sys.platform == "win32":
-        return f"\\\\.\\pipe\\pyoptislang_{str(uuid.uuid4()).replace('-', '')}"
-    else:
-        temp_dir = tempfile.gettempdir()
-        return os.path.join(temp_dir, f"{str(uuid.uuid4())}.sock")
 
 
 class LocalSocket:

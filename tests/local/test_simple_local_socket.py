@@ -27,17 +27,17 @@
 import threading
 import time
 
+from ansys.optislang.core import utils
 from ansys.optislang.core.tcp.local_socket import (
     LocalClientSocket,
     LocalServerSocket,
-    generate_local_server_id,
 )
 
 
 def test_simple_communication():
     """Test basic client-server communication."""
     # Generate server ID
-    server_id = generate_local_server_id()
+    server_id = utils.generate_local_server_id()
 
     # Create server
     server = LocalServerSocket()

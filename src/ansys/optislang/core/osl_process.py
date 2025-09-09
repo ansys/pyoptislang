@@ -30,7 +30,6 @@ import sys
 import tempfile
 from threading import Thread
 from typing import Callable, Dict, Iterable, List, Mapping, Optional, Tuple, Union
-import uuid
 
 import psutil
 
@@ -88,15 +87,15 @@ class OslServerProcess:
         ..note:: Cannot be used in combination with batch mode.
 
     local_server_id : Optional[str], optional
-        This defines the unique ID of the optiSLang local server.
-        If not specified, an auto-generated ID will be used.
+        This defines the unique ID of the optiSLang local server if ``enable_local_domain_server``
+        is ``True``. If not specified, an auto-generated ID will be used.
         Defaults to ``None``.
     server_address : Optional[str], optional
-        This defines the address of the optiSLang TCP server. If not specified, optiSLang will be
-        listening on local host only. Defaults to ``None``.
+        This defines the address of the optiSLang TCP server if ``enable_tcp_server`` is ``True``.
+        If not specified, optiSLang will be listening on local host only. Defaults to ``None``.
     port_range : Optional[Tuple[int, int]], optional
-        This restricts the port range for the optiSLang server. If not specified, optiSLang
-        will be allowed to listen on any port. Defaults to ``None``.
+        This restricts the port range for the optiSLang server if ``enable_tcp_server`` is ``True``.
+        If not specified, optiSLang will be allowed to listen on any port. Defaults to ``None``.
     password : Optional[str], optional
         The server password. Use when communication with the server requires the request
         to contain a password entry. Defaults to ``None``.
@@ -348,6 +347,9 @@ class OslServerProcess:
 
         if "PYOPTISLANG_DISABLE_OPTISLANG_OUTPUT" in os.environ:
             self.__log_process_stdout, self.__log_process_stderr = False, False
+
+        if self.__enable_local_domain_server and self.__local_server_id is None:
+            self.__local_server_id = utils.generate_local_server_id()
 
     @property
     def executable(self) -> Path:

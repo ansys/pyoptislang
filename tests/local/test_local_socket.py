@@ -29,10 +29,10 @@ Test script for local socket implementation with timeout testing.
 import threading
 import time
 
+from ansys.optislang.core import utils
 from ansys.optislang.core.tcp.local_socket import (
     LocalClientSocket,
     LocalServerSocket,
-    generate_local_server_id,
 )
 
 
@@ -40,7 +40,7 @@ def test_basic_communication():
     """Test basic local socket communication."""
 
     # Generate server ID
-    server_id = generate_local_server_id()
+    server_id = utils.generate_local_server_id()
 
     # Create server
     server = LocalServerSocket()
@@ -91,7 +91,7 @@ def test_basic_communication():
 def test_timeout_functionality():
     """Test timeout functionality."""
     # Test connection timeout to non-existent server
-    non_existent_id = generate_local_server_id()
+    non_existent_id = utils.generate_local_server_id()
 
     client = LocalClientSocket()
     try:
@@ -103,7 +103,7 @@ def test_timeout_functionality():
             elapsed = time.time() - start_time
 
         # Test accept timeout
-        server_id = generate_local_server_id()
+        server_id = utils.generate_local_server_id()
         server = LocalServerSocket()
         try:
             server.bind_and_listen(server_id)
@@ -124,7 +124,7 @@ def test_timeout_functionality():
 
 def test_concurrent_connections():
     """Test multiple concurrent connections."""
-    server_id = generate_local_server_id()
+    server_id = utils.generate_local_server_id()
 
     server = LocalServerSocket()
     server_running = threading.Event()

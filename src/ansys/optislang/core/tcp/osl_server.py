@@ -68,7 +68,6 @@ from ansys.optislang.core.tcp import server_queries as queries
 from ansys.optislang.core.tcp.local_socket import (
     LocalClientSocket,
     LocalServerSocket,
-    generate_local_server_id,
 )
 from ansys.optislang.core.tcp.placeholder_types import PlaceholderTypeTCP, UserLevelTCP
 
@@ -1039,7 +1038,7 @@ class TcpOslListener:
         """Initialize local listener."""
         self.__listener_socket = None
         try:
-            self._local_server_id = generate_local_server_id()
+            self._local_server_id = utils.generate_local_server_id()
             if sys.platform == "win32":
                 # Use LocalServerSocket for Windows named pipes
                 self.__local_server_socket = LocalServerSocket(self._logger)
@@ -5250,7 +5249,7 @@ class TcpOslServer(OslServer):
                 and self.__local_server_id is None
             ):
                 # Generate local server ID if not provided
-                self.__local_server_id = generate_local_server_id()
+                self.__local_server_id = utils.generate_local_server_id()
 
             self.__osl_process = OslServerProcess(
                 executable=self.__executable,

@@ -31,6 +31,7 @@ from pathlib import Path
 import re
 import socket
 import sys
+import tempfile
 from typing import (
     DefaultDict,
     Dict,
@@ -44,6 +45,7 @@ from typing import (
     TypeVar,
     Union,
 )
+import uuid
 
 from ansys.optislang.core import FIRST_SUPPORTED_VERSION
 
@@ -499,3 +501,20 @@ def is_localhost(host: str) -> bool:
         except ValueError:
             return False
     return True
+
+
+def generate_local_server_id() -> str:
+    r"""Generate a platform-specific local server identifier.
+
+    Returns
+    -------
+    str
+        Platform-specific server identifier:
+        - Windows: Named pipe path (\\.\pipe\pyoptislang_{uuid})
+        - Linux/Unix: Unix domain socket path in temp directory
+    """
+    if sys.platform == "win32":
+        return f"\\\\.\\pipe\\pyoptislang_{str(uuid.uuid4()).replace('-', '')}"
+    else:
+        temp_dir = tempfile.gettempdir()
+        return os.path.join(temp_dir, f"{str(uuid.uuid4())}.sock")
