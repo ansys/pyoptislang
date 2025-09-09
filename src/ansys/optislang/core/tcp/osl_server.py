@@ -1035,24 +1035,12 @@ class TcpOslListener:
         self.__thread = None
 
     def __init_local_listener_socket(self) -> None:
-        """Initialize local listener."""
+        """Initialize local listener using LocalServerSocket abstraction for all platforms."""
         self.__listener_socket = None
         try:
             self._local_server_id = utils.generate_local_server_id()
-            if sys.platform == "win32":
-                # Use LocalServerSocket for Windows named pipes
-                self.__local_server_socket = LocalServerSocket(self._logger)
-                self.__local_server_socket.bind_and_listen(self._local_server_id)
-            else:
-                # Use regular Unix socket for Linux
-                self.__listener_socket = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-                # Remove existing socket file if it exists
-                if os.path.exists(self._local_server_id):
-                    os.remove(self._local_server_id)
-                self.__listener_socket.bind(self._local_server_id)
-                self.__listener_socket.listen(5)
-                # Restrict permissions to current user only
-                os.chmod(self._local_server_id, 0o600)
+            self.__local_server_socket = LocalServerSocket(self._logger)
+            self.__local_server_socket.bind_and_listen(self._local_server_id)
             self._logger.debug("Listening on: %s", self._local_server_id)
         except IOError as ex:
             if self.__local_server_socket is not None:
@@ -1104,21 +1092,14 @@ class TcpOslListener:
             client = None
             try:
                 if self.__communication_channel == CommunicationChannel.LOCAL_DOMAIN:
-                    # Handle local domain socket connections
-                    if sys.platform == "win32" and self.__local_server_socket is not None:
-                        # Windows named pipe
+                    # Always use LocalServerSocket abstraction for local domain
+                    if self.__local_server_socket is not None:
                         current_timeout = _get_current_timeout(timeout, start_time)
                         local_client, address = self.__local_server_socket.accept(current_timeout)
                         self._logger.debug(
                             "Connection from local client %s has been established.", address
                         )
                         client = TcpClient(local_socket=local_client)
-                    elif sys.platform != "win32" and self.__listener_socket is not None:
-                        # Unix domain socket
-                        self.__listener_socket.settimeout(_get_current_timeout(timeout, start_time))
-                        clientsocket, address = self.__listener_socket.accept()
-                        self._logger.debug("Connection from %s has been established.", address)
-                        client = TcpClient(clientsocket)
                 else:
                     # Handle TCP connections
                     if self.__listener_socket is not None:
@@ -1172,16 +1153,10 @@ class TcpOslListener:
             client = None
             try:
                 if self.__communication_channel == CommunicationChannel.LOCAL_DOMAIN:
-                    # Handle local domain socket connections
-                    if sys.platform == "win32" and self.__local_server_socket is not None:
-                        # Windows named pipe
+                    # Always use LocalServerSocket abstraction for local domain
+                    if self.__local_server_socket is not None:
                         local_client, address = self.__local_server_socket.accept(timeout)
                         client = TcpClient(local_socket=local_client)
-                    elif sys.platform != "win32" and self.__listener_socket is not None:
-                        # Unix domain socket
-                        self.__listener_socket.settimeout(timeout)
-                        clientsocket, address = self.__listener_socket.accept()
-                        client = TcpClient(clientsocket)
                 else:
                     # Handle TCP connections
                     if self.__listener_socket is not None:
@@ -1192,8 +1167,8 @@ class TcpOslListener:
                 if client is not None:
                     message = client.receive_msg(timeout)
                     data_dict = json.loads(message)
-                self._logger.debug(f"CLEANUP: {data_dict}")
-                client.send_msg("")
+                    self._logger.debug(f"CLEANUP: {data_dict}")
+                    client.send_msg("")
             except socket.timeout:
                 self._logger.debug("No notifications were cleaned up.")
                 break
