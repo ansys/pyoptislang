@@ -31,7 +31,11 @@ import pytest
 
 from ansys.optislang.core import Optislang, OslServerProcess
 from ansys.optislang.core.communication_channels import CommunicationChannel
-from ansys.optislang.core.errors import ConnectionNotEstablishedError, OslCommunicationError
+from ansys.optislang.core.errors import (
+    ConnectionNotEstablishedError,
+    OslCommandError,
+    OslCommunicationError,
+)
 
 _host = "127.0.0.1"
 
@@ -95,6 +99,7 @@ def test_local_default_cm(send_dispose, send_shutdown, osl_none):
             osl.shutdown(True)
         if osl_none:
             osl = None
+        time.sleep(1)
 
     # server not running
     with pytest.raises(
@@ -103,6 +108,7 @@ def test_local_default_cm(send_dispose, send_shutdown, osl_none):
             ConnectionRefusedError,
             OslCommunicationError,
             RuntimeError,
+            OslCommandError,
         )
     ):
         osl = Optislang(host="127.0.0.1", port=osl_port, ini_timeout=10)
@@ -131,6 +137,7 @@ def test_local_shutdown_on_finished_false_cm(send_dispose, send_shutdown, osl_no
             osl.shutdown()
         if osl_none:
             osl = None
+        time.sleep(1)
 
     if not send_shutdown:
         osl = Optislang(host="127.0.0.1", port=osl_port, ini_timeout=60)
@@ -142,6 +149,7 @@ def test_local_shutdown_on_finished_false_cm(send_dispose, send_shutdown, osl_no
                 ConnectionRefusedError,
                 OslCommunicationError,
                 RuntimeError,
+                OslCommandError,
             )
         ):
             osl = Optislang(host="127.0.0.1", port=osl_port, ini_timeout=60)
@@ -169,6 +177,7 @@ def test_remote_cm(send_dispose, send_shutdown, osl_none):
             osl.shutdown()
         if osl_none:
             osl = None
+        time.sleep(1)
 
     if not send_shutdown:
         osl = Optislang(host="127.0.0.1", port=osl_server_process.port_range[0], ini_timeout=60)
@@ -180,6 +189,7 @@ def test_remote_cm(send_dispose, send_shutdown, osl_none):
                 ConnectionRefusedError,
                 OslCommunicationError,
                 RuntimeError,
+                OslCommandError,
             )
         ):
             osl = Optislang(host="127.0.0.1", port=osl_server_process.port_range[0], ini_timeout=60)
@@ -207,6 +217,7 @@ def test_local_default_wocm(send_dispose, send_shutdown):
         osl.dispose()
     if send_shutdown:
         osl.shutdown(True)
+    time.sleep(1)
 
     # server not running
     with pytest.raises(
@@ -215,6 +226,7 @@ def test_local_default_wocm(send_dispose, send_shutdown):
             ConnectionRefusedError,
             OslCommunicationError,
             RuntimeError,
+            OslCommandError,
         )
     ):
         osl = Optislang(host="127.0.0.1", port=osl_port, ini_timeout=60)
@@ -238,6 +250,7 @@ def test_local_shutdown_on_finished_false_wocm(send_dispose, send_shutdown):
         osl.dispose()
     if send_shutdown:
         osl.shutdown()
+    time.sleep(1)
 
     if not send_shutdown:
         osl = Optislang(host="127.0.0.1", port=osl_port, ini_timeout=60)
@@ -249,6 +262,7 @@ def test_local_shutdown_on_finished_false_wocm(send_dispose, send_shutdown):
                 ConnectionRefusedError,
                 OslCommunicationError,
                 RuntimeError,
+                OslCommandError,
             )
         ):
             osl = Optislang(host="127.0.0.1", port=osl_port, ini_timeout=60)
@@ -273,6 +287,7 @@ def test_remote_wocm(send_dispose, send_shutdown):
         osl.dispose()
     if send_shutdown:
         osl.shutdown()
+    time.sleep(1)
 
     if not send_shutdown:
         osl = Optislang(host="127.0.0.1", port=osl_server_process.port_range[0], ini_timeout=60)
@@ -284,6 +299,7 @@ def test_remote_wocm(send_dispose, send_shutdown):
                 ConnectionRefusedError,
                 OslCommunicationError,
                 RuntimeError,
+                OslCommandError,
             )
         ):
             osl = Optislang(host="127.0.0.1", port=osl_server_process.port_range[0], ini_timeout=60)
