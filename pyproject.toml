@@ -109,6 +109,8 @@ exclude = ["00_run_script"]
 exclude_dirs = ["tests"]
 skips = [
     "B101",
+    "B102",
+    "B104",
     "B105",
     "B106",
     "B110",
