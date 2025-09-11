@@ -380,6 +380,7 @@ class TcpDesignManagerProxy(DesignManager):
         ----------
         hid : Optional[str], optional
             State/Design hierarchical id. By default ``None``.
+            If not specified, the "root" id ("0") will be
         include_design_values : bool, optional
             Include values. By default ``True``.
         include_non_scalar_design_values : Optional[bool], optional
@@ -391,9 +392,8 @@ class TcpDesignManagerProxy(DesignManager):
             Tuple of designs for a given state.
         """
         design_classes = []
-        assert hid is not None
         status_info = self._get_status_info(
-            hid=hid,
+            hid=hid or "0",
             include_designs=True,
             include_design_values=include_design_values,
             include_non_scalar_design_values=include_design_values
@@ -458,15 +458,16 @@ class TcpDesignManagerProxy(DesignManager):
                 )
         return tuple(design_classes)
 
-    def save_designs_as_json(self, hid: str, file_path: Union[Path, str]) -> File:
+    def save_designs_as_json(self, file_path: Union[Path, str], hid: Optional[str] = None) -> File:
         """Save designs for a given state to JSON file.
 
         Parameters
         ----------
-        hid : str
-            Actor's state.
         file_path : Union[Path, str]
             Path to the file.
+        hid : Optional[str], optional
+            State/Design hierarchical id. By default ``None``.
+            If not specified, the "root" id ("0") will be
 
         Returns
         -------
@@ -490,15 +491,16 @@ class TcpDesignManagerProxy(DesignManager):
         """
         return self.__save_designs_as(hid, file_path, FileOutputFormat.JSON)
 
-    def save_designs_as_csv(self, hid: str, file_path: Union[Path, str]) -> File:
+    def save_designs_as_csv(self, file_path: Union[Path, str], hid: Optional[str] = None) -> File:
         """Save designs for a given state to CSV file.
 
         Parameters
         ----------
-        hid : str
-            Actor's state.
         file_path : Union[Path, str]
             Path to the file.
+        hid : Optional[str], optional
+            State/Design hierarchical id. By default ``None``.
+            If not specified, the "root" id ("0") will be
 
         Returns
         -------
@@ -523,18 +525,19 @@ class TcpDesignManagerProxy(DesignManager):
         return self.__save_designs_as(hid, file_path, FileOutputFormat.CSV)
 
     def __save_designs_as(
-        self, hid: str, file_path: Union[Path, str], format: FileOutputFormat
+        self, file_path: Union[Path, str], format: FileOutputFormat, hid: Optional[str] = None
     ) -> File:
         """Save designs for a given state.
 
         Parameters
         ----------
-        hid : str
-            Actor's state.
         file_path : Union[Path, str]
             Path to the file.
         format : FileOutputFormat
             Format of the file.
+        hid : Optional[str], optional
+            State/Design hierarchical id. By default ``None``.
+            If not specified, the "root" id ("0") will be
 
         Returns
         -------
@@ -558,8 +561,6 @@ class TcpDesignManagerProxy(DesignManager):
             -or-
             ``hid`` does not exist.
         """
-        if hid is None:
-            raise TypeError("Actor's state cannot be `None`.")
         if file_path is None:
             raise TypeError("Path to the file cannot be `None`.")
         if isinstance(file_path, str):
@@ -571,7 +572,7 @@ class TcpDesignManagerProxy(DesignManager):
             )
 
         status_info = self._get_status_info(
-            hid=hid,
+            hid=hid or "0",
             include_designs=True,
             include_design_values=True,
             include_non_scalar_design_values=(format == FileOutputFormat.JSON),

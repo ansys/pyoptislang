@@ -253,16 +253,17 @@ class DesignManager:
 
     @abstractmethod
     def save_designs_as_json(
-        self, hid: str, file_path: Union[Path, str]
+        self, file_path: Union[Path, str], hid: Optional[str] = None
     ) -> File:  # pragma: no cover
         """Save designs for a given state to JSON file.
 
         Parameters
         ----------
-        hid : str
-            Actor's state.
         file_path : Union[Path, str]
             Path to the file.
+        hid : Optional[str], optional
+            State/Design hierarchical id. By default ``None``.
+            If not specified, the "root" id ("0") will be
 
         Returns
         -------
@@ -288,16 +289,17 @@ class DesignManager:
 
     @abstractmethod
     def save_designs_as_csv(
-        self, hid: str, file_path: Union[Path, str]
+        self, file_path: Union[Path, str], hid: Optional[str] = None
     ) -> File:  # pragma: no cover
         """Save designs for a given state to CSV file.
 
         Parameters
         ----------
-        hid : str
-            Actor's state.
         file_path : Union[Path, str]
             Path to the file.
+        hid : Optional[str], optional
+            State/Design hierarchical id. By default ``None``.
+            If not specified, the "root" id ("0") will be
 
         Returns
         -------
