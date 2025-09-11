@@ -155,7 +155,7 @@ class Optislang:
         Defaults to ``None``.
 
     log_process_stdout : bool, optional
-        Determines whether the process STDOUT is supposed to be logged. Defaults to ``False``.
+        Determines whether the process stdout should be logged. Defaults to ``False``.
     log_process_stderr : bool, optional
         Determines whether the process STDERR is supposed to be logged. Defaults to ``False``.
     shutdown_on_finished: bool, optional
