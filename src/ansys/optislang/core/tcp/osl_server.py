@@ -1288,10 +1288,11 @@ class TcpOslServer(OslServer):
                 # In case an IPV4/IPV6 Any address is specified,
                 # we still need to bind to localhost (as optiSLang is started locally),
                 # but we need to determine whether to use IPV4 or IPV6 localhost address.
-                # Concerning nosec B104: No vulnerability, we just check if provided address is Any address.
+                # Concerning nosec B104: No vulnerability, we just check if provided address
+                # is Any address.
                 if ip_address(self.__server_address) == ip_address("0.0.0.0"):  # nosec B104
                     self.__host = self._LOCALHOST_IPV4
-                elif ip_address(self.__server_address) == ip_address("::0"):    # nosec B104
+                elif ip_address(self.__server_address) == ip_address("::0"):  # nosec B104
                     self.__host = self._LOCALHOST_IPV6
                 else:
                     # use specified server address as is
@@ -5360,15 +5361,16 @@ class TcpOslServer(OslServer):
                                 "Refreshing registration for listener: %s", listener.uid
                             )
                             if listener.uid is not None:
+                                max_request_attempts = self.max_request_attempts_register.get_value(
+                                    current_func_name
+                                )
                                 self.send_command(
                                     commands.refresh_listener_registration(
                                         uid=listener.uid,
                                         password=self.__password,
                                     ),
                                     timeout=self.timeouts_register.get_value(current_func_name),
-                                    max_request_attempts=self.max_request_attempts_register.get_value(
-                                        current_func_name
-                                    ),
+                                    max_request_attempts=max_request_attempts,
                                 )
                         except OslCommandError as e:
                             self._logger.debug(
