@@ -23,6 +23,7 @@
 """Contains ``Parameter``, ``Criterion``, ``Response``, it's child classes and enumerations."""
 from __future__ import annotations
 
+import ast
 import copy
 from enum import Enum
 from typing import Any, Dict, Iterable, List, Mapping, Optional, Sequence, Tuple, Union
@@ -837,8 +838,7 @@ class Criterion:
         # split by square bracket end
         splitted_str = string.split("]")
         size_str = splitted_str[0] + "]"
-        # TODO don't use eval
-        size = eval(size_str)
+        size = ast.literal_eval(size_str)
         if size[0] == 1:
             splitted_str[1] = splitted_str[1][:-1] + "," + splitted_str[1][-1:]
         if size[1] == 1 and size[0] > 1:
@@ -847,8 +847,7 @@ class Criterion:
             splitted_str[1] = splitted_str[1][:-3] + "," + splitted_str[1][-3:]
 
         # evaluation of second part creates tuple
-        # TODO don't use eval
-        eval_str = eval(splitted_str[1])
+        eval_str = ast.literal_eval(splitted_str[1])
         matrix_list = []  # type: ignore[var-annotated]
         for row_index in range(size[0]):
             matrix_list.append([])
@@ -914,13 +913,11 @@ class Criterion:
         # split by square bracket end
         splitted_str = string.split("]")
         size_str = splitted_str[0] + "]"
-        # TODO don't use eval
-        size = eval(size_str)
+        size = ast.literal_eval(size_str)
         if size[0] == 1:
             splitted_str[1][-2:-2] = ","  # type: ignore[index]
         # evaluatiaon of second part creates tuple
-        # TODO don't use eval
-        eval_str = eval(splitted_str[1])
+        eval_str = ast.literal_eval(splitted_str[1])
         vector_list = []
         for row_index in range(size[0]):
             if eval_str[row_index][1] == 0:
