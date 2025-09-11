@@ -981,25 +981,25 @@ class TcpOslListener:
         timeout: float, optional
             Listener socket timeout. Default value ``0.2``.
         """
-        while True:
-            client = None
-            try:
-                assert self.__listener_socket is not None
-                self.__listener_socket.settimeout(timeout)
-                clientsocket, address = self.__listener_socket.accept()
-                client = TcpClient(clientsocket)
-                message = client.receive_msg(timeout)
-                data_dict = json.loads(message)
-                self._logger.debug(f"CLEANUP: {data_dict}")
-                client.send_msg("")
-            except socket.timeout:
-                self._logger.debug("No notifications were cleaned up.")
-                break
-            except Exception as ex:
-                self._logger.warning(ex)
-            finally:
-                if client is not None:
-                    client.disconnect()
+        if self.__listener_socket is not None:
+            while True:
+                client = None
+                try:
+                    self.__listener_socket.settimeout(timeout)
+                    clientsocket, address = self.__listener_socket.accept()
+                    client = TcpClient(clientsocket)
+                    message = client.receive_msg(timeout)
+                    data_dict = json.loads(message)
+                    self._logger.debug(f"CLEANUP: {data_dict}")
+                    client.send_msg("")
+                except socket.timeout:
+                    self._logger.debug("No notifications were cleaned up.")
+                    break
+                except Exception as ex:
+                    self._logger.warning(ex)
+                finally:
+                    if client is not None:
+                        client.disconnect()
 
 
 class TcpOslServer(OslServer):
@@ -4452,7 +4452,6 @@ class TcpOslServer(OslServer):
 
         response_str = ""
 
-        assert isinstance(max_request_attempts, int)
         for request_attempt in range(1, max_request_attempts + 1):
             start_time = time.time()
             try:
@@ -5359,17 +5358,17 @@ class TcpOslServer(OslServer):
                             self._logger.debug(
                                 "Refreshing registration for listener: %s", listener.uid
                             )
-                            assert listener.uid is not None
-                            self.send_command(
-                                commands.refresh_listener_registration(
-                                    uid=listener.uid,
-                                    password=self.__password,
-                                ),
-                                timeout=self.timeouts_register.get_value(current_func_name),
-                                max_request_attempts=self.max_request_attempts_register.get_value(
-                                    current_func_name
-                                ),
-                            )
+                            if listener.uid is not None:
+                                self.send_command(
+                                    commands.refresh_listener_registration(
+                                        uid=listener.uid,
+                                        password=self.__password,
+                                    ),
+                                    timeout=self.timeouts_register.get_value(current_func_name),
+                                    max_request_attempts=self.max_request_attempts_register.get_value(
+                                        current_func_name
+                                    ),
+                                )
                         except OslCommandError as e:
                             self._logger.debug(
                                 "Refreshing registration for listener %s failed: %s",
