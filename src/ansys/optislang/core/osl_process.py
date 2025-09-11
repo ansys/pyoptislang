@@ -86,8 +86,12 @@ class OslServerProcess:
 
         ..note:: Cannot be used in combination with batch mode.
 
-    port_range : Tuple[int, int], optional
-        Defines the port range for optiSLang server. Defaults to ``None``.
+    server_address : Optional[str], optional
+        This defines the address of the optiSLang server. If not specified, optiSLang will be
+        listening on local host only. Defaults to ``None``.
+    port_range : Optional[Tuple[int, int]], optional
+        This restricts the port range for the optiSLang server. If not specified, optiSLang
+        will be allowed to listen on any port. Defaults to ``None``.
     password : Optional[str], optional
         The server password. Use when communication with the server requires the request
         to contain a password entry. Defaults to ``None``.
@@ -159,9 +163,9 @@ class OslServerProcess:
     logger : Any, optional
         Object for logging. If ``None``, standard logging object is used. Defaults to ``None``.
     log_process_stdout : bool, optional
-        Determines whether the process STDOUT is supposed to be logged. Defaults to ``True``.
+        Determines whether the process STDOUT is supposed to be logged. Defaults to ``False``.
     log_process_stderr : bool, optional
-        Determines whether the process STDERR is supposed to be logged. Defaults to ``True``.
+        Determines whether the process STDERR is supposed to be logged. Defaults to ``False``.
     import_project_properties_file : Optional[Union[str, pathlib.Path]], optional
         Optional path to a project properties file to import. Defaults to ``None``.
     export_project_properties_file : Optional[Union[str, pathlib.Path]], optional
@@ -218,6 +222,7 @@ class OslServerProcess:
     """
 
     DEFAULT_PROJECT_FILE = "project.opf"
+    _LOCALHOST = "127.0.0.1"
 
     def __init__(
         self,
@@ -225,6 +230,7 @@ class OslServerProcess:
         project_path: Optional[Union[str, Path]] = None,
         batch: bool = True,
         service: bool = False,
+        server_address: Optional[str] = None,
         port_range: Optional[Tuple[int, int]] = None,
         password: Optional[str] = None,
         no_run: Optional[bool] = None,
@@ -243,8 +249,8 @@ class OslServerProcess:
         shutdown_on_finished: bool = True,
         env_vars: Optional[Mapping[str, str]] = None,
         logger=None,
-        log_process_stdout: bool = True,
-        log_process_stderr: bool = True,
+        log_process_stdout: bool = False,
+        log_process_stderr: bool = False,
         import_project_properties_file: Optional[Union[str, Path]] = None,
         export_project_properties_file: Optional[Union[str, Path]] = None,
         import_placeholders_file: Optional[Union[str, Path]] = None,
@@ -297,6 +303,7 @@ class OslServerProcess:
         self.__dump_project_state = validated_path(dump_project_state)
         self.__opx_project_definition_file = validated_path(opx_project_definition_file)
 
+        self.__server_address = server_address
         self.__port_range = port_range
         self.__password = password
         self.__no_run = no_run
@@ -355,8 +362,19 @@ class OslServerProcess:
         return self.__batch
 
     @property
+    def server_address(self) -> Optional[str]:
+        """Server address of the optiSLang server.
+
+        Returns
+        -------
+        Optional[str]
+            Server address, if defined; ``None`` otherwise.
+        """
+        return self.__server_address
+
+    @property
     def port_range(self) -> Optional[Tuple[int, int]]:
-        """Port range for optiSLang server execution.
+        """Port range for the optiSLang server.
 
         Returns
         -------
@@ -776,6 +794,10 @@ class OslServerProcess:
                 args.append(f"--enable-tcp-server={self.__port_range[0]}-{self.__port_range[1]}")
             else:
                 args.append("--enable-tcp-server")
+            if self.__server_address is not None:
+                args.append(f"--server-address={self.__server_address}")
+            else:
+                args.append(f"--server-address={self._LOCALHOST}")  # Default to localhost
 
         if self.__password is not None:
             # Submits the server password. Use when communication with the server requires
@@ -1061,7 +1083,7 @@ class OslServerProcess:
             name="PyOptiSLang.ProcessOutputHandlerThread",
             args=(
                 self.__process,
-                self._logger.debug if self.__log_process_stdout else None,
+                self._logger.info if self.__log_process_stdout else None,
                 self._logger.warning if self.__log_process_stderr else None,
                 finalize_process,
                 True,

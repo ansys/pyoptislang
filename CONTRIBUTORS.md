@@ -20,3 +20,4 @@
 * [PanekOndrej](https://github.com/PanekOndrej)
 * [Roberto Pastor Muela](https://github.com/RobPasMue)
 * [Shrikant Chaudhari](https://github.com/shrik6548)
+* [Sébastien Morais](https://github.com/SMoraisAnsys)

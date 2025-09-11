@@ -162,4 +162,5 @@ html_context = {
     "github_repo": "pyoptislang",
     "github_version": "main",
     "doc_path": "doc/source",
+    "pyansys_tags": ["Connect"],
 }

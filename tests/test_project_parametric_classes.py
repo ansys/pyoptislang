@@ -1171,8 +1171,8 @@ def test_response():
     assert response.reference_value == {"channels": [1, 2, 3], "type": "signal"}
     assert response.reference_value_type == ResponseValueType.SIGNAL
 
-    response.reference_value = {"matrix": [1, 2, 3], "type": "xydata"}
-    assert response.reference_value == {"matrix": [1, 2, 3], "type": "xydata"}
+    response.reference_value = {"matrix": [1, 2, 3], "type": "xy_data"}
+    assert response.reference_value == {"matrix": [1, 2, 3], "type": "xy_data"}
     assert response.reference_value_type == ResponseValueType.XYDATA
 
     with pytest.raises(TypeError):

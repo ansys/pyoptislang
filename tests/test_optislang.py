@@ -93,3 +93,31 @@ def test_shutdown():
     "Test ``shutdown``."
     osl = Optislang(shutdown_on_finished=False, ini_timeout=90)
     osl.shutdown()
+
+
+def test_tcp_localhost_ipv4():
+    "Test TCP connection to localhost (IPv4)."
+    osl = Optislang(ini_timeout=90, server_address="127.0.0.1")
+    assert osl.osl_server.host == "127.0.0.1"
+    osl.dispose()
+
+
+def test_tcp_localhost_ipv6():
+    "Test TCP connection to localhost (IPv6)."
+    osl = Optislang(ini_timeout=90, server_address="::1")
+    assert osl.osl_server.host == "::1"
+    osl.dispose()
+
+
+def test_tcp_any_ipv4():
+    "Test TCP connection to IPv4 any address."
+    osl = Optislang(ini_timeout=90, server_address="0.0.0.0")
+    assert osl.osl_server.host == "127.0.0.1"
+    osl.dispose()
+
+
+def test_tcp_any_ipv6():
+    "Test TCP connection IPv6 any address."
+    osl = Optislang(ini_timeout=90, server_address="::0")
+    assert osl.osl_server.host == "::1"
+    osl.dispose()

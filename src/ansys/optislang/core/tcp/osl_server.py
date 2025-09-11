@@ -25,6 +25,7 @@ from __future__ import annotations
 
 import atexit
 from datetime import datetime
+from ipaddress import ip_address
 import json
 import logging
 import os
@@ -55,12 +56,15 @@ from ansys.optislang.core.errors import (
     OslServerStartError,
     ResponseFormatError,
 )
+from ansys.optislang.core.json_utils import _get_enum_value
 from ansys.optislang.core.node_types import AddinType, NodeType
 from ansys.optislang.core.osl_process import OslServerProcess, ServerNotification
 from ansys.optislang.core.osl_server import OslServer, OslVersion
+from ansys.optislang.core.placeholder_types import PlaceholderInfo, PlaceholderType, UserLevel
 from ansys.optislang.core.slot_types import SlotTypeHint
 from ansys.optislang.core.tcp import server_commands as commands
 from ansys.optislang.core.tcp import server_queries as queries
+from ansys.optislang.core.tcp.placeholder_types import PlaceholderTypeTCP, UserLevelTCP
 
 
 def _get_current_timeout(initial_timeout: Optional[float], start_time: float) -> Optional[float]:
@@ -1040,8 +1044,14 @@ class TcpOslServer(OslServer):
 
         ..note:: Cannot be used in combination with batch mode.
 
+    server_address : Optional[str], optional
+        In case an optiSLang server is to be started, this defines the address
+        of the optiSLang server. If not specified, optiSLang will be listening on
+        local host only. Defaults to ``None``.
     port_range : Optional[Tuple[int, int]], optional
-        Defines the port range for optiSLang server. Defaults to ``None``.
+        In case an optiSLang server is to be started, this restricts the port range
+        for the optiSLang server. If not specified, optiSLang will be allowed to
+        listen on any port. Defaults to ``None``.
     no_run : Optional[bool], optional
         Determines whether not to run the specified project when started in batch mode.
         Defaults to ``None``.
@@ -1090,6 +1100,10 @@ class TcpOslServer(OslServer):
         to contain a password entry. Defaults to ``None``.
     logger : Optional[Any], optional
         Object for logging. If ``None``, standard logging object is used. Defaults to ``None``.
+    log_process_stdout : bool, optional
+        Determines whether the process STDOUT is supposed to be logged. Defaults to ``False``.
+    log_process_stderr : bool, optional
+        Determines whether the process STDERR is supposed to be logged. Defaults to ``False``.
     shutdown_on_finished: bool, optional
         Shut down when execution is finished and there are not any listeners registered.
         It is ignored when the host and port parameters are specified. Defaults to ``True``.
@@ -1165,7 +1179,8 @@ class TcpOslServer(OslServer):
     >>> osl_server.dispose()
     """
 
-    _LOCALHOST = "127.0.0.1"
+    _LOCALHOST_IPV4 = "127.0.0.1"
+    _LOCALHOST_IPV6 = "::1"
     _PRIVATE_PORTS_RANGE = (49152, 65535)
     _SHUTDOWN_WAIT = 5  # wait for local server to shutdown in second
     _STOPPED_STATES = ["IDLE", "FINISHED", "STOPPED", "ABORTED"]
@@ -1188,6 +1203,7 @@ class TcpOslServer(OslServer):
         project_path: Optional[Union[str, Path]] = None,
         batch: bool = True,
         service: bool = False,
+        server_address: Optional[str] = None,
         port_range: Optional[Tuple[int, int]] = None,
         no_run: Optional[bool] = None,
         no_save: bool = False,
@@ -1201,6 +1217,8 @@ class TcpOslServer(OslServer):
         ini_timeout: float = 60,
         password: Optional[str] = None,
         logger: Optional[Any] = None,
+        log_process_stdout: bool = False,
+        log_process_stderr: bool = False,
         shutdown_on_finished: bool = True,
         env_vars: Optional[Mapping[str, str]] = None,
         import_project_properties_file: Optional[Union[str, Path]] = None,
@@ -1224,6 +1242,7 @@ class TcpOslServer(OslServer):
         self.__project_path = Path(project_path) if project_path is not None else None
         self.__batch = batch
         self.__service = service
+        self.__server_address = server_address
         self.__port_range = port_range
         self.__no_run = no_run
         self.__no_save = no_save
@@ -1249,6 +1268,8 @@ class TcpOslServer(OslServer):
         self.__dump_project_state = dump_project_state
         self.__opx_project_definition_file = opx_project_definition_file
         self.__additional_args = additional_args
+        self.__log_process_stdout = log_process_stdout
+        self.__log_process_stderr = log_process_stderr
 
         executed_in_main_thread = True
 
@@ -1263,7 +1284,20 @@ class TcpOslServer(OslServer):
         atexit.register(self.dispose)
 
         if self.__host is None or self.__port is None:
-            self.__host = self._LOCALHOST
+            if self.__server_address is not None:
+                # In case an IPV4/IPV6 Any address is specified,
+                # we still need to bind to localhost (as optiSLang is started locally),
+                # but we need to determine whether to use IPV4 or IPV6 localhost address.
+                if ip_address(self.__server_address) == ip_address("0.0.0.0"):
+                    self.__host = self._LOCALHOST_IPV4
+                elif ip_address(self.__server_address) == ip_address("::0"):
+                    self.__host = self._LOCALHOST_IPV6
+                else:
+                    # use specified server address as is
+                    self.__host = self.__server_address
+            else:
+                # use IPV4 localhost address by default
+                self.__host = self._LOCALHOST_IPV4
             self._start_local(ini_timeout, shutdown_on_finished)
         else:
             listener = self.__create_listener(
@@ -2872,6 +2906,369 @@ class TcpOslServer(OslServer):
         if len(project_info.get("projects", [])) == 0:
             return None
         return project_info.get("projects", [{}])[0].get("name", None)
+
+    def get_placeholder_ids(self) -> List[str]:
+        """Get list of all placeholder IDs in the project.
+
+        .. note:: Method is supported for Ansys optiSLang version >= 26.1 only.
+
+        Returns
+        -------
+        List[str]
+            List of placeholder IDs.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        current_func_name = self.get_placeholder_ids.__name__
+        return self.send_command(
+            command=queries.get_placeholder_ids(password=self.__password),
+            timeout=self.timeouts_register.get_value(current_func_name),
+            max_request_attempts=self.max_request_attempts_register.get_value(current_func_name),
+        )["placeholder_ids"]
+
+    def get_placeholder(self, placeholder_id: str) -> PlaceholderInfo:
+        """Get placeholder information by ID.
+
+        .. note:: Method is supported for Ansys optiSLang version >= 26.1 only.
+
+        Parameters
+        ----------
+        placeholder_id : str
+            ID of the placeholder to retrieve.
+
+        Returns
+        -------
+        PlaceholderInfo
+            Structured placeholder information with separate fields for placeholder_id,
+            user_level, type, description, range, value, and expression.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        current_func_name = self.get_placeholder.__name__
+        raw_data = self.send_command(
+            command=queries.get_placeholder(
+                placeholder_id=placeholder_id, password=self.__password
+            ),
+            timeout=self.timeouts_register.get_value(current_func_name),
+            max_request_attempts=self.max_request_attempts_register.get_value(current_func_name),
+        )["placeholder"]
+
+        # Transform raw C++ JSON response to structured PlaceholderInfo
+        # C++ returns "name" which we map to "placeholder_id"
+        ph_id = raw_data.get("name", placeholder_id)
+
+        # Convert string values to proper enums
+        user_level_str = raw_data.get("user_level", "computation_engineer")
+        user_level = UserLevelTCP.from_str(_get_enum_value(user_level_str)).to_user_level()
+
+        type_str = raw_data.get("type", "string")
+        ph_type = PlaceholderTypeTCP.from_str(_get_enum_value(type_str)).to_placeholder_type()
+
+        description = raw_data.get("description", "")
+        range_val = raw_data.get("range", "")
+        value = raw_data.get("value")
+        expression = raw_data.get("expression")
+
+        return PlaceholderInfo(
+            placeholder_id=ph_id,
+            user_level=user_level,
+            type=ph_type,
+            description=description,
+            range=range_val,
+            value=value,
+            expression=expression,
+        )
+
+    def create_placeholder(
+        self,
+        value: Optional[Any] = None,
+        placeholder_id: Optional[str] = None,
+        overwrite: bool = False,
+        user_level: Optional[UserLevel] = None,
+        description: Optional[str] = None,
+        range_: Optional[str] = None,
+        type_: Optional[PlaceholderType] = None,
+        expression: Optional[str] = None,
+    ) -> str:
+        """Create a new placeholder.
+
+        .. note:: Method is supported for Ansys optiSLang version >= 26.1 only.
+
+        Parameters
+        ----------
+        value : Optional[Any], optional
+            Value for the placeholder, by default ``None``.
+            If neither value nor expression are specified, the placeholder will be created
+            with a suitable default value.
+            If specified, the value must be of a type compatible with the placeholder type.
+        placeholder_id : Optional[str], optional
+            Desired placeholder ID, by default ``None``.
+            If not specified, a unique ID will be generated.
+        overwrite : bool, optional
+            Whether to overwrite existing placeholder, by default ``False``.
+        user_level : Optional[UserLevel], optional
+            User level for the placeholder, by default ``None``.
+            If not specified, the default user level will be used.
+        description : Optional[str], optional
+            Description of the placeholder, by default ``None``.
+        range_ : Optional[str], optional
+            Range of the placeholder, by default ``None``.
+        type_ : Optional[PlaceholderType], optional
+            Type of the placeholder, by default ``None``.
+            If not specified, the UNKNOWN type will be used.
+        expression : Optional[str], optional
+            Macro expression for the placeholder, by default ``None``.
+
+        Returns
+        -------
+        str
+            ID of the created placeholder.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        current_func_name = self.create_placeholder.__name__
+        output = self.send_command(
+            commands.create_placeholder(
+                value=value,
+                placeholder_id=placeholder_id,
+                overwrite=overwrite,
+                user_level=user_level,
+                description=description,
+                range_=range_,
+                type_=type_,
+                expression=expression,
+                password=self.__password,
+            ),
+            timeout=self.timeouts_register.get_value(current_func_name),
+            max_request_attempts=self.max_request_attempts_register.get_value(current_func_name),
+        )
+        if len(output) > 1:
+            self._logger.error(f"``len(output) == {len(output)}``, but only 1 item was expected.")
+        return output[0].get("result_data", {}).get("placeholder_id")
+
+    def create_placeholder_from_actor_property(
+        self,
+        actor_uid: str,
+        property_name: str,
+        placeholder_id: Optional[str] = None,
+        create_as_expression: bool = False,
+    ) -> str:
+        """Create a placeholder from an actor property.
+
+        .. note:: Method is supported for Ansys optiSLang version >= 26.1 only.
+
+        Parameters
+        ----------
+        actor_uid : str
+            Unique identifying actor of the object.
+        property_name : str
+            Name of the actor property to create placeholder from.
+        placeholder_id : Optional[str], optional
+            Desired placeholder ID, by default ``None``.
+        create_as_expression : bool, optional
+            Whether to create the placeholder as an expression, by default ``False``.
+
+        Returns
+        -------
+        str
+            ID of the created placeholder.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        current_func_name = self.create_placeholder_from_actor_property.__name__
+        output = self.send_command(
+            commands.create_placeholder_from_actor_property(
+                actor_uid=actor_uid,
+                property_name=property_name,
+                placeholder_id=placeholder_id,
+                create_as_expression=create_as_expression,
+                password=self.__password,
+            ),
+            timeout=self.timeouts_register.get_value(current_func_name),
+            max_request_attempts=self.max_request_attempts_register.get_value(current_func_name),
+        )
+        if len(output) > 1:
+            self._logger.error(f"``len(output) == {len(output)}``, but only 1 item was expected.")
+        return output[0].get("result_data", {}).get("placeholder_id")
+
+    def remove_placeholder(self, placeholder_id: str) -> None:
+        """Remove a placeholder.
+
+        .. note:: Method is supported for Ansys optiSLang version >= 26.1 only.
+
+        Parameters
+        ----------
+        placeholder_id : str
+            ID of the placeholder to remove.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        current_func_name = self.remove_placeholder.__name__
+        self.send_command(
+            commands.remove_placeholder(placeholder_id=placeholder_id, password=self.__password),
+            timeout=self.timeouts_register.get_value(current_func_name),
+            max_request_attempts=self.max_request_attempts_register.get_value(current_func_name),
+        )
+
+    def rename_placeholder(self, placeholder_id: str, new_placeholder_id: str) -> None:
+        """Rename a placeholder.
+
+        .. note:: Method is supported for Ansys optiSLang version >= 26.1 only.
+
+        Parameters
+        ----------
+        placeholder_id : str
+            ID of the placeholder to rename.
+        new_placeholder_id : str
+            New ID for the placeholder.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        current_func_name = self.rename_placeholder.__name__
+        self.send_command(
+            commands.rename_placeholder(
+                placeholder_id=placeholder_id,
+                new_placeholder_id=new_placeholder_id,
+                password=self.__password,
+            ),
+            timeout=self.timeouts_register.get_value(current_func_name),
+            max_request_attempts=self.max_request_attempts_register.get_value(current_func_name),
+        )
+
+    def assign_placeholder(self, actor_uid: str, property_name: str, placeholder_id: str) -> None:
+        """Assign a placeholder to an actor property.
+
+        .. note:: Method is supported for Ansys optiSLang version >= 26.1 only.
+
+        Parameters
+        ----------
+        actor_uid : str
+            Unique identifying actor of the object.
+        property_name : str
+            Name of the actor property to assign placeholder to.
+        placeholder_id : str
+            ID of the placeholder to assign.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        current_func_name = self.assign_placeholder.__name__
+        self.send_command(
+            commands.assign_placeholder(
+                actor_uid=actor_uid,
+                property_name=property_name,
+                placeholder_id=placeholder_id,
+                password=self.__password,
+            ),
+            timeout=self.timeouts_register.get_value(current_func_name),
+            max_request_attempts=self.max_request_attempts_register.get_value(current_func_name),
+        )
+
+    def unassign_placeholder(self, actor_uid: str, property_name: str) -> None:
+        """Unassign a placeholder from an actor property.
+
+        .. note:: Method is supported for Ansys optiSLang version >= 26.1 only.
+
+        Parameters
+        ----------
+        actor_uid : str
+            Unique identifying actor of the object.
+        property_name : str
+            Name of the actor property to unassign placeholder from.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        current_func_name = self.unassign_placeholder.__name__
+        self.send_command(
+            commands.unassign_placeholder(
+                actor_uid=actor_uid, property_name=property_name, password=self.__password
+            ),
+            timeout=self.timeouts_register.get_value(current_func_name),
+            max_request_attempts=self.max_request_attempts_register.get_value(current_func_name),
+        )
+
+    def set_placeholder_value(self, placeholder_id: str, value: Any) -> None:
+        """Set value for a placeholder.
+
+        Parameters
+        ----------
+        placeholder_id : str
+            ID of the placeholder to set value for.
+        value : Any
+            Value to set for the placeholder.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        current_func_name = self.set_placeholder_value.__name__
+        self.send_command(
+            commands.set_placeholder_value(
+                placeholder_id=placeholder_id, value=value, password=self.__password
+            ),
+            timeout=self.timeouts_register.get_value(current_func_name),
+            max_request_attempts=self.max_request_attempts_register.get_value(current_func_name),
+        )
 
     @deprecated(
         version="0.6.0",
@@ -4604,8 +5001,11 @@ class TcpOslServer(OslServer):
                 ],
                 shutdown_on_finished=shutdown_on_finished,
                 logger=self._logger,
+                log_process_stdout=self.__log_process_stdout,
+                log_process_stderr=self.__log_process_stderr,
                 batch=self.__batch,
                 service=self.__service,
+                server_address=self.__server_address,
                 port_range=self.__port_range,
                 no_run=self.__no_run,
                 force=self.__force,
