@@ -12,17 +12,22 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        osl_version:
-          - 23.2.0
-          - 24.1.0
-          - 24.2.0
-          - 25.1.0
-          - 25.2.0
-    name: "optiSLang ${{ matrix.osl_version }}"
+        osl_image:
+          - version: 23.2.0
+            hash: b84ee0d2395238b7f2c61bde85cdc6afcf67345de48cb9fcb1318e8615f263f9
+          - version: 24.1.0
+            hash: 56d2c4b526af6347bf4eaedfed5f86222ab8a53be7bed40eef9ebe9e350d8796
+          - version: 24.2.0
+            hash: 4a43d7d1afb610a9da172307a045c7a2ceaf4e9d9761c0189eafd0d69af4eb01
+          - version: 25.1.0
+            hash: cc49a0d8d58b40e793cbc1328fdc3b45fdc99233cd5b8281d20a700bf6a92769
+          - version: 25.2.0
+            hash: e2ee15479dc58413b37699fdbdbd60d551a31916b556d6dda74c3ed3dc0f7783
+    name: "optiSLang ${{ matrix.osl_image.version }}"
     if: github.event.name != 'pull_request' || github.event.pull_request.merged == true
     runs-on: ubuntu-22.04
     container:
-      image: ${{ format('ghcr.io/ansys/optislang:{0}-jammy', matrix.osl_version) }}
+      image: ${{ format('ghcr.io/ansys/optislang:{0}', matrix.osl_image.hash) }} # zizmor: ignore[unpinned-images]
       credentials:
         username: ansys-bot
         password: ${{ secrets.GITHUB_TOKEN }}
