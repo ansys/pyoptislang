@@ -1100,6 +1100,10 @@ class TcpOslServer(OslServer):
         to contain a password entry. Defaults to ``None``.
     logger : Optional[Any], optional
         Object for logging. If ``None``, standard logging object is used. Defaults to ``None``.
+    log_process_stdout : bool, optional
+        Determines whether the process STDOUT is supposed to be logged. Defaults to ``False``.
+    log_process_stderr : bool, optional
+        Determines whether the process STDERR is supposed to be logged. Defaults to ``False``.
     shutdown_on_finished: bool, optional
         Shut down when execution is finished and there are not any listeners registered.
         It is ignored when the host and port parameters are specified. Defaults to ``True``.
@@ -1213,6 +1217,8 @@ class TcpOslServer(OslServer):
         ini_timeout: float = 60,
         password: Optional[str] = None,
         logger: Optional[Any] = None,
+        log_process_stdout: bool = False,
+        log_process_stderr: bool = False,
         shutdown_on_finished: bool = True,
         env_vars: Optional[Mapping[str, str]] = None,
         import_project_properties_file: Optional[Union[str, Path]] = None,
@@ -1262,6 +1268,8 @@ class TcpOslServer(OslServer):
         self.__dump_project_state = dump_project_state
         self.__opx_project_definition_file = opx_project_definition_file
         self.__additional_args = additional_args
+        self.__log_process_stdout = log_process_stdout
+        self.__log_process_stderr = log_process_stderr
 
         executed_in_main_thread = True
 
@@ -4993,6 +5001,8 @@ class TcpOslServer(OslServer):
                 ],
                 shutdown_on_finished=shutdown_on_finished,
                 logger=self._logger,
+                log_process_stdout=self.__log_process_stdout,
+                log_process_stderr=self.__log_process_stderr,
                 batch=self.__batch,
                 service=self.__service,
                 server_address=self.__server_address,
