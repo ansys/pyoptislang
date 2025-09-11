@@ -154,6 +154,10 @@ class Optislang:
 
         Defaults to ``None``.
 
+    log_process_stdout : bool, optional
+        Determines whether the process STDOUT is supposed to be logged. Defaults to ``False``.
+    log_process_stderr : bool, optional
+        Determines whether the process STDERR is supposed to be logged. Defaults to ``False``.
     shutdown_on_finished: bool, optional
         Whether to shut down when execution is finished and no listeners are registered.
         The default is ``True``. This parameter is ignored when ``host`` and
@@ -243,6 +247,8 @@ class Optislang:
         name: Optional[str] = None,
         password: Optional[str] = None,
         loglevel: Optional[str] = None,
+        log_process_stdout: bool = False,
+        log_process_stderr: bool = False,
         shutdown_on_finished: bool = True,
         env_vars: Optional[Mapping[str, str]] = None,
         import_project_properties_file: Optional[Union[str, Path]] = None,
@@ -286,6 +292,8 @@ class Optislang:
         self.__opx_project_definition_file = opx_project_definition_file
         self.__additional_args = additional_args
         self.__logger = LOG.add_instance_logger(self.name, self, loglevel)
+        self.__log_process_stdout = log_process_stdout
+        self.__log_process_stderr = log_process_stderr
         self.__osl_server: OslServer = self.__init_osl_server("tcp")
         self.__application: Application = self.__init_application()
 
@@ -322,6 +330,8 @@ class Optislang:
                 ini_timeout=self.__ini_timeout,
                 password=self.__password,
                 logger=self.log,
+                log_process_stdout=self.__log_process_stdout,
+                log_process_stderr=self.__log_process_stderr,
                 shutdown_on_finished=self.__shutdown_on_finished,
                 batch=self.__batch,
                 service=self.__service,
