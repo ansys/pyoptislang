@@ -1288,9 +1288,10 @@ class TcpOslServer(OslServer):
                 # In case an IPV4/IPV6 Any address is specified,
                 # we still need to bind to localhost (as optiSLang is started locally),
                 # but we need to determine whether to use IPV4 or IPV6 localhost address.
-                if ip_address(self.__server_address) == ip_address("0.0.0.0"):
+                # Concerning nosec B104: No vulnerability, we just check if provided address is Any address.
+                if ip_address(self.__server_address) == ip_address("0.0.0.0"):  # nosec B104
                     self.__host = self._LOCALHOST_IPV4
-                elif ip_address(self.__server_address) == ip_address("::0"):
+                elif ip_address(self.__server_address) == ip_address("::0"):    # nosec B104
                     self.__host = self._LOCALHOST_IPV6
                 else:
                     # use specified server address as is
