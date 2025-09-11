@@ -125,7 +125,7 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           auditing-level: 'high'
           trust-ansys-actions: true
-  
+
   vulnerabilities:
     name: "Vulnerability check"
     runs-on: ubuntu-latest
@@ -136,6 +136,9 @@ jobs:
           token: ${{ secrets.PYANSYS_CI_BOT_TOKEN }}
           python-package-name: 'ansys-optislang-core'
           dev-mode: ${{ github.ref != 'refs/heads/main' }}
+          upload-reports: True
+          hide-log: false
+          bandit-configfile: "pyproject.toml"
 
   doc:
     name: "Documentation"

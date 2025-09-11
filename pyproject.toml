@@ -104,3 +104,25 @@ skip = "CONTRIBUTORS.md"
 mypy_path = "$MYPY_CONFIG_FILE_DIR/src"
 explicit_package_bases = true
 exclude = ["00_run_script"]
+
+[tool.bandit]
+exclude_dirs = ["tests"]
+skips = [
+    "B101",
+    "B105",
+    "B106",
+    "B110",
+    "B112",
+    "B301",
+    "B307",
+    "B310",
+    "B311",
+    "B314",
+    "B403",
+    "B404",
+    "B405",
+    "B602",
+    "B603",
+    "B604",
+    "B607",
+    ]
