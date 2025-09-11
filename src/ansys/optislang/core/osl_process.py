@@ -982,7 +982,12 @@ class OslServerProcess:
         )
 
         self._logger.debug("Executing process %s", args)
-        self.__process = subprocess.Popen(
+        # Security: This subprocess call is safe because:
+        # 1. shell=False is explicitly set to prevent shell injection
+        # 2. The executable path is validated to exist in __init__
+        # 3. All arguments are constructed from validated internal state
+        # 4. This is a controlled call to start the optiSLang application
+        self.__process = subprocess.Popen(  # nosec B603
             args,
             env=env_vars,
             cwd=os.getcwd(),
