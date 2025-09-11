@@ -644,6 +644,63 @@ class TcpClient:
         if os.path.getsize(file_path) != file_len:
             raise ResponseFormatError("Received data does not match declared data size.")
 
+    def _recv_exact_bytes(self, count: int, timeout: Optional[float]) -> bytes:
+        """Receive exactly the specified number of bytes.
+        
+        Parameters
+        ----------
+        count : int
+            Number of bytes to receive.
+        timeout : Optional[float]
+            Timeout in seconds for the entire operation.
+            
+        Returns
+        -------
+        bytes
+            Exactly `count` bytes received from the socket.
+            
+        Raises
+        ------
+        ConnectionError
+            Raised when the connection is closed before receiving all expected data.
+        TimeoutError
+            Raised when the timeout period value has elapsed before the operation has completed.
+        """
+        if not self.is_connected:
+            raise ConnectionNotEstablishedError("Socket not set.")
+            
+        start_time = time.time()
+        received = b""
+        received_len = 0
+        
+        while received_len < count:
+            remain = count - received_len
+            if remain > self._BUFFER_SIZE:
+                buff = self._BUFFER_SIZE
+            else:
+                buff = remain
+
+            if self.__socket is not None:
+                self.__socket.settimeout(_get_current_timeout(timeout, start_time))
+                chunk = self.__socket.recv(buff)
+            elif self.__local_socket is not None:
+                self.__local_socket.settimeout(_get_current_timeout(timeout, start_time))
+                chunk = self.__local_socket.recv(buff)
+            else:
+                chunk = b""
+
+            if not chunk:
+                # Connection closed or error occurred
+                if received_len == 0:
+                    raise ConnectionError("Connection closed before any data was received")
+                else:
+                    raise ConnectionError(
+                        f"Connection closed after receiving {received_len} of {count} bytes"
+                    )
+            received += chunk
+            received_len += len(chunk)
+        return received
+
     def _recv_response_length(self, timeout: Optional[float]) -> int:
         """Receive length of the response.
 
@@ -667,6 +724,8 @@ class TcpClient:
             Raised when the response length specification is invalid.
         ValueError
             Raised if the timeout value is a number not greater than zero.
+        ConnectionError
+            Raised when the connection is closed before receiving the expected data.
         """
         if isinstance(timeout, float) and timeout <= 0:
             raise ValueError("Timeout value must be greater than zero or None.")
@@ -674,26 +733,22 @@ class TcpClient:
         if not self.is_connected:
             raise ConnectionNotEstablishedError("Socket not set.")
 
-        if self.__socket is not None:
-            self.__socket.settimeout(timeout)
-        elif self.__local_socket is not None:
-            self.__local_socket.settimeout(timeout)
-
-        response_len = -1
         bytes_to_receive = self._RESPONSE_SIZE_BYTES
 
-        # read from socket until response size (twice) has been received
-        response_len_1 = struct.unpack("!Q", self._receive_bytes(bytes_to_receive, timeout))[0]
-        response_len_2 = struct.unpack("!Q", self._receive_bytes(bytes_to_receive, timeout))[0]
+        # Read the first response length (8 bytes)
+        response_len_bytes_1 = self._recv_exact_bytes(bytes_to_receive, timeout)
+        response_len_1 = struct.unpack("!Q", response_len_bytes_1)[0]
+        
+        # Read the second response length (8 bytes)
+        response_len_bytes_2 = self._recv_exact_bytes(bytes_to_receive, timeout)
+        response_len_2 = struct.unpack("!Q", response_len_bytes_2)[0]
 
         if response_len_1 != response_len_2:
             raise ResponseFormatError(
                 "Server response format unrecognized. Response sizes do not match."
             )
 
-        response_len = response_len_1
-
-        return response_len
+        return response_len_1
 
     def _receive_bytes(self, count: int, timeout: Optional[float]) -> bytes:
         """Receive specified number of bytes from the server.
@@ -720,40 +775,15 @@ class TcpClient:
             Raised when the number of bytes is not greater than zero.
             -or-
             Raised if the timeout value is a number not greater than zero.
+        ConnectionError
+            Raised when the connection is closed before receiving all expected data.
         """
         if count <= 0:
             raise ValueError("Number of bytes must be greater than zero.")
         if isinstance(timeout, float) and timeout <= 0:
             raise ValueError("Timeout value must be greater than zero or None.")
 
-        if not self.is_connected:
-            raise ConnectionNotEstablishedError("Socket not set.")
-
-        start_time = time.time()
-
-        received = b""
-        received_len = 0
-        while received_len < count:
-            remain = count - received_len
-            if remain > self._BUFFER_SIZE:
-                buff = self._BUFFER_SIZE
-            else:
-                buff = remain
-
-            if self.__socket is not None:
-                self.__socket.settimeout(_get_current_timeout(timeout, start_time))
-                chunk = self.__socket.recv(buff)
-            elif self.__local_socket is not None:
-                self.__local_socket.settimeout(_get_current_timeout(timeout, start_time))
-                chunk = self.__local_socket.recv(buff)
-            else:
-                chunk = b""
-
-            if not chunk:
-                break
-            received += chunk
-            received_len += len(chunk)
-        return received
+        return self._recv_exact_bytes(count, timeout)
 
     def _fetch_file(
         self, file_len: int, file_path: Union[str, Path], timeout: Optional[float]
