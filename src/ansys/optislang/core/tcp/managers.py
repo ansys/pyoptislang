@@ -370,7 +370,7 @@ class TcpDesignManagerProxy(DesignManager):
 
     def get_designs(
         self,
-        hid: Optional[str] = None,
+        hid: str = "0",
         include_design_values=True,
         include_non_scalar_design_values=False,
     ) -> Tuple[Design, ...]:
@@ -378,9 +378,8 @@ class TcpDesignManagerProxy(DesignManager):
 
         Parameters
         ----------
-        hid : Optional[str], optional
-            State/Design hierarchical id. By default ``None``.
-            If not specified, the "root" id ("0") will be
+        hid : str, optional
+            State/Design hierarchical id. Defaults to the "root" id ("0").
         include_design_values : bool, optional
             Include values. By default ``True``.
         include_non_scalar_design_values : Optional[bool], optional
@@ -393,7 +392,7 @@ class TcpDesignManagerProxy(DesignManager):
         """
         design_classes = []
         status_info = self._get_status_info(
-            hid=hid or "0",
+            hid=hid,
             include_designs=True,
             include_design_values=include_design_values,
             include_non_scalar_design_values=include_design_values
@@ -458,16 +457,15 @@ class TcpDesignManagerProxy(DesignManager):
                 )
         return tuple(design_classes)
 
-    def save_designs_as_json(self, file_path: Union[Path, str], hid: Optional[str] = None) -> File:
+    def save_designs_as_json(self, file_path: Union[Path, str], hid: str = "0") -> File:
         """Save designs for a given state to JSON file.
 
         Parameters
         ----------
         file_path : Union[Path, str]
             Path to the file.
-        hid : Optional[str], optional
-            State/Design hierarchical id. By default ``None``.
-            If not specified, the "root" id ("0") will be
+        hid : str, optional
+            State/Design hierarchical id. Defaults to the "root" id ("0").
 
         Returns
         -------
@@ -491,16 +489,15 @@ class TcpDesignManagerProxy(DesignManager):
         """
         return self.__save_designs_as(file_path=file_path, format=FileOutputFormat.JSON, hid=hid)
 
-    def save_designs_as_csv(self, file_path: Union[Path, str], hid: Optional[str] = None) -> File:
+    def save_designs_as_csv(self, file_path: Union[Path, str], hid: str = "0") -> File:
         """Save designs for a given state to CSV file.
 
         Parameters
         ----------
         file_path : Union[Path, str]
             Path to the file.
-        hid : Optional[str], optional
-            State/Design hierarchical id. By default ``None``.
-            If not specified, the "root" id ("0") will be
+        hid : str, optional
+            State/Design hierarchical id. Defaults to the "root" id ("0").
 
         Returns
         -------
@@ -525,7 +522,7 @@ class TcpDesignManagerProxy(DesignManager):
         return self.__save_designs_as(file_path=file_path, format=FileOutputFormat.CSV, hid=hid)
 
     def __save_designs_as(
-        self, file_path: Union[Path, str], format: FileOutputFormat, hid: Optional[str] = None
+        self, file_path: Union[Path, str], format: FileOutputFormat, hid: str = "0"
     ) -> File:
         """Save designs for a given state.
 
@@ -535,9 +532,8 @@ class TcpDesignManagerProxy(DesignManager):
             Path to the file.
         format : FileOutputFormat
             Format of the file.
-        hid : Optional[str], optional
-            State/Design hierarchical id. By default ``None``.
-            If not specified, the "root" id ("0") will be
+        hid : str, optional
+            State/Design hierarchical id. Defaults to the "root" id ("0").
 
         Returns
         -------
@@ -572,7 +568,7 @@ class TcpDesignManagerProxy(DesignManager):
             )
 
         status_info = self._get_status_info(
-            hid=hid or "0",
+            hid=hid,
             include_designs=True,
             include_design_values=True,
             include_non_scalar_design_values=(format == FileOutputFormat.JSON),

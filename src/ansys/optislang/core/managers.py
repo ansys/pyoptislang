@@ -229,7 +229,7 @@ class DesignManager:
     @abstractmethod
     def get_designs(
         self,
-        hid: Optional[str] = None,
+        hid: str = "0",
         include_design_values=True,
         include_non_scalar_design_values=False,
     ) -> Tuple[Design, ...]:  # pragma: no cover
@@ -237,8 +237,8 @@ class DesignManager:
 
         Parameters
         ----------
-        hid : Optional[str], optional
-            State/Design hierarchical id. By default ``None``.
+        hid : str, optional
+            State/Design hierarchical id. Defaults to the "root" id ("0").
         include_design_values : bool, optional
             Include values. By default ``True``.
         include_non_scalar_design_values : Optional[bool], optional
@@ -253,7 +253,7 @@ class DesignManager:
 
     @abstractmethod
     def save_designs_as_json(
-        self, file_path: Union[Path, str], hid: Optional[str] = None
+        self, file_path: Union[Path, str], hid: str = "0"
     ) -> File:  # pragma: no cover
         """Save designs for a given state to JSON file.
 
@@ -261,9 +261,8 @@ class DesignManager:
         ----------
         file_path : Union[Path, str]
             Path to the file.
-        hid : Optional[str], optional
-            State/Design hierarchical id. By default ``None``.
-            If not specified, the "root" id ("0") will be
+        hid : str, optional
+            State/Design hierarchical id. Defaults to the "root" id ("0").
 
         Returns
         -------
@@ -289,7 +288,7 @@ class DesignManager:
 
     @abstractmethod
     def save_designs_as_csv(
-        self, file_path: Union[Path, str], hid: Optional[str] = None
+        self, file_path: Union[Path, str], hid: str = "0"
     ) -> File:  # pragma: no cover
         """Save designs for a given state to CSV file.
 
@@ -297,9 +296,8 @@ class DesignManager:
         ----------
         file_path : Union[Path, str]
             Path to the file.
-        hid : Optional[str], optional
-            State/Design hierarchical id. By default ``None``.
-            If not specified, the "root" id ("0") will be
+        hid : str, optional
+            State/Design hierarchical id. Defaults to the "root" id ("0").
 
         Returns
         -------
