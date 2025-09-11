@@ -489,7 +489,7 @@ class TcpDesignManagerProxy(DesignManager):
         ValueError
             Raised when ``hid`` does not exist.
         """
-        return self.__save_designs_as(hid, file_path, FileOutputFormat.JSON)
+        return self.__save_designs_as(file_path=file_path, format=FileOutputFormat.JSON, hid=hid)
 
     def save_designs_as_csv(self, file_path: Union[Path, str], hid: Optional[str] = None) -> File:
         """Save designs for a given state to CSV file.
@@ -522,7 +522,7 @@ class TcpDesignManagerProxy(DesignManager):
         ValueError
             Raised when ``hid`` does not exist.
         """
-        return self.__save_designs_as(hid, file_path, FileOutputFormat.CSV)
+        return self.__save_designs_as(file_path=file_path, format=FileOutputFormat.CSV, hid=hid)
 
     def __save_designs_as(
         self, file_path: Union[Path, str], format: FileOutputFormat, hid: Optional[str] = None
