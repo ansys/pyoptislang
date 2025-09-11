@@ -370,7 +370,7 @@ class TcpDesignManagerProxy(DesignManager):
 
     def get_designs(
         self,
-        hid: Optional[str] = None,
+        hid: str = "0",
         include_design_values=True,
         include_non_scalar_design_values=False,
     ) -> Tuple[Design, ...]:
@@ -378,8 +378,8 @@ class TcpDesignManagerProxy(DesignManager):
 
         Parameters
         ----------
-        hid : Optional[str], optional
-            State/Design hierarchical id. By default ``None``.
+        hid : str, optional
+            State/Design hierarchical id. Defaults to the "root" id ("0").
         include_design_values : bool, optional
             Include values. By default ``True``.
         include_non_scalar_design_values : Optional[bool], optional
@@ -391,7 +391,6 @@ class TcpDesignManagerProxy(DesignManager):
             Tuple of designs for a given state.
         """
         design_classes = []
-        assert hid is not None
         status_info = self._get_status_info(
             hid=hid,
             include_designs=True,
@@ -458,15 +457,15 @@ class TcpDesignManagerProxy(DesignManager):
                 )
         return tuple(design_classes)
 
-    def save_designs_as_json(self, hid: str, file_path: Union[Path, str]) -> File:
+    def save_designs_as_json(self, file_path: Union[Path, str], hid: str = "0") -> File:
         """Save designs for a given state to JSON file.
 
         Parameters
         ----------
-        hid : str
-            Actor's state.
         file_path : Union[Path, str]
             Path to the file.
+        hid : str, optional
+            State/Design hierarchical id. Defaults to the "root" id ("0").
 
         Returns
         -------
@@ -488,17 +487,17 @@ class TcpDesignManagerProxy(DesignManager):
         ValueError
             Raised when ``hid`` does not exist.
         """
-        return self.__save_designs_as(hid, file_path, FileOutputFormat.JSON)
+        return self.__save_designs_as(file_path=file_path, format=FileOutputFormat.JSON, hid=hid)
 
-    def save_designs_as_csv(self, hid: str, file_path: Union[Path, str]) -> File:
+    def save_designs_as_csv(self, file_path: Union[Path, str], hid: str = "0") -> File:
         """Save designs for a given state to CSV file.
 
         Parameters
         ----------
-        hid : str
-            Actor's state.
         file_path : Union[Path, str]
             Path to the file.
+        hid : str, optional
+            State/Design hierarchical id. Defaults to the "root" id ("0").
 
         Returns
         -------
@@ -520,21 +519,21 @@ class TcpDesignManagerProxy(DesignManager):
         ValueError
             Raised when ``hid`` does not exist.
         """
-        return self.__save_designs_as(hid, file_path, FileOutputFormat.CSV)
+        return self.__save_designs_as(file_path=file_path, format=FileOutputFormat.CSV, hid=hid)
 
     def __save_designs_as(
-        self, hid: str, file_path: Union[Path, str], format: FileOutputFormat
+        self, file_path: Union[Path, str], format: FileOutputFormat, hid: str = "0"
     ) -> File:
         """Save designs for a given state.
 
         Parameters
         ----------
-        hid : str
-            Actor's state.
         file_path : Union[Path, str]
             Path to the file.
         format : FileOutputFormat
             Format of the file.
+        hid : str, optional
+            State/Design hierarchical id. Defaults to the "root" id ("0").
 
         Returns
         -------
@@ -558,8 +557,6 @@ class TcpDesignManagerProxy(DesignManager):
             -or-
             ``hid`` does not exist.
         """
-        if hid is None:
-            raise TypeError("Actor's state cannot be `None`.")
         if file_path is None:
             raise TypeError("Path to the file cannot be `None`.")
         if isinstance(file_path, str):
