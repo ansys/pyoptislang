@@ -4439,7 +4439,7 @@ class TcpOslServer(OslServer):
             else self.timeouts_register.default_value
         )
         max_request_attempts = (
-            kwargs.get("max_request_attempts")
+            kwargs.get("max_request_attempts", self.max_request_attempts_register.default_value)
             if "max_request_attempts" in kwargs.keys()
             else self.max_request_attempts_register.default_value
         )
