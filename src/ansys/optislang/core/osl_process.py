@@ -1083,7 +1083,7 @@ class OslServerProcess:
             name="PyOptiSLang.ProcessOutputHandlerThread",
             args=(
                 self.__process,
-                self._logger.debug if self.__log_process_stdout else None,
+                self._logger.info if self.__log_process_stdout else None,
                 self._logger.warning if self.__log_process_stderr else None,
                 finalize_process,
                 True,
