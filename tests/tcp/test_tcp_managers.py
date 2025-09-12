@@ -479,7 +479,7 @@ def __test_save_designs_as_csv(
 ):
     """Test `save_designs_as_csv` method."""
     csv_file_path = tmp_path / (filename + ".csv")
-    csv_file = design_manager.save_designs_as_csv(hid=hids[0], file_path=csv_file_path)
+    csv_file = design_manager.save_designs_as_csv(file_path=csv_file_path, hid=hids[0])
     assert isinstance(csv_file, File)
     assert csv_file.exists
 
@@ -489,7 +489,7 @@ def __test_save_designs_as_json(
 ):
     """Test `save_designs_as_json` method."""
     json_file_path = tmp_path / (filename + ".json")
-    json_file = design_manager.save_designs_as_json(hids[0], json_file_path)
+    json_file = design_manager.save_designs_as_json(file_path=json_file_path, hid=hids[0])
     assert isinstance(json_file, File)
     assert json_file.exists
 

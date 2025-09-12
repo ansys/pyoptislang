@@ -991,8 +991,8 @@ class OslServerProcess:
             args,
             env=env_vars,
             cwd=os.getcwd(),
-            stderr=subprocess.PIPE,
-            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE if self.__log_process_stderr else subprocess.DEVNULL,
+            stdout=subprocess.PIPE if self.__log_process_stdout else subprocess.DEVNULL,
             shell=False,
             creationflags=creation_flags,
         )
