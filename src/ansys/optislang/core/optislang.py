@@ -84,8 +84,14 @@ class Optislang:
 
         ..note:: Cannot be used in combination with batch mode.
 
-    port_range : Tuple[int, int], optional
-        Defines the port range for optiSLang server. Defaults to ``None``.
+    server_address : Optional[str], optional
+        In case an optiSLang server is to be started, this defines the address
+        of the optiSLang server. If not specified, optiSLang will be listening on
+        local host only. Defaults to ``None``.
+    port_range : Optional[Tuple[int, int]], optional
+        In case an optiSLang server is to be started, this restricts the port range
+        for the optiSLang server. If not specified, optiSLang will be allowed to
+        listen on any port. Defaults to ``None``.
     no_run : Optional[bool], optional
         Determines whether not to run the specified project when started in batch mode.
         Defaults to ``None``.
@@ -124,6 +130,11 @@ class Optislang:
         Multiple remote listeners (plain TCP/IP based) to be registered at optiSLang server.
         Each listener is a combination of host, port and (optionally) listener ID.
         Defaults to ``None``.
+    listeners_refresh_interval : int, optional
+        Refresh interval for TCP listeners in seconds. Defaults to 10 s.
+    listeners_default_timeout : Optional[int], optional
+        Default timeout for TCP listeners in milliseconds. Defaults to ``None`` which results in
+        optiSLang using the default timeout value of 60000 milliseconds.
     ini_timeout : float, optional
         Time in seconds to connect to the optiSLang server. The default is ``60``.
     name : Optional[str], optional
@@ -143,6 +154,10 @@ class Optislang:
 
         Defaults to ``None``.
 
+    log_process_stdout : bool, optional
+        Determines whether the process stdout should be logged. Defaults to ``False``.
+    log_process_stderr : bool, optional
+        Determines whether the process stderr should be logged. Defaults to ``False``.
     shutdown_on_finished: bool, optional
         Whether to shut down when execution is finished and no listeners are registered.
         The default is ``True``. This parameter is ignored when ``host`` and
@@ -217,6 +232,7 @@ class Optislang:
         project_path: Optional[Union[str, Path]] = None,
         batch: bool = True,
         service: bool = False,
+        server_address: Optional[str] = None,
         port_range: Optional[Tuple[int, int]] = None,
         no_run: Optional[bool] = None,
         no_save: bool = False,
@@ -225,10 +241,14 @@ class Optislang:
         auto_relocate: bool = False,
         listener_id: Optional[str] = None,
         multi_listener: Optional[Iterable[Tuple[str, int, Optional[str]]]] = None,
+        listeners_refresh_interval: int = 10,
+        listeners_default_timeout: Optional[int] = None,
         ini_timeout: Union[int, float] = 60,
         name: Optional[str] = None,
         password: Optional[str] = None,
         loglevel: Optional[str] = None,
+        log_process_stdout: bool = False,
+        log_process_stderr: bool = False,
         shutdown_on_finished: bool = True,
         env_vars: Optional[Mapping[str, str]] = None,
         import_project_properties_file: Optional[Union[str, Path]] = None,
@@ -247,6 +267,7 @@ class Optislang:
         self.__project_path = Path(project_path) if project_path is not None else None
         self.__batch = batch
         self.__service = service
+        self.__server_address = server_address
         self.__port_range = port_range
         self.__no_run = no_run
         self.__no_save = no_save
@@ -260,6 +281,8 @@ class Optislang:
         self.__env_vars = env_vars
         self.__listener_id = listener_id
         self.__multi_listener = multi_listener
+        self.__listeners_refresh_interval = listeners_refresh_interval
+        self.__listeners_default_timeout = listeners_default_timeout
         self.__import_project_properties_file = import_project_properties_file
         self.__export_project_properties_file = export_project_properties_file
         self.__import_placeholders_file = import_placeholders_file
@@ -269,6 +292,8 @@ class Optislang:
         self.__opx_project_definition_file = opx_project_definition_file
         self.__additional_args = additional_args
         self.__logger = LOG.add_instance_logger(self.name, self, loglevel)
+        self.__log_process_stdout = log_process_stdout
+        self.__log_process_stderr = log_process_stderr
         self.__osl_server: OslServer = self.__init_osl_server("tcp")
         self.__application: Application = self.__init_application()
 
@@ -305,9 +330,12 @@ class Optislang:
                 ini_timeout=self.__ini_timeout,
                 password=self.__password,
                 logger=self.log,
+                log_process_stdout=self.__log_process_stdout,
+                log_process_stderr=self.__log_process_stderr,
                 shutdown_on_finished=self.__shutdown_on_finished,
                 batch=self.__batch,
                 service=self.__service,
+                server_address=self.__server_address,
                 port_range=self.__port_range,
                 no_run=self.__no_run,
                 force=self.__force,
@@ -323,6 +351,8 @@ class Optislang:
                 opx_project_definition_file=self.__opx_project_definition_file,
                 listener_id=self.__listener_id,
                 multi_listener=self.__multi_listener,
+                listeners_refresh_interval=self.__listeners_refresh_interval,
+                listeners_default_timeout=self.__listeners_default_timeout,
                 additional_args=self.__additional_args,
             )
         else:

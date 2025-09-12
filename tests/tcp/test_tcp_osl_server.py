@@ -32,10 +32,12 @@ import uuid
 import pytest
 
 from ansys.optislang.core import OslServerProcess, errors
+from ansys.optislang.core.node_types import NodeType
 from ansys.optislang.core.osl_server import OslVersion
+from ansys.optislang.core.placeholder_types import PlaceholderType, UserLevel
 import ansys.optislang.core.tcp.osl_server as tos
 
-_host = socket.gethostbyname(socket.gethostname())
+_host = "127.0.0.1"
 
 
 def find_free_port():
@@ -673,7 +675,8 @@ def test_get_available_locations(tmp_example_project):
 def test_get_available_nodes(osl_server_process: OslServerProcess):
     """Test ``get_available_nodes`` query."""
     tcp_osl_server = create_tcp_osl_server(osl_server_process)
-    available_nodes = tcp_osl_server.get_available_nodes()
+    with pytest.deprecated_call():
+        available_nodes = tcp_osl_server.get_available_nodes()
     assert len(available_nodes) > 0
     key, value = next(iter(available_nodes.items()))
     assert isinstance(key, str)
@@ -681,6 +684,17 @@ def test_get_available_nodes(osl_server_process: OslServerProcess):
     builtins = available_nodes["builtin_nodes"]
     assert len(builtins) > 0
     assert isinstance(builtins[0], str)
+    tcp_osl_server.shutdown()
+    tcp_osl_server.dispose()
+
+
+def test_get_available_node_types(osl_server_process: OslServerProcess):
+    """Test ``get_available_nodes`` query."""
+    tcp_osl_server = create_tcp_osl_server(osl_server_process)
+    available_nodes = tcp_osl_server.get_available_node_types()
+    assert len(available_nodes) > 0
+    available_node = next(iter(available_nodes))
+    assert isinstance(available_node, NodeType)
     tcp_osl_server.shutdown()
     tcp_osl_server.dispose()
 
@@ -1118,6 +1132,227 @@ def test_force_shutdown_local_process():
     """Test ``_force_shutdown_local_process``."""
     tcp_osl_server = tos.TcpOslServer()
     tcp_osl_server._force_shutdown_local_process()
+    tcp_osl_server.dispose()
+
+
+# endregion
+
+
+def test_get_placeholder_ids(osl_server_process: OslServerProcess):
+    """Test get_placeholder_ids method."""
+    tcp_osl_server = create_tcp_osl_server(osl_server_process)
+    if tcp_osl_server.osl_version < OslVersion(26, 1, 0, 0):
+        pytest.skip(f"Not compatible with {tcp_osl_server.osl_version_string}")
+
+    # Get placeholder IDs (should return empty list for new project)
+    placeholder_ids = tcp_osl_server.get_placeholder_ids()
+
+    # Verify the result
+    assert isinstance(placeholder_ids, list)
+
+    tcp_osl_server.shutdown()
+    tcp_osl_server.dispose()
+
+
+def test_create_placeholder(osl_server_process: OslServerProcess):
+    """Test create_placeholder method."""
+    tcp_osl_server = create_tcp_osl_server(osl_server_process)
+    if tcp_osl_server.osl_version < OslVersion(26, 1, 0, 0):
+        pytest.skip(f"Not compatible with {tcp_osl_server.osl_version_string}")
+
+    # Create a placeholder with minimal arguments
+    placeholder_id = tcp_osl_server.create_placeholder(value=42.5)
+
+    # Verify the result
+    assert isinstance(placeholder_id, str)
+    assert len(placeholder_id) > 0
+
+    # Verify placeholder was created by checking IDs list
+    placeholder_ids = tcp_osl_server.get_placeholder_ids()
+    assert placeholder_id in placeholder_ids
+
+    tcp_osl_server.shutdown()
+    tcp_osl_server.dispose()
+
+
+def test_create_placeholder_with_all_options(osl_server_process: OslServerProcess):
+    """Test create_placeholder method with all optional parameters."""
+    tcp_osl_server = create_tcp_osl_server(osl_server_process)
+    if tcp_osl_server.osl_version < OslVersion(26, 1, 0, 0):
+        pytest.skip(f"Not compatible with {tcp_osl_server.osl_version_string}")
+
+    # Create a placeholder with all arguments
+    placeholder_id = tcp_osl_server.create_placeholder(
+        value=100.0,
+        placeholder_id="full_param",
+        overwrite=True,
+        user_level=UserLevel.COMPUTATION_ENGINEER,
+        description="Full test parameter",
+        range_="[0,1000]",
+        type_=PlaceholderType.REAL,
+        expression="x*10",
+    )
+
+    # Verify the result
+    assert placeholder_id == "full_param"
+
+    # Verify placeholder was created
+    placeholder_ids = tcp_osl_server.get_placeholder_ids()
+    assert "full_param" in placeholder_ids
+
+    tcp_osl_server.shutdown()
+    tcp_osl_server.dispose()
+
+
+def test_get_placeholder(osl_server_process: OslServerProcess):
+    """Test get_placeholder method."""
+    tcp_osl_server = create_tcp_osl_server(osl_server_process)
+    if tcp_osl_server.osl_version < OslVersion(26, 1, 0, 0):
+        pytest.skip(f"Not compatible with {tcp_osl_server.osl_version_string}")
+
+    # First create a placeholder
+    placeholder_id = tcp_osl_server.create_placeholder(
+        value="test_value", placeholder_id="test_param"
+    )
+
+    # Get the placeholder
+    placeholder_info = tcp_osl_server.get_placeholder(placeholder_id)
+
+    # Verify the result
+    assert hasattr(placeholder_info, "placeholder_id")
+    assert placeholder_info.placeholder_id == placeholder_id
+
+    tcp_osl_server.shutdown()
+    tcp_osl_server.dispose()
+
+
+def test_set_placeholder_value(osl_server_process: OslServerProcess):
+    """Test set_placeholder_value method."""
+    tcp_osl_server = create_tcp_osl_server(osl_server_process)
+    if tcp_osl_server.osl_version < OslVersion(26, 1, 0, 0):
+        pytest.skip(f"Not compatible with {tcp_osl_server.osl_version_string}")
+
+    # First create a placeholder
+    placeholder_id = tcp_osl_server.create_placeholder(value="initial_value")
+
+    # Set different types of values
+    tcp_osl_server.set_placeholder_value(placeholder_id, "new_string_value")
+    tcp_osl_server.set_placeholder_value(placeholder_id, 42.5)
+    tcp_osl_server.set_placeholder_value(placeholder_id, True)
+
+    tcp_osl_server.shutdown()
+    tcp_osl_server.dispose()
+
+
+def test_rename_placeholder(osl_server_process: OslServerProcess):
+    """Test rename_placeholder method."""
+    tcp_osl_server = create_tcp_osl_server(osl_server_process)
+    if tcp_osl_server.osl_version < OslVersion(26, 1, 0, 0):
+        pytest.skip(f"Not compatible with {tcp_osl_server.osl_version_string}")
+
+    # First create a placeholder
+    old_id = tcp_osl_server.create_placeholder(value="test_value", placeholder_id="old_param")
+
+    # Rename the placeholder
+    tcp_osl_server.rename_placeholder(old_id, "new_param")
+
+    # Verify the placeholder was renamed
+    placeholder_ids = tcp_osl_server.get_placeholder_ids()
+    assert "new_param" in placeholder_ids
+    assert "old_param" not in placeholder_ids
+
+    tcp_osl_server.shutdown()
+    tcp_osl_server.dispose()
+
+
+def test_remove_placeholder(osl_server_process: OslServerProcess):
+    """Test remove_placeholder method."""
+    tcp_osl_server = create_tcp_osl_server(osl_server_process)
+    if tcp_osl_server.osl_version < OslVersion(26, 1, 0, 0):
+        pytest.skip(f"Not compatible with {tcp_osl_server.osl_version_string}")
+
+    # First create a placeholder
+    placeholder_id = tcp_osl_server.create_placeholder(
+        value="test_value", placeholder_id="to_be_removed"
+    )
+
+    # Verify it was created
+    placeholder_ids = tcp_osl_server.get_placeholder_ids()
+    assert placeholder_id in placeholder_ids
+
+    # Remove the placeholder
+    tcp_osl_server.remove_placeholder(placeholder_id)
+
+    # Verify it was removed
+    placeholder_ids_after = tcp_osl_server.get_placeholder_ids()
+    assert placeholder_id not in placeholder_ids_after
+
+    tcp_osl_server.shutdown()
+    tcp_osl_server.dispose()
+
+
+def test_create_placeholder_from_actor_property(osl_server_process: OslServerProcess):
+    """Test create_placeholder_from_actor_property method."""
+    tcp_osl_server = create_tcp_osl_server(osl_server_process)
+    if tcp_osl_server.osl_version < OslVersion(26, 1, 0, 0):
+        pytest.skip(f"Not compatible with {tcp_osl_server.osl_version_string}")
+
+    # Create a node first
+    node_uid = tcp_osl_server.create_node(type_="CalculatorSet")
+
+    # Create placeholder from actor property (default create_as_expression=False)
+    placeholder_id = tcp_osl_server.create_placeholder_from_actor_property(
+        actor_uid=node_uid, property_name="RetryEnable"
+    )
+
+    # Verify the result
+    assert isinstance(placeholder_id, str)
+    assert len(placeholder_id) > 0
+
+    # Verify placeholder was created
+    placeholder_ids = tcp_osl_server.get_placeholder_ids()
+    assert placeholder_id in placeholder_ids
+
+    # Create placeholder from actor property with create_as_expression=True
+    expression_placeholder_id = tcp_osl_server.create_placeholder_from_actor_property(
+        actor_uid=node_uid, property_name="RetryEnable", create_as_expression=True
+    )
+
+    # Verify the expression placeholder result
+    assert isinstance(expression_placeholder_id, str)
+    assert len(expression_placeholder_id) > 0
+    assert expression_placeholder_id != placeholder_id  # Should be different IDs
+
+    # Verify both placeholders were created
+    updated_placeholder_ids = tcp_osl_server.get_placeholder_ids()
+    assert placeholder_id in updated_placeholder_ids
+    assert expression_placeholder_id in updated_placeholder_ids
+
+    tcp_osl_server.shutdown()
+    tcp_osl_server.dispose()
+
+
+def test_assign_unassign_placeholder(osl_server_process: OslServerProcess):
+    """Test assign_placeholder and unassign_placeholder methods."""
+    tcp_osl_server = create_tcp_osl_server(osl_server_process)
+    if tcp_osl_server.osl_version < OslVersion(26, 1, 0, 0):
+        pytest.skip(f"Not compatible with {tcp_osl_server.osl_version_string}")
+
+    # Create a node and placeholder
+    node_uid = tcp_osl_server.create_node(type_="CalculatorSet")
+    placeholder_id = tcp_osl_server.create_placeholder(
+        type_=PlaceholderType.BOOL, value=True, placeholder_id="assign_test"
+    )
+
+    # Assign placeholder to actor property
+    tcp_osl_server.assign_placeholder(
+        actor_uid=node_uid, property_name="RetryEnable", placeholder_id=placeholder_id
+    )
+
+    # Unassign placeholder from actor property
+    tcp_osl_server.unassign_placeholder(actor_uid=node_uid, property_name="RetryEnable")
+
+    tcp_osl_server.shutdown()
     tcp_osl_server.dispose()
 
 

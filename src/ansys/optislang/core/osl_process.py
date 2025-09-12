@@ -26,6 +26,7 @@ import logging
 import os
 from pathlib import Path
 import subprocess
+import sys
 import tempfile
 from threading import Thread
 from typing import Callable, Dict, Iterable, List, Mapping, Optional, Tuple, Union
@@ -35,7 +36,7 @@ import psutil
 from ansys.optislang.core import encoding, utils
 
 if utils.is_iron_python():
-    import System  # type: ignore
+    import System  # type: ignore[import-not-found]
 
 
 class ServerNotification(Enum):
@@ -85,8 +86,12 @@ class OslServerProcess:
 
         ..note:: Cannot be used in combination with batch mode.
 
-    port_range : Tuple[int, int], optional
-        Defines the port range for optiSLang server. Defaults to ``None``.
+    server_address : Optional[str], optional
+        This defines the address of the optiSLang server. If not specified, optiSLang will be
+        listening on local host only. Defaults to ``None``.
+    port_range : Optional[Tuple[int, int]], optional
+        This restricts the port range for the optiSLang server. If not specified, optiSLang
+        will be allowed to listen on any port. Defaults to ``None``.
     password : Optional[str], optional
         The server password. Use when communication with the server requires the request
         to contain a password entry. Defaults to ``None``.
@@ -139,6 +144,12 @@ class OslServerProcess:
         Multiple remote listeners (plain TCP/IP based) to be registered at optiSLang server.
         Each listener is a combination of host, port and (optionally) listener ID.
         Defaults to ``None``.
+    listeners_default_timeout : Optional[int], optional
+        Default timeout for TCP listeners in milliseconds. Defaults to ``None`` which results in
+        optiSLang using the default timeout value of 60000 milliseconds.
+
+        .. note:: Argument is supported for Ansys optiSLang version >= 25.2 only.
+
     notifications : Optional[Iterable[ServerNotification]], optional
         Notifications to be sent to the listener. Defaults to ``None``.
     shutdown_on_finished: bool, optional
@@ -152,9 +163,9 @@ class OslServerProcess:
     logger : Any, optional
         Object for logging. If ``None``, standard logging object is used. Defaults to ``None``.
     log_process_stdout : bool, optional
-        Determines whether the process STDOUT is supposed to be logged. Defaults to ``True``.
+        Determines whether the process STDOUT is supposed to be logged. Defaults to ``False``.
     log_process_stderr : bool, optional
-        Determines whether the process STDERR is supposed to be logged. Defaults to ``True``.
+        Determines whether the process STDERR is supposed to be logged. Defaults to ``False``.
     import_project_properties_file : Optional[Union[str, pathlib.Path]], optional
         Optional path to a project properties file to import. Defaults to ``None``.
     export_project_properties_file : Optional[Union[str, pathlib.Path]], optional
@@ -211,6 +222,7 @@ class OslServerProcess:
     """
 
     DEFAULT_PROJECT_FILE = "project.opf"
+    _LOCALHOST = "127.0.0.1"
 
     def __init__(
         self,
@@ -218,6 +230,7 @@ class OslServerProcess:
         project_path: Optional[Union[str, Path]] = None,
         batch: bool = True,
         service: bool = False,
+        server_address: Optional[str] = None,
         port_range: Optional[Tuple[int, int]] = None,
         password: Optional[str] = None,
         no_run: Optional[bool] = None,
@@ -231,12 +244,13 @@ class OslServerProcess:
         listener: Optional[Tuple[str, int]] = None,
         listener_id: Optional[str] = None,
         multi_listener: Optional[Iterable[Tuple[str, int, Optional[str]]]] = None,
+        listeners_default_timeout: Optional[int] = None,
         notifications: Optional[Iterable[ServerNotification]] = None,
         shutdown_on_finished: bool = True,
         env_vars: Optional[Mapping[str, str]] = None,
         logger=None,
-        log_process_stdout: bool = True,
-        log_process_stderr: bool = True,
+        log_process_stdout: bool = False,
+        log_process_stderr: bool = False,
         import_project_properties_file: Optional[Union[str, Path]] = None,
         export_project_properties_file: Optional[Union[str, Path]] = None,
         import_placeholders_file: Optional[Union[str, Path]] = None,
@@ -289,6 +303,7 @@ class OslServerProcess:
         self.__dump_project_state = validated_path(dump_project_state)
         self.__opx_project_definition_file = validated_path(opx_project_definition_file)
 
+        self.__server_address = server_address
         self.__port_range = port_range
         self.__password = password
         self.__no_run = no_run
@@ -301,6 +316,7 @@ class OslServerProcess:
         self.__listener = listener
         self.__listener_id = listener_id
         self.__multi_listener = multi_listener
+        self.__listeners_default_timeout = listeners_default_timeout
         self.__notifications = tuple(notifications) if notifications is not None else None
         self.__shutdown_on_finished = shutdown_on_finished
         self.__env_vars = dict(env_vars) if env_vars is not None else None
@@ -346,8 +362,19 @@ class OslServerProcess:
         return self.__batch
 
     @property
+    def server_address(self) -> Optional[str]:
+        """Server address of the optiSLang server.
+
+        Returns
+        -------
+        Optional[str]
+            Server address, if defined; ``None`` otherwise.
+        """
+        return self.__server_address
+
+    @property
     def port_range(self) -> Optional[Tuple[int, int]]:
-        """Port range for optiSLang server execution.
+        """Port range for the optiSLang server.
 
         Returns
         -------
@@ -476,7 +503,7 @@ class OslServerProcess:
     def multi_listener(self) -> Optional[Iterable[Tuple[str, int, Optional[str]]]]:
         """Multi remote listener definitions.
 
-        Aeach listener (plain TCP/IP based) is registered at optiSLang server.
+        Each listener (plain TCP/IP based) is registered at optiSLang server.
 
         Returns
         -------
@@ -767,6 +794,10 @@ class OslServerProcess:
                 args.append(f"--enable-tcp-server={self.__port_range[0]}-{self.__port_range[1]}")
             else:
                 args.append("--enable-tcp-server")
+            if self.__server_address is not None:
+                args.append(f"--server-address={self.__server_address}")
+            else:
+                args.append(f"--server-address={self._LOCALHOST}")  # Default to localhost
 
         if self.__password is not None:
             # Submits the server password. Use when communication with the server requires
@@ -802,6 +833,10 @@ class OslServerProcess:
                     args.append(f"{listener[0]}:{listener[1]}+{listener[2]}")
                 else:
                     args.append(f"{listener[0]}:{listener[1]}")
+
+        if self.__listeners_default_timeout is not None:
+            args.append("--listener-timeout")
+            args.append(str(self.__listeners_default_timeout))
 
         if self.__notifications is not None:
             # Subscribe to push notifications sent to the listener.
@@ -910,10 +945,10 @@ class OslServerProcess:
         start_info.Arguments = " ".join(args)
 
         self.__process = System.Diagnostics.Process()
-        self.__process.StartInfo = start_info  # type: ignore
+        self.__process.StartInfo = start_info  # type: ignore[union-attr]
 
         self._logger.debug("Executing process %s", args)
-        self.__process.Start()  # type: ignore
+        self.__process.Start()  # type: ignore[union-attr]
 
     def __start_in_python(self, args: List[str], env_vars: Dict[str, str]):
         """Start new optiSLang server process with Python interpreter.
@@ -940,6 +975,12 @@ class OslServerProcess:
                 "start of the optiSLang process."
             )
 
+        creation_flags = (
+            subprocess.CREATE_NO_WINDOW  #  type: ignore[attr-defined]
+            if sys.platform == "win32"
+            else 0
+        )
+
         self._logger.debug("Executing process %s", args)
         self.__process = subprocess.Popen(
             args,
@@ -948,6 +989,7 @@ class OslServerProcess:
             stderr=subprocess.PIPE,
             stdout=subprocess.PIPE,
             shell=False,
+            creationflags=creation_flags,
         )
         self._logger.debug("optiSLang server process has started with PID: %d", self.__process.pid)
 
@@ -1007,7 +1049,7 @@ class OslServerProcess:
 
         return self.__process.poll() is None
 
-    def wait_for_finished(self, timeout: float = None) -> Optional[int]:
+    def wait_for_finished(self, timeout: Optional[float] = None) -> Optional[int]:
         """Wait for the process to finish.
 
         Parameters
@@ -1041,7 +1083,7 @@ class OslServerProcess:
             name="PyOptiSLang.ProcessOutputHandlerThread",
             args=(
                 self.__process,
-                self._logger.debug if self.__log_process_stdout else None,
+                self._logger.info if self.__log_process_stdout else None,
                 self._logger.warning if self.__log_process_stderr else None,
                 finalize_process,
                 True,

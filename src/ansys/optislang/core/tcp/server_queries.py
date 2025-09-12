@@ -47,6 +47,8 @@ _FULL_PROJECT_TREE_WITH_PROPERTIES = "FULL_PROJECT_TREE_WITH_PROPERTIES"
 _GET_CRITERIA = "GET_CRITERIA"
 _GET_CRITERION = "GET_CRITERION"
 _GET_DESIGNS = "GET_DESIGNS"
+_GET_PLACEHOLDER = "GET_PLACEHOLDER"
+_GET_PLACEHOLDER_IDS = "GET_PLACEHOLDER_IDS"
 _HPC_LICENSING_FORWARDED_ENVIRONMENT = "HPC_LICENSING_FORWARDED_ENVIRONMENT"
 _INPUT_SLOT_VALUE = "INPUT_SLOT_VALUE"
 _OUTPUT_SLOT_VALUE = "OUTPUT_SLOT_VALUE"
@@ -638,6 +640,48 @@ def get_designs(uid: str, password: Optional[str] = None) -> str:
     return _to_json(_gen_query(what=_GET_DESIGNS, uid=uid, password=password))
 
 
+def get_placeholder_ids(password: Optional[str] = None) -> str:
+    """Generate JSON string of get_placeholder_ids query.
+
+    .. note:: Command is supported for Ansys optiSLang version >= 26.1 only.
+
+    Parameters
+    ----------
+    password : Optional[str], optional
+        Password. Defaults to ``None``.
+
+    Returns
+    -------
+    str
+        JSON string of get_placeholder_ids query.
+    """
+    return _to_json(_gen_query(what=_GET_PLACEHOLDER_IDS, password=password))
+
+
+def get_placeholder(placeholder_id: str, password: Optional[str] = None) -> str:
+    """Generate JSON string of get_placeholder query.
+
+    .. note:: Command is supported for Ansys optiSLang version >= 26.1 only.
+
+    Parameters
+    ----------
+    placeholder_id : str
+        Placeholder ID.
+    password : Optional[str], optional
+        Password. Defaults to ``None``.
+
+    Returns
+    -------
+    str
+        JSON string of get_placeholder query.
+    """
+    return _to_json(
+        _gen_query(
+            what=_GET_PLACEHOLDER, args={"placeholder_id": placeholder_id}, password=password
+        )
+    )
+
+
 def hpc_licensing_forwarded_environment(uid: str, password: Optional[str] = None) -> str:
     """Generate JSON string of hpc_licensing_forwarded_environment query.
 
@@ -658,7 +702,13 @@ def hpc_licensing_forwarded_environment(uid: str, password: Optional[str] = None
     )
 
 
-def input_slot_value(uid: str, hid: str, slot_name: str, password: Optional[str] = None) -> str:
+def input_slot_value(
+    uid: str,
+    hid: str,
+    slot_name: str,
+    legacy_design_format: bool = False,
+    password: Optional[str] = None,
+) -> str:
     """Generate JSON string of input_slot_value query.
 
     Parameters
@@ -669,6 +719,12 @@ def input_slot_value(uid: str, hid: str, slot_name: str, password: Optional[str]
         Hid entry.
     slot_name: str
         Slot name entry.
+    legacy_design_format: bool, optional
+        Whether to use legacy format for designs and design container type slots.
+        Defaults to false.
+
+        .. note:: Argument has effect for Ansys optiSLang version >= 25.2 only.
+
     password : Optional[str], optional
         Password, by default ``None``.
 
@@ -678,11 +734,24 @@ def input_slot_value(uid: str, hid: str, slot_name: str, password: Optional[str]
         JSON string of input_slot_value query.
     """
     return _to_json(
-        _gen_query(what=_INPUT_SLOT_VALUE, uid=uid, hid=hid, slot_name=slot_name, password=password)
+        _gen_query(
+            what=_INPUT_SLOT_VALUE,
+            uid=uid,
+            hid=hid,
+            slot_name=slot_name,
+            args={"legacy_design_format": legacy_design_format},
+            password=password,
+        )
     )
 
 
-def output_slot_value(uid: str, hid: str, slot_name: str, password: Optional[str] = None) -> str:
+def output_slot_value(
+    uid: str,
+    hid: str,
+    slot_name: str,
+    legacy_design_format: bool = False,
+    password: Optional[str] = None,
+) -> str:
     """Generate JSON string of output_slot_value query.
 
     Parameters
@@ -693,6 +762,12 @@ def output_slot_value(uid: str, hid: str, slot_name: str, password: Optional[str
         Hid entry.
     slot_name: str
         Slot name entry.
+    legacy_design_format: bool, optional
+        Whether to use legacy format for designs and design container type slots.
+        Defaults to false.
+
+        .. note:: Argument has effect for Ansys optiSLang version >= 25.2 only.
+
     password : Optional[str], optional
         Password, by default ``None``.
 
@@ -703,7 +778,12 @@ def output_slot_value(uid: str, hid: str, slot_name: str, password: Optional[str
     """
     return _to_json(
         _gen_query(
-            what=_OUTPUT_SLOT_VALUE, uid=uid, hid=hid, slot_name=slot_name, password=password
+            what=_OUTPUT_SLOT_VALUE,
+            uid=uid,
+            hid=hid,
+            slot_name=slot_name,
+            args={"legacy_design_format": legacy_design_format},
+            password=password,
         )
     )
 

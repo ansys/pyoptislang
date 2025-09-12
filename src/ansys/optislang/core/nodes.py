@@ -30,12 +30,18 @@ from typing import TYPE_CHECKING, Any, Optional, Tuple, Union
 from deprecated.sphinx import deprecated
 
 from ansys.optislang.core.io import File, FileOutputFormat, RegisteredFile
+from ansys.optislang.core.slot_types import SlotTypeHint
 from ansys.optislang.core.utils import enum_from_str
 
 if TYPE_CHECKING:
     from pathlib import Path
 
-    from ansys.optislang.core.managers import CriteriaManager, ParameterManager, ResponseManager
+    from ansys.optislang.core.managers import (
+        CriteriaManager,
+        DesignManager,
+        ParameterManager,
+        ResponseManager,
+    )
     from ansys.optislang.core.node_types import NodeType
     from ansys.optislang.core.project_parametric import Design
 
@@ -214,17 +220,16 @@ class SlotType(Enum):
 
     @staticmethod
     def to_dir_str(type_: SlotType) -> str:
-        """Convert string to an instance of the ``SlotType`` class.
+        """Convert an instance of the ``SlotType`` class to string.
 
         Parameters
         ----------
-        string: str
-            String to be converted.
-
+        type_: SlotType
+            Instance of the ``SlotType`` class.
         Returns
         -------
-        SlotType
-            Instance of the ``SlotType`` class.
+        str
+            String representation of the slot type.
 
         Raises
         ------
@@ -670,6 +675,163 @@ class Node(ABC):
             Raised when an error occurs while communicating with the server.
         OslCommandError
             Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        pass
+
+    @abstractmethod
+    def create_input_slot(
+        self, slot_name: str, type_hint: Optional[SlotTypeHint] = None  # pragma: no cover
+    ) -> None:
+        """Create dynamic input slot.
+
+        Parameters
+        ----------
+        slot_name : str
+            Name of the slot to be created.
+        type_hint: Optional[SlotTypeHint], optional
+            Type hint for the slot. By default ``None``.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        pass
+
+    @abstractmethod
+    def create_output_slot(
+        self, slot_name: str, type_hint: Optional[SlotTypeHint] = None
+    ) -> None:  # pragma: no cover
+        """Create dynamic output slot.
+
+        Parameters
+        ----------
+        slot_name : str
+            Name of the slot to be created.d
+        type_hint: Optional[SlotTypeHint], optional
+            Type hint for the slot. By default ``None``.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        pass
+
+    @abstractmethod
+    def set_name(self, new_name: str) -> None:  # pragma: no cover
+        """Rename node.
+
+        .. note:: Method is supported for Ansys optiSLang version >= 25.2 only.
+
+        Parameters
+        ----------
+        new_name: str
+            New node name.
+
+        Raises
+        ------
+        NotImplementedError
+            Raised when unsupported optiSLang server is used.
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        pass
+
+    @abstractmethod
+    def create_placeholder_from_property(
+        self,
+        property_name: str,
+        placeholder_id: Optional[str] = None,
+        create_as_expression: bool = False,
+        expression: Optional[str] = None,
+    ) -> str:
+        """Create a placeholder from a node property.
+
+        .. note:: Method is supported for Ansys optiSLang version >= 26.1 only.
+
+        Parameters
+        ----------
+        property_name : str
+            Name of the node property to create placeholder from.
+        placeholder_id : Optional[str], optional
+            Desired placeholder ID, by default ``None``.
+        create_as_expression : bool, optional
+            Whether to create the placeholder as an expression, by default ``False``.
+        expression : Optional[str], optional
+            Custom macro expression for the placeholder, by default ``None``.
+
+        Returns
+        -------
+        str
+            ID of the created placeholder.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        pass
+
+    @abstractmethod
+    def assign_placeholder(self, property_name: str, placeholder_id: str) -> None:
+        """Assign a placeholder to a node property.
+
+        .. note:: Method is supported for Ansys optiSLang version >= 26.1 only.
+
+        Parameters
+        ----------
+        property_name : str
+            Name of the node property to assign placeholder to.
+        placeholder_id : str
+            ID of the placeholder to assign.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        pass
+
+    @abstractmethod
+    def unassign_placeholder(self, property_name: str) -> None:
+        """Remove placeholder assignment from a node property.
+
+        .. note:: Method is supported for Ansys optiSLang version >= 26.1 only.
+
+        Parameters
+        ----------
+        property_name : str
+            Name of the node property to remove placeholder assignment from.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
         TimeoutError
             Raised when the timeout float value expires.
         """
@@ -1147,7 +1309,7 @@ class ProxySolverNode(IntegrationNode):
 
         Parameters
         ----------
-        Any
+        designs : Any
             Calculated designs.
 
         Raises
@@ -1185,8 +1347,8 @@ class System(Node):
             Type of created node.
         name : Optional[str], optional
             Name of created node, by default None.
-        design_flow : Optional[DesignFlow], optional
-            Design flow, by default None.
+        design_flow : DesignFlow, default: DesignFlow.NONE
+            Design flow.
 
         Returns
         -------
@@ -1337,6 +1499,18 @@ class ParametricSystem(System):
 
     @property
     @abstractmethod
+    def design_manager(self) -> DesignManager:  # pragma: no cover
+        """Design manager of the current system.
+
+        Returns
+        -------
+        DesignManager
+            Instance of the ``DesignManager`` class.
+        """
+        pass
+
+    @property
+    @abstractmethod
     def parameter_manager(self) -> ParameterManager:  # pragma: no cover
         """Parameter manager of the current system.
 
@@ -1395,7 +1569,7 @@ class ParametricSystem(System):
 
         Returns
         -------
-        Tuple[InnerOutpuSlot, ...]
+        Tuple[InnerOutputSlot, ...]
             Tuple of current node's inner output slots optionally filtered by name.
 
         Raises
@@ -1410,7 +1584,7 @@ class ParametricSystem(System):
         pass
 
     @abstractmethod
-    def get_omdb_files(self) -> Tuple[File]:  # pragma: no cover
+    def get_omdb_files(self) -> Tuple[File, ...]:  # pragma: no cover
         """Get paths to omdb files.
 
         Returns
@@ -1429,6 +1603,12 @@ class ParametricSystem(System):
         """
         pass
 
+    @abstractmethod
+    @deprecated(
+        version="0.9.3",
+        reason="Use :py:meth:`ParametricSystem.save_designs_as_json` or "
+        ":py:meth:`ParametricSystem.design_manager.save_designs_as_csv` instead.",
+    )
     def save_designs_as_json(
         self, hid: str, file_path: Union[Path, str]
     ) -> File:  # pragma: no cover
@@ -1463,6 +1643,12 @@ class ParametricSystem(System):
         """
         pass
 
+    @abstractmethod
+    @deprecated(
+        version="0.9.3",
+        reason="Use :py:meth:`ParametricSystem.save_designs_as_json` or "
+        ":py:meth:`ParametricSystem.design_manager.save_designs_as_csv` instead.",
+    )
     def save_designs_as_csv(
         self, hid: str, file_path: Union[Path, str]
     ) -> File:  # pragma: no cover
@@ -1636,7 +1822,7 @@ class RootSystem(ParametricSystem):
 
         Parameters
         ----------
-        design: TcpDesign
+        design: Design
             Instance of the ``Design`` class with defined parameters.
 
         Returns
@@ -1663,7 +1849,7 @@ class RootSystem(ParametricSystem):
 
         Parameters
         ----------
-        design: TcpDesign
+        design: Design
             Instance of the ``Design`` class with defined parameters.
 
         Returns
@@ -1703,6 +1889,31 @@ class Slot(ABC):
         """
         pass
 
+    @name.setter
+    def name(self, name: str) -> None:  # pragma: no cover
+        """Set slot name.
+
+        .. note:: Setting slot names it only supported for dynamic slots.
+
+        .. note:: Method is supported for Ansys optiSLang version >= 25.2 only.
+
+        Parameters
+        ----------
+        name: str
+            Slot name.
+
+        Raises
+        ------
+        NotImplementedError
+            Raised when unsupported optiSLang server is used.
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+
     @property
     @abstractmethod
     def node(self) -> Node:  # pragma: no cover
@@ -1729,12 +1940,12 @@ class Slot(ABC):
 
     @property
     @abstractmethod
-    def type_hint(self) -> Optional[str]:  # pragma: no cover
+    def type_hint(self) -> Optional[SlotTypeHint]:  # pragma: no cover
         """Get type hint.
 
         Returns
         -------
-        Optional[str]
+        Optional[SlotTypeHint]
             Data type of the current slot, ``None`` if not specified.
         """
         pass
@@ -1751,12 +1962,12 @@ class Slot(ABC):
         pass
 
     @abstractmethod
-    def get_type_hint(self) -> str:  # pragma: no cover
+    def get_type_hint(self) -> SlotTypeHint:  # pragma: no cover
         """Get slot's expected data type.
 
         Returns
         -------
-        str
+        SlotTypeHint
             Type hint.
 
         Raises
@@ -1780,13 +1991,20 @@ class InputSlot(Slot):
         pass
 
     @abstractmethod
-    def connect_from(self, from_slot: Slot) -> Edge:  # pragma: no cover
+    def connect_from(
+        self, from_slot: Slot, skip_rename_slot: bool = False
+    ) -> Edge:  # pragma: no cover
         """Connect slot from another slot.
 
         Parameters
         ----------
         from_slot: Slot
             Sending (output) slot.
+        skip_rename_slot: bool, optional
+            Skip automatic slot rename for untyped slots.
+            Defaults to False.
+
+            .. note:: Argument has effect for Ansys optiSLang version >= 25.2 only.
 
         Returns
         -------
@@ -1839,13 +2057,18 @@ class OutputSlot(Slot):
         pass
 
     @abstractmethod
-    def connect_to(self, to_slot: Slot) -> Edge:  # pragma: no cover
+    def connect_to(self, to_slot: Slot, skip_rename_slot: bool = False) -> Edge:  # pragma: no cover
         """Connect slot to another slot.
 
         Parameters
         ----------
         to_slot: Slot
             Receiving (input) slot
+        skip_rename_slot: bool, optional
+            Skip automatic slot rename for untyped slots.
+            Defaults to False.
+
+            .. note:: Argument has effect for Ansys optiSLang version >= 25.2 only.
 
         Returns
         -------
@@ -1898,13 +2121,20 @@ class InnerInputSlot(Slot):
         pass
 
     @abstractmethod
-    def connect_from(self, from_slot: Slot) -> Edge:  # pragma: no cover
+    def connect_from(
+        self, from_slot: Slot, skip_rename_slot: bool = False
+    ) -> Edge:  # pragma: no cover
         """Connect slot from another slot.
 
         Parameters
         ----------
         from_slot: Slot
             Sending (output) slot.
+        skip_rename_slot: bool, optional
+            Skip automatic slot rename for untyped slots.
+            Defaults to False.
+
+            .. note:: Argument has effect for Ansys optiSLang version >= 25.2 only.
 
         Returns
         -------
@@ -1957,13 +2187,18 @@ class InnerOutputSlot(Slot):
         pass
 
     @abstractmethod
-    def connect_to(self, to_slot: Slot) -> Edge:  # pragma: no cover
+    def connect_to(self, to_slot: Slot, skip_rename_slot: bool = False) -> Edge:  # pragma: no cover
         """Connect slot to another slot.
 
         Parameters
         ----------
         to_slot: Slot
             Receiving (input) slot
+        skip_rename_slot: bool, optional
+            Skip automatic slot rename for untyped slots.
+            Defaults to False.
+
+            .. note:: Argument has effect for Ansys optiSLang version >= 25.2 only.
 
         Returns
         -------

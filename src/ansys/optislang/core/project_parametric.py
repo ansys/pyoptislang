@@ -378,7 +378,7 @@ class ResponseValueType(Enum):
         ValueError
             Raised when invalid value of ``string`` was given.
         """
-        return enum_from_str(string=string, enum_class=cls)
+        return enum_from_str(string=string, enum_class=cls, replace=("_", ""))
 
 
 # endregion
@@ -428,7 +428,7 @@ class Criterion:
         """
         self.name = name
         self.expression = expression
-        self.criterion = criterion
+        self.criterion = criterion  # type: ignore[assignment]
 
         if isinstance(type_, str):
             type_ = CriterionType.from_str(type_)
@@ -441,13 +441,16 @@ class Criterion:
             )
 
         if expression_value and isinstance(expression_value_type, CriterionValueType):
-            self.expression_value = (expression_value_type, expression_value)
+            self.expression_value = (
+                expression_value_type,
+                expression_value,
+            )  # type: ignore[assignment]
         else:
-            self.expression_value = expression_value
+            self.expression_value = expression_value  # type: ignore[assignment]
         if value and isinstance(value_type, CriterionValueType):
-            self.value = (value_type, value)
+            self.value = (value_type, value)  # type: ignore[assignment]
         else:
-            self.value = value
+            self.value = value  # type: ignore[assignment]
 
     def __eq__(self, other) -> bool:
         """Compare properties of two instances of the ``Criterion`` class.
@@ -528,7 +531,7 @@ class Criterion:
         if not isinstance(expression, str):
             raise TypeError(f"Type `str` was expected, but type: `{type(expression)}` was given.")
         self.__expression = expression
-        self.expression_value = None
+        self.expression_value = None  # type: ignore[assignment]
         self.value = None
 
     @property
@@ -546,7 +549,7 @@ class Criterion:
             expression_value[0], CriterionValueType
         ):
             self.__expression_value = self._parse_str_to_value(
-                expression_value[0], expression_value[1]
+                expression_value[0], expression_value[1]  # type: ignore[arg-type]
             )
             self.__expression_value_type = expression_value[0]
         else:
@@ -599,7 +602,7 @@ class Criterion:
     ) -> None:
         """Set criterion value."""
         if isinstance(value, tuple) and isinstance(value[0], CriterionValueType):
-            self.__value = self._parse_str_to_value(value[0], value[1])
+            self.__value = self._parse_str_to_value(value[0], value[1])  # type: ignore[arg-type]
             self.__value_type = value[0]
         else:
             self.__value = value
@@ -610,8 +613,8 @@ class Criterion:
         """Return type of the criterion value."""
         return self.__value_type
 
-    @staticmethod
-    def from_dict(criterion_dict: dict) -> Criterion:
+    @classmethod
+    def from_dict(cls, criterion_dict: dict) -> Criterion:
         """Create an instance of the ``Criterion`` class from actor properties.
 
         Parameters
@@ -629,9 +632,7 @@ class Criterion:
         TypeError
             Raised when undefined type of criterion is given.
         """
-        criterion_properties = __class__._extract_criterion_properties_from_dict(  # type: ignore
-            criterion_dict
-        )
+        criterion_properties = cls._extract_criterion_properties_from_dict(criterion_dict)
         comparison_type = criterion_properties["criterion"]
 
         if comparison_type == ComparisonType.IGNORE:
@@ -848,7 +849,7 @@ class Criterion:
         # evaluation of second part creates tuple
         # TODO don't use eval
         eval_str = eval(splitted_str[1])
-        matrix_list = []
+        matrix_list = []  # type: ignore[var-annotated]
         for row_index in range(size[0]):
             matrix_list.append([])
             for column_index in range(size[1]):
@@ -886,13 +887,13 @@ class Criterion:
                 if imag == 0:
                     return real
                 else:
-                    return complex(real=real, imag=imag)
+                    return complex(real=real, imag=imag)  # type: ignore[arg-type]
             elif isinstance(value, (int, float)):
                 return value
         elif value_type == CriterionValueType.VECTOR:
-            return Criterion._parse_str_to_vector(value)
+            return Criterion._parse_str_to_vector(value)  # type: ignore[arg-type]
         elif value_type == CriterionValueType.MATRIX:
-            return Criterion._parse_str_to_matrix(value)
+            return Criterion._parse_str_to_matrix(value)  # type: ignore[arg-type]
         elif value_type == CriterionValueType.SIGNAL or value_type == CriterionValueType.XYDATA:
             return (
                 Criterion._parse_str_to_matrix(value[0]),
@@ -916,7 +917,7 @@ class Criterion:
         # TODO don't use eval
         size = eval(size_str)
         if size[0] == 1:
-            splitted_str[1][-2:-2] = ","
+            splitted_str[1][-2:-2] = ","  # type: ignore[index]
         # evaluatiaon of second part creates tuple
         # TODO don't use eval
         eval_str = eval(splitted_str[1])
@@ -944,19 +945,22 @@ class Criterion:
         value_dict = {"kind": value_type.name.lower()}
         if value_type == CriterionValueType.SCALAR:
             if isinstance(value, complex):
+                complex_value = {"imag": value.imag, "real": value.real}
                 value_dict.update(
-                    {value_type.name.lower(): {"imag": value.imag, "real": value.real}}
+                    {value_type.name.lower(): complex_value}  # type: ignore[dict-item]
                 )
             else:
-                value_dict.update({value_type.name.lower(): {"real": value}})
+                value_dict.update(
+                    {value_type.name.lower(): {"real": value}}  # type: ignore[dict-item]
+                )
         elif value_type == CriterionValueType.SIGNAL or value_type == CriterionValueType.XYDATA:
-            value_dict.update({"matrix": value[0], "vector": value[1]})
+            value_dict.update({"matrix": value[0], "vector": value[1]})  # type: ignore[index]
         elif (
             value_type == CriterionValueType.BOOL
             or value_type == CriterionValueType.MATRIX
             or value_type == CriterionValueType.VECTOR
         ):
-            value_dict.update({value_type.name.lower(): value})
+            value_dict.update({value_type.name.lower(): value})  # type: ignore[dict-item]
         return value_dict
 
 
@@ -1018,9 +1022,12 @@ class ConstraintCriterion(Criterion):
         self.__limit_expression = limit_expression
 
         if limit_expression_value and isinstance(limit_expression_value_type, CriterionValueType):
-            self.limit_expression_value = (limit_expression_value_type, limit_expression_value)
+            self.limit_expression_value = (
+                limit_expression_value_type,
+                limit_expression_value,
+            )  # type: ignore[assignment]
         else:
-            self.limit_expression_value = limit_expression_value
+            self.limit_expression_value = limit_expression_value  # type: ignore[assignment]
 
     def __eq__(self, other) -> bool:
         """Compare properties of two instances of the ``ConstraintCriterion`` class.
@@ -1089,7 +1096,7 @@ class ConstraintCriterion(Criterion):
                 f"Type `str` was expected, but type: `{type(limit_expression)}` was given."
             )
         self.__limit_expression = limit_expression
-        self.limit_expression_value = None
+        self.limit_expression_value = None  # type: ignore[assignment]
         self.value = None
 
     @property
@@ -1103,7 +1110,9 @@ class ConstraintCriterion(Criterion):
     ) -> None:
         """Set limit value."""
         if isinstance(limit_value, tuple) and isinstance(limit_value[0], CriterionValueType):
-            self.__limit_expression_value = self._parse_str_to_value(limit_value[0], limit_value[1])
+            self.__limit_expression_value = self._parse_str_to_value(
+                limit_value[0], limit_value[1]  # type: ignore[arg-type]
+            )
             self.__limit_expression_value_type = limit_value[0]
         else:
             self.__limit_expression_value = limit_value
@@ -1213,9 +1222,12 @@ class LimitStateCriterion(Criterion):
         self.__limit_expression = limit_expression
 
         if limit_expression_value and isinstance(limit_expression_value_type, CriterionValueType):
-            self.limit_expression_value = (limit_expression_value_type, limit_expression_value)
+            self.limit_expression_value = (
+                limit_expression_value_type,
+                limit_expression_value,
+            )  # type: ignore[assignment]
         else:
-            self.limit_expression_value = limit_expression_value
+            self.limit_expression_value = limit_expression_value  # type: ignore[assignment]
 
     def __eq__(self, other) -> bool:
         """Compare properties of two instances of the ``LimitStateCriterion`` class.
@@ -1284,7 +1296,7 @@ class LimitStateCriterion(Criterion):
                 f"Type `str` was expected, but type: `{type(limit_expression)}` was given."
             )
         self.__limit_expression = limit_expression
-        self.limit_expression_value = None
+        self.limit_expression_value = None  # type: ignore[assignment]
         self.value = None
 
     @property
@@ -1298,7 +1310,9 @@ class LimitStateCriterion(Criterion):
     ) -> None:
         """Set limit value."""
         if isinstance(limit_value, tuple) and isinstance(limit_value[0], CriterionValueType):
-            self.__limit_expression_value = self._parse_str_to_value(limit_value[0], limit_value[1])
+            self.__limit_expression_value = self._parse_str_to_value(
+                limit_value[0], limit_value[1]  # type: ignore[arg-type]
+            )
             self.__limit_expression_value_type = limit_value[0]
         else:
             self.__limit_expression_value = limit_value
@@ -1856,8 +1870,8 @@ class Parameter:
         """Type of the parameter."""
         return self.__type
 
-    @staticmethod
-    def from_dict(par_dict: dict) -> Parameter:
+    @classmethod
+    def from_dict(cls, par_dict: dict) -> Parameter:
         """Create an instance of the ``Parameter`` class from optiSLang output.
 
         Parameters
@@ -1875,9 +1889,7 @@ class Parameter:
         TypeError
             Raised when an undefined type of parameter is given.
         """
-        parameter_properties = __class__._extract_parameter_properties_from_dict(  # type: ignore
-            par_dict=par_dict
-        )
+        parameter_properties = cls._extract_parameter_properties_from_dict(par_dict=par_dict)
 
         if parameter_properties["type"] == ParameterType.DEPENDENT:
             return DependentParameter(
@@ -2237,7 +2249,7 @@ class MixedParameter(Parameter):
         """Return deep copy of the instance of ``MixedParameter`` class."""
         return MixedParameter(
             name=self.name,
-            reference_value=self.reference_value,
+            reference_value=self.reference_value,  # type: ignore[arg-type]
             id=self.id,
             const=self.const,
             deterministic_resolution=self.deterministic_resolution,
@@ -2256,7 +2268,7 @@ class MixedParameter(Parameter):
         """Reference value of the parameter."""
         return self.__reference_value
 
-    @reference_value.setter
+    @reference_value.setter  # type: ignore[override]
     def reference_value(
         self,
         reference_value: float,
@@ -2822,7 +2834,7 @@ class StochasticParameter(Parameter):
         """Return deep copy of the stochastic parameter."""
         return StochasticParameter(
             name=self.name,
-            reference_value=self.reference_value,
+            reference_value=self.reference_value,  # type: ignore[arg-type]
             id=self.id,
             const=self.const,
             stochastic_resolution=self.stochastic_resolution,
@@ -2839,7 +2851,7 @@ class StochasticParameter(Parameter):
         """Reference value of the parameter."""
         return self.__reference_value
 
-    @reference_value.setter
+    @reference_value.setter  # type: ignore[override]
     def reference_value(
         self,
         reference_value: float,
@@ -3054,9 +3066,12 @@ class Response:
         """
         self.name = name
         if reference_value and isinstance(reference_value_type, ResponseValueType):
-            self.reference_value = (reference_value_type, reference_value)
+            self.reference_value = (
+                reference_value_type,
+                reference_value,
+            )  # type: ignore[assignment]
         else:
-            self.reference_value = reference_value
+            self.reference_value = reference_value  # type: ignore[assignment]
 
     def __eq__(self, other) -> bool:
         """Compare properties of two instances of the ``Response`` class.
@@ -3126,7 +3141,7 @@ class Response:
         """Set response reference value."""
         if isinstance(reference_value, tuple) and isinstance(reference_value[0], ResponseValueType):
             self.__reference_value = self._parse_str_to_value(
-                reference_value[0], reference_value[1]
+                reference_value[0], reference_value[1]  # type: ignore[arg-type]
             )
             self.__reference_value_type = reference_value[0]
         else:
@@ -3158,7 +3173,9 @@ class Response:
         elif isinstance(reference_value, dict):
             if reference_value.get("type") == "signal":
                 return ResponseValueType.SIGNAL
-            elif reference_value.get("type") == "xydata":
+            elif (
+                reference_value.get("type") == "xydata" or reference_value.get("type") == "xy_data"
+            ):
                 return ResponseValueType.XYDATA
             else:
                 return ResponseValueType.UNINITIALIZED
@@ -3185,7 +3202,10 @@ class Response:
             return reference_value
         elif reference_value_type == ResponseValueType.SCALAR:
             if isinstance(reference_value, dict):
-                return complex(real=reference_value.get("real"), imag=reference_value.get("imag"))
+                return complex(
+                    reference_value.get("real"),  # type: ignore[arg-type]
+                    reference_value.get("imag"),  # type: ignore[arg-type]
+                )
             elif isinstance(reference_value, (int, float)):
                 return reference_value
         elif reference_value_type == ResponseValueType.VECTOR:
@@ -3256,7 +3276,7 @@ class Response:
 
 # region Design
 class Design:
-    """Stores information about the design point, exclusively for the root system.
+    """Stores information about the design point.
 
     Parameters
     ----------
@@ -3295,13 +3315,15 @@ class Design:
         Iterable[Union[Response, DesignVariable]],
     ], optional
         Dictionary of responses and their values {'name': value, ...}
-        or an iterable of design variables or responses. By default `[]``.
+        or an iterable of design variables or responses. By default ``[]``.
     feasibility: Optional[bool], optional
-        Determines whether design is feasible, defaults to `None` (no info about feasibility).
+        Determines whether design is feasible, by default ``None`` (no info about feasibility).
     design_id: Optional[int], optional
-        Design's id, defaults to `None`.
+        Design's id, by default ``None``.
     status: DesignStatus, optional
-        Design's status, defaults to `DesignStatus.IDLE`.
+        Design's status, by default ``DesignStatus.IDLE``.
+    pareto_design: Optional[bool], optional
+        Pareto design flag, by default ``None``.
 
     Examples
     --------
@@ -3345,6 +3367,7 @@ class Design:
         feasibility: Optional[bool] = None,
         design_id: Optional[int] = None,
         status: DesignStatus = DesignStatus.IDLE,
+        pareto_design: Optional[bool] = None,
     ) -> None:
         """Initialize a new instance of the ``Design`` class."""
         self.__constraints: List[DesignVariable] = []
@@ -3353,6 +3376,7 @@ class Design:
         self.__limit_states: List[DesignVariable] = []
         self.__objectives: List[DesignVariable] = []
         self.__parameters: List[DesignVariable] = []
+        self.__pareto_design: Optional[bool] = pareto_design
         self.__responses: List[DesignVariable] = []
         self.__status: DesignStatus = status
         self.__variables: List[DesignVariable] = []
@@ -3372,6 +3396,34 @@ class Design:
         # responses
         if responses:
             self.__responses = self.__parse_responses_to_designvariables(responses=responses)
+
+    def __eq__(self, other) -> bool:
+        """Compare properties of two instances of the ``Design`` class.
+
+        Parameters
+        ----------
+        other: Design
+            Design for comparison.
+
+        Returns
+        -------
+        bool
+            ``True`` if all properties match; ``False`` otherwise.
+        """
+        return (
+            type(self) == type(other)
+            and self.parameters == other.parameters
+            and self.constraints == other.constraints
+            and self.limit_states == other.limit_states
+            and self.objectives == other.objectives
+            and self.variables == other.variables
+            and self.responses == other.responses
+            and self.feasibility == other.feasibility
+            and self.id == other.id
+            and self.status == other.status
+            # NOTE: pareto_design not provided by `get_design` query
+            and self.__pareto_design == other.pareto_design
+        )
 
     @property
     def constraints(self) -> Tuple[DesignVariable, ...]:
@@ -3422,6 +3474,11 @@ class Design:
     def parameters_names(self) -> Tuple[str, ...]:
         """Tuple of all parameter names."""
         return tuple([parameter.name for parameter in self.__parameters])
+
+    @property
+    def pareto_design(self) -> Optional[bool]:
+        """Pareto design flag. If information is not provided, ``None`` is returned."""
+        return self.__pareto_design
 
     @property
     def responses(self) -> Tuple[DesignVariable, ...]:
@@ -3496,6 +3553,7 @@ class Design:
         """Reset the status and feasibility, clear output values."""
         self.__status = DesignStatus.IDLE
         self.__feasibility = None
+        self.__pareto_design = None
         self.__reset_output_value(self.constraints)
         self.__reset_output_value(self.limit_states)
         self.__reset_output_value(self.objectives)
@@ -3536,15 +3594,17 @@ class Design:
         if isinstance(parameter, Parameter):
             value = parameter.reference_value
         elif isinstance(parameter, DesignVariable):
-            value = parameter.value
+            value = parameter.value  # type: ignore[assignment]
         else:
             raise TypeError(f"Invalid type of parameter: `{type(parameter)}`.")
 
         index = self.__find_name_index(name=parameter.name, type_="parameter")
         if index is not None:
-            self.__parameters[index].value = value
+            self.__parameters[index].value = value  # type: ignore[assignment]
         else:
-            self.__parameters.append(DesignVariable(name=parameter.name, value=value))
+            self.__parameters.append(
+                DesignVariable(name=parameter.name, value=value)  # type: ignore[arg-type]
+            )
 
     def set_parameter_by_name(
         self,
@@ -3587,9 +3647,11 @@ class Design:
             raise TypeError(f"Invalid type of name: `{type(name)}`.")
 
         if index is not None:
-            self.__parameters[index].value = value
+            self.__parameters[index].value = value  # type: ignore[assignment]
         else:
-            self.__parameters.append(DesignVariable(name=name, value=value))
+            self.__parameters.append(
+                DesignVariable(name=name, value=value)  # type: ignore[arg-type]
+            )
 
     def __find_name_index(self, name: str, type_: str) -> Optional[int]:
         """Find the index of a criterion, parameter, response, or variable by name.

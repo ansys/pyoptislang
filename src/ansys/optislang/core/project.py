@@ -25,11 +25,12 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import TYPE_CHECKING, Optional, Sequence, Tuple, Union
+from typing import TYPE_CHECKING, Any, List, Optional, Sequence, Tuple, Union
 
 if TYPE_CHECKING:
     from ansys.optislang.core.io import RegisteredFile
     from ansys.optislang.core.nodes import RootSystem
+    from ansys.optislang.core.placeholder_types import PlaceholderInfo, PlaceholderType, UserLevel
     from ansys.optislang.core.project_parametric import Design
 
 
@@ -145,7 +146,7 @@ class Project(ABC):
         pass
 
     @abstractmethod
-    def get_name(self) -> str:  # pragma: no cover
+    def get_name(self) -> Optional[str]:  # pragma: no cover
         """Get the name of the optiSLang project.
 
         Returns
@@ -226,7 +227,7 @@ class Project(ABC):
         pass
 
     @abstractmethod
-    def get_status(self) -> str:  # pragma: no cover
+    def get_status(self) -> Optional[str]:  # pragma: no cover
         """Get the status of the optiSLang project.
 
         Returns
@@ -391,6 +392,183 @@ class Project(ABC):
             the command execution. I.e. don't continue on next line of python script after command
             was successfully sent to optiSLang but wait for execution of command inside optiSLang.
             Defaults to ``True``.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        pass
+
+    @abstractmethod
+    def get_placeholder_ids(self) -> List[str]:  # pragma: no cover
+        """Get IDs of all placeholders in the project.
+
+        .. note:: Method is supported for Ansys optiSLang version >= 26.1 only.
+
+        Returns
+        -------
+        List[str]
+            List of placeholder IDs.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        pass
+
+    @abstractmethod
+    def get_placeholder(self, placeholder_id: str) -> PlaceholderInfo:  # pragma: no cover
+        """Get placeholder information.
+
+        .. note:: Method is supported for Ansys optiSLang version >= 26.1 only.
+
+        Parameters
+        ----------
+        placeholder_id : str
+            ID of the placeholder.
+
+        Returns
+        -------
+        PlaceholderInfo
+            Named tuple containing placeholder information with separate fields
+            for placeholder_id, user_level, type, description, range, value, and expression.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        pass
+
+    @abstractmethod
+    def create_placeholder(
+        self,
+        value: Optional[Any] = None,
+        placeholder_id: Optional[str] = None,
+        overwrite: bool = False,
+        user_level: Optional[UserLevel] = None,
+        description: Optional[str] = None,
+        range_: Optional[str] = None,
+        type_: Optional[PlaceholderType] = None,
+        expression: Optional[str] = None,
+    ) -> str:  # pragma: no cover
+        """Create a placeholder.
+
+        .. note:: Method is supported for Ansys optiSLang version >= 26.1 only.
+
+        Parameters
+        ----------
+        value : Optional[Any], optional
+            Value for the placeholder, by default ``None``.
+            If neither value nor expression are specified, the placeholder will be created
+            with a suitable default value.
+            If specified, the value must be of a type compatible with the placeholder type.
+        placeholder_id : Optional[str], optional
+            Desired placeholder ID, by default ``None``.
+            If not specified, a unique ID will be generated.
+        overwrite : bool, optional
+            Whether to overwrite existing placeholder, by default ``False``.
+        user_level : Optional[UserLevel], optional
+            User level for the placeholder, by default ``None``.
+            If not specified, the default user level will be used.
+        description : Optional[str], optional
+            Description of the placeholder, by default ``None``.
+        range_ : Optional[str], optional
+            Range of the placeholder, by default ``None``.
+        type_ : Optional[PlaceholderType], optional
+            Type of the placeholder, by default ``None``.
+            If not specified, the UNKNOWN type will be used.
+        expression : Optional[str], optional
+            Macro expression for the placeholder, by default ``None``.
+
+        Returns
+        -------
+        str
+            ID of the created placeholder.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        pass
+
+    @abstractmethod
+    def remove_placeholder(self, placeholder_id: str) -> None:  # pragma: no cover
+        """Remove a placeholder.
+
+        .. note:: Method is supported for Ansys optiSLang version >= 26.1 only.
+
+        Parameters
+        ----------
+        placeholder_id : str
+            ID of the placeholder to remove.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        pass
+
+    @abstractmethod
+    def rename_placeholder(
+        self, placeholder_id: str, new_placeholder_id: str
+    ) -> None:  # pragma: no cover
+        """Rename a placeholder.
+
+        .. note:: Method is supported for Ansys optiSLang version >= 26.1 only.
+
+        Parameters
+        ----------
+        placeholder_id : str
+            Current ID of the placeholder.
+        new_placeholder_id : str
+            New ID for the placeholder.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        pass
+
+    @abstractmethod
+    def set_placeholder_value(self, placeholder_id: str, value: Any) -> None:  # pragma: no cover
+        """Set the value of a placeholder.
+
+        Parameters
+        ----------
+        placeholder_id : str
+            ID of the placeholder.
+        value : Any
+            New value for the placeholder.
 
         Raises
         ------

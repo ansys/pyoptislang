@@ -28,6 +28,8 @@ import pytest
 
 from ansys.optislang.core import Optislang
 from ansys.optislang.core.nodes import InputSlot, OutputSlot, SlotType
+from ansys.optislang.core.osl_server import OslVersion
+from ansys.optislang.core.slot_types import SlotTypeHint
 from ansys.optislang.core.tcp.nodes import (
     Edge,
     TcpNodeProxy,
@@ -63,7 +65,7 @@ def test_tcp_slot_proxy_properties(optislang: Optislang):
     assert isinstance(random_slot.name, str)
     assert isinstance(random_slot.node, TcpNodeProxy)
     assert isinstance(random_slot.type, SlotType)
-    assert isinstance(random_slot.type_hint, str)
+    assert isinstance(random_slot.type_hint, SlotTypeHint)
 
 
 def test_tcp_slot_queries(optislang: Optislang):
@@ -74,7 +76,7 @@ def test_tcp_slot_queries(optislang: Optislang):
     connections = output_slot.get_connections()
     assert len(connections) == 1
     assert isinstance(connections[0], Edge)
-    assert isinstance(output_slot.get_type_hint(), str)
+    assert isinstance(output_slot.get_type_hint(), SlotTypeHint)
 
 
 def test_edge(optislang: Optislang):
@@ -134,6 +136,9 @@ def test_connect_nodes(optislang: Optislang, tmp_path: Path):
 
 def test_disconnect_nodes(optislang: Optislang, tmp_path: Path):
     """Test disconnecting nodes."""
+    if optislang.osl_version < OslVersion(24, 1, 0, 0):
+        pytest.skip(f"Not compatible with {optislang.osl_version_string}")
+
     rs: TcpRootSystemProxy = optislang.project.root_system
     a: TcpNodeProxy = rs.find_nodes_by_name("A")[0]
     b: TcpNodeProxy = rs.find_nodes_by_name("B")[0]

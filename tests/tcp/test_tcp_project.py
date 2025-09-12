@@ -26,6 +26,7 @@ import pytest
 
 from ansys.optislang.core import Optislang
 from ansys.optislang.core.io import RegisteredFile
+from ansys.optislang.core.osl_server import OslVersion
 from ansys.optislang.core.project_parametric import Design
 from ansys.optislang.core.tcp.managers import (
     TcpCriteriaManagerProxy,
@@ -58,8 +59,12 @@ def test_project_queries(optislang: Optislang, tmp_example_project):
     project: TcpProjectProxy = optislang.project
     assert project is not None
 
-    available_nodes = project.get_available_nodes()
+    with pytest.deprecated_call():
+        available_nodes = project.get_available_nodes()
     assert isinstance(available_nodes, dict)
+
+    available_node_types = project.get_available_node_types()
+    assert isinstance(available_node_types, list)
 
     description = project.get_description()
     assert isinstance(description, str)
@@ -199,3 +204,40 @@ connect(python, "ODesign", sens, "IIDesign")
 #     project.stop_gently()
 #     optislang.dispose()
 #     time.sleep(3)
+
+
+def test_placeholder_methods(optislang: Optislang):
+    """Test placeholder management methods."""
+    if optislang.osl_version < OslVersion(26, 1, 0, 0):
+        pytest.skip(f"Not compatible with {optislang.osl_version_string}")
+    project = optislang.project
+
+    # Test create_placeholder
+    placeholder_id = project.create_placeholder(
+        value="test_value", placeholder_id="test_placeholder", description="Test placeholder"
+    )
+    assert placeholder_id == "test_placeholder"
+
+    # Test get_placeholder_ids
+    placeholder_ids = project.get_placeholder_ids()
+    assert "test_placeholder" in placeholder_ids
+
+    # Test get_placeholder
+    placeholder_info = project.get_placeholder("test_placeholder")
+    assert placeholder_info is not None
+    assert hasattr(placeholder_info, "placeholder_id")
+    assert placeholder_info.placeholder_id == "test_placeholder"
+
+    # Test set_placeholder_value
+    project.set_placeholder_value("test_placeholder", "updated_value")
+
+    # Test rename_placeholder
+    project.rename_placeholder("test_placeholder", "renamed_placeholder")
+    updated_ids = project.get_placeholder_ids()
+    assert "renamed_placeholder" in updated_ids
+    assert "test_placeholder" not in updated_ids
+
+    # Test remove_placeholder
+    project.remove_placeholder("renamed_placeholder")
+    final_ids = project.get_placeholder_ids()
+    assert "renamed_placeholder" not in final_ids

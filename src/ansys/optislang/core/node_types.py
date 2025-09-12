@@ -1088,7 +1088,7 @@ def get_node_type_from_str(node_id: str) -> NodeType:
         "AlgorithmSystem_": AddinType.PYTHON_BASED_ALGORITHM_PLUGIN,
         "AlgorithmSystemPlugin_": AddinType.ALGORITHM_PLUGIN,
         "Custom_": AddinType.PYTHON_BASED_NODE_PLUGIN,
-        "CustomETKIntegration_": "",  # TODO: append addin type
+        "CustomETKIntegration_": "",  # TODO: append add-in type
         "CustomIntegration_": AddinType.PYTHON_BASED_INTEGRATION_PLUGIN,
         "CustomMop_": AddinType.PYTHON_BASED_MOP_NODE_PLUGIN,
         "IntegrationPlugin_": AddinType.INTEGRATION_PLUGIN,
@@ -1110,7 +1110,7 @@ def get_node_type_from_str(node_id: str) -> NodeType:
         for custom in customs.keys():
             if node_id.startswith(custom):
                 id_ = node_id.replace(custom, "")
-                subtype = customs[custom]  # type: ignore
+                subtype = customs[custom]  # type: ignore[assignment]
                 was_found = True
                 break
         if not was_found:

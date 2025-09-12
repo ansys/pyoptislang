@@ -20,41 +20,36 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-"""
-optiSLang.
+"""Contains definitions for node slot types."""
 
-core
-"""
+from __future__ import annotations
 
-import importlib.metadata
-import importlib.util
-import os
-import sys
+from enum import Enum
 
-from ansys.optislang.core.logging import OslLogger
 
-LOG = OslLogger(loglevel="ERROR", log_to_file=False, log_to_stdout=True)
-LOG.logger.debug("Loaded logging module as LOG")
+class SlotTypeHint(Enum):
+    """Provides supported slots types."""
 
-__version__ = importlib.metadata.version(__name__.replace(".", "-"))
-
-# First supported version of optiSLang: 2023R1
-FIRST_SUPPORTED_VERSION = 231
-
-from ansys.optislang.core.optislang import Optislang
-from ansys.optislang.core.osl_process import OslServerProcess, ServerNotification
-from ansys.optislang.core.placeholder_types import PlaceholderInfo, PlaceholderType, UserLevel
-
-# Provide examples directory path
-EXAMPLES_MODULE = "ansys.optislang.core.examples"
-if spec := importlib.util.find_spec(EXAMPLES_MODULE):
-    if spec.origin:
-        os.environ["OSL_EXAMPLES"] = os.path.dirname(spec.origin)
-    else:
-        LOG.logger.warning(
-            f"Could not set path to examples. Missing spec for module {EXAMPLES_MODULE}."
-        )
-else:
-    LOG.logger.warning(
-        f"Could not set path to examples. Missing origin for module {EXAMPLES_MODULE}."
-    )
+    UNDEFINED = 0
+    BOOL = 1
+    INTEGER = 2
+    UNSIGNED_INTEGER = 3
+    UNSIGNED_INTEGER_VECTOR = 4
+    REAL = 5
+    STRING = 6
+    STRING_LIST = 7
+    VARIANT = 8
+    PATH = 9
+    PARAMETER = 10
+    PARAMETER_SET = 11
+    PARAMETER_MANAGER = 12
+    DESIGN = 13
+    DESIGN_POINT = 14
+    DESIGN_CONTAINER = 15
+    BOOL_VECTOR = 16
+    CRITERION = 17
+    CRITERION_SEQUENCE = 18
+    DESIGN_ENTRY = 19
+    RUN_INFO_META = 20
+    RUN_INFO = 21
+    DESIGN_POINTS = 22

@@ -20,15 +20,19 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from pathlib import Path
-
 import pytest
 
-from ansys.optislang.core import Optislang
+from ansys.optislang.core import Optislang, node_types
 from ansys.optislang.core.io import File, RegisteredFile
 from ansys.optislang.core.node_types import AddinType, NodeType, Sensitivity, optislang_node
 from ansys.optislang.core.osl_server import OslVersion
-from ansys.optislang.core.tcp.managers import CriteriaManager, ParameterManager, ResponseManager
+from ansys.optislang.core.placeholder_types import PlaceholderType
+from ansys.optislang.core.tcp.managers import (
+    CriteriaManager,
+    DesignManager,
+    ParameterManager,
+    ResponseManager,
+)
 from ansys.optislang.core.tcp.nodes import (
     DesignFlow,
     Edge,
@@ -432,6 +436,9 @@ def test_managers(optislang: Optislang, tmp_example_project):
     assert isinstance(response_manager, ResponseManager)
     print(response_manager)
 
+    design_manager = parametric_system.design_manager
+    assert isinstance(design_manager, DesignManager)
+
 
 def test_get_inner_slots(optislang: Optislang, tmp_example_project):
     """Test `get_inner_[input, output]_slots`."""
@@ -472,40 +479,46 @@ def test_get_omdb_files(optislang: Optislang, tmp_example_project):
     assert isinstance(mis_omdb_file[0], File)
 
 
-def test_save_designs_as(tmp_path: Path, tmp_example_project):
-    """Test `save_designs_as_json` and `save_designs_as_csv` methods."""
-    with Optislang(project_path=tmp_example_project("omdb_files")) as osl:
-        osl.timeout = 60
-        osl.application.project.reset()
-        osl.application.project.start()
+def test_node_placeholder_methods(optislang: Optislang):
+    """Test node placeholder management methods."""
+    if optislang.osl_version < OslVersion(26, 1, 0, 0):
+        pytest.skip(f"Not compatible with {optislang.osl_version_string}")
 
-        project = osl.project
-        root_system = project.root_system
+    project = optislang.project
+    root_system = project.root_system
 
-        __test_save_designs_as_csv(tmp_path, root_system)
-        __test_save_designs_as_json(tmp_path, root_system)
+    # Create a node
+    calculator_node = root_system.create_node(type_=node_types.CalculatorSet, name="TestCalculator")
 
+    # Test create_placeholder_from_property
+    placeholder_id = calculator_node.create_placeholder_from_property(
+        property_name="RetryEnable", placeholder_id="node_placeholder"
+    )
+    assert placeholder_id == "node_placeholder"
 
-def __test_save_designs_as_csv(tmp_path: Path, root_system: TcpRootSystemProxy):
-    """Test `save_designs_as_csv` method."""
-    sensitivity: TcpParametricSystemProxy = root_system.find_nodes_by_name("Sensitivity")[0]
-    s_hids = sensitivity.get_states_ids()
-    csv_file_path = tmp_path / "FirstDesign.csv"
-    csv_file = sensitivity.save_designs_as_csv(s_hids[0], csv_file_path)
-    assert isinstance(csv_file, File)
-    assert csv_file.exists
+    # Test create_placeholder_from_property with expression from property value
+    expression_placeholder_id = calculator_node.create_placeholder_from_property(
+        property_name="RetryEnable", create_as_expression=True
+    )
+    assert isinstance(expression_placeholder_id, str)
+    assert len(expression_placeholder_id) > 0
 
+    # Test create_placeholder_from_property with custom expression
+    expression_placeholder_id_2 = calculator_node.create_placeholder_from_property(
+        property_name="RetryCount", expression="2*2"
+    )
+    assert isinstance(expression_placeholder_id_2, str)
+    assert len(expression_placeholder_id_2) > 0
 
-def __test_save_designs_as_json(tmp_path: Path, root_system: TcpRootSystemProxy):
-    """Test `save_designs_as_json` method."""
-    most_inner_sensitivity: TcpParametricSystemProxy = root_system.find_nodes_by_name(
-        "MostInnerSensitivity", 3
-    )[0]
-    mis_hids = most_inner_sensitivity.get_states_ids()
-    json_file_path = tmp_path / "InnerDesign.json"
-    json_file = most_inner_sensitivity.save_designs_as_json(mis_hids[0], json_file_path)
-    assert isinstance(json_file, File)
-    assert json_file.exists
+    expression_placeholder_2_info = project.get_placeholder(expression_placeholder_id_2)
+    assert expression_placeholder_2_info.expression == "2*2"
+
+    # Test assign_placeholder (create a simple placeholder first)
+    project.create_placeholder(value=True, placeholder_id="assign_test", type_=PlaceholderType.BOOL)
+    calculator_node.assign_placeholder(property_name="RetryEnable", placeholder_id="assign_test")
+
+    # Test unassign_placeholder
+    calculator_node.unassign_placeholder(property_name="RetryEnable")
 
 
 # endregion
