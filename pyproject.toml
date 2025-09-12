@@ -104,3 +104,10 @@ skip = "CONTRIBUTORS.md"
 mypy_path = "$MYPY_CONFIG_FILE_DIR/src"
 explicit_package_bases = true
 exclude = ["00_run_script"]
+
+[tool.bandit]
+exclude_dirs = ["tests", "src/ansys/optislang/core/examples"]
+skips = [    
+    "B110",    
+    "B404",    
+    ]
