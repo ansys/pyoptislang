@@ -165,19 +165,24 @@ jobs:
     if: github.event_name == 'push' && contains(github.ref, 'refs/tags')
     needs: build-library
     runs-on: ubuntu-latest
+    environment: release
+    permissions:
+      id-token: write
+      contents: write
     steps:
-      - name: "Release to the public PyPI repository"
-        uses: ansys/actions/release-pypi-public@v10
+      - name: "Download the library artifacts from build-library step"
+        uses: actions/download-artifact@cc203385981b70ca67e1cc392babf9cc229d5806 # v4.1.9
         with:
-          library-name: ${{ env.PACKAGE_NAME }}
-          twine-username: "__token__"
-          twine-token: ${{ secrets.PYPI_TOKEN }}
+          name: ${{ env.PACKAGE_NAME }}-artifacts
+          path: ${{ env.PACKAGE_NAME }}-artifacts
 
-      - name: "Release to GitHub"
-        uses: ansys/actions/release-github@v10
+      - name: "Upload artifacts to PyPI using trusted publisher"
+        uses: pypa/gh-action-pypi-publish@ed0c53931b1dc9bd32cbe73a98c7f6766f8a527e # v1.13.0
         with:
-          library-name: ${{ env.PACKAGE_NAME }}
-          token: ${{ secrets.GITHUB_TOKEN }}
+          repository-url: "https://upload.pypi.org/legacy/"
+          print-hash: true
+          packages-dir: ${{ env.PACKAGE_NAME }}-artifacts
+          skip-existing: false
 
   upload_dev_docs:
     name: "Upload development documentation"
