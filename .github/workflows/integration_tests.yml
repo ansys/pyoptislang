@@ -31,6 +31,8 @@ jobs:
       credentials:
         username: ansys-bot
         password: ${{ secrets.GITHUB_TOKEN }}
+    permissions:
+      packages: read
     steps:
       - name: "Pytest"
         env:
