@@ -981,25 +981,25 @@ class TcpOslListener:
         timeout: float, optional
             Listener socket timeout. Default value ``0.2``.
         """
-        while True:
-            client = None
-            try:
-                assert self.__listener_socket is not None
-                self.__listener_socket.settimeout(timeout)
-                clientsocket, address = self.__listener_socket.accept()
-                client = TcpClient(clientsocket)
-                message = client.receive_msg(timeout)
-                data_dict = json.loads(message)
-                self._logger.debug(f"CLEANUP: {data_dict}")
-                client.send_msg("")
-            except socket.timeout:
-                self._logger.debug("No notifications were cleaned up.")
-                break
-            except Exception as ex:
-                self._logger.warning(ex)
-            finally:
-                if client is not None:
-                    client.disconnect()
+        if self.__listener_socket is not None:
+            while True:
+                client = None
+                try:
+                    self.__listener_socket.settimeout(timeout)
+                    clientsocket, address = self.__listener_socket.accept()
+                    client = TcpClient(clientsocket)
+                    message = client.receive_msg(timeout)
+                    data_dict = json.loads(message)
+                    self._logger.debug(f"CLEANUP: {data_dict}")
+                    client.send_msg("")
+                except socket.timeout:
+                    self._logger.debug("No notifications were cleaned up.")
+                    break
+                except Exception as ex:
+                    self._logger.warning(ex)
+                finally:
+                    if client is not None:
+                        client.disconnect()
 
 
 class TcpOslServer(OslServer):
@@ -1288,9 +1288,11 @@ class TcpOslServer(OslServer):
                 # In case an IPV4/IPV6 Any address is specified,
                 # we still need to bind to localhost (as optiSLang is started locally),
                 # but we need to determine whether to use IPV4 or IPV6 localhost address.
-                if ip_address(self.__server_address) == ip_address("0.0.0.0"):
+                # Concerning nosec B104: No vulnerability, we just check if provided address
+                # is Any address.
+                if ip_address(self.__server_address) == ip_address("0.0.0.0"):  # nosec B104
                     self.__host = self._LOCALHOST_IPV4
-                elif ip_address(self.__server_address) == ip_address("::0"):
+                elif ip_address(self.__server_address) == ip_address("::0"):  # nosec B104
                     self.__host = self._LOCALHOST_IPV6
                 else:
                     # use specified server address as is
@@ -4438,7 +4440,7 @@ class TcpOslServer(OslServer):
             else self.timeouts_register.default_value
         )
         max_request_attempts = (
-            kwargs.get("max_request_attempts")
+            kwargs.get("max_request_attempts", self.max_request_attempts_register.default_value)
             if "max_request_attempts" in kwargs.keys()
             else self.max_request_attempts_register.default_value
         )
@@ -4452,7 +4454,6 @@ class TcpOslServer(OslServer):
 
         response_str = ""
 
-        assert isinstance(max_request_attempts, int)
         for request_attempt in range(1, max_request_attempts + 1):
             start_time = time.time()
             try:
@@ -5359,17 +5360,18 @@ class TcpOslServer(OslServer):
                             self._logger.debug(
                                 "Refreshing registration for listener: %s", listener.uid
                             )
-                            assert listener.uid is not None
-                            self.send_command(
-                                commands.refresh_listener_registration(
-                                    uid=listener.uid,
-                                    password=self.__password,
-                                ),
-                                timeout=self.timeouts_register.get_value(current_func_name),
-                                max_request_attempts=self.max_request_attempts_register.get_value(
+                            if listener.uid is not None:
+                                max_request_attempts = self.max_request_attempts_register.get_value(
                                     current_func_name
-                                ),
-                            )
+                                )
+                                self.send_command(
+                                    commands.refresh_listener_registration(
+                                        uid=listener.uid,
+                                        password=self.__password,
+                                    ),
+                                    timeout=self.timeouts_register.get_value(current_func_name),
+                                    max_request_attempts=max_request_attempts,
+                                )
                         except OslCommandError as e:
                             self._logger.debug(
                                 "Refreshing registration for listener %s failed: %s",
