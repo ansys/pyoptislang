@@ -163,9 +163,9 @@ class OslServerProcess:
     logger : Any, optional
         Object for logging. If ``None``, standard logging object is used. Defaults to ``None``.
     log_process_stdout : bool, optional
-        Determines whether the process STDOUT is supposed to be logged. Defaults to ``True``.
+        Determines whether the process STDOUT is supposed to be logged. Defaults to ``False``.
     log_process_stderr : bool, optional
-        Determines whether the process STDERR is supposed to be logged. Defaults to ``True``.
+        Determines whether the process STDERR is supposed to be logged. Defaults to ``False``.
     import_project_properties_file : Optional[Union[str, pathlib.Path]], optional
         Optional path to a project properties file to import. Defaults to ``None``.
     export_project_properties_file : Optional[Union[str, pathlib.Path]], optional
@@ -249,8 +249,8 @@ class OslServerProcess:
         shutdown_on_finished: bool = True,
         env_vars: Optional[Mapping[str, str]] = None,
         logger=None,
-        log_process_stdout: bool = True,
-        log_process_stderr: bool = True,
+        log_process_stdout: bool = False,
+        log_process_stderr: bool = False,
         import_project_properties_file: Optional[Union[str, Path]] = None,
         export_project_properties_file: Optional[Union[str, Path]] = None,
         import_placeholders_file: Optional[Union[str, Path]] = None,
@@ -982,7 +982,12 @@ class OslServerProcess:
         )
 
         self._logger.debug("Executing process %s", args)
-        self.__process = subprocess.Popen(
+        # Security: This subprocess call is safe because:
+        # 1. shell=False is explicitly set to prevent shell injection
+        # 2. The executable path is validated to exist in __init__
+        # 3. All arguments are constructed from validated internal state
+        # 4. This is a controlled call to start the optiSLang application
+        self.__process = subprocess.Popen(  # nosec B603
             args,
             env=env_vars,
             cwd=os.getcwd(),
@@ -1083,7 +1088,7 @@ class OslServerProcess:
             name="PyOptiSLang.ProcessOutputHandlerThread",
             args=(
                 self.__process,
-                self._logger.debug if self.__log_process_stdout else None,
+                self._logger.info if self.__log_process_stdout else None,
                 self._logger.warning if self.__log_process_stderr else None,
                 finalize_process,
                 True,

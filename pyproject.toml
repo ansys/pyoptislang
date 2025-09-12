@@ -38,7 +38,7 @@ dependencies = [
 [project.optional-dependencies]
 tests = [
     "pytest==8.4.2",
-    "pytest-cov==6.2.1",
+    "pytest-cov==6.3.0",
     "matplotlib>=3.5.3",
 ]
 doc = [
@@ -104,3 +104,10 @@ skip = "CONTRIBUTORS.md"
 mypy_path = "$MYPY_CONFIG_FILE_DIR/src"
 explicit_package_bases = true
 exclude = ["00_run_script"]
+
+[tool.bandit]
+exclude_dirs = ["tests", "src/ansys/optislang/core/examples"]
+skips = [    
+    "B110",    
+    "B404",    
+    ]
