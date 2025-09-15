@@ -22,7 +22,9 @@ help:
 # Customized clean due to examples gallery
 clean:
 	rm -rf $(BUILDDIR)/*
+	rm -rf $(SOURCEDIR)/sg_execution_times.rst
 	rm -rf $(SOURCEDIR)/examples
+	rm -rf $(SOURCEDIR)/cheatsheet/_extensions
 	find . -type d -name "_autosummary" -exec rm -rf {} +
 
 pdf:
