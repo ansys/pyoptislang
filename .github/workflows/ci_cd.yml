@@ -158,7 +158,7 @@ jobs:
         uses: ansys/actions/doc-build@v10
         with:
           python-version: ${{ env.MAIN_PYTHON_VERSION }}
-          dependencies: "pandoc quarto tinytex"
+          dependencies: "pandoc jupyter"
           needs-quarto: true
 
   build-library:
