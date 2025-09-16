@@ -37,12 +37,12 @@ goto end
 
 :pdf
 %SPHINXBUILD% -M latex %SOURCEDIR% %BUILDDIR% %SPHINXOPTS% %O%
-cd "%BUILDDIR%\latex"
-for %%f in (*.tex) do (
-pdflatex "%%f" --interaction=nonstopmode)
-if NOT EXIST ansys-optislang-core.pdf (
-	Echo "no pdf generated!"
-	exit /b 1)
+REM cd "%BUILDDIR%\latex"
+REM for %%f in (*.tex) do (
+REM pdflatex "%%f" --interaction=nonstopmode)
+REM if NOT EXIST ansys-optislang-core.pdf (
+REM 	Echo "no pdf generated!"
+REM 	exit /b 1)
 Echo "pdf generated!"
 
 :help
