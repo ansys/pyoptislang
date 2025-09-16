@@ -139,10 +139,21 @@ jobs:
     runs-on: ubuntu-latest
     needs: doc-style
     steps:
-      - uses: ansys/actions/doc-build@v10
+      #- name: Install Quarto
+        #uses: quarto-dev/quarto-actions/setup@9e48da27e184aa238fcb49f5db75469626d43adb # v2.1.9
+      #- name: Check Quarto Version
+        #shell: bash
+        #run: |
+          #quarto --version
+      #- name: Verify tinytex is installed
+        #run: |
+          #quarto install tinytex --no-prompt --update-path
+      - name: Build Documentation
+        uses: ansys/actions/doc-build@v10
         with:
           python-version: ${{ env.MAIN_PYTHON_VERSION }}
-          dependencies: "pandoc"
+          dependencies: "pandoc jupyter"
+          needs-quarto: true
 
   build-library:
     name: "Build library"
