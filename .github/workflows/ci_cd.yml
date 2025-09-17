@@ -189,6 +189,12 @@ jobs:
           packages-dir: ${{ env.PACKAGE_NAME }}-artifacts
           skip-existing: false
 
+      - name: "Release to GitHub"
+        uses: ansys/actions/release-github@v10
+        with:
+          library-name: ${{ env.PACKAGE_NAME }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+
   upload_dev_docs:
     name: "Upload development documentation"
     if: github.ref == 'refs/heads/main'
