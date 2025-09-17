@@ -27,10 +27,12 @@ jobs:
     if: github.event.name != 'pull_request' || github.event.pull_request.merged == true
     runs-on: ubuntu-22.04
     container:
-      image: ${{ format('ghcr.io/ansys/optislang:{0}', matrix.osl_image.hash) }} # zizmor: ignore[unpinned-images]
+      image: ${{ format('ghcr.io/ansys/optislang@sha256:{0}', matrix.osl_image.hash) }} # zizmor: ignore[unpinned-images]
       credentials:
         username: ansys-bot
         password: ${{ secrets.GITHUB_TOKEN }}
+    permissions:
+      packages: read
     steps:
       - name: "Pytest"
         env:
