@@ -24,9 +24,12 @@
 from __future__ import annotations
 
 from abc import abstractmethod
+from enum import Enum
+import os
 from pathlib import Path
 import shutil
 from typing import TYPE_CHECKING, Iterable, List, Optional, Tuple, Union
+import warnings
 
 from ansys.optislang.core import Optislang
 import ansys.optislang.core.node_types as nt
@@ -40,15 +43,167 @@ from ansys.optislang.core.nodes import (
     ProxySolverNode,
 )
 from ansys.optislang.core.parametric import (
+    ExecutableBlock,
     ManagedInstance,
     ManagedParametricSystem,
     OMDBFilesProvider,
     ParametricDesignStudyManager,
     ProxySolverManagedParametricSystem,
 )
+from ansys.optislang.core.slot_types import SlotTypeHint
+from ansys.optislang.core.utils import enum_from_str
 
 if TYPE_CHECKING:
     from ansys.optislang.core.project_parametric import Criterion, Design, Parameter, Response
+
+
+# region optislang paths
+class OptislangPathType(Enum):
+    """Provides optislang path types."""
+
+    ABSOLUTE = 0
+    WORKING_DIR_RELATIVE = 1
+    PROJECT_RELATIVE = 2
+    PROJECT_WORKING_DIR_RELATIVE = 3
+    REFERENCE_FILES_DIR_RELATIVE = 4
+    REGISTERED_FILE = 5
+
+    @classmethod
+    def from_str(cls, string: str) -> OptislangPathType:
+        """Convert a string to an instance of the ``OptislangPathType`` class.
+
+        Parameters
+        ----------
+        string: str
+            String that shall be converted.
+
+        Returns
+        -------
+        OptislangPathType
+            Instance of the ``OptislangPathType`` class.
+
+        Raises
+        ------
+        TypeError
+            Raised when invalid type of ``string`` was given.
+        ValueError
+            Raised when invalid value of ``string`` was given.
+        """
+        return enum_from_str(string=string, enum_class=cls)
+
+
+class OptislangPath:
+    """To be done."""
+
+    @property
+    def type(self) -> OptislangPathType:
+        """Type of the path."""
+        return self.__type
+
+    def __init__(
+        self,
+        heads: str,
+        tails: str,
+        type_: Union[OptislangPathType, str] = OptislangPathType.ABSOLUTE,
+    ):
+        """Create a new instance of OptislangPath.
+
+        Parameters
+        ----------
+        heads : str
+            _description_
+        tails : str
+            _description_
+        type_ : Union[OptislangPathType, str], optional
+            _description_, by default OptislangPathType.ABSOLUTE
+
+        Raises
+        ------
+        TypeError
+            _description_
+        """
+        self.__heads = heads
+        self.__tails = tails
+        if isinstance(type_, str):
+            type_ = OptislangPathType.from_str(type_)
+        if isinstance(type_, OptislangPathType):
+            self.__type = type_
+        else:
+            raise TypeError(
+                "Type ``Union[OptislangPathType, str]`` was expected, but type: "
+                f"``{type(type_)}`` was given."
+            )
+
+    @classmethod
+    def from_dict(cls, path: dict) -> OptislangPath:
+        """Create an instance of the ``OptislangPath`` class from optiSLang output.
+
+        Parameters
+        ----------
+        path: dict
+            Output from the optiSLang server.
+
+        Returns
+        -------
+        Parameter
+            Instance of the ``Parameter`` class.
+
+        Raises
+        ------
+        TypeError
+            Raised when an undefined type of path is given.
+        """
+        # TODO:
+        path_type = path["path"]["enum"]
+
+        if ["type"] == OptislangPathType.ABSOLUTE:
+            pass
+        else:
+            raise TypeError("Undefined type of path.")
+
+    @abstractmethod
+    def to_dict(self) -> dict:
+        """Abstract method implemented in derived classes."""
+        pass
+
+
+class AbsolutePath(OptislangPath):
+    """To be done."""
+
+    pass
+
+
+class WorkingDirRelativePath(OptislangPath):
+    """To be done."""
+
+    pass
+
+
+class ProjectRelativePath(OptislangPath):
+    """To be done."""
+
+    pass
+
+
+class ProjectWorkingDirRelativePath(OptislangPath):
+    """To be done."""
+
+    pass
+
+
+class ReferenceFilesDirRelativePath(OptislangPath):
+    """To be done."""
+
+    pass
+
+
+class RegisteredFilePath(OptislangPath):
+    """To be done."""
+
+    pass
+
+
+# endregion
 
 
 # region Solver node settings
@@ -176,11 +331,16 @@ class MopSolverNodeSettings(GeneralNodeSettings):
         dict
             Dictionary with properties.
         """
-        properties = super().convert_properties_to_dict()
+        properties = {}
         properties["MultiDesignLaunchNum"] = self.multi_design_launch_num
-        # TODO: fix
         if self.input_file:
-            properties["Source"] = str(self.input_file)
+            properties["MDBPath"] = {
+                "path": {
+                    "base_path_mode": {"value": "ABSOLUTE_PATH"},
+                    "split_path": {"head": "", "tail": str(self.input_file)},
+                }
+            }
+        properties.update(super().convert_properties_to_dict())
         return properties
 
 
@@ -268,8 +428,9 @@ class ProxySolverNodeSettings(GeneralNodeSettings):
         dict
             Dictionary with properties.
         """
-        properties = super().convert_properties_to_dict()
+        properties = {}
         properties["MultiDesignLaunchNum"] = self.multi_design_launch_num
+        properties.update(super().convert_properties_to_dict())
         return properties
 
 
@@ -277,19 +438,19 @@ class PythonSolverNodeSettings(GeneralNodeSettings):
     """Settings specific to Python solver nodes."""
 
     @property
-    def input_file(self) -> Union[str, Path]:
+    def input_file(self) -> Union[str, Path, None]:
         """Path to the Python script file or the Python source code as a string.
 
         Returns
         -------
-        Union[str, Path]
-            Path to the Python script file or the Python source code as a string.
+        Union[str, Path, None]
+            Path to the Python script file or the Python source code as a string, if specified.
         """
         return self.__input_file
 
     @input_file.setter
     def input_file(self, value: Union[str, Path]):
-        """Set path to the Python script file or the Python source code as a string.
+        """Set path to the Python script file or set the Python source code as a string.
 
         Parameters
         ----------
@@ -300,7 +461,7 @@ class PythonSolverNodeSettings(GeneralNodeSettings):
 
     def __init__(
         self,
-        input_file: Union[str, Path],
+        input_file: Optional[Union[str, Path]] = None,
         multi_design_launch_num: Optional[int] = 1,
         additional_settings: Optional[dict] = {},
     ):
@@ -308,7 +469,7 @@ class PythonSolverNodeSettings(GeneralNodeSettings):
 
         Parameters
         ----------
-        input_file : Union[str, Path]
+        input_file : Optional[Union[str, Path]]
             Path to the Python script file or the Python source code as a string.
         multi_design_launch_num : Optional[int], optional
             Number of designs to be sent/received in one batch, by default 1.
@@ -328,14 +489,20 @@ class PythonSolverNodeSettings(GeneralNodeSettings):
         dict
             Dictionary with properties.
         """
-        properties = super().convert_properties_to_dict()
-        # TODO: fix properties
-        # path mode
-        if isinstance(self.input_file, (str, Path)) and Path(self.input_file).suffix == ".py":
-            properties["Source"] = str(self.input_file)
-        # content mode
-        else:
-            properties["Source"] = self.input_file
+        properties = {}
+        if self.input_file:
+            # path mode
+            if isinstance(self.input_file, (str, Path)) and Path(self.input_file).suffix == ".py":
+                properties["Path"] = {
+                    "path": {
+                        "base_path_mode": {"value": "ABSOLUTE_PATH"},
+                        "split_path": {"head": "", "tail": str(self.input_file)},
+                    }
+                }
+            # content mode
+            else:
+                properties["Source"] = self.input_file
+        properties.update(super().convert_properties_to_dict())
         return properties
 
 
@@ -425,7 +592,7 @@ class WorkFlowTemplate:
     @abstractmethod
     def create_workflow(
         self, parent: ParametricSystem
-    ) -> Tuple[ManagedInstance]:  # pragma: no cover
+    ) -> Tuple[Tuple[ManagedInstance], Tuple[ExecutableBlock]]:  # pragma: no cover
         """Abstract method implemented in derived classes.
 
         Parameters
@@ -436,7 +603,7 @@ class WorkFlowTemplate:
         Returns
         -------
         Tuple[ManagedInstance]
-            Tuple of managed instances created by the workflow template.
+            Tuple of managed instances and executable blocks.
 
         """
         pass
@@ -531,7 +698,6 @@ class WorkFlowTemplate:
         # TODO: implement `set_start_designs` command
         # for start_design in start_designs:
         #     algorithm.design_manager.set_start_design()
-        algorithm.set_execution_options(ExecutionOption.INACTIVE)
         return algorithm, solver_node
 
     def create_solver_node(
@@ -826,7 +992,9 @@ class ParametricSystemIntegrationTemplate(WorkFlowTemplate):
         self.algorithm_connections = algorithm_connections
         self.solver_connections = solver_connections
 
-    def create_workflow(self, parent: ParametricSystem) -> Tuple[ManagedInstance]:
+    def create_workflow(
+        self, parent: ParametricSystem
+    ) -> Tuple[Tuple[ManagedInstance], Tuple[ExecutableBlock]]:
         """Create the workflow template.
 
         Parameters
@@ -835,8 +1003,8 @@ class ParametricSystemIntegrationTemplate(WorkFlowTemplate):
             Parent system to create the workflow in.
         Returns
         -------
-        Tuple[ManagedInstance]
-            Tuple of managed instances created by the workflow template.
+        Tuple[Tuple[ManagedInstance], Tuple[ExecutableBlock]]
+            Tuple of managed instances and executable blocks.
         """
         parametric_system, solver_node = self.create_algorithm(
             parent_system=parent,
@@ -853,9 +1021,20 @@ class ParametricSystemIntegrationTemplate(WorkFlowTemplate):
             connections_algorithm=self.algorithm_connections,
             connections_solver=self.solver_connections,
         )
-        return ManagedParametricSystem(
+        instance = ManagedParametricSystem(
             parametric_system == parametric_system, solver_node=solver_node
         )
+        executable_block = ExecutableBlock(
+            (
+                (
+                    instance,
+                    ExecutionOption.ACTIVE
+                    | ExecutionOption.STARTING_POINT
+                    | ExecutionOption.END_POINT,
+                ),
+            )
+        )
+        return ((instance,), (executable_block,))
 
 
 class GeneralAlgorithmTemplate(WorkFlowTemplate):
@@ -927,7 +1106,9 @@ class GeneralAlgorithmTemplate(WorkFlowTemplate):
         self.algorithm_connections = algorithm_connections
         self.solver_connections = solver_connections
 
-    def create_workflow(self, parent: ParametricSystem) -> Tuple[ManagedInstance]:
+    def create_workflow(
+        self, parent: ParametricSystem
+    ) -> Tuple[Tuple[ManagedInstance], Tuple[ExecutableBlock]]:
         """Create the workflow template.
 
         Parameters
@@ -937,8 +1118,8 @@ class GeneralAlgorithmTemplate(WorkFlowTemplate):
 
         Returns
         -------
-        Tuple[ManagedInstance]
-            Tuple of managed instances created by the workflow template.
+        Tuple[Tuple[ManagedInstance], Tuple[ExecutableBlock]]
+            Tuple of managed instances and executable blocks.
         """
         algorithm, solver_node = self.create_algorithm(
             parent_system=parent,
@@ -961,23 +1142,35 @@ class GeneralAlgorithmTemplate(WorkFlowTemplate):
                     "Incompatible settings. For ``ProxySolver`` node, "
                     "solver_settings must be of type ``ProxySolverNodeSettings``."
                 )
-            return ProxySolverManagedParametricSystem(
+            instance = ProxySolverManagedParametricSystem(
                 algorithm=algorithm,
                 solver_node=solver_node,
                 callback=self.solver_settings.callback,
             )
         else:
-            return ManagedParametricSystem(parametric_system=algorithm, solver_node=solver_node)
+            instance = ManagedParametricSystem(parametric_system=algorithm, solver_node=solver_node)
+
+        executable_block = ExecutableBlock(
+            (
+                (
+                    instance,
+                    ExecutionOption.ACTIVE
+                    | ExecutionOption.STARTING_POINT
+                    | ExecutionOption.END_POINT,
+                ),
+            )
+        )
+        return ((instance,), (executable_block,))
 
 
 class OptimizationOnMOPTemplate(WorkFlowTemplate):
-    """Template creating workflow with AMOP and Optimizer.
+    """Template creating optimization on MOP and validation with proxy solver.
 
     Workflow:
-    - AMOP algorithm:
-        - using ProxySolver node as solver
-    - OCO optimizer algorithm:
-        - using MopSolver node as solver
+    - Optimizer:
+        - Algorithm using MopSolver node as solver, OCO algorithm by default.
+    - Validator:
+        - Parametric system validating best.
     """
 
     def __init__(
@@ -985,62 +1178,67 @@ class OptimizationOnMOPTemplate(WorkFlowTemplate):
         parameters: Iterable[Parameter],
         criteria: Iterable[Criterion],
         responses: Iterable[Response],
-        proxy_solver_settings: ProxySolverNodeSettings,
-        proxy_solver_name: Optional[str] = None,
-        amop_algorithm_name: Optional[str] = None,
-        amop_settings: GeneralAlgorithmSettings = {},
-        oco_optimizer_name: Optional[str] = None,
-        oco_settings: GeneralAlgorithmSettings = {},
+        mop_predecessor: Node,
+        optimizer_name: Optional[str] = None,
+        optimizer_type: Optional[nt.NodeType] = nt.OCO,
+        optimizer_settings: GeneralAlgorithmSettings = None,
+        optimizer_start_designs: Optional[Iterable[Design]] = None,
         mop_solver_settings: GeneralNodeSettings = None,
-        amop_start_designs: Iterable[Design] = (),
-        amop_predecessor_connections: Optional[Iterable[Tuple[OutputSlot, str]]] = [],
+        validator_solver_settings: Optional[ProxySolverNodeSettings] = None,
+        best_designs_num: Optional[int] = 1,
     ):
         """Initialize the OptimizationOnMOPTemplate.
 
         Parameters
         ----------
         parameters : Iterable[Parameter]
-            Parameters to be included in both AMOP and OCO algorithms.
+            Parameters to be used by optimization algorithm and validator.
         criteria : Iterable[Criterion]
-            Criteria to be included in both AMOP and OCO algorithms.
+            Criteria to be used by optimization algorithm and validator.
         responses : Iterable[Response]
-            Responses to be included in both AMOP and OCO algorithms.
-        proxy_solver_settings : ProxySolverNodeSettings
-            Settings for the ProxySolver node used in AMOP.
-        proxy_solver_name : Optional[str], optional
-            Name for the ProxySolver node.
-        amop_algorithm_name : Optional[str], optional
-            Name or ID for the AMOP algorithm.
-        amop_settings : GeneralAlgorithmSettings, optional
-            Settings for the AMOP algorithm.
-        oco_optimizer_name : Optional[str], optional
-            Name or ID for the OCO optimizer algorithm.
-        oco_settings : GeneralAlgorithmSettings, optional
-            Settings for the OCO optimizer algorithm.
-        mop_solver_settings : GeneralSolverNodeSettings, optional
-            Settings for the MopSolver node used in OCO.
-        amop_start_designs : Iterable[Design], optional
-            Designs to be used as start designs for the AMOP algorithm.
-        amop_predecessor_connections: Optional[Iterable[Tuple[OutputSlot, str]]], optional
-            Iterable of tuples specifying the connection from each predecessor node to the
-            new AMOP algorithm.
+            Responses to be used by optimization algorithm and validator.
+        mop_predecessor: Node
+            Predecessor of the workflow. Must be either MOP node or AMOP system.
+        optimizer_name: Optional[str]
+            Name of the optimization algorithm.
+        optimizer_type: Optional[nt.NodeType]
+            Type of the optimization algorithm, by default OCO.
+        optimizer_settings: GeneralAlgorithmSettings
+            Settings for the optimization algorithm.
+        optimizer_start_designs: Iterable[Design]
+            Start designs.
+        mop_solver_settings: GeneralNodeSettings
+            Settings for the optimization solver.
+        validator_solver_settings: Optional[ProxySolverNodeSettings]
+            Settings for the validator proxy solver node.
+            MUST be specified to allow automatic execution. If not specified,
+            execution of the proxy solver must be performed by the user.
+        best_designs_num: Optional[int], optional
+            Number of best designs to be filtered. By default ``1``.
+
         """
         self.parameters = parameters
         self.criteria = criteria
         self.responses = responses
-        self.proxy_solver_settings = proxy_solver_settings
-        self.proxy_solver_name = proxy_solver_name
-        self.amop_algorithm_name = amop_algorithm_name
-        self.amop_settings = amop_settings
-        self.oco_optimizer_name = oco_optimizer_name
-        self.oco_settings = oco_settings
+        self.mop_predecessor = mop_predecessor
+        self.optimizer_name = optimizer_name
+        self.optimizer_type = optimizer_type
+        self.optimizer_settings = optimizer_settings
+        self.optimizer_start_designs = optimizer_start_designs
         self.mop_solver_settings = mop_solver_settings
-        self.amop_start_designs = amop_start_designs
-        self.amop_predecessor_connections = amop_predecessor_connections
+        if not validator_solver_settings:
+            self.validator_solver_settings = ProxySolverNodeSettings(self.__empty_callback)
+            warnings.warn(
+                "Setting for validator solver settings not provided. "
+                "Automatic execution won't be possible."
+            )
+        else:
+            self.validator_solver_settings = validator_solver_settings
+        self.best_designs_num = best_designs_num
 
     def create_workflow(
         self, parent: ParametricSystem
-    ) -> Tuple[ProxySolverManagedParametricSystem, ManagedParametricSystem]:
+    ) -> Tuple[Tuple[ManagedInstance], Tuple[ExecutableBlock]]:
         """Create the workflow template.
 
         Parameters
@@ -1050,59 +1248,198 @@ class OptimizationOnMOPTemplate(WorkFlowTemplate):
 
         Returns
         -------
-        Tuple[ManagedInstance]
-            Tuple of managed instances created by the workflow template.
+        Tuple[Tuple[ManagedInstance], Tuple[ExecutableBlock]]
+            Tuple of managed instances and executable blocks.
         """
-        amop_algorithm, amop_solver_node = self.create_algorithm(
+        # optimizer
+        optimizer_algorithm, optimizer_solver_node = self.create_algorithm(
             parent_system=parent,
             parameters=self.parameters,
             criteria=self.criteria,
             responses=self.responses,
-            algorithm_type=nt.AMOP,
-            solver_type=nt.ProxySolver,
-            algorithm_name=self.amop_algorithm_name,
-            algorithm_settings=self.amop_settings,
-            solver_name=self.proxy_solver_name,
-            solver_settings=self.proxy_solver_settings,
-            start_designs=self.amop_start_designs,
-            connections_algorithm=self.amop_predecessor_connections,
-            connections_solver=[],
-        )
-        if not isinstance(self.proxy_solver_settings, ProxySolverNodeSettings):
-            raise TypeError(
-                "Incompatible settings. For ``ProxySolver`` node, "
-                "solver_settings must be of type ``ProxySolverNodeSettings``."
-            )
-        amop_managed_instance = ProxySolverManagedParametricSystem(
-            algorithm=amop_algorithm,
-            solver_node=amop_solver_node,
-            callback=self.proxy_solver_settings.callback,
-        )
-
-        oco_algorithm, oco_solver_node = self.create_algorithm(
-            parent_system=parent,
-            parameters=self.parameters,
-            criteria=self.criteria,
-            responses=self.responses,
-            algorithm_type=nt.OCO,
+            algorithm_type=self.optimizer_type,
             solver_type=nt.Mopsolver,
-            algorithm_name=self.oco_optimizer_name,
-            algorithm_settings=self.oco_settings,
-            solver_name=None,
+            algorithm_name=self.optimizer_name,
+            algorithm_settings=self.optimizer_settings,
             solver_settings=self.mop_solver_settings,
-            start_designs=[],
+            start_designs=self.optimizer_start_designs,
             connections_algorithm=[
-                (amop_algorithm.get_output_slots("OParameterManager")[0], "IParameterManager")
+                (self.mop_predecessor.get_output_slots("OParameterManager")[0], "IParameterManager")
             ],
             connections_solver=[
-                (amop_algorithm.get_output_slots("OMDBPath")[0], "IMDBPath"),
+                (self.mop_predecessor.get_output_slots("OMDBPath")[0], "IMDBPath"),
             ],
         )
-        oco_managed_instance = ManagedParametricSystem(
-            parametric_system=oco_algorithm, solver_node=oco_solver_node
+        optimizer_managed_instance = ManagedParametricSystem(
+            parametric_system=optimizer_algorithm, solver_node=optimizer_solver_node
         )
 
-        return amop_managed_instance, oco_managed_instance
+        # validator
+        validator_settings = GeneralAlgorithmSettings()
+        validator_settings.additional_settings["DynamicSamplingDesired"] = False
+        validator_system, validator_solver_node = self.create_algorithm(
+            parent_system=parent,
+            parameters=self.parameters,
+            criteria=self.criteria,
+            responses=self.responses,
+            algorithm_type=nt.Sensitivity,
+            solver_type=nt.ProxySolver,
+            algorithm_settings=validator_settings,
+            solver_settings=self.validator_solver_settings,
+            connections_algorithm=[
+                (optimizer_algorithm.get_output_slots("OCriteria")[0], "ICriteria")
+            ],
+            connections_solver=[],
+        )
+        validator_managed_instance = ProxySolverManagedParametricSystem(
+            algorithm=validator_system,
+            solver_node=validator_solver_node,
+            callback=self.validator_solver_settings.callback,
+        )
+
+        # filter
+        filter_node: IntegrationNode = parent.create_node(
+            type_=nt.DataMining, name="VALIDATOR_FILTER_NODE"
+        )
+        filter_node.create_input_slot("IBestDesigns", SlotTypeHint.DESIGN_CONTAINER)
+        filter_node_managed_instance = ManagedInstance(filter_node)
+        optimizer_algorithm.get_output_slots("OBestDesigns")[0].connect_to(
+            filter_node.get_input_slots("IBestDesigns")[0]
+        )
+
+        ofilter = {
+            "OFilteredBestDesigns": [
+                {
+                    "First": {"name": "AddDesignsFromSlot"},
+                    "Second": [
+                        {"design_container": []},
+                        {"string": "IBestDesigns"},
+                        {"design_entry": False},
+                    ],
+                }
+            ]
+        }
+        dmm = filter_node.get_property("DataMiningManager")
+        dmm["id_filter_list_map"] = ofilter
+        filter_node.set_property("DataMiningManager", dmm)
+
+        getbestdesigns = {
+            "First": {"name": "GetBestDesigns"},
+            "Second": [{"design_container": []}, {"design_entry": self.best_designs_num}],
+        }
+
+        dmm = filter_node.get_property("DataMiningManager")
+        dmm["id_filter_list_map"]["OFilteredBestDesigns"].append(getbestdesigns)
+        filter_node.set_property("DataMiningManager", dmm)
+
+        filter_node.load()
+        filter_node.register_location_as_output_slot(
+            location="OFilteredBestDesigns", name="OFilteredBestDesigns"
+        )
+        filter_node.get_output_slots("OFilteredBestDesigns")[0].connect_to(
+            validator_system.get_input_slots("IStartDesigns")[0]
+        )
+
+        # design filter
+        append_node: IntegrationNode = parent.create_node(
+            type_=nt.DataMining, name="Append Designs"
+        )
+        append_node.create_input_slot("IDesigns", SlotTypeHint.DESIGN_CONTAINER)
+        append_node.create_input_slot("IPath", SlotTypeHint.PATH)
+        append_node_managed_instance = ManagedInstance(append_node)
+
+        ofilter = {
+            "OValidatedMDBPath": [
+                {
+                    "First": {"name": "AppendDesignsToFile"},
+                    "Second": [
+                        {"design_container": []},
+                        {"string": "IDesigns"},
+                        {"string": "IPath"},
+                    ],
+                }
+            ]
+        }
+        dmm = append_node.get_property("DataMiningManager")
+        dmm["id_filter_list_map"] = ofilter
+        append_node.set_property("DataMiningManager", dmm)
+        append_node.load()
+        append_node.register_location_as_output_slot(
+            location="OValidatedMDBPath", name="OValidatedMDBPath"
+        )
+
+        validator_system.get_output_slots("ODesigns")[0].connect_to(
+            append_node.get_input_slots("IDesigns")[0]
+        )
+        optimizer_algorithm.get_output_slots("OMDBPath")[0].connect_to(
+            append_node.get_input_slots("IPath")[0]
+        )
+        # postprocessing
+        postprocessing_node: Node = parent.create_node(
+            type_=nt.Postprocessing, name="PostProcessing"
+        )
+        postprocessing_managed_instance = ManagedInstance(postprocessing_node)
+
+        append_node.get_output_slots("OValidatedMDBPath")[0].connect_to(
+            postprocessing_node.get_input_slots("IMDBPath")[0]
+        )
+
+        # create executable blocks from the nodes
+        managed_instances = (
+            optimizer_managed_instance,
+            filter_node_managed_instance,
+            validator_managed_instance,
+            append_node_managed_instance,
+            postprocessing_managed_instance,
+        )
+        executable_blocks = (
+            ExecutableBlock(
+                (
+                    (
+                        optimizer_managed_instance,
+                        ExecutionOption.ACTIVE
+                        | ExecutionOption.STARTING_POINT
+                        | ExecutionOption.END_POINT,
+                    ),
+                )
+            ),
+            ExecutableBlock(
+                (
+                    (
+                        filter_node_managed_instance,
+                        ExecutionOption.ACTIVE | ExecutionOption.STARTING_POINT,
+                    ),
+                    (
+                        validator_managed_instance,
+                        ExecutionOption.ACTIVE | ExecutionOption.END_POINT,
+                    ),
+                )
+            ),
+            ExecutableBlock(
+                (
+                    (
+                        append_node_managed_instance,
+                        ExecutionOption.ACTIVE | ExecutionOption.STARTING_POINT,
+                    ),
+                    (
+                        postprocessing_managed_instance,
+                        ExecutionOption.ACTIVE | ExecutionOption.END_POINT,
+                    ),
+                )
+            ),
+        )
+        return managed_instances, tuple(executable_blocks)
+
+    @classmethod
+    def __empty_callback(designs: List[dict]):
+        """Empty callback to be used, if not provided by the user."""
+        results_designs = []
+        for design in designs:
+            results_designs.append(
+                {
+                    "hid": design["hid"],
+                }
+            )
 
 
 # endregion
@@ -1170,11 +1507,21 @@ def create_optislang_project_with_solver_node(
     with Optislang(project_path=project_path) as osl:
         omdb_files_provider = OMDBFilesProvider(omdb_files)
         omdb_files = omdb_files_provider.get_omdb_files()
-        # TODO: implement `get_reference_dir` in project class
-        ref_dir = str(osl.application.project.get_working_dir()).replace(".opd", ".opr")
-        # TODO: copy to ref dir as a relative path to the original working directory
+        ref_dir = osl.application.project.get_reference_dir()
         for file in omdb_files:
-            shutil.copy(file, ref_dir)
+            file: Path
+            parts = file.parts
+            for i, part in enumerate(parts):
+                if part.endswith(".opd"):
+                    relpath = Path(*parts[i + 1 :])  # everything after the .opd dir
+                    break
+            reldirs = relpath.parts[0:-1]
+            if reldirs:
+                reldirs_full = ref_dir / relpath.parent
+                if not reldirs_full.exists():
+                    os.makedirs(reldirs_full)
+            target = ref_dir / relpath
+            shutil.copy(file, target)
 
         template = ParametricSystemIntegrationTemplate(
             parameters=parameters,
@@ -1185,31 +1532,6 @@ def create_optislang_project_with_solver_node(
 
         template.create_workflow(osl.application.project.root_system)
         osl.application.save()
-
-    # with Optislang(project_path=project_path) as osl:
-    #     omdb_files_provider = OMDBFilesProvider(omdb_files)
-    #     omdb_files = omdb_files_provider.get_omdb_files()
-    #     # TODO: implement `get_reference_dir` in project class
-    #     ref_dir = str(osl.application.project.get_working_dir()).replace(".opd", ".opr")
-    #     # TODO: copy to ref dir as a relative path to the original working directory
-    #     for file in omdb_files:
-    #         shutil.copy(file, ref_dir)
-    #     root_system: RootSystem = osl.application.project.root_system
-    #     parametric_system: ParametricSystem = root_system.create_node(type_=nt.ParametricSystem)
-    #     for parameter in parameters:
-    #         parametric_system.parameter_manager.add_parameter(parameter)
-
-    #     connector: IntegrationNode = parametric_system.create_node(
-    #         type_=connector_type, design_flow=DesignFlow.RECEIVE_SEND
-    #     )
-    #     for name, value in connector_settings._asdict().items():
-    #         if name != "additional_settings":
-    #             connector.set_property(name, value)
-    #         else:
-    #             for setting_name, setting_value in value.items():
-    #                 connector.set_property(setting_name, setting_value)
-    #     connector.load()
-    #     osl.application.save()
 
 
 def create_workflow_from_template(

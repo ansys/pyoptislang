@@ -25,10 +25,10 @@ from __future__ import annotations
 
 from enum import Enum
 from pathlib import Path
+import threading
 import time
 from typing import (
     TYPE_CHECKING,
-    Dict,
     Iterable,
     List,
     Optional,
@@ -59,7 +59,7 @@ class OMDBFilesSpecificationEnum(Enum):
 
     OMDB_FILES = 0
     OMDB_FOLDER = 1
-    STUDY_MANAGER = 3
+    DESIGN_STUDY_MANAGER = 3
     UNDEFINED = 4
 
 
@@ -129,13 +129,13 @@ class OMDBFilesProvider:
         Tuple[Path]
             Tuple of paths to the OMDB files.
         """
-        if self.omdb_files_specification == OMDBFilesSpecificationEnum.STUDY_MANAGER:
+        if self.omdb_files_specification == OMDBFilesSpecificationEnum.DESIGN_STUDY_MANAGER:
             paths = []
             for design_study in self.input.design_studies:
                 paths.extend(
                     [
                         file.path
-                        for file in design_study.get_final_parametric_system().get_omdb_files()
+                        for file in design_study.get_last_parametric_system().get_omdb_files()
                     ]
                 )
             return paths
@@ -167,7 +167,7 @@ class OMDBFilesProvider:
             The specification of the OMDB files.
         """
         if isinstance(input, ParametricDesignStudyManager):
-            return OMDBFilesSpecificationEnum.STUDY_MANAGER
+            return OMDBFilesSpecificationEnum.DESIGN_STUDY_MANAGER
         elif isinstance(input, (str, Path)) and Path(input).is_dir():
             return OMDBFilesSpecificationEnum.OMDB_FOLDER
         elif isinstance(input, list) and all(
@@ -299,19 +299,95 @@ class ProxySolverManagedParametricSystem(ManagedParametricSystem):
         self.__callback = callback
 
 
+class ExecutableBlock:
+    """Class specifying execution options for a set of managed instances."""
+
+    @property
+    def instances_with_execution_options(self) -> Tuple[Tuple[ManagedInstance, ExecutionOption]]:
+        """Get tuple of managed instances and its execution options.
+
+        Returns
+        -------
+        Tuple[Tuple[ManagedInstance, ExecutionOption]]
+           Tuple of managed instances and its execution options.
+        """
+        return tuple(self.__instances)
+
+    @property
+    def instances(self) -> Tuple[ManagedInstance]:
+        """Get tuple of managed instances.
+
+        Returns
+        -------
+        Tuple[ManagedInstance]
+           Tuple of managed instances.
+        """
+        return tuple([instance[0] for instance in self.__instances])
+
+    def __init__(
+        self, instances: Optional[Iterable[Tuple[ManagedInstance, ExecutionOption]]]
+    ) -> None:
+        """Initialize the ExecutableBlock.
+
+        Parameters
+        ----------
+        instances : Optional[Iterable[Tuple[ManagedInstance, ExecutionOption]]]
+            Subset of instances managed by a single ParametricDesignStudy.
+            Each block must contain maximum of 1 algorithm system.
+        """
+        self.__instances = []
+        for instance, exec_option in instances:
+            self.__instances.append((instance, exec_option))
+
+    def add_instance(self, instance: ManagedInstance, execution_options: ExecutionOption) -> None:
+        """Add instance with execution options.
+
+        Parameters
+        ----------
+        instance : ManagedInstance
+            Managed instance.
+        execution_options : ExecutionOption
+            Execution options.
+        """
+        self.__instances.append((instance, execution_options))
+
+    def remove_instance_by_uid(self, uid: str) -> None:
+        """Remove instance from execution block.
+
+        Parameters
+        ----------
+        uid : str
+            Node uid.
+        """
+        idx = self.__find_instance_idx_by_uid(uid)
+        if idx > 0:
+            self.__instances.pop()
+
+    def __find_instance_idx_by_uid(self, uid: str) -> int:
+        """Get index of instance with specified uid.
+
+        Parameters
+        ----------
+        uid : str
+            Node uid.
+
+        Returns
+        -------
+        int
+            Index of instance with specified uid.
+            -1 if not specified in ExecutionBlock.
+        """
+        for idx, (instance, connections) in enumerate(self.instances_with_execution_options):
+            if instance.instance.uid == uid:
+                return idx
+        return -1
+
+
 # endregion
 
 
 class ParametricDesignStudy:
-    """A class to store data and perform operations on design study.
-
-    Attributes
-    ----------
-    instance : ParametricSystem
-        Instance of the managed algoritgm.
-    predecessor : Dict[str, Node], optional
-        Dictionary of predecessors of the managed algorithm.
-    """
+    """A class to store data and perform operations on design study."""
 
     @property
     def managed_instances(self) -> Tuple[ManagedInstance]:
@@ -325,21 +401,32 @@ class ParametricDesignStudy:
         return self.__managed_instances
 
     @property
-    def predecessors(self) -> Tuple[Node]:
-        """Predecessors of the managed algorithm.
+    def execution_order(self) -> Tuple[ExecutableBlock]:
+        """Get ordered tuple of executable blocks.
 
         Returns
         -------
-        Tuple[Node]
-            Tuple of predecessors of the managed algorithm.
+        Tuple[ExecutableBlock]
+            Tuple of executable blocks.
         """
-        return tuple(self.__predecessors.values())
+        return tuple(self.__execution_blocks)
+
+    @property
+    def is_complete(self) -> bool:
+        """Get info if design study is finished.
+
+        Returns
+        -------
+        bool
+            ``True`` if all components has been solved, ``False`` otherwise.
+        """
+        return self.__is_complete
 
     def __init__(
         self,
         osl_instance: Optislang,
         managed_instances: Tuple[ManagedInstance],
-        predecessors: Optional[Iterable[Node]] = None,
+        execution_blocks: Optional[Iterable[ExecutableBlock]] = [],
     ):
         """Initialize the ParametricDesignStudy.
 
@@ -348,62 +435,66 @@ class ParametricDesignStudy:
         osl_instance: Optislang
             The optiSLang instance.
         managed_instances : Iterable[ManagedInstance]
-            Elementary components of this ParametricStudy provided in execution order.
-        predecessors : Optional[Iterable[Node]], optional
-            Iterable of predecessors of the managed algorithm.
+            Elementary components of this ParametricStudy. If `execution_blocks`
+            argument is not used, execution blocks are created automatically
+            internally from provided order of instances.
+            .. note:: Each study is meant to contain a single algorithm system.
+        execution_blocks: Optional[Iterable[ExecutableBlock]], optional
+            Iterable of executable blocks. Blocks must be provided in execution order.
+            Each execution block contains a subset of instances managed by a single
+            parametric design study. All execution block must create a complete set
+            without overlap. Created automatically from managed instances ordered,
+            if not provided.
         """
         self.__osl_instance: Optislang = osl_instance
         self.__managed_instances: List[ManagedParametricSystem] = list(managed_instances)
-        self.__predecessors: Dict[str, Node] = (
-            {predecessor.uid: predecessor for predecessor in predecessors} if predecessors else {}
-        )
-
-    def add_predecessor(self, predecessor: Node, connection: Optional[Tuple[str, str]]) -> None:
-        """Add a predecessor to the managed algorithm.
-
-        Parameters
-        ----------
-        predecessor : Node
-            Instance of the predecessor node to be added.
-        connection : Optional[Tuple[str, str]]
-            Tuple specifying the connection from the predecessor node to the managed algorithm.
-            E.g. ("OBestDesigns", "IStartDesigns").
-        """
-        if predecessor.uid not in self.__predecessors.keys():
-            self.__predecessors[predecessor.uid] = predecessor
+        if execution_blocks:
+            self.__execution_blocks = execution_blocks
         else:
-            self.__osl_instance.log.warning("The specified predecessor is already set.")
-
-        if connection:
-            predecessor.get_output_slots(name=connection[0])[0].connect_to(
-                self.__algorithm.get_input_slots(name=connection[1])[0]
-            )
-
-    def clear_predecessors(self, algorithm: ParametricSystem) -> None:
-        """Clear predecessors of the specified managed algorithm.
-
-        Parameters
-        ----------
-        algorithm : ParametricSystem
-            Instance of the managed algorithm.
-        """
-        self.__predecessors.clear()
+            block = ExecutableBlock()
+            blocks = []
+            for instance in self.managed_instances:
+                if isinstance(instance, ManagedParametricSystem):
+                    if block.instances_with_execution_options:
+                        blocks.append(block)
+                        block = ExecutableBlock()
+                    blocks.append(
+                        ExecutableBlock(
+                            instances=(
+                                instance,
+                                ExecutionOption.ACTIVE
+                                | ExecutionOption.STARTING_POINT
+                                | ExecutionOption.END_POINT,
+                            )
+                        )
+                    )
+                else:
+                    block.add_instance(instance, ExecutionOption.ACTIVE)
+            if block.instances_with_execution_options:
+                blocks.append(block)
+            self.__execution_blocks = blocks
+        self.__current_proxy_solver = None
+        self.__is_complete = False
 
     def delete(self) -> None:
         """Delete the managed algorithm from the project."""
         for item in self.__managed_instances:
             item.instance.delete()
 
-    # TODO: Execute whole block or instance by instance?
     def execute(self):
-        """Execute the managed instances."""
-        for item in self.__managed_instances:
-            if isinstance(item, ProxySolverManagedParametricSystem):
-                item.instance.set_execution_options(
-                    ExecutionOption.ACTIVE
-                    | ExecutionOption.STARTING_POINT
-                    | ExecutionOption.END_POINT
-                )
+        """Execute the managed instances automatically in blocking mode."""
+        self.__deactivate_toplevel_nodes()
+        for block in self.execution_order:
+            proxy_solver = None
+            callback = None
+            # set exec options for each instance in executable block
+            for item, exec_opt in block.instances_with_execution_options:
+                if isinstance(item, ProxySolverManagedParametricSystem):
+                    proxy_solver = item.solver_node
+                    callback = item.callback
+                item.instance.set_execution_options(exec_opt)
+            # execute whole block (special treatment of proxy solver)
+            if proxy_solver:
                 self.__osl_instance.application.project.start(wait_for_finished=False)
                 while True:
                     status = self.__osl_instance.application.project.get_status()
@@ -413,20 +504,43 @@ class ParametricDesignStudy:
                     elif status == "STOPPED":
                         self.__osl_instance.log.info(f"Project status: {status}")
                         break
-                    design_list = item.solver_node.get_designs()
-                    if len(design_list) and item.callback:
-                        responses_dict = item.callback(design_list)
-                        item.solver_node.set_designs(responses_dict)
+                    design_list = proxy_solver.get_designs()
+                    if len(design_list):
+                        responses_dict = callback(design_list)
+                        proxy_solver.set_designs(responses_dict)
                     time.sleep(0.5)
-                item.instance.set_execution_options(ExecutionOption.INACTIVE)
             else:
-                item.instance.set_execution_options(
-                    ExecutionOption.ACTIVE
-                    | ExecutionOption.STARTING_POINT
-                    | ExecutionOption.END_POINT
-                )
-                self.__osl_instance.application.project.start(wait_for_finished=True)
-                item.instance.set_execution_options(ExecutionOption.INACTIVE)
+                self.__osl_instance.application.project.start()
+            # deactivate all instances, when finished
+            self.__set_managed_instances_exec_options(ExecutionOption.INACTIVE, block.instances)
+        self.__is_complete = True
+
+    def start_in_thread(self):
+        """Start execution in a separate thread (non-blocking mode).
+
+        .. note:: This method is meant to be used in combination with
+            ``get/set_designs`` and ``get_status`` methods, for the
+            proxy solver use case.
+        """
+        self.__deactivate_toplevel_nodes()
+        self.__thread = threading.Thread(
+            target=self.__start_in_thread,
+            name=f"PyOptiSLang.StartDesignStudy",
+            daemon=True,
+        )
+        self.__thread.start()
+
+    def reset(self):
+        """Reset the parametric design study.
+
+        Top level nodes are dectivated and managed instances are set to "Active" prior
+        to the "reset" call on the project level, then switched back to "Inactive".
+        """
+        self.__deactivate_toplevel_nodes()
+        self.__set_managed_instances_exec_options(execution_options=ExecutionOption.ACTIVE)
+        self.__osl_instance.application.project.reset()
+        self.__set_managed_instances_exec_options(execution_options=ExecutionOption.INACTIVE)
+        self.__is_complete = False
 
     def get_result_designs(self) -> Tuple[Design]:
         """Get the result designs of the final parametric system workflow component.
@@ -437,32 +551,34 @@ class ParametricDesignStudy:
             Tuple of result designs of the managed algorithm.
         """
         designs = []
-        for item in reversed(self.__managed_instances):
-            if isinstance(item, ManagedParametricSystem):
-                designs.extend(item.instance.design_manager.get_designs("0"))
+        for item in reversed(self.execution_order):
+            for item, exec_opt in item.instances_with_execution_options:
+                if isinstance(item, ManagedParametricSystem):
+                    designs.extend(item.instance.design_manager.get_designs("0"))
         return tuple(designs)
 
-    def get_final_parametric_system(self) -> ParametricSystem:
-        """Get the final parametric system workflow component.
+    def get_status(self) -> str:
+        """Get project status.
+
+        Returns
+        -------
+        str
+            Project status.
+        """
+        return self.__osl_instance.application.project.get_status()
+
+    def get_last_parametric_system(self) -> ParametricSystem:
+        """Get the last parametric system workflow component.
 
         Returns
         -------
         ParametricSystem
-            The final parametric system.
+            The last parametric system.
         """
-        for item in reversed(self.__managed_instances):
-            if isinstance(item, ManagedParametricSystem):
-                return item.instance
-
-    def is_complete(self) -> bool:
-        """Check if the design study is finished.
-
-        Returns
-        -------
-        bool
-            ``True`` if all components has been solved, ``False`` otherwise.
-        """
-        return all(item.instance.get_status() == "Finished" for item in self.__managed_instances)
+        for block in reversed(self.execution_order):
+            for item in block.instances:
+                if isinstance(item, ManagedParametricSystem):
+                    return item.instance
 
     def contains_proxy_solver(self) -> bool:
         """Get info whether workflow contains proxy solver.
@@ -472,25 +588,90 @@ class ParametricDesignStudy:
         bool
             Whether proxy solver is contained.
         """
-        return any(
-            [
-                isinstance(item.instance, ProxySolverManagedParametricSystem)
-                for item in self.managed_instances
-            ]
-        )
+        return self.__get_proxy_solver() is not None
 
-    def remove_predecessor(self, predecessor: Node) -> None:
-        """Remove a predecessor from the managed algorithm.
+    # region proxy solver related
+    def get_designs(self) -> Optional[List[dict]]:
+        """Call ``get_designs` command on proxy solver node in use.
+
+        Returns
+        -------
+        Optional[dict]
+            List of designs dictionaries, if proxy_solver is being executed, else ``None``.
+        """
+        if self.__current_proxy_solver is not None:
+            return self.__current_proxy_solver.get_designs()
+
+    def set_designs(self, designs: List[dict]):
+        """Call ``set_designs` command on proxy solver node in use.
 
         Parameters
         ----------
-        predecessor : Node
-            Instance of the predecessor node to be removed.
+        List[dict]
+            List of solved designs dictionaries.
         """
-        if predecessor.uid in self.__predecessors.keys():
-            self.__predecessors.pop(predecessor.uid)
-        else:
-            self.__osl_instance.log.warning("The specified predecessor is not set.")
+        if self.__current_proxy_solver is not None:
+            self.__current_proxy_solver.set_designs()
+
+    # endregion
+    def __get_proxy_solver(
+        self, instances: Optional[Iterable[ManagedInstance]] = []
+    ) -> Optional[ProxySolverNode]:
+        """Loop through managed instances and return proxy solver.
+
+        Parameters
+        ----------
+        instances: Optional[Iterable[ManagedInstance]], optional
+            Instances to search in. If not provided, all managed instances are used.
+
+        Returns
+        -------
+        Optional[ProxySolverNode]
+            Proxy solver (if defined in current designs study, else ``None``).
+        """
+        for item in self.__managed_instances:
+            if isinstance(item, ProxySolverManagedParametricSystem):
+                return item.solver_node
+        return None
+
+    def __set_managed_instances_exec_options(
+        self,
+        execution_options: ExecutionOption,
+        instances: Optional[Iterable[ManagedInstance]] = [],
+    ) -> None:
+        """Set execution options of all managed instances.
+
+        Parameters
+        ----------
+        execution_option: ExecutionOption
+            Execution option to be set to all managed instances.
+            Multiple options can be specified using bitwise operator.
+        instances: Optional[Iterable[ManagedInstance]], optional
+            Instances to operate with. All managed instances are used by default.
+        """
+        used_instances = instances if instances else self.managed_instances
+        for item in used_instances:
+            item.instance.set_execution_options(execution_options)
+
+    def __deactivate_toplevel_nodes(self) -> None:
+        """Set all nodes on root level to "Inactive" state."""
+        for node in self.__osl_instance.application.project.root_system.get_nodes():
+            node.set_execution_options(ExecutionOption.INACTIVE)
+
+    def __start_in_thread(self) -> None:
+        for block in self.execution_order:
+            self.__current_proxy_solver = None
+            # set exec options for each instance in executable block
+            for item, exec_opt in block.instances_with_execution_options:
+                if isinstance(item, ProxySolverManagedParametricSystem):
+                    self.__current_proxy_solver = item.solver_node
+                item.instance.set_execution_options(exec_opt)
+            # execute whole block
+            self.__osl_instance.application.project.start(wait_for_finished=True)
+            # deactivate all instances, when finished
+            self.__set_managed_instances_exec_options(ExecutionOption.INACTIVE, block.instances)
+            self.__current_proxy_solver = None
+        self.__is_complete = True
 
 
 class ParametricDesignStudyManager:
@@ -540,6 +721,7 @@ class ParametricDesignStudyManager:
     def append_algorithm_design_study(
         self,
         managed_instances: Iterable[ManagedInstance],
+        execution_blocks: Optional[Iterable[ExecutionOption]] = [],
     ) -> None:
         """Add an existing design study to the managed studies.
 
@@ -550,10 +732,13 @@ class ParametricDesignStudyManager:
         ----------
         managed_instances : Iterable[ManagedInstance]
             Iterable of managed instances composing the design study.
+        execution_block: Iterable[ExecutionBlock], optional
+            Iterable of execution blocks. If not provided, created automatically from
+            managed_instances order.
         """
         node: Node = managed_instances[0].instance
         predecessors = [edge.from_slot.node for edge in node.get_connections(SlotType.INPUT)]
-        design_study = ParametricDesignStudy(self.optislang, managed_instances, predecessors)
+        design_study = ParametricDesignStudy(self.optislang, managed_instances, execution_blocks)
         self.__design_studies.append(design_study)
 
     def clear_design_studies(self, delete: Optional[bool] = False) -> None:
@@ -581,9 +766,10 @@ class ParametricDesignStudyManager:
         ParametricDesignStudy
             The created design study.
         """
-        managed_instances = workflow.create_workflow(self.optislang.application.project.root_system)
-        predecessors = workflow.predecessors if hasattr(workflow, "predecessors") else []
-        design_study = ParametricDesignStudy(self.optislang, managed_instances, predecessors)
+        managed_instances, executable_blocks = workflow.create_workflow(
+            self.optislang.application.project.root_system
+        )
+        design_study = ParametricDesignStudy(self.optislang, managed_instances, executable_blocks)
         self.__design_studies.append(design_study)
         return design_study
 
@@ -593,11 +779,23 @@ class ParametricDesignStudyManager:
         if self.optislang:
             self.optislang.dispose()
 
-    def execute_all_design_studies(self) -> None:
-        """Execute all managed design studies."""
-        order = self.__class__.get_design_study_execution_order(self.design_studies)
-        for design_study in order:
-            design_study.execute()
+    def reset(self) -> None:
+        """Reset all managed parametric design studies."""
+        [study.reset() for study in self.design_studies]
+
+    def save(self) -> None:
+        """Save current project."""
+        self.optislang.application.save()
+
+    def save_as(self, path: Union[str, Path]):
+        """Save current project as.
+
+        Parameters
+        ----------
+        path: Union[str, Path]
+            Path to project location.
+        """
+        self.optislang.application.save_as(path)
 
     def get_finished_design_studies(self) -> Tuple[ParametricDesignStudy, ...]:
         """Get all finished design studies.
@@ -626,51 +824,3 @@ class ParametricDesignStudyManager:
                 if not design_study.is_complete()
             ]
         )
-
-    @staticmethod
-    def get_design_study_execution_order(
-        design_studies: Iterable[ParametricDesignStudy],
-    ) -> Tuple[ParametricDesignStudy, ...]:
-        """Sort design studies with predecessor before its dependent design study.
-
-        Parameters
-        ----------
-        design_studies : Iterable[ParametricDesignStudy]
-            Iterable of managed design studies.
-
-        Returns
-        -------
-        Tuple[ParametricDesignStudy, ...]
-            Ordered tuple of design studies for execution.
-        """
-        # Build dependency graph: key is ParametricDesignStudy,
-        # value is set of predecessor ParametricDesignStudy
-        study_to_predecessors = {
-            study: set(
-                pred
-                for pred in study.predecessors
-                if any(pred is s.managed_instances[0].instance for s in design_studies)
-            )
-            for study in design_studies
-        }
-
-        # Kahn's algorithm for topological sort
-        ordered = []
-        no_deps = [study for study, preds in study_to_predecessors.items() if not preds]
-        visited = set()
-        while no_deps:
-            study = no_deps.pop(0)
-            if study in visited:
-                continue
-            ordered.append(study)
-            visited.add(study)
-            for other_study, preds in study_to_predecessors.items():
-                if study.managed_instances[0].instance in preds:
-                    preds.remove(study.managed_instances[0].instance)
-                    if not preds and other_study not in visited and other_study not in no_deps:
-                        no_deps.append(other_study)
-        # If there are cycles, append remaining in original order
-        for study in design_studies:
-            if study not in ordered:
-                ordered.append(study)
-        return tuple(ordered)

@@ -187,6 +187,27 @@ class Project(ABC):
         pass
 
     @abstractmethod
+    def get_reference_dir(self) -> Optional[Path]:  # pragma: no cover
+        """Get the path to the optiSLang project's reference directory.
+
+        Returns
+        -------
+        Optional[pathlib.Path]
+            Path to the optiSLang project's reference directory. If no project is loaded
+            in optiSLang, ``None`` is returned.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        pass
+
+    @abstractmethod
     def get_registered_files(self) -> Tuple[RegisteredFile, ...]:  # pragma: no cover
         """Get all registered files in the current project.
 
