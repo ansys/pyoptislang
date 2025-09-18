@@ -23,7 +23,9 @@
 """Module for input/output functionality."""
 from __future__ import annotations
 
+from abc import abstractmethod
 from enum import Enum
+import os
 from pathlib import Path
 import time
 from typing import Optional, Union
@@ -31,6 +33,7 @@ from typing import Optional, Union
 from ansys.optislang.core.utils import enum_from_str
 
 
+# region files
 class File:
     """Provides for operating on files."""
 
@@ -247,6 +250,17 @@ class RegisteredFile(File):
         """
         return self.__usage
 
+    @property
+    def optislang_path(self) -> RegisteredFilePath:
+        """Get optislang path object.
+
+        Returns
+        -------
+        RegisteredFilePath
+            Usage of registered file.
+        """
+        return RegisteredFilePath(name=self.id, uuid=self.tag, path=self.path)
+
 
 class FileOutputFormat(Enum):
     """Provides options for storing files."""
@@ -305,3 +319,872 @@ class RegisteredFileUsage(Enum):
             Usage type.
         """
         return self.name[0] + self.name[1:].lower().replace("_", " ")
+
+
+# endregion
+
+
+# region optislang paths
+class OptislangPathType(Enum):
+    """Provides optislang path types."""
+
+    ABSOLUTE = 0
+    WORKING_DIR_RELATIVE = 1
+    PROJECT_RELATIVE = 2
+    PROJECT_WORKING_DIR_RELATIVE = 3
+    REFERENCE_FILES_DIR_RELATIVE = 4
+    REGISTERED_FILE = 5
+
+    @classmethod
+    def from_str(cls, string: str) -> OptislangPathType:
+        """Convert a string to an instance of the ``OptislangPathType`` class.
+
+        Parameters
+        ----------
+        string: str
+            String that shall be converted.
+
+        Returns
+        -------
+        OptislangPathType
+            Instance of the ``OptislangPathType`` class.
+
+        Raises
+        ------
+        TypeError
+            Raised when invalid type of ``string`` was given.
+        ValueError
+            Raised when invalid value of ``string`` was given.
+        """
+        return enum_from_str(string=string, enum_class=cls)
+
+
+class OptislangPath:
+    """Provides for operating on optislang paths."""
+
+    @property
+    def type(self) -> OptislangPathType:
+        """Type of the path."""
+        return self.__type
+
+    @abstractmethod
+    def __init__():  # pragmaL: no cover
+        """``OptislangPath`` class is an abstract base class and cannot be instantiated."""
+        pass
+
+    @classmethod
+    def from_dict(cls, path: dict) -> OptislangPath:
+        """Create an instance of the ``OptislangPath`` class from optiSLang output.
+
+        Parameters
+        ----------
+        path: dict
+            Output from the optiSLang server.
+
+        Returns
+        -------
+        Parameter
+            Instance of the ``Parameter`` class.
+
+        Raises
+        ------
+        TypeError
+            Raised when an undefined type of path is given.
+        """
+        if "path" in path.keys():
+            path = path["path"]
+            head = path["split_path"]["head"]
+            tail = path["split_path"]["tail"]
+            type_ = OptislangPathType.from_str(path["base_path_mode"]["value"])
+            if isinstance(type_, OptislangPathType.ABSOLUTE):
+                return AbsolutePath(path=Path(tail))
+            elif isinstance(type_, OptislangPathType.PROJECT_RELATIVE):
+                return ProjectDirectoryRelativePath(tail)
+            elif isinstance(type_, OptislangPathType.PROJECT_WORKING_DIR_RELATIVE):
+                return ProjectWorkingDirRelativePath(head, tail)
+            elif isinstance(type_, OptislangPathType.REFERENCE_FILES_DIR_RELATIVE):
+                return ReferenceFilesDirRelativePath(tail)
+            elif isinstance(type_, OptislangPathType.WORKING_DIR_RELATIVE):
+                return WorkingDirRelativePath(head, tail)
+        elif "id" in path.keys():
+            name = path["id"]["name"]
+            uuid = path["id"]["uuid"]
+            return RegisteredFilePath(name, uuid)
+        else:
+            raise ValueError(f"Unsupported path format: {path}")
+
+    @abstractmethod
+    def to_dict(self) -> dict:  # pragma: no cover
+        """Abstract method implemented in derived classes."""
+        pass
+
+    @abstractmethod
+    def convert_to_absolute_path(self) -> AbsolutePath:  # pragma: no cover
+        """Abstract method implemented in derived classes."""
+        pass
+
+
+class AbsolutePath(OptislangPath):
+    """Provides for operating on optislang absolute paths."""
+
+    @property
+    def path(self) -> Path:
+        """Path to the referenced file.
+
+        Returns
+        -------
+        Optional[Path]
+            Path to the referenced file
+        """
+        return self.__path
+
+    @path.setter
+    def path(self, path: Union[str, Path]) -> None:
+        """Set path to the referenced file.
+
+        Parameters
+        ----------
+        path : Union[str, Path]
+            Path to the referenced file.
+        """
+        self.__path = Path(path)
+
+    def __init__(self, path: Union[str, Path]) -> None:
+        """Create an ``AbsolutePath`` instance.
+
+        Parameters
+        ----------
+        path : Union[str, Path]
+            Path to the referenced file.
+        """
+        self.__path = Path(path)
+        self.__type = OptislangPathType.ABSOLUTE
+
+    def convert_to_absolute_path(self) -> AbsolutePath:
+        """Convert to `AbsolutePath` object.
+
+        Returns
+        -------
+        AbsolutePath
+            `AbsolutePath` instance.
+        """
+        return AbsolutePath(self.path)
+
+    def convert_to_working_dir_relative(self, tail: Union[str, Path]) -> WorkingDirRelativePath:
+        """Convert to `WorkingDirRelativePath` object.
+
+        Parameters
+        ----------
+        tail : Union[str,Path]
+            Relative part of the path.
+
+        Returns
+        -------
+        WorkingDirRelativePath
+            An instance of `WorkingDirRelativePath`
+        """
+        tail = Path(tail)
+        head = os.path.commonpath([self.path, tail])
+        return WorkingDirRelativePath(head, tail)
+
+    def convert_to_project_relative_path(
+        self, project_dir_path: Union[str, Path]
+    ) -> ProjectDirectoryRelativePath:
+        """Convert to `ProjectDirectoryRelativePath` object.
+
+        Parameters
+        ----------
+        project_dir_path : Union[str, Path]
+            Path to the project directory
+
+        Returns
+        -------
+        ProjectDirectoryRelativePath
+            An instance of `ProjectDirectoryRelativePath`
+        """
+        return ProjectDirectoryRelativePath.from_file_and_project_dir_paths(
+            self.path, project_dir_path
+        )
+
+    def convert_to_project_working_dir_relative(
+        self, tail: Union[str, Path]
+    ) -> ProjectWorkingDirRelativePath:
+        """Convert to `ProjectWorkingDirRelativePath` object.
+
+        Parameters
+        ----------
+        tail : Union[str,Path]
+            Relative part of the path.
+
+        Returns
+        -------
+        WorkingDirRelativePath
+            An instance of `WorkingDirRelativePath`
+        """
+        tail = Path(tail)
+        head = os.path.commonpath([self.path, tail])
+        return ProjectWorkingDirRelativePath(head, tail)
+
+    def convert_to_reference_files_dir_relative(
+        self, reference_dir_path: Union[str, Path]
+    ) -> ReferenceFilesDirRelativePath:
+        """Convert to `ReferenceFilesDirRelativePath` object.
+
+        Parameters
+        ----------
+        reference_dir_path : Union[str, Path]
+            Path to the reference files directory
+
+        Returns
+        -------
+        ReferenceFilesDirRelativePath
+            An instance of `ReferenceFilesDirRelativePath`
+        """
+        return ReferenceFilesDirRelativePath.from_file_and_reference_dir_paths(
+            self.path, reference_dir_path
+        )
+
+    def to_dict(self) -> dict:
+        """Convert to dictionary.
+
+        Returns
+        -------
+        dict
+            Dictionary representation of path in optislang format.
+        """
+        return {
+            "path": {
+                "base_path_mode": {"value": self.type.name},
+                "split_path": {"head": "", "tail": str(self.path)},
+            }
+        }
+
+
+class WorkingDirRelativePath(OptislangPath):
+    """Provides for operating on optislang working directory relative paths."""
+
+    @property
+    def path(self) -> Path:
+        """Merged head and tail.
+
+        Returns
+        -------
+        Optional[Path]
+            Merged head and tail
+        """
+        return self.head / self.tail
+
+    @property
+    def head(self) -> Path:
+        """Path to the file head.
+
+        Returns
+        -------
+        Optional[Path]
+            Path to the file head
+        """
+        return self.__head
+
+    @head.setter
+    def head(self, path: Union[str, Path]) -> None:
+        """Set path to the file head.
+
+        Parameters
+        ----------
+        path : Union[str, Path]
+            Path to the file head.
+        """
+        self.__head = Path(path)
+
+    @property
+    def tail(self) -> Path:
+        """Path to the file tail.
+
+        Returns
+        -------
+        Optional[Path]
+            Path to the file tail
+        """
+        return self.__tail
+
+    @tail.setter
+    def tail(self, path: Union[str, Path]) -> None:
+        """Set path to the file tail.
+
+        Parameters
+        ----------
+        path : Union[str, Path]
+            Path to the file tail
+        """
+        self.__tail = Path(path)
+
+    def __init__(self, head: Union[str, Path], tail: Union[str, Path]) -> None:
+        """Create an ``WorkingDirRelativePath`` instance.
+
+        Parameters
+        ----------
+        head : Union[str, Path]
+            Initial part of the path to the file.
+        tail : Union[str, Path]
+            Relative part of the path to the file.
+        """
+        self.__head = head
+        self.__tail = tail
+        self.__type = OptislangPathType.WORKING_DIR_RELATIVE
+
+    def to_dict(self) -> dict:
+        """Convert to dictionary.
+
+        Returns
+        -------
+        dict
+            Dictionary representation of path in optislang format.
+        """
+        return {
+            "path": {
+                "base_path_mode": {"value": self.type.name},
+                "split_path": {"head": str(self.head), "tail": str(self.tail)},
+            }
+        }
+
+    def convert_to_absolute_path(self) -> AbsolutePath:
+        """Convert to AbsolutePath object.
+
+        Returns
+        -------
+        AbsolutePath
+            AbsolutePath instance.
+        """
+        return AbsolutePath(self.path)
+
+
+class ProjectDirectoryRelativePath(OptislangPath):
+    """Provides for operating on optislang project relative paths."""
+
+    @property
+    def file_path(self) -> Path:
+        """Path to the file.
+
+        Returns
+        -------
+        Optional[Path]
+            Path to the file
+        """
+        return self.__file_path
+
+    @file_path.setter
+    def file_path(self, path: Union[str, Path]) -> None:
+        """Set path to the file.
+
+        Parameters
+        ----------
+        path : Union[str, Path]
+            Path to the file
+        """
+        self.__file_path = Path(path)
+
+    @property
+    def project_dir_path(self) -> Path:
+        """Path to the project directory.
+
+        Returns
+        -------
+        Optional[Path]
+            Path to the project directory
+        """
+        return self.__project_dir_path
+
+    @project_dir_path.setter
+    def project_dir_path(self, path: Union[str, Path]) -> None:
+        """Set path to the project directory.
+
+        Parameters
+        ----------
+        path : Union[str, Path]
+            Path to the project directory
+        """
+        self.__project_dir_path = Path(path)
+
+    @property
+    def tail(self) -> Path:
+        """Path to the file tail.
+
+        Returns
+        -------
+        Optional[Path]
+            Path to the file tail
+        """
+        return self.__tail
+
+    @tail.setter
+    def tail(self, path: Union[str, Path]) -> None:
+        """Set path to the file tail.
+
+        Parameters
+        ----------
+        path : Union[str, Path]
+            Path to the file tail
+        """
+        self.__tail = Path(path)
+
+    def __init__(
+        self,
+        tail: Union[str, Path],
+        file_path: Optional[Union[str, Path]] = None,
+        project_dir_path: Optional[Union[str, Path]] = None,
+    ) -> None:
+        """Create an ``ProjectRelativePath`` instance.
+
+        Parameters
+        ----------
+        tail : Union[str, Path]
+            Relative part of the path to the file.
+        file_path : Optional[Union[str, Path]]
+            Path to the referenced file.
+        project_dir_path : Optional[Union[str, Path]]
+            Path to the project directory.
+        """
+        self.tail = tail
+        self.__file_path = Path(file_path) if file_path else None
+        self.__project_dir_path = Path(project_dir_path) if project_dir_path else None
+        self.__type = OptislangPathType.PROJECT_RELATIVE
+
+    def to_dict(self) -> dict:
+        """Convert to dictionary.
+
+        Returns
+        -------
+        dict
+            Dictionary representation of path in optislang format.
+        """
+        return {
+            "path": {
+                "base_path_mode": {"value": self.type.name},
+                "split_path": {"head": "", "tail": str(self.tail)},
+            }
+        }
+
+    def convert_to_absolute_path(self) -> AbsolutePath:
+        """Convert to AbsolutePath object.
+
+        Returns
+        -------
+        AbsolutePath
+            AbsolutePath instance.
+
+        Raises
+        ------
+        ValueError
+            Raised if file path is not specified.
+        """
+        if not self.file_path:
+            raise ValueError(
+                "Cannot be converted to `AbsolutePath` object, "
+                f"file_path is not defined: {self.file_path}`"
+            )
+        return AbsolutePath(self.file_path)
+
+    @staticmethod
+    def from_file_and_project_dir_paths(
+        file_path: Union[str, Path], project_dir: Union[str, Path]
+    ) -> ProjectDirectoryRelativePath:
+        """Create an ``ProjectRelativePath`` instance.
+
+        Parameters
+        ----------
+        file_path : Union[str, Path]
+            Path to the referenced file.
+        project_dir : Union[str, Path]
+            Path to the project directory.
+
+        Returns
+        -------
+        ProjectRelativePath
+            Instance of the project relative path
+        """
+        file_path = Path(file_path)
+        project_dir = Path(project_dir)
+        head = ""
+        try:
+            common_path = Path(os.path.commonpath([file_path, project_dir]))
+            relative_count = len(project_dir.parts) - len(common_path.parts)
+            relative_symbols = [relative_count * "../"]
+            relative_path = file_path.relative_to(common_path)
+            composed_relative_path = Path(*relative_symbols[0:]) / relative_path
+        except:
+            composed_relative_path = file_path
+        return ProjectDirectoryRelativePath(composed_relative_path, file_path, project_dir)
+
+
+class ProjectWorkingDirRelativePath(OptislangPath):
+    """Provides for operating on optislang project working directory relative paths."""
+
+    @property
+    def path(self) -> Path:
+        """Merged head and tail.
+
+        Returns
+        -------
+        Optional[Path]
+            Merged head and tail
+        """
+        return self.head / self.tail
+
+    @property
+    def head(self) -> Path:
+        """Path to the file head.
+
+        Returns
+        -------
+        Optional[Path]
+            Path to the file head
+        """
+        return self.__head
+
+    @head.setter
+    def head(self, path: Union[str, Path]) -> None:
+        """Set path to the file head.
+
+        Parameters
+        ----------
+        path : Union[str, Path]
+            Path to the file head.
+        """
+        self.__head = Path(path)
+
+    @property
+    def tail(self) -> Path:
+        """Path to the file tail.
+
+        Returns
+        -------
+        Optional[Path]
+            Path to the file tail
+        """
+        return self.__tail
+
+    @tail.setter
+    def tail(self, path: Union[str, Path]) -> None:
+        """Set path to the file tail.
+
+        Parameters
+        ----------
+        path : Union[str, Path]
+            Path to the file tail
+        """
+        self.__tail = Path(path)
+
+    def __init__(self, head: Union[str, Path], tail: Union[str, Path]) -> None:
+        """Create an ``ProjectWorkingDirRelativePath`` instance.
+
+        Parameters
+        ----------
+        head : Union[str, Path]
+            Initial part of the path to the file.
+        tail : Union[str, Path]
+            Relative part of the path to the file.
+        """
+        self.__head = head
+        self.__tail = tail
+        self.__type = OptislangPathType.PROJECT_WORKING_DIR_RELATIVE
+
+    def to_dict(self) -> dict:
+        """Convert to dictionary.
+
+        Returns
+        -------
+        dict
+            Dictionary representation of path in optislang format.
+        """
+        return {
+            "path": {
+                "base_path_mode": {"value": self.type.name},
+                "split_path": {"head": str(self.head), "tail": str(self.tail)},
+            }
+        }
+
+    def convert_to_absolute_path(self) -> AbsolutePath:
+        """Convert to AbsolutePath object.
+
+        Returns
+        -------
+        AbsolutePath
+            AbsolutePath instance.
+        """
+        return AbsolutePath(self.path)
+
+
+class ReferenceFilesDirRelativePath(OptislangPath):
+    """Provides for operating on optislang reference files directory relative paths."""
+
+    @property
+    def file_path(self) -> Path:
+        """Path to the file.
+
+        Returns
+        -------
+        Optional[Path]
+            Path to the file
+        """
+        return self.__file_path
+
+    @file_path.setter
+    def file_path(self, path: Union[str, Path]) -> None:
+        """Set path to the file.
+
+        Parameters
+        ----------
+        path : Union[str, Path]
+            Path to the file
+        """
+        self.__file_path = Path(path)
+
+    @property
+    def reference_dir_path(self) -> Path:
+        """Path to the reference directory.
+
+        Returns
+        -------
+        Optional[Path]
+            Path to the reference directory
+        """
+        return self.__reference_dir_path
+
+    @reference_dir_path.setter
+    def reference_dir_path(self, path: Union[str, Path]) -> None:
+        """Set path to the reference directory.
+
+        Parameters
+        ----------
+        path : Union[str, Path]
+            Path to the reference directory
+        """
+        self.__reference_dir_path = Path(path)
+
+    @property
+    def tail(self) -> Path:
+        """Path to the file tail.
+
+        Returns
+        -------
+        Optional[Path]
+            Path to the file tail
+        """
+        return self.__tail
+
+    @tail.setter
+    def tail(self, path: Union[str, Path]) -> None:
+        """Set path to the file tail.
+
+        Parameters
+        ----------
+        path : Union[str, Path]
+            Path to the file tail
+        """
+        self.__tail = Path(path)
+
+    def __init__(
+        self,
+        tail: Union[str, Path],
+        file_path: Optional[Union[str, Path]] = None,
+        reference_dir_path: Optional[Union[str, Path]] = None,
+    ) -> None:
+        """Create an ``ProjectRelativePath`` instance.
+
+        Parameters
+        ----------
+        tail : Union[str, Path]
+            Relative part of the path to the file.
+        file_path : Optional[Union[str, Path]]
+            Path to the referenced file.
+        reference_dir_path : Optional[Union[str, Path]]
+            Path to the reference directory.
+        """
+        self.tail = tail
+        self.__file_path = Path(file_path) if file_path else None
+        self.__reference_dir_path = Path(reference_dir_path) if reference_dir_path else None
+        self.__type = OptislangPathType.PROJECT_RELATIVE
+
+    def to_dict(self) -> dict:
+        """Convert to dictionary.
+
+        Returns
+        -------
+        dict
+            Dictionary representation of path in optislang format.
+        """
+        return {
+            "path": {
+                "base_path_mode": {"value": self.type.name},
+                "split_path": {"head": "", "tail": str(self.tail)},
+            }
+        }
+
+    def convert_to_absolute_path(self) -> AbsolutePath:
+        """Convert to AbsolutePath object.
+
+        Returns
+        -------
+        AbsolutePath
+            AbsolutePath instance.
+
+        Raises
+        ------
+        ValueError
+            Raised if file path is not specified.
+        """
+        if not self.file_path:
+            raise ValueError(
+                "Cannot be converted to `AbsolutePath` object, "
+                f"file_path is not defined: {self.file_path}`"
+            )
+        return AbsolutePath(self.file_path)
+
+    @staticmethod
+    def from_file_and_reference_dir_paths(
+        file_path: Union[str, Path], reference_dir: Union[str, Path]
+    ) -> ReferenceFilesDirRelativePath:
+        """Create an ``ReferenceFilesDirRelativePath`` instance.
+
+        Parameters
+        ----------
+        file_path : Union[str, Path]
+            Path to the referenced file.
+        reference_dir : Union[str, Path]
+            Path to the reference directory.
+
+        Returns
+        -------
+        ReferenceFilesDirRelativePath
+            Instance of the reference files directory relative path
+        """
+        file_path = Path(file_path)
+        reference_dir = Path(reference_dir)
+        head = ""
+        try:
+            common_path = Path(os.path.commonpath([file_path, reference_dir]))
+            relative_count = len(reference_dir.parts) - len(common_path.parts)
+            relative_symbols = [relative_count * "../"]
+            relative_path = file_path.relative_to(common_path)
+            composed_relative_path = Path(*relative_symbols[0:]) / relative_path
+        except:
+            composed_relative_path = file_path
+        return ProjectDirectoryRelativePath(composed_relative_path, file_path, reference_dir)
+
+
+class RegisteredFilePath(OptislangPath):
+    """Provides for operating on optislang registered files paths."""
+
+    @property
+    def name(self) -> str:
+        """Registered file name.
+
+        Returns
+        -------
+        str
+            Registered file name.
+        """
+
+    @name.setter
+    def name(self, name: str) -> None:
+        """Set registered file name.
+
+        Parameters
+        ----------
+        name: str
+            Registered file name.
+        """
+        self.__name = name
+
+    @property
+    def uuid(self) -> str:
+        """Registered file uid.
+
+        Returns
+        -------
+        str
+            Registered file uid.
+        """
+        return self.__uuid
+
+    @uuid.setter
+    def uuid(self, uuid: str) -> None:
+        """Set registered file uuid.
+
+        Parameters
+        ----------
+        uuid : str
+            Registered file uuid.
+        """
+        self.__uuid = uuid
+
+    @property
+    def path(self) -> Optional[Path]:
+        """Path to the registered file.
+
+        Returns
+        -------
+        Optional[Path]
+            Path to the registered file, if defined
+        """
+        return self.__path
+
+    @path.setter
+    def path(self, path: Union[str, Path]) -> None:
+        """Set path to the registered file.
+
+        Parameters
+        ----------
+        path : Union[str, Path]
+            Path to the registered file.
+        """
+        self.__path = Path(path)
+
+    def __init__(self, name: str, uuid: str, path: Optional[Union[str, Path]] = None) -> None:
+        """Create a ``RegisteredFilePath`` instance.
+
+        Parameters
+        ----------
+        name : str
+            Registered file name.
+        uuid : str
+            Registered file uuid.
+        path: Optional[Union[str, Path]], optional
+            Absolute path to the registered file.
+        """
+        self.__name = name
+        self.__uuid = uuid
+        self.__path = Path(path) if path else None
+        self.__type = OptislangPathType.REGISTERED_FILE
+
+    def convert_to_absolute_path(self) -> AbsolutePath:
+        """Convert to AbsolutePath object.
+
+        Returns
+        -------
+        AbsolutePath
+            AbsolutePath instance.
+
+        Raises
+        ------
+        ValueError
+            Raised if registered file path is not specified.
+        """
+        if not self.path:
+            raise ValueError(
+                f"Cannot be converted to `AbsolutePath` object, path is not defined: {self.path}`"
+            )
+        return AbsolutePath(self.path)
+
+    def to_dict(self) -> dict:
+        """Convert to dictionary.
+
+        Returns
+        -------
+        dict
+            Dictionary representation of path in optislang format.
+        """
+        return {"id": {"name": self.name, "uuid": self.uuid}}
+
+
+# endregion

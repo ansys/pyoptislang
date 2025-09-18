@@ -24,7 +24,6 @@
 from __future__ import annotations
 
 from abc import abstractmethod
-from enum import Enum
 import os
 from pathlib import Path
 import shutil
@@ -51,162 +50,12 @@ from ansys.optislang.core.parametric import (
     ProxySolverManagedParametricSystem,
 )
 from ansys.optislang.core.slot_types import SlotTypeHint
-from ansys.optislang.core.utils import enum_from_str
 
 if TYPE_CHECKING:
     from ansys.optislang.core.project_parametric import Criterion, Design, Parameter, Response
 
 
-# region optislang paths
-class OptislangPathType(Enum):
-    """Provides optislang path types."""
-
-    ABSOLUTE = 0
-    WORKING_DIR_RELATIVE = 1
-    PROJECT_RELATIVE = 2
-    PROJECT_WORKING_DIR_RELATIVE = 3
-    REFERENCE_FILES_DIR_RELATIVE = 4
-    REGISTERED_FILE = 5
-
-    @classmethod
-    def from_str(cls, string: str) -> OptislangPathType:
-        """Convert a string to an instance of the ``OptislangPathType`` class.
-
-        Parameters
-        ----------
-        string: str
-            String that shall be converted.
-
-        Returns
-        -------
-        OptislangPathType
-            Instance of the ``OptislangPathType`` class.
-
-        Raises
-        ------
-        TypeError
-            Raised when invalid type of ``string`` was given.
-        ValueError
-            Raised when invalid value of ``string`` was given.
-        """
-        return enum_from_str(string=string, enum_class=cls)
-
-
-class OptislangPath:
-    """To be done."""
-
-    @property
-    def type(self) -> OptislangPathType:
-        """Type of the path."""
-        return self.__type
-
-    def __init__(
-        self,
-        heads: str,
-        tails: str,
-        type_: Union[OptislangPathType, str] = OptislangPathType.ABSOLUTE,
-    ):
-        """Create a new instance of OptislangPath.
-
-        Parameters
-        ----------
-        heads : str
-            _description_
-        tails : str
-            _description_
-        type_ : Union[OptislangPathType, str], optional
-            _description_, by default OptislangPathType.ABSOLUTE
-
-        Raises
-        ------
-        TypeError
-            _description_
-        """
-        self.__heads = heads
-        self.__tails = tails
-        if isinstance(type_, str):
-            type_ = OptislangPathType.from_str(type_)
-        if isinstance(type_, OptislangPathType):
-            self.__type = type_
-        else:
-            raise TypeError(
-                "Type ``Union[OptislangPathType, str]`` was expected, but type: "
-                f"``{type(type_)}`` was given."
-            )
-
-    @classmethod
-    def from_dict(cls, path: dict) -> OptislangPath:
-        """Create an instance of the ``OptislangPath`` class from optiSLang output.
-
-        Parameters
-        ----------
-        path: dict
-            Output from the optiSLang server.
-
-        Returns
-        -------
-        Parameter
-            Instance of the ``Parameter`` class.
-
-        Raises
-        ------
-        TypeError
-            Raised when an undefined type of path is given.
-        """
-        # TODO:
-        path_type = path["path"]["enum"]
-
-        if ["type"] == OptislangPathType.ABSOLUTE:
-            pass
-        else:
-            raise TypeError("Undefined type of path.")
-
-    @abstractmethod
-    def to_dict(self) -> dict:
-        """Abstract method implemented in derived classes."""
-        pass
-
-
-class AbsolutePath(OptislangPath):
-    """To be done."""
-
-    pass
-
-
-class WorkingDirRelativePath(OptislangPath):
-    """To be done."""
-
-    pass
-
-
-class ProjectRelativePath(OptislangPath):
-    """To be done."""
-
-    pass
-
-
-class ProjectWorkingDirRelativePath(OptislangPath):
-    """To be done."""
-
-    pass
-
-
-class ReferenceFilesDirRelativePath(OptislangPath):
-    """To be done."""
-
-    pass
-
-
-class RegisteredFilePath(OptislangPath):
-    """To be done."""
-
-    pass
-
-
-# endregion
-
-
-# region Solver node settings
+# region node settings
 class GeneralNodeSettings:
     """Settings specific to all nodes."""
 
@@ -506,10 +355,17 @@ class PythonSolverNodeSettings(GeneralNodeSettings):
         return properties
 
 
+class MOPNodeSettings(GeneralNodeSettings):
+    """To be done."""
+
+    # TODO: implement
+    pass
+
+
 # endregion
 
 
-# region Parametric system settings
+# region parametric system settings
 class GeneralParametricSystemSettings:
     """Settings common to all parametric systems."""
 
@@ -1163,6 +1019,20 @@ class GeneralAlgorithmTemplate(WorkFlowTemplate):
         return ((instance,), (executable_block,))
 
 
+class SensitivityTemplate(WorkFlowTemplate):
+    """To be done."""
+
+    # TODO: implement
+    pass
+
+
+class OptimizationTemplate(WorkFlowTemplate):
+    """To be done."""
+
+    # TODO: implement
+    pass
+
+
 class OptimizationOnMOPTemplate(WorkFlowTemplate):
     """Template creating optimization on MOP and validation with proxy solver.
 
@@ -1440,6 +1310,27 @@ class OptimizationOnMOPTemplate(WorkFlowTemplate):
                     "hid": design["hid"],
                 }
             )
+
+
+class RobustnessTemplate(WorkFlowTemplate):
+    """To be done."""
+
+    # TODO: implement
+    pass
+
+
+class ReliabilityTemplate(WorkFlowTemplate):
+    """To be done."""
+
+    # TODO: implement
+    pass
+
+
+class ReevaluateTemplate(WorkFlowTemplate):
+    """To be done."""
+
+    # TODO: implement
+    pass
 
 
 # endregion
