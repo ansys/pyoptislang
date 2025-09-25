@@ -31,6 +31,7 @@ from typing import TYPE_CHECKING, Iterable, List, Optional, Tuple, Union
 import warnings
 
 from ansys.optislang.core import Optislang
+from ansys.optislang.core.io import AbsolutePath, OptislangPath
 import ansys.optislang.core.node_types as nt
 from ansys.optislang.core.nodes import (
     DesignFlow,
@@ -129,31 +130,36 @@ class MopSolverNodeSettings(GeneralNodeSettings):
         self.__multi_design_launch_num = value
 
     @property
-    def input_file(self) -> Union[Path, None]:
+    def input_file(self) -> Union[OptislangPath, None]:
         """Path to the MOP file.
 
         Returns
         -------
-        Union[Path, None]
+        Union[OptislangPath, None]
             Path to the MOP file or ``None``, if input file is specified by the connection.
         """
-        return self.__input
+        return self.__input_file
 
     @input_file.setter
-    def input_file(self, value: Union[str, Path, None]):
+    def input_file(self, value: Union[str, Path, OptislangPath, None]) -> None:
         """Set path to the MOP file.
 
         Parameters
         ----------
-        value : Union[str, Path, None]
+        value : Union[str, Path, OptislangPath, None]
             Path to the MOP file.
             If ``None``, input file is expected to be specified by the connection.
         """
-        self.__input = Path(value)
+        if value is None:
+            self.__input_file = value
+        elif isinstance(value, OptislangPath):
+            self.__input_file = value
+        else:
+            self.__input_file = AbsolutePath(value)
 
     def __init__(
         self,
-        input_file: Optional[Union[str, Path]] = None,
+        input_file: Optional[Union[str, Path, OptislangPath]] = None,
         multi_design_launch_num: Optional[int] = 1,
         additional_settings: Optional[dict] = {},
     ):
@@ -161,7 +167,7 @@ class MopSolverNodeSettings(GeneralNodeSettings):
 
         Parameters
         ----------
-        input_file : Union[str, Path]
+        input_file : Union[str, Path, OptislangPath]
             Path to the MOP file.
         multi_design_launch_num : Optional[int], optional
             Number of designs to be sent/received in one batch, by default 1.
@@ -181,14 +187,10 @@ class MopSolverNodeSettings(GeneralNodeSettings):
             Dictionary with properties.
         """
         properties = {}
-        properties["MultiDesignLaunchNum"] = self.multi_design_launch_num
+        properties["MultiDesignNum"] = self.multi_design_launch_num
         if self.input_file:
-            properties["MDBPath"] = {
-                "path": {
-                    "base_path_mode": {"value": "ABSOLUTE_PATH"},
-                    "split_path": {"head": "", "tail": str(self.input_file)},
-                }
-            }
+            if isinstance(self.input_file, OptislangPath):
+                properties["MDBPath"] = self.input_file.to_dict()
         properties.update(super().convert_properties_to_dict())
         return properties
 
@@ -287,30 +289,86 @@ class PythonSolverNodeSettings(GeneralNodeSettings):
     """Settings specific to Python solver nodes."""
 
     @property
-    def input_file(self) -> Union[str, Path, None]:
-        """Path to the Python script file or the Python source code as a string.
+    def multi_design_launch_num(self) -> int:
+        """Number of designs to be sent/received in one batch.
 
         Returns
         -------
-        Union[str, Path, None]
-            Path to the Python script file or the Python source code as a string, if specified.
+        Optional[int]
+            Number of designs to be sent/received in one batch.
+        """
+        return self.__multi_design_launch_num
+
+    @multi_design_launch_num.setter
+    def multi_design_launch_num(self, value: int):
+        """Set number of designs to be sent/received in one batch.
+
+        Parameters
+        ----------
+        value : int
+            Number of designs to be sent/received in one batch.
+        """
+        self.__multi_design_launch_num = value
+
+    @property
+    def input_code(self) -> Union[str, None]:
+        """Python script code.
+
+        Returns
+        -------
+        Union[str, None]
+            Python script code or ``None``, if input file is meant to be specified
+            by the connection or `input_file`.
+        """
+        return self.__input_code
+
+    @input_code.setter
+    def input_code(self, value: Union[str, None]) -> None:
+        """Set Python script.
+
+        Parameters
+        ----------
+        value : Union[str, None]
+            Python script.
+            If ``None``, input file is expected to be specified either
+            by the connection or `input_file`.
+        """
+        self.__input_code = value
+
+    @property
+    def input_file(self) -> Union[OptislangPath, None]:
+        """Path to the Python file.
+
+        Returns
+        -------
+        Union[OptislangPath, None]
+            Path to the Python file or ``None``, if input file is meant to be specified
+            by the connection or `input_code`.
         """
         return self.__input_file
 
     @input_file.setter
-    def input_file(self, value: Union[str, Path]):
-        """Set path to the Python script file or set the Python source code as a string.
+    def input_file(self, value: Union[str, Path, OptislangPath, None]) -> None:
+        """Set path to the Python file.
 
         Parameters
         ----------
-        value : Union[str, Path]
-            Path to the Python script file or the Python source code as a string.
+        value : Union[str, Path, OptislangPath, None]
+            Path to the Python file.
+            If ``None``, input file is expected to be specified either
+            by the connection or `input_code`.
         """
-        self.__input_file = value
+        if value is None:
+            self.__input_file = value
+        elif isinstance(value, OptislangPath):
+            self.__input_file = value
+        else:
+            self.__input_file = AbsolutePath(value)
 
     def __init__(
         self,
         input_file: Optional[Union[str, Path]] = None,
+        input_code: Optional[str] = None,
         multi_design_launch_num: Optional[int] = 1,
         additional_settings: Optional[dict] = {},
     ):
@@ -318,17 +376,32 @@ class PythonSolverNodeSettings(GeneralNodeSettings):
 
         Parameters
         ----------
-        input_file : Optional[Union[str, Path]]
-            Path to the Python script file or the Python source code as a string.
+        input_file : Optional[Union[str, Path]], optional
+            Path to the Python script file.
+            Cannot be specified together with `input_code`.
+        input_code: Optional[str], optional
+            Python source code as a string.
+            Cannot be specified together with `input_file`
         multi_design_launch_num : Optional[int], optional
             Number of designs to be sent/received in one batch, by default 1.
         additional_settings : Optional[dict], optional
             Additional settings for the solver node.
         """
-        super().__init__(
-            multi_design_launch_num=multi_design_launch_num, additional_settings=additional_settings
-        )
-        self.input_file = input_file
+        super().__init__(additional_settings=additional_settings)
+        self.multi_design_launch_num = multi_design_launch_num
+        if input_file and input_code:
+            raise AttributeError(
+                "Arguments `input_file` and `input_code` cannot be specified simultaneously."
+            )
+        elif input_file:
+            self.input_file = input_file
+            self.input_code = None
+        elif input_code:
+            self.input_code = input_code
+            self.input_file = None
+        else:
+            self.input_file = None
+            self.input_code = None
 
     def convert_properties_to_dict(self):
         """Get properties dictionary.
@@ -339,18 +412,15 @@ class PythonSolverNodeSettings(GeneralNodeSettings):
             Dictionary with properties.
         """
         properties = {}
-        if self.input_file:
-            # path mode
-            if isinstance(self.input_file, (str, Path)) and Path(self.input_file).suffix == ".py":
-                properties["Path"] = {
-                    "path": {
-                        "base_path_mode": {"value": "ABSOLUTE_PATH"},
-                        "split_path": {"head": "", "tail": str(self.input_file)},
-                    }
-                }
+        if self.input_file and self.input_code:
+            raise AttributeError(
+                "Arguments `input_file` and `input_code` cannot be specified simultaneously."
+            )
+        elif self.input_file:
+            properties["Path"] = self.input_file.to_dict()
             # content mode
-            else:
-                properties["Source"] = self.input_file
+        elif self.input_code:
+            properties["Source"] = self.input_code
         properties.update(super().convert_properties_to_dict())
         return properties
 
@@ -614,6 +684,18 @@ class WorkFlowTemplate:
             self.__register_proxy_solver_locations(solver_node, parameters, responses)
         elif solver_node.type == nt.Mopsolver:
             self.__register_mop_solver_locations(solver_node, parameters, responses)
+        elif solver_node.type == nt.CalculatorSet:
+            # TODO: implement
+            pass
+        elif solver_node.type == nt.Python2:
+            # TODO: implement
+            pass
+        elif solver_node.type == nt.PythonScript:
+            # TODO: implement
+            pass
+        elif solver_node.type == nt.Process:
+            # TODO: implement
+            pass
         else:
             self.__register_integration_node_locations(solver_node)
         return solver_node
@@ -803,7 +885,6 @@ class ParametricSystemIntegrationTemplate(WorkFlowTemplate):
         solver_name: Optional[str] = None,
         solver_settings: GeneralNodeSettings = None,
         start_designs: Iterable[Design] = [],
-        predecessors: Optional[Iterable[Node]] = [],
         algorithm_connections: Optional[Iterable[Tuple[OutputSlot, str]]] = [],
         solver_connections: Optional[Iterable[Tuple[OutputSlot, str]]] = [],
         criteria: Optional[Iterable[Criterion]] = [],
@@ -826,8 +907,6 @@ class ParametricSystemIntegrationTemplate(WorkFlowTemplate):
             Settings for the solver node.
         start_designs : Iterable[Design], optional
             Designs to be used as start designs for the parametric system.
-        predecessors : Optional[Iterable[Node]], optional
-            Predecessors of the managed parametric system.
         algorithm_connections : Optional[Iterable[Tuple[OutputSlot, str]]], optional
             Iterable of tuples specifying the connections to the new parametric system.
         solver_connections : Optional[Iterable[Tuple[OutputSlot, str]]], optional
@@ -844,7 +923,6 @@ class ParametricSystemIntegrationTemplate(WorkFlowTemplate):
         self.solver_name = solver_name
         self.solver_settings = solver_settings
         self.start_designs = start_designs
-        self.predecessors = predecessors
         self.algorithm_connections = algorithm_connections
         self.solver_connections = solver_connections
 
@@ -908,7 +986,6 @@ class GeneralAlgorithmTemplate(WorkFlowTemplate):
         solver_name: Optional[str] = None,
         solver_settings: GeneralNodeSettings = None,
         start_designs: Iterable[Design] = [],
-        predecessors: Optional[Iterable[Node]] = [],
         algorithm_connections: Optional[Iterable[Tuple[OutputSlot, str]]] = [],
         solver_connections: Optional[Iterable[Tuple[OutputSlot, str]]] = [],
     ):
@@ -939,8 +1016,6 @@ class GeneralAlgorithmTemplate(WorkFlowTemplate):
             the selected solver type.
         start_designs : Iterable[Design], optional
             Designs to be used as start designs for the algorithm.
-        predecessors: Optional[Iterable[Node]], optional
-            Predecessors of the managed algorithm.
         algorithm_connections: Optional[Iterable[Tuple[OutputSlot, str]]], optional
             Iterable of tuples specifying the connections to the
             new algorithm.
@@ -958,7 +1033,6 @@ class GeneralAlgorithmTemplate(WorkFlowTemplate):
         self.solver_name = solver_name
         self.solver_settings = solver_settings
         self.start_designs = start_designs
-        self.predecessors = predecessors
         self.algorithm_connections = algorithm_connections
         self.solver_connections = solver_connections
 
