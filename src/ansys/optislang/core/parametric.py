@@ -325,7 +325,7 @@ class ExecutableBlock:
         return tuple([instance[0] for instance in self.__instances])
 
     def __init__(
-        self, instances: Optional[Iterable[Tuple[ManagedInstance, ExecutionOption]]]
+        self, instances: Optional[Iterable[Tuple[ManagedInstance, ExecutionOption]]] = []
     ) -> None:
         """Initialize the ExecutableBlock.
 
@@ -336,8 +336,9 @@ class ExecutableBlock:
             Each block must contain maximum of 1 algorithm system.
         """
         self.__instances = []
-        for instance, exec_option in instances:
-            self.__instances.append((instance, exec_option))
+        if len(instances) > 0:
+            for instance, exec_option in instances:
+                self.__instances.append((instance, exec_option))
 
     def add_instance(self, instance: ManagedInstance, execution_options: ExecutionOption) -> None:
         """Add instance with execution options.
@@ -360,8 +361,8 @@ class ExecutableBlock:
             Node uid.
         """
         idx = self.__find_instance_idx_by_uid(uid)
-        if idx > 0:
-            self.__instances.pop()
+        if idx >= 0:
+            self.__instances.pop(idx)
 
     def __find_instance_idx_by_uid(self, uid: str) -> int:
         """Get index of instance with specified uid.
@@ -460,12 +461,14 @@ class ParametricDesignStudy:
                         block = ExecutableBlock()
                     blocks.append(
                         ExecutableBlock(
-                            instances=(
-                                instance,
-                                ExecutionOption.ACTIVE
-                                | ExecutionOption.STARTING_POINT
-                                | ExecutionOption.END_POINT,
-                            )
+                            [
+                                (
+                                    instance,
+                                    ExecutionOption.ACTIVE
+                                    | ExecutionOption.STARTING_POINT
+                                    | ExecutionOption.END_POINT,
+                                ),
+                            ]
                         )
                     )
                 else:
@@ -603,7 +606,7 @@ class ParametricDesignStudy:
             return self.__current_proxy_solver.get_designs()
 
     def set_designs(self, designs: List[dict]):
-        """Call ``set_designs` command on proxy solver node in use.
+        """Call ``set_designs`` command on proxy solver node in use.
 
         Parameters
         ----------
@@ -611,7 +614,7 @@ class ParametricDesignStudy:
             List of solved designs dictionaries.
         """
         if self.__current_proxy_solver is not None:
-            self.__current_proxy_solver.set_designs()
+            self.__current_proxy_solver.set_designs(designs)
 
     # endregion
     def __get_proxy_solver(
@@ -718,28 +721,25 @@ class ParametricDesignStudyManager:
 
         self.__design_studies: List[ParametricDesignStudy] = []
 
-    def append_algorithm_design_study(
+    def append_design_study(
         self,
-        managed_instances: Iterable[ManagedInstance],
-        execution_blocks: Optional[Iterable[ExecutionOption]] = [],
+        design_study: ParametricDesignStudy,
     ) -> None:
         """Add an existing design study to the managed studies.
 
-        Predecessors are determined automatically based on the connections
-        of the first managed instance.
-
         Parameters
         ----------
-        managed_instances : Iterable[ManagedInstance]
-            Iterable of managed instances composing the design study.
-        execution_block: Iterable[ExecutionBlock], optional
-            Iterable of execution blocks. If not provided, created automatically from
-            managed_instances order.
+        design_study: ParametricDesignStudy
+            Instance of parameteric design study.
         """
-        node: Node = managed_instances[0].instance
-        predecessors = [edge.from_slot.node for edge in node.get_connections(SlotType.INPUT)]
-        design_study = ParametricDesignStudy(self.optislang, managed_instances, execution_blocks)
-        self.__design_studies.append(design_study)
+        if isinstance(design_study, ParametricDesignStudy):
+            self.__design_studies.append(design_study)
+        else:
+            raise TypeError(
+                "Expected instance of`ParametricDesignStudy`, but got `{}`".format(
+                    type(design_study)
+                )
+            )
 
     def clear_design_studies(self, delete: Optional[bool] = False) -> None:
         """Remove all designs studies managed by the instance of ParametricDesignStudyManager.
@@ -806,7 +806,7 @@ class ParametricDesignStudyManager:
             Tuple of managed parametric studies that have been solved.
         """
         return tuple(
-            [design_study for design_study in self.__design_studies if design_study.is_complete()]
+            [design_study for design_study in self.__design_studies if design_study.is_complete]
         )
 
     def get_unfinished_design_studies(self) -> Tuple[ParametricDesignStudy, ...]:
@@ -818,9 +818,5 @@ class ParametricDesignStudyManager:
             Tuple of managed parametric studies that have not been solved.
         """
         return tuple(
-            [
-                design_study
-                for design_study in self.__design_studies
-                if not design_study.is_complete()
-            ]
+            [design_study for design_study in self.__design_studies if not design_study.is_complete]
         )

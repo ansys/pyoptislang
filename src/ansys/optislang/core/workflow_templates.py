@@ -289,28 +289,6 @@ class PythonSolverNodeSettings(GeneralNodeSettings):
     """Settings specific to Python solver nodes."""
 
     @property
-    def multi_design_launch_num(self) -> int:
-        """Number of designs to be sent/received in one batch.
-
-        Returns
-        -------
-        Optional[int]
-            Number of designs to be sent/received in one batch.
-        """
-        return self.__multi_design_launch_num
-
-    @multi_design_launch_num.setter
-    def multi_design_launch_num(self, value: int):
-        """Set number of designs to be sent/received in one batch.
-
-        Parameters
-        ----------
-        value : int
-            Number of designs to be sent/received in one batch.
-        """
-        self.__multi_design_launch_num = value
-
-    @property
     def input_code(self) -> Union[str, None]:
         """Python script code.
 
@@ -369,7 +347,6 @@ class PythonSolverNodeSettings(GeneralNodeSettings):
         self,
         input_file: Optional[Union[str, Path]] = None,
         input_code: Optional[str] = None,
-        multi_design_launch_num: Optional[int] = 1,
         additional_settings: Optional[dict] = {},
     ):
         """Initialize the PythonSolverNode.
@@ -382,13 +359,10 @@ class PythonSolverNodeSettings(GeneralNodeSettings):
         input_code: Optional[str], optional
             Python source code as a string.
             Cannot be specified together with `input_file`
-        multi_design_launch_num : Optional[int], optional
-            Number of designs to be sent/received in one batch, by default 1.
         additional_settings : Optional[dict], optional
             Additional settings for the solver node.
         """
         super().__init__(additional_settings=additional_settings)
-        self.multi_design_launch_num = multi_design_launch_num
         if input_file and input_code:
             raise AttributeError(
                 "Arguments `input_file` and `input_code` cannot be specified simultaneously."
@@ -423,13 +397,6 @@ class PythonSolverNodeSettings(GeneralNodeSettings):
             properties["Source"] = self.input_code
         properties.update(super().convert_properties_to_dict())
         return properties
-
-
-class MOPNodeSettings(GeneralNodeSettings):
-    """To be done."""
-
-    # TODO: implement
-    pass
 
 
 # endregion
@@ -786,92 +753,6 @@ class WorkFlowTemplate:
         """
         solver_node.load()
 
-    def __get_mop_solver_parameter_location(self, parameter: Parameter) -> dict:
-        """Get the location dictionary for a parameter to be registered in a MOP solver node.
-
-        Parameters
-        ----------
-        parameter : Parameter
-            The parameter to be registered.
-
-        Returns
-        -------
-        dict
-            The location dictionary for the parameter.
-        """
-        return (
-            {
-                "base": parameter.name,
-                "dir": {"enum": ["input", "output"], "value": "input"},
-                "id": parameter.name,
-                "suffix": "",
-                "value_type": {
-                    "enum": ["value", "cop", "rmse", "error", "abs_error", "density"],
-                    "value": "value",
-                },
-            },
-        )
-
-    def __get_mop_solver_response_location(self, response: Response) -> dict:
-        """Get the location dictionary for a response to be registered in a MOP solver node.
-
-        Parameters
-        ----------
-        response : Response
-            The response to be registered.
-
-        Returns
-        -------
-        dict
-            The location dictionary for the response.
-        """
-        # TODO: implement
-        return {
-            "base": "response1",
-            "dir": {"value": "output"},
-            "id": response.name,
-            "suffix": "",
-            "value_type": {"value": "value"},
-        }
-
-    def __get_proxy_solver_parameter_location(self, parameter: Parameter) -> dict:
-        """Get the location dictionary for a parameter to be registered in a ProxySolver node.
-
-        Parameters
-        ----------
-        parameter : Parameter
-            The parameter to be registered.
-
-        Returns
-        -------
-        dict
-            The location dictionary for the parameter.
-        """
-        return {
-            "dir": {"value": "input"},
-            "name": parameter.name,
-            "value": parameter.reference_value,
-        }
-
-    def __get_proxy_solver_response_location(self, response: Response) -> dict:
-        """Get the location dictionary for a response to be registered in a ProxySolver node.
-
-        Parameters
-        ----------
-        response : Response
-            The response to be registered.
-
-        Returns
-        -------
-        dict
-            The location dictionary for the response.
-        """
-        return {
-            "dir": {"value": "output"},
-            "name": response.name,
-            "value": response.reference_value,
-        }
-
 
 class ParametricSystemIntegrationTemplate(WorkFlowTemplate):
     """Template for parametric system with integration node solver."""
@@ -956,7 +837,7 @@ class ParametricSystemIntegrationTemplate(WorkFlowTemplate):
             connections_solver=self.solver_connections,
         )
         instance = ManagedParametricSystem(
-            parametric_system == parametric_system, solver_node=solver_node
+            parametric_system=parametric_system, solver_node=solver_node
         )
         executable_block = ExecutableBlock(
             (
@@ -1091,20 +972,6 @@ class GeneralAlgorithmTemplate(WorkFlowTemplate):
             )
         )
         return ((instance,), (executable_block,))
-
-
-class SensitivityTemplate(WorkFlowTemplate):
-    """To be done."""
-
-    # TODO: implement
-    pass
-
-
-class OptimizationTemplate(WorkFlowTemplate):
-    """To be done."""
-
-    # TODO: implement
-    pass
 
 
 class OptimizationOnMOPTemplate(WorkFlowTemplate):
@@ -1386,27 +1253,6 @@ class OptimizationOnMOPTemplate(WorkFlowTemplate):
             )
 
 
-class RobustnessTemplate(WorkFlowTemplate):
-    """To be done."""
-
-    # TODO: implement
-    pass
-
-
-class ReliabilityTemplate(WorkFlowTemplate):
-    """To be done."""
-
-    # TODO: implement
-    pass
-
-
-class ReevaluateTemplate(WorkFlowTemplate):
-    """To be done."""
-
-    # TODO: implement
-    pass
-
-
 # endregion
 
 
@@ -1417,7 +1263,7 @@ def go_to_optislang(
     connector_settings: dict,
     omdb_files: Union[Union[str, Path], List[Union[str, Path]], ParametricDesignStudyManager],
     parameters: Iterable[Parameter],
-) -> Optislang:
+) -> Optislang:  # pragma: no cover
     """Generate a new optiSLang project with a parametric system and launch in GUI mode.
 
     Parameters
