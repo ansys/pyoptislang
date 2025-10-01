@@ -156,6 +156,14 @@ html_theme_options = {
     "navigation_depth": -1,
 }
 
+if os.getenv("PYOPTISLANG_DOC_SKIP_CHEATSHEET") != "1":
+    html_theme_options["cheatsheet"] = {
+        "file": "cheatsheet/cheat_sheet.qmd",
+        "pages": ["index", "getting_started/index", "user_guide/index"],
+        "title": "PyOptiSLang cheat sheet",
+        "version": __version__,
+    }
+
 html_context = {
     "display_github": True,  # Integrate GitHub
     "github_user": "pyansys",

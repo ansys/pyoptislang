@@ -26,6 +26,7 @@ import pytest
 
 from ansys.optislang.core import Optislang
 from ansys.optislang.core.io import RegisteredFile
+from ansys.optislang.core.osl_server import OslVersion
 from ansys.optislang.core.project_parametric import Design
 from ansys.optislang.core.tcp.managers import (
     TcpCriteriaManagerProxy,
@@ -210,6 +211,8 @@ connect(python, "ODesign", sens, "IIDesign")
 
 def test_placeholder_methods(optislang: Optislang):
     """Test placeholder management methods."""
+    if optislang.osl_version < OslVersion(26, 1, 0, 0):
+        pytest.skip(f"Not compatible with {optislang.osl_version_string}")
     project = optislang.project
 
     # Test create_placeholder
