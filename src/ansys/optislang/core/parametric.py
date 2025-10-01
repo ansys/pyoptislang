@@ -43,7 +43,6 @@ from ansys.optislang.core.nodes import (
     Node,
     ParametricSystem,
     ProxySolverNode,
-    SlotType,
 )
 
 if TYPE_CHECKING:
@@ -730,7 +729,7 @@ class ParametricDesignStudyManager:
         Parameters
         ----------
         design_study: ParametricDesignStudy
-            Instance of parameteric design study.
+            Instance of parametric design study.
         """
         if isinstance(design_study, ParametricDesignStudy):
             self.__design_studies.append(design_study)
