@@ -297,8 +297,8 @@ class Optislang:
         self.__osl_server: OslServer = self.__init_osl_server("tcp")
         self.__application: Application = self.__init_application()
 
-        if self.__project_path and not self.__batch and not self.__service:
-            # trigger lazy project load
+        if self.__project_path and not self.__batch and not self.__service:  # pragma: no cover
+            # trigger lazy project load in GUI mode
             self.open(file_path=self.__project_path, force=self.__force, reset=self.__reset)
 
     def __init_osl_server(self, server_type: str) -> OslServer:
