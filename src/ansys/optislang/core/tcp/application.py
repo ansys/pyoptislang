@@ -28,6 +28,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Optional, Union
 
 from ansys.optislang.core.application import Application
+from ansys.optislang.core.errors import OslCommandError
 from ansys.optislang.core.tcp.project import TcpProjectProxy
 
 if TYPE_CHECKING:
@@ -45,7 +46,7 @@ class TcpApplicationProxy(Application):
 
         try:
             project_uid = self.__get_project_uid()
-        except:
+        except OslCommandError:
             project_uid = None
         self.__project = (
             TcpProjectProxy(osl_server=self.__osl_server, uid=project_uid, logger=self._logger)
