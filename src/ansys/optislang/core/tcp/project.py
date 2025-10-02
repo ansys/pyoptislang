@@ -194,12 +194,12 @@ class TcpProjectProxy(Project):
         return self.__osl_server.get_available_nodes()
 
     def get_available_node_types(self) -> List[NodeType]:
-        """Get raw dictionary of available node types sorted by subtypes.
+        """Get list of available node types.
 
         Returns
         -------
         List[NodeType]
-            Available nodes types
+            Available nodes types.
 
         Raises
         ------
@@ -296,6 +296,29 @@ class TcpProjectProxy(Project):
             Raised when the timeout float value expires.
         """
         return self.root_system.get_reference_design()
+
+    def get_reference_dir(self) -> Optional[Path]:
+        """Get the path to the optiSLang project's reference directory.
+
+        Returns
+        -------
+        Optional[pathlib.Path]
+            Path to the optiSLang project's reference directory. If no project is loaded
+            in optiSLang, ``None`` is returned.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        project_info = self.__osl_server.get_basic_project_info()
+        if len(project_info.get("projects", [])) == 0:
+            return None
+        return Path(project_info.get("projects", [{}])[0].get("reference_files_dir", None))
 
     def get_registered_files(self) -> Tuple[RegisteredFile, ...]:
         """Get all registered files in the current project.
