@@ -43,7 +43,10 @@ class TcpApplicationProxy(Application):
         self.__osl_server = osl_server
         self._logger = logging.getLogger(__name__) if logger is None else logger
 
-        project_uid = self.__get_project_uid()
+        try:
+            project_uid = self.__get_project_uid()
+        except:
+            project_uid = None
         self.__project = (
             TcpProjectProxy(osl_server=self.__osl_server, uid=project_uid, logger=self._logger)
             if project_uid
