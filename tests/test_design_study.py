@@ -28,7 +28,7 @@ import pytest
 from ansys.optislang.core import Optislang
 import ansys.optislang.core.node_types as nt
 from ansys.optislang.core.nodes import Node, ParametricSystem
-from ansys.optislang.core.parametric import (
+from ansys.optislang.parametric.design_study import (
     ExecutableBlock,
     ManagedInstance,
     ManagedParametricSystem,
@@ -48,7 +48,7 @@ from ansys.optislang.core.project_parametric import (
 from ansys.optislang.core.tcp.nodes import (
     ExecutionOption,
 )
-from ansys.optislang.core.workflow_templates import (
+from ansys.optislang.parametric.design_study_templates import (
     GeneralAlgorithmTemplate,
     ProxySolverNodeSettings,
 )
