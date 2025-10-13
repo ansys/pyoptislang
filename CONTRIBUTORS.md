@@ -6,6 +6,7 @@
 
 ## Individual Contributors
 
+* [Camille Latapie](https://github.com/clatapie)
 * [Damon](https://github.com/Damon-Ansys)
 * [ekrja](https://github.com/ekrja)
 * [Ismael Azehaf](https://github.com/iazehaf)
