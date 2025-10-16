@@ -33,14 +33,14 @@ from ansys.optislang.core.io import (
 )
 import ansys.optislang.core.node_types as nt
 from ansys.optislang.core.nodes import IntegrationNode, ParametricSystem
-from ansys.optislang.parametric.design_study import (
-    ExecutableBlock,
-    ManagedParametricSystem,
-)
 from ansys.optislang.core.project_parametric import (
     ObjectiveCriterion,
     OptimizationParameter,
     Response,
+)
+from ansys.optislang.parametric.design_study import (
+    ExecutableBlock,
+    ManagedParametricSystem,
 )
 from ansys.optislang.parametric.design_study_templates import (
     GeneralAlgorithmSettings,

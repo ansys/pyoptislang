@@ -42,6 +42,7 @@ from ansys.optislang.core.nodes import (
     ParametricSystem,
     ProxySolverNode,
 )
+from ansys.optislang.core.slot_types import SlotTypeHint
 from ansys.optislang.parametric.design_study import (
     ExecutableBlock,
     ManagedInstance,
@@ -50,7 +51,6 @@ from ansys.optislang.parametric.design_study import (
     ParametricDesignStudyManager,
     ProxySolverManagedParametricSystem,
 )
-from ansys.optislang.core.slot_types import SlotTypeHint
 
 if TYPE_CHECKING:
     from ansys.optislang.core.project_parametric import Criterion, Design, Parameter, Response
