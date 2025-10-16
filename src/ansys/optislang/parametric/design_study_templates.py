@@ -42,7 +42,7 @@ from ansys.optislang.core.nodes import (
     ParametricSystem,
     ProxySolverNode,
 )
-from ansys.optislang.core.parametric import (
+from ansys.optislang.parametric.design_study import (
     ExecutableBlock,
     ManagedInstance,
     ManagedParametricSystem,
