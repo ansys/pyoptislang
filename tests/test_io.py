@@ -24,6 +24,7 @@ from __future__ import annotations
 
 from enum import Enum
 from pathlib import Path
+import sys
 
 import pytest
 
@@ -45,17 +46,55 @@ from ansys.optislang.core.io import (
 CURRENT_FILE = __file__
 NON_EXISTING_FILE = Path().cwd() / "non_existing.py"
 
-ABSOLUTE_FILE_PATH1 = Path(r"C:\Users\User\Optislang\Optimization\textfile.txt")
-ABSOLUTE_FILE_PATH2 = Path(r"C:\Users\User\Optislang\OtherFolder\textfile.txt")
-ABSOLUTE_FILE_PATH3 = Path(r"C:\Users\User\AnotherFolder\OtherFolder\textfile.txt")
+
+ABSOLUTE_FILE_PATH1 = (
+    Path(r"C:\Users\User\Optislang\Optimization\textfile.txt")
+    if sys.platform == "win32"
+    else Path("home/user/Optislang/Optimization/textfile.txt")
+)
+ABSOLUTE_FILE_PATH2 = (
+    Path(r"C:\Users\User\Optislang\OtherFolder\textfile.txt")
+    if sys.platform == "win32"
+    else Path("home/user/Optislang/OtherFolder/Optimization/textfile.txt")
+)
+ABSOLUTE_FILE_PATH3 = (
+    Path(r"C:\Users\User\AnotherFolder\OtherFolder\textfile.txt")
+    if sys.platform == "win32"
+    else Path("home/user/Optislang/AnotherFolder/OtherFolder/textfile.txt")
+)
 ABSOLUTE_FILE_PATH4 = Path(r"D:\Another\Drive\textfile.txt")
-ABSOLUTE_FILE_PATH5 = Path(r"C:\Users\User\Optislang\Optimization\project.opd\file1.txt")
-ABSOLUTE_FILE_PATH6 = Path(r"C:\Users\User\Optislang\Optimization\project.opd\subfolder\file1.txt")
-HEAD = Path(r"C:\Users\User\Optislang\Optimization")
+ABSOLUTE_FILE_PATH5 = (
+    Path(r"C:\Users\User\Optislang\Optimization\project.opd\file1.txt")
+    if sys.platform == "win32"
+    else Path("home/user/Optislang/Optimization/project.opd/file1.txt")
+)
+ABSOLUTE_FILE_PATH6 = (
+    Path(r"C:\Users\User\Optislang\Optimization\project.opd\subfolder\file1.txt")
+    if sys.platform == "win32"
+    else Path("home/user/Optislang/Optimization/project.opd/subfolder/file1.txt")
+)
+HEAD = (
+    Path(r"C:\Users\User\Optislang\Optimization")
+    if sys.platform == "win32"
+    else Path("home/user/Optislang/Optimization")
+)
 TAIL = Path(r"subfolder\file1.txt")
-PROJECT_DIR = Path(r"C:\Users\User\Optislang\Optimization")
-PROJECT_WORKING_DIR = Path(r"C:\Users\User\Optislang\Optimization\project.opd")
-REFERENCE_FILES_DIR = Path(r"C:\Users\User\Optislang\Optimization\project.opr")
+
+PROJECT_DIR = (
+    Path(r"C:\Users\User\Optislang\Optimization")
+    if sys.platform == "win32"
+    else Path("home/user/Optislang/Optimization")
+)
+PROJECT_WORKING_DIR = (
+    Path(r"C:\Users\User\Optislang\Optimization\project.opd")
+    if sys.platform == "win32"
+    else Path("home/user/Optislang/Optimization/project.opd")
+)
+REFERENCE_FILES_DIR = (
+    Path(r"C:\Users\User\Optislang\Optimization\project.opr")
+    if sys.platform == "win32"
+    else Path("home/user/Optislang/Optimization/project.opr")
+)
 
 
 ABSOLUTE_PATH_DICT = {
@@ -301,7 +340,7 @@ def test_absolute_path_2_to_wdir_relative(path, tail):
         (ABSOLUTE_FILE_PATH1, Path(r".\textfile.txt")),
         (ABSOLUTE_FILE_PATH2, Path(r"..\OtherFolder\textfile.txt")),
         (ABSOLUTE_FILE_PATH3, Path(r"..\..\AnotherFolder\OtherFolder\textfile.txt")),
-        (ABSOLUTE_FILE_PATH4, Path(r"D:\Another\Drive\textfile.txt")),
+        (ABSOLUTE_FILE_PATH4, ABSOLUTE_FILE_PATH4),
     ],
 )
 def test_absolute_path_2_to_project_relative(path, expected):
@@ -345,7 +384,7 @@ def test_absolute_path_2_to_project_wdir_relative(path, tail):
         (ABSOLUTE_FILE_PATH1, Path(r"..\textfile.txt")),
         (ABSOLUTE_FILE_PATH2, Path(r"..\..\OtherFolder\textfile.txt")),
         (ABSOLUTE_FILE_PATH3, Path(r"..\..\..\AnotherFolder\OtherFolder\textfile.txt")),
-        (ABSOLUTE_FILE_PATH4, Path(r"D:\Another\Drive\textfile.txt")),
+        (ABSOLUTE_FILE_PATH4, ABSOLUTE_FILE_PATH4),
     ],
 )
 def test_absolute_path_2_to_reffiles_relative(path, expected):
