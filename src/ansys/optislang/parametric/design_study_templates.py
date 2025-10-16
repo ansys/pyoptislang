@@ -981,7 +981,7 @@ class OptimizationOnMOPTemplate(WorkFlowTemplate):
     - Optimizer:
         - Algorithm using MopSolver node as solver, OCO algorithm by default.
     - Validator:
-        - Parametric system validating best.
+        - Parametric system validating best designs using ProxySolver node.
     """
 
     def __init__(
@@ -992,10 +992,8 @@ class OptimizationOnMOPTemplate(WorkFlowTemplate):
         mop_predecessor: Node,
         optimizer_name: Optional[str] = None,
         optimizer_type: Optional[nt.NodeType] = nt.OCO,
-        optimizer_settings: GeneralAlgorithmSettings = None,
         optimizer_start_designs: Optional[Iterable[Design]] = None,
-        mop_solver_settings: GeneralNodeSettings = None,
-        validator_solver_settings: Optional[ProxySolverNodeSettings] = None,
+        callback: Optional[callable] = None,
         best_designs_num: Optional[int] = 1,
     ):
         """Initialize the OptimizationOnMOPTemplate.
@@ -1014,19 +1012,14 @@ class OptimizationOnMOPTemplate(WorkFlowTemplate):
             Name of the optimization algorithm.
         optimizer_type: Optional[nt.NodeType]
             Type of the optimization algorithm, by default OCO.
-        optimizer_settings: GeneralAlgorithmSettings
-            Settings for the optimization algorithm.
         optimizer_start_designs: Iterable[Design]
             Start designs.
-        mop_solver_settings: GeneralNodeSettings
-            Settings for the optimization solver.
-        validator_solver_settings: Optional[ProxySolverNodeSettings]
-            Settings for the validator proxy solver node.
+        callback: Optional[callable]
+            ProxySolver node callback processing designs.
             MUST be specified to allow automatic execution. If not specified,
             execution of the proxy solver must be performed by the user.
         best_designs_num: Optional[int], optional
             Number of best designs to be filtered. By default ``1``.
-
         """
         self.parameters = parameters
         self.criteria = criteria
@@ -1034,17 +1027,12 @@ class OptimizationOnMOPTemplate(WorkFlowTemplate):
         self.mop_predecessor = mop_predecessor
         self.optimizer_name = optimizer_name
         self.optimizer_type = optimizer_type
-        self.optimizer_settings = optimizer_settings
         self.optimizer_start_designs = optimizer_start_designs
-        self.mop_solver_settings = mop_solver_settings
-        if not validator_solver_settings:
+        if not callback:
             self.validator_solver_settings = ProxySolverNodeSettings(self.__empty_callback)
-            warnings.warn(
-                "Setting for validator solver settings not provided. "
-                "Automatic execution won't be possible."
-            )
+            warnings.warn("Callback was not provided, automatic execution won't be possible.")
         else:
-            self.validator_solver_settings = validator_solver_settings
+            self.validator_solver_settings = ProxySolverNodeSettings(callback=callback)
         self.best_designs_num = best_designs_num
 
     def create_workflow(

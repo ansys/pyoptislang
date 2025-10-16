@@ -342,7 +342,7 @@ except:
         _CRITERIA,
         _RESPONSES,
         mop_predecessor,
-        validator_solver_settings=ProxySolverNodeSettings(lambda x: x**2),
+        callback=lambda x: x**2,
     )
     instances, executable_blocks = template.create_workflow(
         optislang.application.project.root_system
