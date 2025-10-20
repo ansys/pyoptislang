@@ -29,5 +29,11 @@ optislang
 
 from importlib import metadata as _metadata
 
-__version__ = _metadata.version(__name__.replace(".", "-"))
+_DISTRIBUTION_NAME = "ansys-optislang-core"
+
+try:
+    __version__ = _metadata.version(_DISTRIBUTION_NAME)
+except _metadata.PackageNotFoundError:
+    __version__ = "0.0.dev0"
+
 __all__ = ["core", "parametric"]
