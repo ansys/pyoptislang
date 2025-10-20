@@ -62,7 +62,7 @@ typing = [
 ]
 
 [tool.flit.module]
-packages = ["ansys.optislang"]
+packages = ["ansys.optislang.core", "ansys.optislang.parametric"]
 
 [project.urls]
 Homepage = "https://optislang.docs.pyansys.com"

@@ -1,9 +1,10 @@
-Design Study
+Design study
 ============
+
+Node settings
+-------------
 .. currentmodule:: ansys.optislang.parametric.design_study_templates
 
-Node Settings
--------------
 .. autosummary::
    :toctree: _autosummary
 
@@ -12,8 +13,10 @@ Node Settings
    ProxySolverNodeSettings
    PythonSolverNodeSettings
 
-System Settings
+System settings
 -------------
+.. currentmodule:: ansys.optislang.parametric.design_study_templates
+
 .. autosummary::
    :toctree: _autosummary
 
@@ -22,16 +25,20 @@ System Settings
 
 Workflows
 ---------
+.. currentmodule:: ansys.optislang.parametric.design_study_templates
+
 .. autosummary::
    :toctree: _autosummary
 
-   WorkflowTemplate
+   WorkFlowTemplate
    ParametricSystemIntegrationTemplate
    GeneralAlgorithmTemplate
    OptimizationOnMOPTemplate
 
 Helper functions
----------
+----------------
+.. currentmodule:: ansys.optislang.parametric.design_study_templates
+
 .. autosummary::
    :toctree: _autosummary
 

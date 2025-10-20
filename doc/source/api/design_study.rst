@@ -1,6 +1,7 @@
-Design Study
+Design study
 ============
 Main classes responsible for workflow creation and execution.
+
 .. currentmodule:: ansys.optislang.parametric.design_study
 
 .. autosummary::
@@ -12,6 +13,8 @@ Main classes responsible for workflow creation and execution.
 
 An executable unit used by :py:class:`ParametricDesignStudy <ansys.optislang.parametric.design_study.ParametricDesignStudy>` defining execution order.
 
+.. currentmodule:: ansys.optislang.parametric.design_study
+
 .. autosummary::
    :toctree: _autosummary
 
@@ -19,6 +22,9 @@ An executable unit used by :py:class:`ParametricDesignStudy <ansys.optislang.par
 
 
 Elementary objects containing necessary data for automatic execution.
+
+.. currentmodule:: ansys.optislang.parametric.design_study
+
 .. autosummary::
    :toctree: _autosummary
 
@@ -28,6 +34,9 @@ Elementary objects containing necessary data for automatic execution.
 
 
 Helper classes used for migration of omdb files into a new optiSLang project.
+
+.. currentmodule:: ansys.optislang.parametric.design_study
+
 .. autosummary::
    :toctree: _autosummary
 
