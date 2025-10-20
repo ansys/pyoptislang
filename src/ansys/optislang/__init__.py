@@ -21,36 +21,13 @@
 # SOFTWARE.
 
 """
-optiSLang.
+ansys.
 
-parametric
+optislang
 """
 
-import importlib.util
-import os
 
-from ansys.optislang import __version__
-from ansys.optislang.core.logging import OslLogger
+from importlib import metadata as _metadata
 
-LOG = OslLogger(loglevel="ERROR", log_to_file=False, log_to_stdout=True)
-LOG.logger.debug("Loaded logging module as LOG")
-
-# First supported version of optiSLang: 2023R1
-FIRST_SUPPORTED_VERSION = 231
-
-from ansys.optislang.core.optislang import Optislang
-from ansys.optislang.parametric.design_study import ParametricDesignStudyManager
-
-# Provide examples directory path
-EXAMPLES_MODULE = "ansys.optislang.core.examples"
-if spec := importlib.util.find_spec(EXAMPLES_MODULE):
-    if spec.origin:
-        os.environ["OSL_EXAMPLES"] = os.path.dirname(spec.origin)
-    else:
-        LOG.logger.warning(
-            f"Could not set path to examples. Missing spec for module {EXAMPLES_MODULE}."
-        )
-else:
-    LOG.logger.warning(
-        f"Could not set path to examples. Missing origin for module {EXAMPLES_MODULE}."
-    )
+__version__ = _metadata.version(__name__.replace(".", "-"))
+__all__ = ["core", "parametric"]
