@@ -49,7 +49,7 @@ if TYPE_CHECKING:
     from ansys.optislang.core.project_parametric import (
         Design,
     )
-    from ansys.optislang.core.workflow_templates import WorkFlowTemplate
+    from ansys.optislang.parametric.design_study_templates import WorkFlowTemplate
 
 
 # region OMDB files
