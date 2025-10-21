@@ -55,12 +55,12 @@ ABSOLUTE_FILE_PATH1 = (
 ABSOLUTE_FILE_PATH2 = (
     Path(r"C:\Users\User\Optislang\OtherFolder\textfile.txt")
     if sys.platform == "win32"
-    else Path("home/user/Optislang/OtherFolder/Optimization/textfile.txt")
+    else Path("home/user/Optislang/OtherFolder/textfile.txt")
 )
 ABSOLUTE_FILE_PATH3 = (
     Path(r"C:\Users\User\AnotherFolder\OtherFolder\textfile.txt")
     if sys.platform == "win32"
-    else Path("home/user/Optislang/AnotherFolder/OtherFolder/textfile.txt")
+    else Path("home/user/AnotherFolder/OtherFolder/textfile.txt")
 )
 ABSOLUTE_FILE_PATH4 = Path(r"D:\Another\Drive\textfile.txt")
 ABSOLUTE_FILE_PATH5 = (
@@ -78,7 +78,7 @@ HEAD = (
     if sys.platform == "win32"
     else Path("home/user/Optislang/Optimization")
 )
-TAIL = Path(r"subfolder\file1.txt")
+TAIL = Path(r"subfolder\file1.txt") if sys.platform == "win32" else Path(r"subfolder/file1.txt")
 
 PROJECT_DIR = (
     Path(r"C:\Users\User\Optislang\Optimization")
@@ -102,7 +102,11 @@ ABSOLUTE_PATH_DICT = {
         "base_path_mode": {"enum": [], "value": "ABSOLUTE_PATH"},
         "split_path": {
             "head": "",
-            "tail": "C:/Users/User/Optislang/Optimization/project.opd/file1.txt",
+            "tail": (
+                "C:/Users/User/Optislang/Optimization/project.opd/file1.txt"
+                if sys.platform == "win32"
+                else "home/user/Optislang/Optimization/project.opd/file1.txt"
+            ),
         },
     }
 }
@@ -110,7 +114,11 @@ WDIR_RELATIVE_DICT = {
     "path": {
         "base_path_mode": {"enum": [], "value": "WORKING_DIR_RELATIVE"},
         "split_path": {
-            "head": "C:/Users/User/Optislang/Optimization/project.opd",
+            "head": (
+                "C:/Users/User/Optislang/Optimization/project.opd"
+                if sys.platform == "win32"
+                else "home/user/Optislang/Optimization/project.opd"
+            ),
             "tail": "file1.txt",
         },
     }
@@ -125,7 +133,11 @@ PWDIR_RELATIVE_DICT = {
     "path": {
         "base_path_mode": {"enum": [], "value": "PROJECT_WORKING_DIR_RELATIVE"},
         "split_path": {
-            "head": "C:/Users/User/Optislang/Optimization/project.opd",
+            "head": (
+                "C:/Users/User/Optislang/Optimization/project.opd"
+                if sys.platform == "win32"
+                else "home/user/Optislang/Optimization/project.opd"
+            ),
             "tail": "file1.txt",
         },
     }
@@ -318,7 +330,7 @@ def test_absolute_path_2_to_absolute():
     "path, tail",
     [
         (ABSOLUTE_FILE_PATH5, Path(r"file1.txt")),
-        (ABSOLUTE_FILE_PATH6, Path(r"subfolder\file1.txt")),
+        (ABSOLUTE_FILE_PATH6, Path(r"subfolder/file1.txt")),
     ],
 )
 def test_absolute_path_2_to_wdir_relative(path, tail):
@@ -337,10 +349,16 @@ def test_absolute_path_2_to_wdir_relative(path, tail):
 @pytest.mark.parametrize(
     "path, expected",
     [
-        (ABSOLUTE_FILE_PATH1, Path(r".\textfile.txt")),
-        (ABSOLUTE_FILE_PATH2, Path(r"..\OtherFolder\textfile.txt")),
-        (ABSOLUTE_FILE_PATH3, Path(r"..\..\AnotherFolder\OtherFolder\textfile.txt")),
-        (ABSOLUTE_FILE_PATH4, ABSOLUTE_FILE_PATH4),
+        (ABSOLUTE_FILE_PATH1, Path(r"./textfile.txt")),
+        (ABSOLUTE_FILE_PATH2, Path(r"../OtherFolder/textfile.txt")),
+        (ABSOLUTE_FILE_PATH3, Path(r"../../AnotherFolder/OtherFolder/textfile.txt")),
+        pytest.param(
+            ABSOLUTE_FILE_PATH4,
+            ABSOLUTE_FILE_PATH4,
+            marks=pytest.mark.skipif(
+                sys.platform.startswith("linux"), reason="Not supported on Linux"
+            ),
+        ),
     ],
 )
 def test_absolute_path_2_to_project_relative(path, expected):
@@ -362,7 +380,7 @@ def test_absolute_path_2_to_project_relative(path, expected):
     "path, tail",
     [
         (ABSOLUTE_FILE_PATH5, Path(r"file1.txt")),
-        (ABSOLUTE_FILE_PATH6, Path(r"subfolder\file1.txt")),
+        (ABSOLUTE_FILE_PATH6, Path(r"subfolder/file1.txt")),
     ],
 )
 def test_absolute_path_2_to_project_wdir_relative(path, tail):
@@ -381,10 +399,16 @@ def test_absolute_path_2_to_project_wdir_relative(path, tail):
 @pytest.mark.parametrize(
     "path, expected",
     [
-        (ABSOLUTE_FILE_PATH1, Path(r"..\textfile.txt")),
-        (ABSOLUTE_FILE_PATH2, Path(r"..\..\OtherFolder\textfile.txt")),
-        (ABSOLUTE_FILE_PATH3, Path(r"..\..\..\AnotherFolder\OtherFolder\textfile.txt")),
-        (ABSOLUTE_FILE_PATH4, ABSOLUTE_FILE_PATH4),
+        (ABSOLUTE_FILE_PATH1, Path(r"../textfile.txt")),
+        (ABSOLUTE_FILE_PATH2, Path(r"../../OtherFolder/textfile.txt")),
+        (ABSOLUTE_FILE_PATH3, Path(r"../../..\AnotherFolder/OtherFolder/textfile.txt")),
+        pytest.param(
+            ABSOLUTE_FILE_PATH4,
+            ABSOLUTE_FILE_PATH4,
+            marks=pytest.mark.skipif(
+                sys.platform.startswith("linux"), reason="Not supported on Linux"
+            ),
+        ),
     ],
 )
 def test_absolute_path_2_to_reffiles_relative(path, expected):
@@ -448,7 +472,7 @@ def test_project_working_dir_relative_path(head: str | Path, tail: str | Path):
 
 @pytest.mark.parametrize(
     "tail, file_path",
-    [(Path(r".\textfile.txt"), ABSOLUTE_FILE_PATH1), (r".\textfile.txt", str(ABSOLUTE_FILE_PATH1))],
+    [(Path(r"./textfile.txt"), ABSOLUTE_FILE_PATH1), (r"./textfile.txt", str(ABSOLUTE_FILE_PATH1))],
 )
 def test_project_dir_relative_path(tail: str | Path, file_path: str | Path):
     """Test ``ProjectRelativePath`` class."""
@@ -505,8 +529,8 @@ def test_project_dir_relative_path(tail: str | Path, file_path: str | Path):
 @pytest.mark.parametrize(
     "tail, file_path",
     [
-        (Path(r"..\textfile.txt"), ABSOLUTE_FILE_PATH1),
-        (r"..\textfile.txt", str(ABSOLUTE_FILE_PATH1)),
+        (Path(r"../textfile.txt"), ABSOLUTE_FILE_PATH1),
+        (r"../textfile.txt", str(ABSOLUTE_FILE_PATH1)),
     ],
 )
 def test_reference_files_dir_relative_path(tail: str | Path, file_path: str | Path):
