@@ -1,9 +1,6 @@
 .. _ref_workflow_templates:
 
-Workflow templates
-==================
-
-Parametric Design Study Templates
+Parametric design study templates
 =================================
 
 The :mod:`ansys.optislang.parametric.design_study_templates` module provides

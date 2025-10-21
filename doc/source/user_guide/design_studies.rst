@@ -1,6 +1,6 @@
 .. _ref_design_studies:
 
-Parametric Design Studies
+Parametric design studies
 =========================
 
 This section describes how to define and manage **design studies** in optiSLang
@@ -10,7 +10,7 @@ Parametric design studies enable systematic exploration, sensitivity analysis, a
 of design parameters and responses within a structured workflow created from various templates.
 
 
-Design Study Manager
+Design study manager
 --------------------
 
 A **parametric design study** module encapsulates creation and execution of workflows, using
@@ -18,12 +18,12 @@ A **parametric design study** module encapsulates creation and execution of work
 operating on :py:class:`Optislang <ansys.optislang.core.optislang.Optislang>` instance. It may contain a single
 or multiple parametric design studies.
 
-To create a new parametric design study, create a template (see `TODO: templates section...`) and run 
+To create a new parametric design study, create a template (see :ref:`ref_workflow_templates`) and run 
 :py:meth:`create_design_study() <ansys.optislang.parametric.design_study.ParametricDesignStudyManager.create_design_study>` method, returning
 an instance of :py:class:`ParametricDesignStudy <ansys.optislang.parametric.design_study.ParametricDesignStudy>`, that can be then used to 
 execute the created workflow.
 
-Design Study
+Design study
 ------------
 To automatically execute design study workflow, use :py:meth:`execute() <ansys.optislang.parametric.design_study.ParametricDesignStudy.execute>`
 method, which is execute in a blocking mode.
