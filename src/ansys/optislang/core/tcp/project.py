@@ -297,13 +297,13 @@ class TcpProjectProxy(Project):
         """
         return self.root_system.get_reference_design()
 
-    def get_reference_dir(self) -> Optional[Path]:
-        """Get the path to the optiSLang project's reference directory.
+    def get_reference_files_dir(self) -> Optional[Path]:
+        """Get the path to the optiSLang project's reference files directory.
 
         Returns
         -------
         Optional[pathlib.Path]
-            Path to the optiSLang project's reference directory. If no project is loaded
+            Path to the optiSLang project's reference files directory. If no project is loaded
             in optiSLang, ``None`` is returned.
 
         Raises
