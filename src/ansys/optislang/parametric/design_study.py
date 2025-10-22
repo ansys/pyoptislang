@@ -610,7 +610,7 @@ class ParametricDesignStudy:
 
     # region proxy solver related
     def get_designs(self) -> Optional[List[dict]]:
-        """Call ``get_designs` command on proxy solver node in use.
+        """Call ``get_designs`` command on proxy solver node in use.
 
         Returns
         -------

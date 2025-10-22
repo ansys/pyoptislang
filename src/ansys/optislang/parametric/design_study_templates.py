@@ -995,11 +995,13 @@ class GeneralAlgorithmTemplate(WorkFlowTemplate):
 class OptimizationOnMOPTemplate(WorkFlowTemplate):
     """Template creating optimization on MOP and validation with proxy solver.
 
-    Workflow:
-    - Optimizer:
-        - Algorithm using MopSolver node as solver, OCO algorithm by default.
-    - Validator:
-        - Parametric system validating best designs using ProxySolver node.
+    Workflow
+    --------
+    - **Optimizer**:
+        - Algorithm using ``MopSolver`` node as solver, OCO algorithm by default.
+    - **Validator**:
+        - Parametric system validating best designs using ``ProxySolver`` node.
+
     """
 
     def __init__(
