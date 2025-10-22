@@ -401,7 +401,7 @@ def test_absolute_path_2_to_project_wdir_relative(path, tail):
     [
         (ABSOLUTE_FILE_PATH1, Path(r"../textfile.txt")),
         (ABSOLUTE_FILE_PATH2, Path(r"../../OtherFolder/textfile.txt")),
-        (ABSOLUTE_FILE_PATH3, Path(r"../../..\AnotherFolder/OtherFolder/textfile.txt")),
+        (ABSOLUTE_FILE_PATH3, Path(r"../../../AnotherFolder/OtherFolder/textfile.txt")),
         pytest.param(
             ABSOLUTE_FILE_PATH4,
             ABSOLUTE_FILE_PATH4,

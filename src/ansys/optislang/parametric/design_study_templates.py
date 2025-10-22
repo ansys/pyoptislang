@@ -27,7 +27,7 @@ from abc import abstractmethod
 import os
 from pathlib import Path
 import shutil
-from typing import TYPE_CHECKING, Iterable, List, Optional, Tuple, Union
+from typing import TYPE_CHECKING, Any, Callable, Iterable, List, Optional, Tuple, Union
 import warnings
 
 from ansys.optislang.core import Optislang
@@ -82,7 +82,7 @@ class GeneralNodeSettings:
         """
         self.__additional_settings = value
 
-    def __init__(self, additional_settings: Optional[dict] = {}):
+    def __init__(self, additional_settings: Optional[dict] = None):
         """Initialize the GeneralNodeSettings.
 
         Parameters
@@ -90,7 +90,7 @@ class GeneralNodeSettings:
         additional_settings : Optional[dict], optional
             Additional settings for the solver node.
         """
-        self.additional_settings = additional_settings
+        self.additional_settings = additional_settings if additional_settings else {}
 
     def convert_properties_to_dict(self) -> dict:
         """Convert the named tuple to a dictionary of properties.
@@ -160,7 +160,7 @@ class MopSolverNodeSettings(GeneralNodeSettings):
     def __init__(
         self,
         input_file: Optional[Union[str, Path, OptislangPath]] = None,
-        multi_design_launch_num: Optional[int] = 1,
+        multi_design_launch_num: Optional[int] = None,
         additional_settings: Optional[dict] = {},
     ):
         """Initialize the MopSolverNode.
@@ -176,7 +176,9 @@ class MopSolverNodeSettings(GeneralNodeSettings):
         """
         super().__init__(additional_settings=additional_settings)
         self.input_file = input_file
-        self.multi_design_launch_num = multi_design_launch_num
+        self.multi_design_launch_num = (
+            multi_design_launch_num if multi_design_launch_num is not None else 1
+        )
 
     def convert_properties_to_dict(self):
         """Get properties dictionary.
@@ -229,38 +231,38 @@ class ProxySolverNodeSettings(GeneralNodeSettings):
         self.__multi_design_launch_num = value
 
     @property
-    def callback(self) -> callable:
+    def callback(self) -> Callable:
         """A callback function to handle design evaluation results.
 
         Returns
         -------
-        callable
+        Callable
             A callback function to handle design evaluation results.
         """
         return self.__callback
 
     @callback.setter
-    def callback(self, value: callable):
+    def callback(self, value: Callable):
         """Set a callback function to handle design evaluation results.
 
         Parameters
         ----------
-        value : callable
+        value : Callable
             A callback function to handle design evaluation results.
         """
         self.__callback = value
 
     def __init__(
         self,
-        callback: callable,
-        multi_design_launch_num: Optional[int] = 1,
+        callback: Callable,
+        multi_design_launch_num: Optional[int] = None,
         additional_settings: Optional[dict] = {},
     ):
         """Initialize the MopSolverNode.
 
         Parameters
         ----------
-        callback: callable
+        callback: Callable
             A callback function to handle design evaluation results.
         multi_design_launch_num : Optional[int], optional
             Number of designs to be sent/received in one batch, by default 1.
@@ -269,7 +271,9 @@ class ProxySolverNodeSettings(GeneralNodeSettings):
         """
         super().__init__(additional_settings=additional_settings)
         self.callback = callback
-        self.multi_design_launch_num = multi_design_launch_num
+        self.multi_design_launch_num = (
+            multi_design_launch_num if multi_design_launch_num is not None else 1
+        )
 
     def convert_properties_to_dict(self) -> dict:
         """Get properties dictionary.
@@ -428,7 +432,7 @@ class GeneralParametricSystemSettings:
         """
         self.__additional_settings = value
 
-    def __init__(self, additional_settings: Optional[dict] = {}):
+    def __init__(self, additional_settings: Optional[dict] = None):
         """Initialize the GeneralParametricSystemSettings.
 
         Parameters
@@ -436,7 +440,7 @@ class GeneralParametricSystemSettings:
         additional_settings : Optional[dict], optional
             Additional settings for the parametric system.
         """
-        self.additional_settings = additional_settings
+        self.additional_settings = additional_settings if additional_settings is not None else {}
 
     def convert_properties_to_dict(self) -> dict:
         """Convert the named tuple to a dictionary of properties.
@@ -485,7 +489,7 @@ class WorkFlowTemplate:
     @abstractmethod
     def create_workflow(
         self, parent: ParametricSystem
-    ) -> Tuple[Tuple[ManagedInstance], Tuple[ExecutableBlock]]:  # pragma: no cover
+    ) -> Tuple[Tuple[ManagedInstance, ...], Tuple[ExecutableBlock, ...]]:  # pragma: no cover
         """Abstract method implemented in derived classes.
 
         Parameters
@@ -495,7 +499,7 @@ class WorkFlowTemplate:
 
         Returns
         -------
-        Tuple[ManagedInstance]
+        Tuple[Tuple[ManagedInstance, ...], Tuple[ExecutableBlock, ...]]
             Tuple of managed instances and executable blocks.
 
         """
@@ -510,12 +514,12 @@ class WorkFlowTemplate:
         algorithm_type: nt.NodeType,
         solver_type: nt.NodeType,
         algorithm_name: Optional[str] = None,
-        algorithm_settings: Optional[GeneralAlgorithmSettings] = {},
+        algorithm_settings: Optional[GeneralAlgorithmSettings] = None,
         solver_name: Optional[str] = None,
-        solver_settings: Optional[dict] = {},
-        start_designs: Iterable[Design] = [],
-        connections_algorithm: Optional[Iterable[Tuple[OutputSlot, str]]] = [],
-        connections_solver: Optional[Iterable[Tuple[OutputSlot, str]]] = [],
+        solver_settings: Optional[GeneralNodeSettings] = None,
+        start_designs: Optional[Iterable[Design]] = None,
+        connections_algorithm: Optional[Iterable[Tuple[OutputSlot, str]]] = None,
+        connections_solver: Optional[Iterable[Tuple[OutputSlot, str]]] = None,
     ) -> Tuple[ParametricSystem, IntegrationNode]:
         """Create an algorithm system with solver node and append to managed algorithms.
 
@@ -535,14 +539,14 @@ class WorkFlowTemplate:
             The type of solver node to generate.
         algorithm_name : Optional[str], optional
             Optional name or ID for the algorithm.
-        algorithm_settings :Optional[GeneralAlgorithmSettings] , optional
+        algorithm_settings : Optional[GeneralAlgorithmSettings] , optional
             Additional settings for the algorithm. Settings must be compatible with
             the selected algorithm type.
         solver_name : Optional[str], optional
             Name for the solver node.
-        solver_settings : Optional[dict], optional
+        solver_settings : Optional[GeneralNodeSettings], optional
             Additional settings for the solver node.
-        start_designs : Iterable[Design], optional
+        start_designs : Optional[Iterable[Design]], optional
             Designs to be used as start designs for the algorithm.
         connections_algorithm: Optional[Iterable[Tuple[OutputSlot, str]]]
             Iterable of tuples specifying the connection from each predecessor node to the
@@ -556,13 +560,13 @@ class WorkFlowTemplate:
         ParametricSystem, IntegrationNode
             The created algorithm system and the created solver node.
         """
-        algorithm: ParametricSystem = parent_system.create_node(
-            type_=algorithm_type, name=algorithm_name
-        )
+        algorithm = parent_system.create_node(type_=algorithm_type, name=algorithm_name)
+        assert isinstance(algorithm, ParametricSystem)
 
         # Connect each predecessor if both lists are provided and lengths match
-        for output_slot, input_slot_str in connections_algorithm:
-            output_slot.connect_to(algorithm.get_input_slots(name=input_slot_str)[0])
+        if connections_algorithm:
+            for output_slot, input_slot_str in connections_algorithm:
+                output_slot.connect_to(algorithm.get_input_slots(name=input_slot_str)[0])
 
         settings_dict = (
             algorithm_settings.convert_properties_to_dict()
@@ -600,8 +604,8 @@ class WorkFlowTemplate:
         responses: Iterable[Response],
         solver_type: nt.NodeType,
         solver_name: Optional[str] = None,
-        solver_settings: Optional[GeneralNodeSettings] = {},
-        solver_connections: Optional[Iterable[Tuple[OutputSlot, str]]] = [],
+        solver_settings: Optional[GeneralNodeSettings] = None,
+        solver_connections: Optional[Iterable[Tuple[OutputSlot, str]]] = None,
     ) -> IntegrationNode:  # pragma: no cover
         """Create solver node inside the provided parent parametric system.
 
@@ -628,13 +632,15 @@ class WorkFlowTemplate:
         IntegrationNode
             The created solver node.
         """
-        solver_node: IntegrationNode = parent_system.create_node(
+        solver_node = parent_system.create_node(
             type_=solver_type, name=solver_name, design_flow=DesignFlow.RECEIVE_SEND
         )
+        assert isinstance(solver_node, IntegrationNode)
 
         # Connect each predecessor if both lists are provided and lengths match
-        for output_slot, input_slot_str in solver_connections:
-            output_slot.connect_to(solver_node.get_input_slots(name=input_slot_str)[0])
+        if solver_connections:
+            for output_slot, input_slot_str in solver_connections:
+                output_slot.connect_to(solver_node.get_input_slots(name=input_slot_str)[0])
 
         settings_dict = (
             solver_settings.convert_properties_to_dict()
@@ -648,6 +654,7 @@ class WorkFlowTemplate:
         # TODO: Reimplement registration of locations, when convenience module for registration
         # of locations is introduced. For now, only ProxySolver and Mopsolver is implemented.
         if solver_node.type == nt.ProxySolver:
+            assert isinstance(solver_node, ProxySolverNode)
             self.__register_proxy_solver_locations(solver_node, parameters, responses)
         elif solver_node.type == nt.Mopsolver:
             self.__register_mop_solver_locations(solver_node, parameters, responses)
@@ -668,7 +675,10 @@ class WorkFlowTemplate:
         return solver_node
 
     def __register_proxy_solver_locations(
-        self, solver_node: ProxySolverNode, parameters: List[Parameter], responses: List[Response]
+        self,
+        solver_node: ProxySolverNode,
+        parameters: Iterable[Parameter],
+        responses: Iterable[Response],
     ) -> None:
         """Register proxy solver node locations.
 
@@ -676,12 +686,12 @@ class WorkFlowTemplate:
         ----------
         solver_node : ProxySolverNode
             Instance of the proxy solver node.
-        parameters : List[Parameter]
+        parameters : Iterable[Parameter]
             Parameter to be registered.
-        responses: List[Response]
+        responses: Iterable[Response]
             Responses to be registered.
         """
-        load_json = {}
+        load_json: dict[str, Any] = {}
         load_json["parameters"] = []
         load_json["responses"] = []
         for parameter in parameters:
@@ -706,7 +716,10 @@ class WorkFlowTemplate:
         solver_node.register_locations_as_response()
 
     def __register_mop_solver_locations(
-        self, solver_node: IntegrationNode, parameters: List[Parameter], responses: List[Response]
+        self,
+        solver_node: IntegrationNode,
+        parameters: Iterable[Parameter],
+        responses: Iterable[Response],
     ) -> None:
         """Register mop solver node locations.
 
@@ -714,14 +727,15 @@ class WorkFlowTemplate:
         ----------
         solver_node : IntegrationNode
             Instance of the mop solver node.
-        parameters : List[Parameter]
+        parameters : Iterable[Parameter]
             Parameter to be registered.
-        responses: List[Response]
+        responses: Iterable[Response]
             Responses to be registered.
         """
+        base = next(iter(parameters))
         for parameter in parameters:
             location = {
-                "base": parameters[0].name,
+                "base": base.name,
                 "dir": {"enum": ["input", "output"], "value": "input"},
                 "id": parameter.name,
                 "suffix": "",
@@ -730,7 +744,9 @@ class WorkFlowTemplate:
                     "value": "value",
                 },
             }
-            solver_node.register_location_as_parameter(location, parameter.reference_value)
+            solver_node.register_location_as_parameter(
+                location, parameter.name, parameter.reference_value
+            )
         for response in responses:
             location = {
                 "base": response.name,
@@ -762,13 +778,13 @@ class ParametricSystemIntegrationTemplate(WorkFlowTemplate):
         parameters: Iterable[Parameter],
         solver_type: nt.NodeType,
         parametric_system_name: Optional[str] = None,
-        parametric_system_settings: GeneralAlgorithmSettings = {},
+        parametric_system_settings: Optional[GeneralAlgorithmSettings] = None,
         solver_name: Optional[str] = None,
-        solver_settings: GeneralNodeSettings = None,
+        solver_settings: Optional[GeneralNodeSettings] = None,
         start_designs: Iterable[Design] = [],
-        algorithm_connections: Optional[Iterable[Tuple[OutputSlot, str]]] = [],
-        solver_connections: Optional[Iterable[Tuple[OutputSlot, str]]] = [],
-        criteria: Optional[Iterable[Criterion]] = [],
+        algorithm_connections: Optional[Iterable[Tuple[OutputSlot, str]]] = None,
+        solver_connections: Optional[Iterable[Tuple[OutputSlot, str]]] = None,
+        criteria: Optional[Iterable[Criterion]] = None,
     ):
         """Initialize the ParametricSystemTemplate.
 
@@ -780,11 +796,11 @@ class ParametricSystemIntegrationTemplate(WorkFlowTemplate):
             The type of solver node to generate. Must be integration node.
         parametric_system_name : Optional[str], optional
             Optional name or ID for the parametric system.
-        parametric_system_settings : GeneralAlgorithmSettings, optional
+        parametric_system_settings : Optional[GeneralAlgorithmSettings], optional
             Settings for the parametric system.
         solver_name : Optional[str], optional
             Name for the solver node.
-        solver_settings : GeneralSolverNodeSettings, optional
+        solver_settings : Optional[GeneralSolverNodeSettings], optional
             Settings for the solver node.
         start_designs : Iterable[Design], optional
             Designs to be used as start designs for the parametric system.
@@ -796,9 +812,9 @@ class ParametricSystemIntegrationTemplate(WorkFlowTemplate):
             Iterable of criteria.
         """
         self.parameters = parameters
-        self.responses = []
+        self.responses: Iterable[Response] = []
         self.solver_type = solver_type
-        self.criteria = criteria
+        self.criteria: Iterable[Criterion] = criteria if criteria is not None else []
         self.parametric_system_name = parametric_system_name
         self.parametric_system_settings = parametric_system_settings
         self.solver_name = solver_name
@@ -809,7 +825,7 @@ class ParametricSystemIntegrationTemplate(WorkFlowTemplate):
 
     def create_workflow(
         self, parent: ParametricSystem
-    ) -> Tuple[Tuple[ManagedInstance], Tuple[ExecutableBlock]]:
+    ) -> Tuple[Tuple[ManagedInstance, ...], Tuple[ExecutableBlock, ...]]:
         """Create the workflow template.
 
         Parameters
@@ -818,7 +834,7 @@ class ParametricSystemIntegrationTemplate(WorkFlowTemplate):
             Parent system to create the workflow in.
         Returns
         -------
-        Tuple[Tuple[ManagedInstance], Tuple[ExecutableBlock]]
+        Tuple[Tuple[ManagedInstance, ...], Tuple[ExecutableBlock, ...]]
             Tuple of managed instances and executable blocks.
         """
         parametric_system, solver_node = self.create_algorithm(
@@ -863,12 +879,12 @@ class GeneralAlgorithmTemplate(WorkFlowTemplate):
         algorithm_type: nt.NodeType,
         solver_type: nt.NodeType,
         algorithm_name: Optional[str] = None,
-        algorithm_settings: GeneralAlgorithmSettings = {},
+        algorithm_settings: Optional[GeneralAlgorithmSettings] = None,
         solver_name: Optional[str] = None,
-        solver_settings: GeneralNodeSettings = None,
-        start_designs: Iterable[Design] = [],
-        algorithm_connections: Optional[Iterable[Tuple[OutputSlot, str]]] = [],
-        solver_connections: Optional[Iterable[Tuple[OutputSlot, str]]] = [],
+        solver_settings: Optional[GeneralNodeSettings] = None,
+        start_designs: Optional[Iterable[Design]] = None,
+        algorithm_connections: Optional[Iterable[Tuple[OutputSlot, str]]] = None,
+        solver_connections: Optional[Iterable[Tuple[OutputSlot, str]]] = None,
     ):
         """Initialize the GeneralAlgorithmWorkflow.
 
@@ -887,15 +903,15 @@ class GeneralAlgorithmTemplate(WorkFlowTemplate):
             Currently supported types are ``nt.Mopsolver`` and ``nt.ProxySolver``.
         algorithm_name : Optional[str], optional
             Optional name or ID for the algorithm.
-        algorithm_settings : GeneralAlgorithmSettings, optional
+        algorithm_settings : Optional[GeneralAlgorithmSettings], optional
             Settings for the algorithm. Settings must be compatible with
             the selected algorithm type.
         solver_name : Optional[str], optional
             Name for the solver node.
-        solver_settings : GeneralSolverNodeSettings, optional
+        solver_settings : Optional[GeneralSolverNodeSettings], optional
             Settings for the solver node. Settings must be compatible with
             the selected solver type.
-        start_designs : Iterable[Design], optional
+        start_designs : Optional[Iterable[Design]], optional
             Designs to be used as start designs for the algorithm.
         algorithm_connections: Optional[Iterable[Tuple[OutputSlot, str]]], optional
             Iterable of tuples specifying the connections to the
@@ -919,7 +935,7 @@ class GeneralAlgorithmTemplate(WorkFlowTemplate):
 
     def create_workflow(
         self, parent: ParametricSystem
-    ) -> Tuple[Tuple[ManagedInstance], Tuple[ExecutableBlock]]:
+    ) -> Tuple[Tuple[ManagedInstance, ...], Tuple[ExecutableBlock, ...]]:
         """Create the workflow template.
 
         Parameters
@@ -929,7 +945,7 @@ class GeneralAlgorithmTemplate(WorkFlowTemplate):
 
         Returns
         -------
-        Tuple[Tuple[ManagedInstance], Tuple[ExecutableBlock]]
+        Tuple[Tuple[ManagedInstance, ...], Tuple[ExecutableBlock, ...]]
             Tuple of managed instances and executable blocks.
         """
         algorithm, solver_node = self.create_algorithm(
@@ -947,12 +963,14 @@ class GeneralAlgorithmTemplate(WorkFlowTemplate):
             connections_algorithm=self.algorithm_connections,
             connections_solver=self.solver_connections,
         )
+        instance: ManagedInstance
         if self.solver_type == nt.ProxySolver:
             if not isinstance(self.solver_settings, ProxySolverNodeSettings):
                 raise TypeError(
                     "Incompatible settings. For ``ProxySolver`` node, "
                     "solver_settings must be of type ``ProxySolverNodeSettings``."
                 )
+            assert isinstance(solver_node, ProxySolverNode)
             instance = ProxySolverManagedParametricSystem(
                 algorithm=algorithm,
                 solver_node=solver_node,
@@ -991,10 +1009,10 @@ class OptimizationOnMOPTemplate(WorkFlowTemplate):
         responses: Iterable[Response],
         mop_predecessor: Node,
         optimizer_name: Optional[str] = None,
-        optimizer_type: Optional[nt.NodeType] = nt.OCO,
+        optimizer_type: nt.NodeType = nt.OCO,
         optimizer_start_designs: Optional[Iterable[Design]] = None,
-        callback: Optional[callable] = None,
-        best_designs_num: Optional[int] = 1,
+        callback: Optional[Callable] = None,
+        best_designs_num: int = 1,
     ):
         """Initialize the OptimizationOnMOPTemplate.
 
@@ -1010,15 +1028,15 @@ class OptimizationOnMOPTemplate(WorkFlowTemplate):
             Predecessor of the workflow. Must be either MOP node or AMOP system.
         optimizer_name: Optional[str]
             Name of the optimization algorithm.
-        optimizer_type: Optional[nt.NodeType]
+        optimizer_type: nt.NodeType
             Type of the optimization algorithm, by default OCO.
         optimizer_start_designs: Iterable[Design]
             Start designs.
-        callback: Optional[callable]
+        callback: Optional[Callable]
             ProxySolver node callback processing designs.
             MUST be specified to allow automatic execution. If not specified,
             execution of the proxy solver must be performed by the user.
-        best_designs_num: Optional[int], optional
+        best_designs_num: int, optional
             Number of best designs to be filtered. By default ``1``.
         """
         self.parameters = parameters
@@ -1029,7 +1047,7 @@ class OptimizationOnMOPTemplate(WorkFlowTemplate):
         self.optimizer_type = optimizer_type
         self.optimizer_start_designs = optimizer_start_designs
         if not callback:
-            self.validator_solver_settings = ProxySolverNodeSettings(self.__empty_callback)
+            self.validator_solver_settings = ProxySolverNodeSettings(self.__class__._empty_callback)
             warnings.warn("Callback was not provided, automatic execution won't be possible.")
         else:
             self.validator_solver_settings = ProxySolverNodeSettings(callback=callback)
@@ -1037,7 +1055,7 @@ class OptimizationOnMOPTemplate(WorkFlowTemplate):
 
     def create_workflow(
         self, parent: ParametricSystem
-    ) -> Tuple[Tuple[ManagedInstance], Tuple[ExecutableBlock]]:
+    ) -> Tuple[Tuple[ManagedInstance, ...], Tuple[ExecutableBlock, ...]]:
         """Create the workflow template.
 
         Parameters
@@ -1047,7 +1065,7 @@ class OptimizationOnMOPTemplate(WorkFlowTemplate):
 
         Returns
         -------
-        Tuple[Tuple[ManagedInstance], Tuple[ExecutableBlock]]
+        Tuple[Tuple[ManagedInstance, ...], Tuple[ExecutableBlock, ...]]
             Tuple of managed instances and executable blocks.
         """
         # optimizer
@@ -1059,8 +1077,6 @@ class OptimizationOnMOPTemplate(WorkFlowTemplate):
             algorithm_type=self.optimizer_type,
             solver_type=nt.Mopsolver,
             algorithm_name=self.optimizer_name,
-            algorithm_settings=self.optimizer_settings,
-            solver_settings=self.mop_solver_settings,
             start_designs=self.optimizer_start_designs,
             connections_algorithm=[
                 (self.mop_predecessor.get_output_slots("OParameterManager")[0], "IParameterManager")
@@ -1090,6 +1106,7 @@ class OptimizationOnMOPTemplate(WorkFlowTemplate):
             ],
             connections_solver=[],
         )
+        assert isinstance(validator_solver_node, ProxySolverNode)
         validator_managed_instance = ProxySolverManagedParametricSystem(
             algorithm=validator_system,
             solver_node=validator_solver_node,
@@ -1097,9 +1114,8 @@ class OptimizationOnMOPTemplate(WorkFlowTemplate):
         )
 
         # filter
-        filter_node: IntegrationNode = parent.create_node(
-            type_=nt.DataMining, name="VALIDATOR_FILTER_NODE"
-        )
+        filter_node = parent.create_node(type_=nt.DataMining, name="VALIDATOR_FILTER_NODE")
+        assert isinstance(filter_node, IntegrationNode)
         filter_node.create_input_slot("IBestDesigns", SlotTypeHint.DESIGN_CONTAINER)
         filter_node_managed_instance = ManagedInstance(filter_node)
         optimizer_algorithm.get_output_slots("OBestDesigns")[0].connect_to(
@@ -1140,9 +1156,8 @@ class OptimizationOnMOPTemplate(WorkFlowTemplate):
         )
 
         # design filter
-        append_node: IntegrationNode = parent.create_node(
-            type_=nt.DataMining, name="Append Designs"
-        )
+        append_node = parent.create_node(type_=nt.DataMining, name="Append Designs")
+        assert isinstance(append_node, IntegrationNode)
         append_node.create_input_slot("IDesigns", SlotTypeHint.DESIGN_CONTAINER)
         append_node.create_input_slot("IPath", SlotTypeHint.PATH)
         append_node_managed_instance = ManagedInstance(append_node)
@@ -1227,10 +1242,10 @@ class OptimizationOnMOPTemplate(WorkFlowTemplate):
                 )
             ),
         )
-        return managed_instances, tuple(executable_blocks)
+        return (managed_instances, tuple(executable_blocks))
 
-    @classmethod
-    def __empty_callback(designs: List[dict]):
+    @staticmethod
+    def _empty_callback(designs: List[dict]) -> List[dict]:
         """Empty callback to be used, if not provided by the user."""
         results_designs = []
         for design in designs:
@@ -1239,6 +1254,7 @@ class OptimizationOnMOPTemplate(WorkFlowTemplate):
                     "hid": design["hid"],
                 }
             )
+        return results_designs
 
 
 # endregion
@@ -1248,9 +1264,9 @@ class OptimizationOnMOPTemplate(WorkFlowTemplate):
 def go_to_optislang(
     project_path: Union[str, Path],
     connector_type: nt.NodeType,
-    connector_settings: dict,
     omdb_files: Union[Union[str, Path], List[Union[str, Path]], ParametricDesignStudyManager],
-    parameters: Iterable[Parameter],
+    parameters: Optional[Iterable[Parameter]] = None,
+    connector_settings: Optional[GeneralNodeSettings] = None,
 ) -> Optislang:  # pragma: no cover
     """Generate a new optiSLang project with a parametric system and launch in GUI mode.
 
@@ -1260,13 +1276,13 @@ def go_to_optislang(
         Path to save the generated optiSLang project file.
     connector_type : str
         The type of connector actor.
-    connector_settings : dict
-        Settings for the connector actor.
     omdb_files : Union[Union[str, Path], List[Union[str, Path]], BaseSolverManager]
         OMDB files to include in the project. Can be a path to a folder,
         a list of paths, or an instance of ``BaseSolverManager``.
-    parameters: Iterable[Parameter]
-        Parameters to be included in the parametric system.
+    parameters: Optional[Iterable[Parameter]], optional
+        Parameters to be included in the parametric system, by default `None`.
+    connector_settings : Optional[GeneralNodeSettings], optional
+        Settings for the connector actor, by default `None`.
 
     Returns
     -------
@@ -1274,7 +1290,7 @@ def go_to_optislang(
         The path to the generated optiSLang project file.
     """
     create_optislang_project_with_solver_node(
-        project_path, connector_type, connector_settings, omdb_files, parameters
+        project_path, connector_type, omdb_files, parameters, connector_settings
     )
     osl = Optislang(project_path=project_path, batch=False)
     return osl
@@ -1283,9 +1299,9 @@ def go_to_optislang(
 def create_optislang_project_with_solver_node(
     project_path: Union[str, Path],
     connector_type: nt.NodeType,
-    connector_settings: GeneralNodeSettings,
-    omdb_files: Union[Union[str, Path], List[Union[str, Path]], ParametricDesignStudyManager],
-    parameters: Iterable[Parameter],
+    omdb_files: Union[Union[Path, str], List[Union[Path, str]], ParametricDesignStudyManager],
+    parameters: Optional[Iterable[Parameter]],
+    connector_settings: Optional[GeneralNodeSettings],
 ) -> None:
     """Generate a new optiSLang project with a parametric system and specified connector.
 
@@ -1295,21 +1311,20 @@ def create_optislang_project_with_solver_node(
         Path to save the generated optiSLang project file.
     connector_type : NodeType
         The type of connector actor.
-    connector_settings : GeneralSolverNodeSettings
-        Settings for the connector actor.
-    omdb_files : Union[Union[str, Path], List[Union[str, Path]], BaseSolverManager]
+    omdb_files : Union[Union[str, Path], List[Union[str, Path]], ParametricDesignStudyManager]
         OMDB files to include in the project. Can be a path to a folder,
-        a list of paths, or an instance of ``BaseSolverManager``.
-    parameters: Iterable[Parameter]
-        Parameters to be included in the parametric system.
+        a list of paths, or an instance of `ParametricDesignStudyManager`.
+    parameters: Optional[Iterable[Parameter]], optional
+        Parameters to be included in the parametric system, by default `None`.
+    connector_settings : Optional[GeneralSolverNodeSettings], optional
+        Settings for the connector actor, by default `None`.
     """
     with Optislang(project_path=project_path) as osl:
         omdb_files_provider = OMDBFilesProvider(omdb_files)
-        omdb_files = omdb_files_provider.get_omdb_files()
+        omdb_paths = omdb_files_provider.get_omdb_files()
         ref_dir = osl.application.project.get_reference_dir()
-        for file in omdb_files:
-            file: Path
-            parts = file.parts
+        for path in omdb_paths:
+            parts = path.parts
             for i, part in enumerate(parts):
                 if part.endswith(".opd"):
                     relpath = Path(*parts[i + 1 :])  # everything after the .opd dir
@@ -1320,10 +1335,10 @@ def create_optislang_project_with_solver_node(
                 if not reldirs_full.exists():
                     os.makedirs(reldirs_full)
             target = ref_dir / relpath
-            shutil.copy(file, target)
+            shutil.copy(path, target)
 
         template = ParametricSystemIntegrationTemplate(
-            parameters=parameters,
+            parameters=parameters if parameters is not None else [],
             solver_type=connector_type,
             solver_name="Connector",
             solver_settings=connector_settings,
@@ -1350,6 +1365,7 @@ def create_workflow_from_template(
         The instance of ``Optislang`` with the generated workflow.
     """
     osl = Optislang(project_path=project_path)
+    assert osl.application.project is not None
     template.create_workflow(osl.application.project.root_system)
     return osl
 

@@ -369,7 +369,7 @@ class OptislangPath:
         pass
 
     @abstractmethod
-    def __init__():  # pragma: no cover
+    def __init__(self):  # pragma: no cover
         """``OptislangPath`` class is an abstract base class and cannot be instantiated."""
         pass
 
@@ -390,14 +390,13 @@ class OptislangPath:
         Raises
         ------
         TypeError
-            Raised when an undefined type of path is given.
+            Raised when an unsupported path format or type is provided.
         """
         if "path" in path.keys():
             path = path["path"]
             head = path["split_path"]["head"]
             tail = path["split_path"]["tail"]
             type_ = OptislangPathType.from_str(path["base_path_mode"]["value"])
-            print(type_)
             if type_ == OptislangPathType.ABSOLUTE_PATH:
                 return AbsolutePath(path=Path(tail))
             elif type_ == OptislangPathType.PROJECT_RELATIVE:
@@ -408,6 +407,8 @@ class OptislangPath:
                 return ReferenceFilesDirRelativePath(tail)
             elif type_ == OptislangPathType.WORKING_DIR_RELATIVE:
                 return WorkingDirRelativePath(head, tail)
+            else:
+                raise ValueError(f"Unsupported path type: {type_}")
         elif "id" in path.keys():
             name = path["id"]["name"]
             uuid = path["id"]["uuid"]
@@ -711,18 +712,18 @@ class ProjectRelativePath(OptislangPath):
         return self.__file_path
 
     @file_path.setter
-    def file_path(self, path: Union[str, Path]) -> None:
+    def file_path(self, path: Union[str, Path, None]) -> None:
         """Set path to the file.
 
         Parameters
         ----------
-        path : Union[str, Path]
+        path : Union[str, Path, None]
             Path to the file
         """
-        self.__file_path = Path(path)
+        self.__file_path = Path(path) if path is not None else None
 
     @property
-    def project_dir_path(self) -> Path:
+    def project_dir_path(self) -> Optional[Path]:
         """Path to the project directory.
 
         Returns
@@ -733,15 +734,15 @@ class ProjectRelativePath(OptislangPath):
         return self.__project_dir_path
 
     @project_dir_path.setter
-    def project_dir_path(self, path: Union[str, Path]) -> None:
+    def project_dir_path(self, path: Union[str, Path, None]) -> None:
         """Set path to the project directory.
 
         Parameters
         ----------
-        path : Union[str, Path]
+        path : Union[str, Path, None]
             Path to the project directory
         """
-        self.__project_dir_path = Path(path)
+        self.__project_dir_path = Path(path) if path is not None else None
 
     @property
     def tail(self) -> Path:
@@ -749,7 +750,7 @@ class ProjectRelativePath(OptislangPath):
 
         Returns
         -------
-        Optional[Path]
+        Path
             Path to the file tail
         """
         return self.__tail
@@ -781,8 +782,8 @@ class ProjectRelativePath(OptislangPath):
             Path to the project directory.
         """
         self.tail = tail
-        self.__file_path = Path(file_path) if file_path is not None else None
-        self.__project_dir_path = Path(project_dir_path) if project_dir_path is not None else None
+        self.file_path = file_path
+        self.project_dir_path = project_dir_path
         self.__type = OptislangPathType.PROJECT_RELATIVE
 
     def to_dict(self) -> dict:
@@ -964,7 +965,7 @@ class ReferenceFilesDirRelativePath(OptislangPath):
         return self.__type
 
     @property
-    def file_path(self) -> Path:
+    def file_path(self) -> Optional[Path]:
         """Path to the file.
 
         Returns
@@ -975,18 +976,18 @@ class ReferenceFilesDirRelativePath(OptislangPath):
         return self.__file_path
 
     @file_path.setter
-    def file_path(self, path: Union[str, Path]) -> None:
+    def file_path(self, path: Union[str, Path, None]) -> None:
         """Set path to the file.
 
         Parameters
         ----------
-        path : Union[str, Path]
+        path : Union[str, Path, None]
             Path to the file
         """
-        self.__file_path = Path(path)
+        self.__file_path = Path(path) if path else None
 
     @property
-    def reference_dir_path(self) -> Path:
+    def reference_dir_path(self) -> Optional[Path]:
         """Path to the reference directory.
 
         Returns
@@ -997,15 +998,15 @@ class ReferenceFilesDirRelativePath(OptislangPath):
         return self.__reference_dir_path
 
     @reference_dir_path.setter
-    def reference_dir_path(self, path: Union[str, Path]) -> None:
+    def reference_dir_path(self, path: Union[str, Path, None]) -> None:
         """Set path to the reference directory.
 
         Parameters
         ----------
-        path : Union[str, Path]
+        path : Union[str, Path, None]
             Path to the reference directory
         """
-        self.__reference_dir_path = Path(path)
+        self.__reference_dir_path = Path(path) if path else None
 
     @property
     def tail(self) -> Path:
@@ -1047,8 +1048,8 @@ class ReferenceFilesDirRelativePath(OptislangPath):
             Path to the reference directory.
         """
         self.tail = tail
-        self.__file_path = Path(file_path) if file_path else None
-        self.__reference_dir_path = Path(reference_dir_path) if reference_dir_path else None
+        self.file_path = file_path
+        self.reference_dir_path = reference_dir_path
         self.__type = OptislangPathType.REFERENCE_FILES_DIR_RELATIVE
 
     def to_dict(self) -> dict:
@@ -1182,15 +1183,15 @@ class RegisteredFilePath(OptislangPath):
         return self.__path
 
     @path.setter
-    def path(self, path: Union[str, Path]) -> None:
+    def path(self, path: Union[str, Path, None]) -> None:
         """Set path to the registered file.
 
         Parameters
         ----------
-        path : Union[str, Path]
+        path : Union[str, Path, None]
             Path to the registered file.
         """
-        self.__path = Path(path)
+        self.__path = Path(path) if path else None
 
     def __init__(self, name: str, uuid: str, path: Optional[Union[str, Path]] = None) -> None:
         """Create a ``RegisteredFilePath`` instance.
@@ -1206,7 +1207,7 @@ class RegisteredFilePath(OptislangPath):
         """
         self.name = name
         self.uuid = uuid
-        self.__path = Path(path) if path else None
+        self.path = path
         self.__type = OptislangPathType.REGISTERED_FILE
 
     def convert_to_absolute_path(self) -> AbsolutePath:

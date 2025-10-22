@@ -114,9 +114,10 @@ def test_managed_instances(tmp_example_project):
         assert isinstance(managed_parametric_system.instance, ParametricSystem)
         assert isinstance(managed_parametric_system.solver_node, Node)
 
+        proxy_solver = sensitivity.create_node(nt.ProxySolver)
         dummy_callback = lambda x: x**2
         managed_proxy_parametric_system = ProxySolverManagedParametricSystem(
-            sensitivity, solver, dummy_callback
+            sensitivity, proxy_solver, dummy_callback
         )
         assert isinstance(managed_proxy_parametric_system.instance, ParametricSystem)
         assert isinstance(managed_proxy_parametric_system.solver_node, Node)

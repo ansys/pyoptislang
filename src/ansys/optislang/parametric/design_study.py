@@ -29,9 +29,11 @@ import threading
 import time
 from typing import (
     TYPE_CHECKING,
+    Callable,
     Iterable,
     List,
     Optional,
+    Sequence,
     Tuple,
     Union,
 )
@@ -79,12 +81,12 @@ class OMDBFilesProvider:
     @property
     def input(
         self,
-    ) -> Union[Union[Path, str], Union[List[str], List[Path]], ParametricDesignStudyManager]:
+    ) -> Optional[Union[Union[Path, str], List[Union[Path, str]], ParametricDesignStudyManager]]:
         """Input specifying the OMDB files.
 
         Returns
         -------
-        Union[Union[Path,str], Union[List[str], List[Path]], BaseSolverManager]
+        Optional[Union[Union[Path,str], List[Union[Path, str]], BaseSolverManager]]
             Input specifying the OMDB files. Can be a path to a folder, a list of paths,
             or an instance of BaseSolverManager.
         """
@@ -93,7 +95,7 @@ class OMDBFilesProvider:
     @input.setter
     def input(
         self,
-        value: Union[Union[Path, str], Union[List[str], List[Path]], ParametricDesignStudyManager],
+        value: Union[Union[Path, str], List[Union[Path, str]], ParametricDesignStudyManager, None],
     ):
         self.__input = value
         self.__omdb_files_specification = self.__class__.get_ombd_files_specification_from_input(
@@ -103,7 +105,7 @@ class OMDBFilesProvider:
     def __init__(
         self,
         input: Optional[
-            Union[Union[Path, str], Union[List[str], List[Path]], ParametricDesignStudyManager]
+            Union[Union[Path, str], List[Union[Path, str]], ParametricDesignStudyManager]
         ] = None,
     ):
         """Initialize the OMDBFilesProvider.
@@ -111,37 +113,39 @@ class OMDBFilesProvider:
         Parameters
         ----------
         input : Optional[
-                    Union[Union[Path,str],
-                    Union[List[str], List[Path]],
-                    BaseSolverManager]
+                    Union[
+                        Union[Path,str],
+                        List[Union[Path, str]],
+                        ParametricDesignStudyManager,
+                    ]
             ], optional
             Input specifying the OMDB files. Can be a path to a folder, a list of paths,
-            or an instance of BaseSolverManager.
+            or an instance of `ParametricDesignStudyManager`.
         """
         self.input = input
 
-    def get_omdb_files(self) -> Tuple[Path]:
+    def get_omdb_files(self) -> Tuple[Path, ...]:
         """Get the a tuple of OMDB files to be included in the project.
 
         Returns
         -------
-        Tuple[Path]
+        Tuple[Path, ...]
             Tuple of paths to the OMDB files.
         """
         if self.omdb_files_specification == OMDBFilesSpecificationEnum.DESIGN_STUDY_MANAGER:
+            assert isinstance(self.input, ParametricDesignStudyManager)
             paths = []
             for design_study in self.input.design_studies:
-                paths.extend(
-                    [
-                        file.path
-                        for file in design_study.get_last_parametric_system().get_omdb_files()
-                    ]
-                )
-            return paths
+                parametric_system = design_study.get_last_parametric_system()
+                if parametric_system:
+                    paths.extend([file.path for file in parametric_system.get_omdb_files()])
+            return tuple(paths)
         elif self.omdb_files_specification == OMDBFilesSpecificationEnum.OMDB_FOLDER:
+            assert isinstance(self.input, (Path, str))
             folder_path = Path(self.input)
             return tuple([file for file in folder_path.rglob("*.omdb") if file.is_file()])
         elif self.omdb_files_specification == OMDBFilesSpecificationEnum.OMDB_FILES:
+            assert isinstance(self.input, List)
             return tuple([Path(file) for file in self.input])
         else:
             return tuple([])
@@ -149,14 +153,14 @@ class OMDBFilesProvider:
     @staticmethod
     def get_ombd_files_specification_from_input(
         input: Optional[
-            Union[Union[Path, str], Union[List[str], List[Path]], ParametricDesignStudyManager]
+            Union[Union[Path, str], List[Union[Path, str]], ParametricDesignStudyManager]
         ],
     ):
         """Determine the specification of the OMDB files based on the input.
 
         Parameters
         ----------
-        input : Optional[Union[Union[Path, str], Union[List[str], List[Path]], BaseSolverManager]]
+        input : Optional[Union[Union[Path, str], List[Union[Path, str]], BaseSolverManager]]
             Input specifying the OMDB files. Can be a path to a folder, a list of paths,
             or an instance of BaseSolverManager.
 
@@ -221,7 +225,9 @@ class ManagedParametricSystem(ManagedInstance):
         ParametricSystem
             Instance of the managed algorithm.
         """
-        return super().instance
+        instance = super().instance
+        assert isinstance(instance, ParametricSystem)
+        return instance
 
     @property
     def solver_node(self) -> IntegrationNode:
@@ -232,6 +238,7 @@ class ManagedParametricSystem(ManagedInstance):
         IntegrationNode
             Instance of the solver node inside the managed algorithm.
         """
+        assert isinstance(self.__solver_node, IntegrationNode)
         return self.__solver_node
 
     def __init__(
@@ -256,12 +263,12 @@ class ProxySolverManagedParametricSystem(ManagedParametricSystem):
     """Class storing a managed algorithm with ProxySolver node."""
 
     @property
-    def callback(self) -> callable:
+    def callback(self) -> Callable:
         """A callback function to handle design evaluation results.
 
         Returns
         -------
-        callable
+        Callable
             A callback function to handle design evaluation results.
         """
         return self.__callback
@@ -275,13 +282,15 @@ class ProxySolverManagedParametricSystem(ManagedParametricSystem):
         ProxySolverNode
             Instance of the solver node inside the managed algorithm.
         """
-        return super().solver_node
+        instance = super().solver_node
+        assert isinstance(instance, ProxySolverNode)
+        return instance
 
     def __init__(
         self,
         algorithm: ParametricSystem,
         solver_node: ProxySolverNode,
-        callback: callable,
+        callback: Callable,
     ):
         """Initialize the ManagedAlgorithm.
 
@@ -291,7 +300,7 @@ class ProxySolverManagedParametricSystem(ManagedParametricSystem):
             Instance of the managed parametric system.
         solver_node : ProxySolverNode
             Instance of the proxy solver node inside the managed parametric system.
-        callback: callable
+        callback: Callable
             Callback to be executed by the proxy solver.
         """
         super().__init__(algorithm, solver_node)
@@ -302,40 +311,42 @@ class ExecutableBlock:
     """Class specifying execution options for a set of managed instances."""
 
     @property
-    def instances_with_execution_options(self) -> Tuple[Tuple[ManagedInstance, ExecutionOption]]:
+    def instances_with_execution_options(
+        self,
+    ) -> Tuple[Tuple[ManagedInstance, ExecutionOption], ...]:
         """Get tuple of managed instances and its execution options.
 
         Returns
         -------
-        Tuple[Tuple[ManagedInstance, ExecutionOption]]
+        Tuple[Tuple[ManagedInstance, ExecutionOption], ...]
            Tuple of managed instances and its execution options.
         """
         return tuple(self.__instances)
 
     @property
-    def instances(self) -> Tuple[ManagedInstance]:
+    def instances(self) -> Tuple[ManagedInstance, ...]:
         """Get tuple of managed instances.
 
         Returns
         -------
-        Tuple[ManagedInstance]
+        Tuple[ManagedInstance, ...]
            Tuple of managed instances.
         """
         return tuple([instance[0] for instance in self.__instances])
 
     def __init__(
-        self, instances: Optional[Iterable[Tuple[ManagedInstance, ExecutionOption]]] = []
+        self, instances: Optional[Sequence[Tuple[ManagedInstance, ExecutionOption]]] = None
     ) -> None:
         """Initialize the ExecutableBlock.
 
         Parameters
         ----------
-        instances : Optional[Iterable[Tuple[ManagedInstance, ExecutionOption]]]
+        instances : Optional[Sequence[Tuple[ManagedInstance, ExecutionOption]]], optional
             Subset of instances managed by a single ParametricDesignStudy.
-            Each block must contain maximum of 1 algorithm system.
+            Each block must contain maximum of 1 algorithm system. By default `None`.
         """
-        self.__instances = []
-        if len(instances) > 0:
+        self.__instances: list[Tuple[ManagedInstance, ExecutionOption]] = []
+        if instances is not None:
             for instance, exec_option in instances:
                 self.__instances.append((instance, exec_option))
 
@@ -390,23 +401,23 @@ class ParametricDesignStudy:
     """A class to store data and perform operations on design study."""
 
     @property
-    def managed_instances(self) -> Tuple[ManagedInstance]:
+    def managed_instances(self) -> Tuple[ManagedInstance, ...]:
         """Elementary components of this ParametricStudy.
 
         Returns
         -------
-        Tuple[ManagedInstance]
+        Tuple[ManagedInstance, ...]
             Elementary components of this ParametricStudy.
         """
-        return self.__managed_instances
+        return tuple(self.__managed_instances)
 
     @property
-    def execution_order(self) -> Tuple[ExecutableBlock]:
+    def execution_order(self) -> Tuple[ExecutableBlock, ...]:
         """Get ordered tuple of executable blocks.
 
         Returns
         -------
-        Tuple[ExecutableBlock]
+        Tuple[ExecutableBlock, ...]
             Tuple of executable blocks.
         """
         return tuple(self.__execution_blocks)
@@ -425,8 +436,8 @@ class ParametricDesignStudy:
     def __init__(
         self,
         osl_instance: Optislang,
-        managed_instances: Tuple[ManagedInstance],
-        execution_blocks: Optional[Iterable[ExecutableBlock]] = [],
+        managed_instances: Iterable[ManagedInstance],
+        execution_blocks: Optional[Iterable[ExecutableBlock]] = None,
     ):
         """Initialize the ParametricDesignStudy.
 
@@ -447,8 +458,8 @@ class ParametricDesignStudy:
             if not provided.
         """
         self.__osl_instance: Optislang = osl_instance
-        self.__managed_instances: List[ManagedParametricSystem] = list(managed_instances)
-        if execution_blocks:
+        self.__managed_instances: List[ManagedInstance] = list(managed_instances)
+        if execution_blocks is not None:
             self.__execution_blocks = execution_blocks
         else:
             block = ExecutableBlock()
@@ -475,7 +486,7 @@ class ParametricDesignStudy:
             if block.instances_with_execution_options:
                 blocks.append(block)
             self.__execution_blocks = blocks
-        self.__current_proxy_solver = None
+        self.__current_proxy_solver: ProxySolverNode | None = None
         self.__is_complete = False
 
     def delete(self) -> None:
@@ -544,43 +555,48 @@ class ParametricDesignStudy:
         self.__set_managed_instances_exec_options(execution_options=ExecutionOption.INACTIVE)
         self.__is_complete = False
 
-    def get_result_designs(self) -> Tuple[Design]:
+    def get_result_designs(self) -> Tuple[Design, ...]:
         """Get the result designs of the final parametric system workflow component.
 
         Returns
         -------
-        Tuple[Design]
+        Tuple[Design, ...]
             Tuple of result designs of the managed algorithm.
         """
-        designs = []
+        designs: List[Design] = []
         for item in reversed(self.execution_order):
-            for item, exec_opt in item.instances_with_execution_options:
-                if isinstance(item, ManagedParametricSystem):
-                    designs.extend(item.instance.design_manager.get_designs("0"))
+            for instance in item.instances:
+                if isinstance(instance, ManagedParametricSystem):
+                    designs.extend(instance.instance.design_manager.get_designs("0"))
         return tuple(designs)
 
-    def get_status(self) -> str:
+    def get_status(self) -> Optional[str]:
         """Get project status.
 
         Returns
         -------
-        str
-            Project status.
+        Optional[str]
+            Project status, if any project is loaded, else `None`.
         """
-        return self.__osl_instance.application.project.get_status()
+        return (
+            self.__osl_instance.application.project.get_status()
+            if self.__osl_instance.application.project
+            else None
+        )
 
-    def get_last_parametric_system(self) -> ParametricSystem:
+    def get_last_parametric_system(self) -> Optional[ParametricSystem]:
         """Get the last parametric system workflow component.
 
         Returns
         -------
-        ParametricSystem
-            The last parametric system.
+        Optional[ParametricSystem]
+            The last parametric system, if design study contains any, else `None`.
         """
         for block in reversed(self.execution_order):
             for item in block.instances:
                 if isinstance(item, ManagedParametricSystem):
                     return item.instance
+        return None
 
     def contains_proxy_solver(self) -> bool:
         """Get info whether workflow contains proxy solver.
@@ -603,6 +619,8 @@ class ParametricDesignStudy:
         """
         if self.__current_proxy_solver is not None:
             return self.__current_proxy_solver.get_designs()
+        else:
+            return None
 
     def set_designs(self, designs: List[dict]):
         """Call ``set_designs`` command on proxy solver node in use.
@@ -657,6 +675,8 @@ class ParametricDesignStudy:
 
     def __deactivate_toplevel_nodes(self) -> None:
         """Set all nodes on root level to "Inactive" state."""
+        if not self.__osl_instance.application.project:
+            return
         for node in self.__osl_instance.application.project.root_system.get_nodes():
             node.set_execution_options(ExecutionOption.INACTIVE)
 
@@ -669,7 +689,8 @@ class ParametricDesignStudy:
                     self.__current_proxy_solver = item.solver_node
                 item.instance.set_execution_options(exec_opt)
             # execute whole block
-            self.__osl_instance.application.project.start(wait_for_finished=True)
+            if self.__osl_instance.application.project:
+                self.__osl_instance.application.project.start(wait_for_finished=True)
             # deactivate all instances, when finished
             self.__set_managed_instances_exec_options(ExecutionOption.INACTIVE, block.instances)
             self.__current_proxy_solver = None
@@ -749,7 +770,8 @@ class ParametricDesignStudyManager:
             If ``True``, the algorithm nodes will be deleted from the project. By default ``False``.
         """
         if delete:
-            [design_study.delete() for design_study in self.__design_studies]
+            for design_study in self.__design_studies:
+                design_study.delete()
         self.__design_studies.clear()
 
     def create_design_study(self, workflow: WorkFlowTemplate) -> ParametricDesignStudy:
@@ -765,12 +787,17 @@ class ParametricDesignStudyManager:
         ParametricDesignStudy
             The created design study.
         """
-        managed_instances, executable_blocks = workflow.create_workflow(
-            self.optislang.application.project.root_system
-        )
-        design_study = ParametricDesignStudy(self.optislang, managed_instances, executable_blocks)
-        self.__design_studies.append(design_study)
-        return design_study
+        if self.optislang.application.project:
+            managed_instances, executable_blocks = workflow.create_workflow(
+                self.optislang.application.project.root_system
+            )
+            design_study = ParametricDesignStudy(
+                self.optislang, managed_instances, executable_blocks
+            )
+            self.__design_studies.append(design_study)
+            return design_study
+        else:
+            raise RuntimeError("No project loaded.")
 
     def dispose(self):
         """Dispose the instance of SolverManager and close the associated optiSLang instance."""

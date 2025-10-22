@@ -369,7 +369,11 @@ def test_create_optislang_project_with_solver_node(tmp_path, tmp_example_project
         osl.application.project.reset()
         osl.application.project.start()
     create_optislang_project_with_solver_node(
-        project_path, node_type, settings, example_wdir, _PARAMETERS
+        project_path,
+        node_type,
+        example_wdir,
+        _PARAMETERS,
+        settings,
     )
     copied_files = os.listdir(reference_path)
     assert project_path.exists
