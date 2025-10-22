@@ -19,7 +19,7 @@ Optimization on MOP using a MOP solver to optimize design and ProxySolver for va
 
 Workflow:
   .. image:: ../_static/template_OptimizationOnMOP.png
-     :width: 400
+     :width: 800
      :alt: Result of script.
 
 

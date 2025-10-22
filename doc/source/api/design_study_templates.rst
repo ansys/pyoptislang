@@ -1,5 +1,5 @@
-Design study
-============
+Design study templates
+======================
 
 Node settings
 -------------
