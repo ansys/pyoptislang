@@ -561,7 +561,8 @@ class WorkFlowTemplate:
             The created algorithm system and the created solver node.
         """
         algorithm = parent_system.create_node(type_=algorithm_type, name=algorithm_name)
-        assert isinstance(algorithm, ParametricSystem)
+        if not isinstance(algorithm, ParametricSystem):
+            raise TypeError("Unexpected algorithm type: `{}`".format(type(algorithm)))
 
         # Connect each predecessor if both lists are provided and lengths match
         if connections_algorithm:
@@ -635,7 +636,8 @@ class WorkFlowTemplate:
         solver_node = parent_system.create_node(
             type_=solver_type, name=solver_name, design_flow=DesignFlow.RECEIVE_SEND
         )
-        assert isinstance(solver_node, IntegrationNode)
+        if not isinstance(solver_node, IntegrationNode):
+            raise TypeError("Unexpected solver node type: `{}`".format(type(solver_node)))
 
         # Connect each predecessor if both lists are provided and lengths match
         if solver_connections:
@@ -654,7 +656,8 @@ class WorkFlowTemplate:
         # TODO: Reimplement registration of locations, when convenience module for registration
         # of locations is introduced. For now, only ProxySolver and Mopsolver is implemented.
         if solver_node.type == nt.ProxySolver:
-            assert isinstance(solver_node, ProxySolverNode)
+            if not isinstance(solver_node, ProxySolverNode):
+                raise TypeError("Unexpected solver node type: `{}`".format(type(solver_node)))
             self.__register_proxy_solver_locations(solver_node, parameters, responses)
         elif solver_node.type == nt.Mopsolver:
             self.__register_mop_solver_locations(solver_node, parameters, responses)
@@ -970,7 +973,8 @@ class GeneralAlgorithmTemplate(WorkFlowTemplate):
                     "Incompatible settings. For ``ProxySolver`` node, "
                     "solver_settings must be of type ``ProxySolverNodeSettings``."
                 )
-            assert isinstance(solver_node, ProxySolverNode)
+            if not isinstance(solver_node, ProxySolverNode):
+                raise TypeError("Unexpected solver node type: `{}`".format(type(solver_node)))
             instance = ProxySolverManagedParametricSystem(
                 algorithm=algorithm,
                 solver_node=solver_node,
@@ -998,10 +1002,12 @@ class OptimizationOnMOPTemplate(WorkFlowTemplate):
     Notes
     -----
     Workflow overview:
+
     - **Optimizer**:
         - Algorithm using ``MopSolver`` node as solver, OCO algorithm by default.
     - **Validator**:
         - Parametric system validating best designs using ``ProxySolver`` node.
+
     """
 
     def __init__(
@@ -1108,7 +1114,10 @@ class OptimizationOnMOPTemplate(WorkFlowTemplate):
             ],
             connections_solver=[],
         )
-        assert isinstance(validator_solver_node, ProxySolverNode)
+        if not isinstance(validator_solver_node, ProxySolverNode):
+            raise TypeError(
+                "Unexpected validator solver node type: `{}`".format(type(validator_solver_node))
+            )
         validator_managed_instance = ProxySolverManagedParametricSystem(
             algorithm=validator_system,
             solver_node=validator_solver_node,
@@ -1117,7 +1126,8 @@ class OptimizationOnMOPTemplate(WorkFlowTemplate):
 
         # filter
         filter_node = parent.create_node(type_=nt.DataMining, name="VALIDATOR_FILTER_NODE")
-        assert isinstance(filter_node, IntegrationNode)
+        if not isinstance(filter_node, IntegrationNode):
+            raise TypeError("Unexpected filter node type: `{}`".format(type(validator_solver_node)))
         filter_node.create_input_slot("IBestDesigns", SlotTypeHint.DESIGN_CONTAINER)
         filter_node_managed_instance = ManagedInstance(filter_node)
         optimizer_algorithm.get_output_slots("OBestDesigns")[0].connect_to(
@@ -1159,7 +1169,8 @@ class OptimizationOnMOPTemplate(WorkFlowTemplate):
 
         # design filter
         append_node = parent.create_node(type_=nt.DataMining, name="Append Designs")
-        assert isinstance(append_node, IntegrationNode)
+        if not isinstance(append_node, IntegrationNode):
+            raise TypeError("Unexpected append node type: `{}`".format(type(validator_solver_node)))
         append_node.create_input_slot("IDesigns", SlotTypeHint.DESIGN_CONTAINER)
         append_node.create_input_slot("IPath", SlotTypeHint.PATH)
         append_node_managed_instance = ManagedInstance(append_node)
@@ -1367,7 +1378,8 @@ def create_workflow_from_template(
         The instance of ``Optislang`` with the generated workflow.
     """
     osl = Optislang(project_path=project_path)
-    assert osl.application.project is not None
+    if osl.application.project is None:
+        raise ValueError("Cannot create a workflow without active project.")
     template.create_workflow(osl.application.project.root_system)
     return osl
 

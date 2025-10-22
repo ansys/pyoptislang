@@ -133,7 +133,8 @@ class OMDBFilesProvider:
             Tuple of paths to the OMDB files.
         """
         if self.omdb_files_specification == OMDBFilesSpecificationEnum.DESIGN_STUDY_MANAGER:
-            assert isinstance(self.input, ParametricDesignStudyManager)
+            if not isinstance(self.input, ParametricDesignStudyManager):
+                raise TypeError("Unexpected input type: `{}`".format(type(self.input)))
             paths = []
             for design_study in self.input.design_studies:
                 parametric_system = design_study.get_last_parametric_system()
@@ -141,11 +142,13 @@ class OMDBFilesProvider:
                     paths.extend([file.path for file in parametric_system.get_omdb_files()])
             return tuple(paths)
         elif self.omdb_files_specification == OMDBFilesSpecificationEnum.OMDB_FOLDER:
-            assert isinstance(self.input, (Path, str))
+            if not isinstance(self.input, (Path, str)):
+                raise TypeError("Unexpected input type: `{}`".format(type(self.input)))
             folder_path = Path(self.input)
             return tuple([file for file in folder_path.rglob("*.omdb") if file.is_file()])
         elif self.omdb_files_specification == OMDBFilesSpecificationEnum.OMDB_FILES:
-            assert isinstance(self.input, List)
+            if not isinstance(self.input, List):
+                raise TypeError("Unexpected input type: `{}`".format(type(self.input)))
             return tuple([Path(file) for file in self.input])
         else:
             return tuple([])
@@ -226,7 +229,8 @@ class ManagedParametricSystem(ManagedInstance):
             Instance of the managed algorithm.
         """
         instance = super().instance
-        assert isinstance(instance, ParametricSystem)
+        if not isinstance(instance, ParametricSystem):
+            raise TypeError("Unexpected instance type: `{}`".format(type(instance)))
         return instance
 
     @property
@@ -238,7 +242,8 @@ class ManagedParametricSystem(ManagedInstance):
         IntegrationNode
             Instance of the solver node inside the managed algorithm.
         """
-        assert isinstance(self.__solver_node, IntegrationNode)
+        if not isinstance(self.__solver_node, IntegrationNode):
+            raise TypeError("Unexpected solver node type: `{}`".format(type(self.__solver_node)))
         return self.__solver_node
 
     def __init__(
@@ -283,7 +288,8 @@ class ProxySolverManagedParametricSystem(ManagedParametricSystem):
             Instance of the solver node inside the managed algorithm.
         """
         instance = super().solver_node
-        assert isinstance(instance, ProxySolverNode)
+        if not isinstance(instance, ProxySolverNode):
+            raise TypeError("Unexpected solver node type: `{}`".format(type(instance)))
         return instance
 
     def __init__(
