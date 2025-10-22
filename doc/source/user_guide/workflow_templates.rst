@@ -18,7 +18,7 @@ Optimization on MOP
 Optimization on MOP using a MOP solver to optimize design and ProxySolver for validation.
 
 Workflow:
- .. image:: ../../_static/template_OptimizationOnMOP.png"
+ .. image:: ../_static/template_OptimizationOnMOP.png"
   :width: 400
   :alt: Result of script.
 

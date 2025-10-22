@@ -14,7 +14,7 @@ Node settings
    PythonSolverNodeSettings
 
 System settings
--------------
+---------------
 .. currentmodule:: ansys.optislang.parametric.design_study_templates
 
 .. autosummary::
