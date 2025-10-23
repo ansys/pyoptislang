@@ -46,6 +46,7 @@ from ansys.optislang.core.nodes import (
     ParametricSystem,
     ProxySolverNode,
 )
+from ansys.optislang.core.project_parametric import Design, DesignVariable
 
 if TYPE_CHECKING:
     from ansys.optislang.core.project_parametric import (
@@ -514,20 +515,7 @@ class ParametricDesignStudy:
                 item.instance.set_execution_options(exec_opt)
             # execute whole block (special treatment of proxy solver)
             if proxy_solver:
-                self.__osl_instance.application.project.start(wait_for_finished=False)
-                while True:
-                    status = self.__osl_instance.application.project.get_status()
-                    if status == "FINISHED":
-                        self.__osl_instance.log.info(f"Project status: {status}")
-                        break
-                    elif status == "STOPPED":
-                        self.__osl_instance.log.info(f"Project status: {status}")
-                        break
-                    design_list = proxy_solver.get_designs()
-                    if len(design_list):
-                        responses_dict = callback(design_list)
-                        proxy_solver.set_designs(responses_dict)
-                    time.sleep(0.5)
+                self.__execute_proxy_solver(proxy_solver, callback)
             else:
                 self.__osl_instance.application.project.start()
             # deactivate all instances, when finished
@@ -615,31 +603,34 @@ class ParametricDesignStudy:
         return self.__get_proxy_solver() is not None
 
     # region proxy solver related
-    def get_designs(self) -> Optional[List[dict]]:
+    def get_designs(self) -> Optional[List[Design]]:
         """Call ``get_designs`` command on proxy solver node in use.
 
         Returns
         -------
-        Optional[dict]
-            List of designs dictionaries, if proxy_solver is being executed, else ``None``.
+        Optional[Design]
+            List of designs, if proxy_solver is being executed, else ``None``.
         """
         if self.__current_proxy_solver is not None:
-            return self.__current_proxy_solver.get_designs()
+            designs_list: list[dict] = self.__current_proxy_solver.get_designs()
+            return self.__class__.__convert_design_dicts_to_objects(designs_list)
         else:
             return None
 
-    def set_designs(self, designs: List[dict]):
+    def set_designs(self, designs: List[Design]):
         """Call ``set_designs`` command on proxy solver node in use.
 
         Parameters
         ----------
-        List[dict]
-            List of solved designs dictionaries.
+        List[Design]
+            List of solved design instances.
         """
         if self.__current_proxy_solver is not None:
-            self.__current_proxy_solver.set_designs(designs)
+            responses: list[dict] = self.__class__.__convert_design_object_to_response(designs)
+            self.__current_proxy_solver.set_designs(responses)
 
     # endregion
+
     def __get_proxy_solver(
         self, instances: Optional[Iterable[ManagedInstance]] = []
     ) -> Optional[ProxySolverNode]:
@@ -682,11 +673,12 @@ class ParametricDesignStudy:
     def __deactivate_toplevel_nodes(self) -> None:
         """Set all nodes on root level to "Inactive" state."""
         if not self.__osl_instance.application.project:
-            return
+            raise RuntimeError("No project loaded.")
         for node in self.__osl_instance.application.project.root_system.get_nodes():
             node.set_execution_options(ExecutionOption.INACTIVE)
 
     def __start_in_thread(self) -> None:
+        """Target method to be started in a new thread."""
         for block in self.execution_order:
             self.__current_proxy_solver = None
             # set exec options for each instance in executable block
@@ -695,12 +687,72 @@ class ParametricDesignStudy:
                     self.__current_proxy_solver = item.solver_node
                 item.instance.set_execution_options(exec_opt)
             # execute whole block
-            if self.__osl_instance.application.project:
-                self.__osl_instance.application.project.start(wait_for_finished=True)
+            if not self.__osl_instance.application.project:
+                raise RuntimeError("No project loaded.")
+            self.__osl_instance.application.project.start(wait_for_finished=True)
             # deactivate all instances, when finished
             self.__set_managed_instances_exec_options(ExecutionOption.INACTIVE, block.instances)
             self.__current_proxy_solver = None
         self.__is_complete = True
+
+    def __execute_proxy_solver(self, proxy_solver: ProxySolverNode, callback: Callable) -> None:
+        """Execute the proxy solver node using callback.
+
+        Parameters
+        ----------
+        proxy_solver : ProxySolverNode
+            Proxy solver to be executed.
+        callback : Callable
+            Callback obtaining input designs and returning results.
+        """
+        if not self.__osl_instance.application.project:
+            raise RuntimeError("No project loaded.")
+        self.__osl_instance.application.project.start(wait_for_finished=False)
+        while True:
+            status = self.__osl_instance.application.project.get_status()
+            if status == "FINISHED":
+                self.__osl_instance.log.info(f"Project status: {status}")
+                break
+            elif status == "STOPPED":
+                self.__osl_instance.log.info(f"Project status: {status}")
+                break
+            design_list: List[dict] = proxy_solver.get_designs()
+            if len(design_list):
+                design_objects: List[Design] = self.__class__.__convert_design_dicts_to_objects(
+                    design_list
+                )
+                responses_objects: List[Design] = callback(design_objects)
+                responses_list = self.__class__.__convert_design_object_to_response(
+                    responses_objects
+                )
+                proxy_solver.set_designs(responses_list)
+            time.sleep(0.5)
+
+    @staticmethod
+    def __convert_design_dicts_to_objects(design_list: List[dict]) -> List[Design]:
+        design_objects = []
+        for design in design_list:
+            parameters = [
+                DesignVariable(name=parameter.get("name"), value=parameter.get("value"))
+                for parameter in design.get("parameters") or []
+            ]
+            design_objects.append(Design(parameters=parameters, design_id=design["hid"]))
+        return design_objects
+
+    @staticmethod
+    def __convert_design_object_to_response(responses_objects: List[Design]) -> List[dict]:
+        responses_list = []
+        for design in responses_objects:
+            responses_list.append(
+                {
+                    "hid": design.id,
+                    "responses": [
+                        {"name": response.name, "value": response.value}
+                        for response in design.responses
+                    ],
+                }
+            )
+        return responses_list
 
 
 class ParametricDesignStudyManager:

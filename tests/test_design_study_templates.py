@@ -269,8 +269,9 @@ except:
     Y = 0
 """
     template = ParametricSystemIntegrationTemplate(
-        _PARAMETERS,
         nt.Python2,
+        _PARAMETERS,
+        _RESPONSES,
         "ParSys",
         None,
         "Python",
@@ -373,6 +374,7 @@ def test_create_optislang_project_with_solver_node(tmp_path, tmp_example_project
         node_type,
         example_wdir,
         _PARAMETERS,
+        _RESPONSES,
         settings,
     )
     copied_files = os.listdir(reference_path)

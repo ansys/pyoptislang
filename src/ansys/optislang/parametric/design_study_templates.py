@@ -593,9 +593,9 @@ class WorkFlowTemplate:
         for criterion in criteria:
             algorithm.criteria_manager.add_criterion(criterion)
 
-        # TODO: implement `set_start_designs` command
-        # for start_design in start_designs:
-        #     algorithm.design_manager.set_start_design()
+        if start_designs:
+            algorithm.design_manager.set_start_designs(start_designs=start_designs)
+
         return algorithm, solver_node
 
     def create_solver_node(
@@ -619,7 +619,9 @@ class WorkFlowTemplate:
         responses : Iterable[Response]
             Registered responses of the solver node.
         solver_type: nt.NodeType
-            The type of solver to create. Supported types are ``nt.Mopsolver``.
+            The type of solver to create. Supported types are ``nt.Mopsolver``, `nt.ProxySolver`,
+            `nt.CalculatorSet`, `nt.Python2` and integration nodes implementing registration of
+            all available locations as parameters/responses.
         solver_name : Optional[str], optional
             Solver node name.
         solver_settings : Optional[GeneralSolverNodeSettings], optional
@@ -661,18 +663,8 @@ class WorkFlowTemplate:
             self.__register_proxy_solver_locations(solver_node, parameters, responses)
         elif solver_node.type == nt.Mopsolver:
             self.__register_mop_solver_locations(solver_node, parameters, responses)
-        elif solver_node.type == nt.CalculatorSet:
-            # TODO: implement
-            pass
         elif solver_node.type == nt.Python2:
-            # TODO: implement
-            pass
-        elif solver_node.type == nt.PythonScript:
-            # TODO: implement
-            pass
-        elif solver_node.type == nt.Process:
-            # TODO: implement
-            pass
+            self.__register_python2_locations(solver_node, parameters, responses)
         else:
             self.__register_integration_node_locations(solver_node)
         return solver_node
@@ -762,6 +754,37 @@ class WorkFlowTemplate:
                 location, reference_value=response.reference_value
             )
 
+    def __register_python2_locations(
+        self,
+        solver_node: IntegrationNode,
+        parameters: Iterable[Parameter],
+        responses: Iterable[Response],
+    ) -> None:
+        """Register python2 node locations.
+
+        Parameters
+        ----------
+        solver_node : IntegrationNode
+            Instance of the python solver node.
+        parameters : Iterable[Parameter]
+            Parameter to be registered.
+        responses: Iterable[Response]
+            Responses to be registered.
+        """
+        solver_node.load()
+        for parameter in parameters:
+            solver_node.register_location_as_parameter(
+                location=parameter.name,
+                name=parameter.name,
+                reference_value=parameter.reference_value,
+            )
+        for response in responses:
+            solver_node.register_location_as_response(
+                location=response.name,
+                name=response.name,
+                reference_value=response.reference_value,
+            )
+
     def __register_integration_node_locations(self, solver_node: IntegrationNode) -> None:
         """Register integration node locations using `load` method.
 
@@ -771,6 +794,8 @@ class WorkFlowTemplate:
             Instance of the integration_node.
         """
         solver_node.load()
+        solver_node.register_locations_as_parameter()
+        solver_node.register_locations_as_response()
 
 
 class ParametricSystemIntegrationTemplate(WorkFlowTemplate):
@@ -778,8 +803,9 @@ class ParametricSystemIntegrationTemplate(WorkFlowTemplate):
 
     def __init__(
         self,
-        parameters: Iterable[Parameter],
         solver_type: nt.NodeType,
+        parameters: Iterable[Parameter],
+        responses: Optional[Iterable[Response]] = None,
         parametric_system_name: Optional[str] = None,
         parametric_system_settings: Optional[GeneralAlgorithmSettings] = None,
         solver_name: Optional[str] = None,
@@ -793,10 +819,12 @@ class ParametricSystemIntegrationTemplate(WorkFlowTemplate):
 
         Parameters
         ----------
-        parameters : Iterable[Parameter]
-            Parameters to be included in the parametric system.
         solver_type : nt.NodeType
             The type of solver node to generate. Must be integration node.
+        parameters : Iterable[Parameter]
+            Parameters to be included in the parametric system.
+        responses : Optional[Iterable[Response]], optional
+            Responses to be included in the parametric system. By default `None`.
         parametric_system_name : Optional[str], optional
             Optional name or ID for the parametric system.
         parametric_system_settings : Optional[GeneralAlgorithmSettings], optional
@@ -815,7 +843,7 @@ class ParametricSystemIntegrationTemplate(WorkFlowTemplate):
             Iterable of criteria.
         """
         self.parameters = parameters
-        self.responses: Iterable[Response] = []
+        self.responses = responses if responses is not None else []
         self.solver_type = solver_type
         self.criteria: Iterable[Criterion] = criteria if criteria is not None else []
         self.parametric_system_name = parametric_system_name
@@ -1020,7 +1048,6 @@ class OptimizationOnMOPTemplate(WorkFlowTemplate):
         optimizer_type: nt.NodeType = nt.OCO,
         optimizer_start_designs: Optional[Iterable[Design]] = None,
         callback: Optional[Callable] = None,
-        best_designs_num: int = 1,
     ):
         """Initialize the OptimizationOnMOPTemplate.
 
@@ -1044,8 +1071,8 @@ class OptimizationOnMOPTemplate(WorkFlowTemplate):
             ProxySolver node callback processing designs.
             MUST be specified to allow automatic execution. If not specified,
             execution of the proxy solver must be performed by the user.
-        best_designs_num: int, optional
-            Number of best designs to be filtered. By default ``1``.
+            Input into callback function is a list of `Design` instances, iterable
+            of resulting `Design` instances is expected as output.
         """
         self.parameters = parameters
         self.criteria = criteria
@@ -1059,7 +1086,6 @@ class OptimizationOnMOPTemplate(WorkFlowTemplate):
             warnings.warn("Callback was not provided, automatic execution won't be possible.")
         else:
             self.validator_solver_settings = ProxySolverNodeSettings(callback=callback)
-        self.best_designs_num = best_designs_num
 
     def create_workflow(
         self, parent: ParametricSystem
@@ -1152,7 +1178,7 @@ class OptimizationOnMOPTemplate(WorkFlowTemplate):
 
         getbestdesigns = {
             "First": {"name": "GetBestDesigns"},
-            "Second": [{"design_container": []}, {"design_entry": self.best_designs_num}],
+            "Second": [{"design_container": []}, {"design_entry": 1}],
         }
 
         dmm = filter_node.get_property("DataMiningManager")
@@ -1279,6 +1305,7 @@ def go_to_optislang(
     connector_type: nt.NodeType,
     omdb_files: Union[Union[str, Path], List[Union[str, Path]], ParametricDesignStudyManager],
     parameters: Optional[Iterable[Parameter]] = None,
+    responses: Optional[Iterable[Response]] = None,
     connector_settings: Optional[GeneralNodeSettings] = None,
 ) -> Optislang:  # pragma: no cover
     """Generate a new optiSLang project with a parametric system and launch in GUI mode.
@@ -1294,6 +1321,8 @@ def go_to_optislang(
         a list of paths, or an instance of ``BaseSolverManager``.
     parameters: Optional[Iterable[Parameter]], optional
         Parameters to be included in the parametric system, by default `None`.
+    response: Optional[Iterable[Response]], optional
+        Responses to be included in the parametric system, by default `None`.
     connector_settings : Optional[GeneralNodeSettings], optional
         Settings for the connector actor, by default `None`.
 
@@ -1303,7 +1332,7 @@ def go_to_optislang(
         The path to the generated optiSLang project file.
     """
     create_optislang_project_with_solver_node(
-        project_path, connector_type, omdb_files, parameters, connector_settings
+        project_path, connector_type, omdb_files, parameters, responses, connector_settings
     )
     osl = Optislang(project_path=project_path, batch=False)
     return osl
@@ -1313,8 +1342,9 @@ def create_optislang_project_with_solver_node(
     project_path: Union[str, Path],
     connector_type: nt.NodeType,
     omdb_files: Union[Union[Path, str], List[Union[Path, str]], ParametricDesignStudyManager],
-    parameters: Optional[Iterable[Parameter]],
-    connector_settings: Optional[GeneralNodeSettings],
+    parameters: Optional[Iterable[Parameter]] = None,
+    responses: Optional[Iterable[Response]] = None,
+    connector_settings: Optional[GeneralNodeSettings] = None,
 ) -> None:
     """Generate a new optiSLang project with a parametric system and specified connector.
 
@@ -1329,13 +1359,15 @@ def create_optislang_project_with_solver_node(
         a list of paths, or an instance of `ParametricDesignStudyManager`.
     parameters: Optional[Iterable[Parameter]], optional
         Parameters to be included in the parametric system, by default `None`.
+    responses: Optional[Iterable[Parameter]], optional
+        Response to be included in the parametric system, by default `None`.
     connector_settings : Optional[GeneralSolverNodeSettings], optional
         Settings for the connector actor, by default `None`.
     """
     with Optislang(project_path=project_path) as osl:
         omdb_files_provider = OMDBFilesProvider(omdb_files)
         omdb_paths = omdb_files_provider.get_omdb_files()
-        ref_dir = osl.application.project.get_reference_dir()
+        ref_dir = osl.application.project.get_reference_files_dir()
         for path in omdb_paths:
             parts = path.parts
             for i, part in enumerate(parts):
@@ -1352,6 +1384,7 @@ def create_optislang_project_with_solver_node(
 
         template = ParametricSystemIntegrationTemplate(
             parameters=parameters if parameters is not None else [],
+            responses=responses if responses is not None else [],
             solver_type=connector_type,
             solver_name="Connector",
             solver_settings=connector_settings,

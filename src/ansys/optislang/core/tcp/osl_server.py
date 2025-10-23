@@ -4588,6 +4588,35 @@ class TcpOslServer(OslServer):
             max_request_attempts=self.max_request_attempts_register.get_value(current_func_name),
         )
 
+    def set_start_designs(self, actor_uid: str, start_designs: Iterable[dict]) -> None:
+        """Set the start designs of the system and evaluates their criteria.
+
+        Parameters
+        ----------
+        actor_uid : str
+            Actor uid.
+        start_designs : Iterable[dict]
+            Iterable of calculated designs.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        # TODO: test
+        current_func_name = self.set_start_designs.__name__
+        self.send_command(
+            command=commands.set_start_designs(
+                actor_uid=actor_uid, start_designs=list(start_designs), password=self.__password
+            ),
+            timeout=self.timeouts_register.get_value(current_func_name),
+            max_request_attempts=self.max_request_attempts_register.get_value(current_func_name),
+        )
+
     @deprecated(
         version="0.5.0",
         reason="Use :py:attr:`TcpOslServer.timeouts_register.default_value` instead.",
