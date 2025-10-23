@@ -1046,6 +1046,7 @@ class OptimizationOnMOPTemplate(WorkFlowTemplate):
         mop_predecessor: Node,
         optimizer_name: Optional[str] = None,
         optimizer_type: nt.NodeType = nt.OCO,
+        optimizer_settings: Optional[GeneralAlgorithmSettings] = None,
         optimizer_start_designs: Optional[Iterable[Design]] = None,
         callback: Optional[Callable] = None,
     ):
@@ -1065,6 +1066,8 @@ class OptimizationOnMOPTemplate(WorkFlowTemplate):
             Name of the optimization algorithm.
         optimizer_type: nt.NodeType
             Type of the optimization algorithm, by default OCO.
+        optimizer_settings: Optional[GeneralAlgorithmSettings], optional
+            Settings for the optimization algorithm.
         optimizer_start_designs: Iterable[Design]
             Start designs.
         callback: Optional[Callable]
@@ -1080,6 +1083,7 @@ class OptimizationOnMOPTemplate(WorkFlowTemplate):
         self.mop_predecessor = mop_predecessor
         self.optimizer_name = optimizer_name
         self.optimizer_type = optimizer_type
+        self.optimizer_settings = optimizer_settings
         self.optimizer_start_designs = optimizer_start_designs
         if not callback:
             self.validator_solver_settings = ProxySolverNodeSettings(self.__class__._empty_callback)
@@ -1111,6 +1115,7 @@ class OptimizationOnMOPTemplate(WorkFlowTemplate):
             algorithm_type=self.optimizer_type,
             solver_type=nt.Mopsolver,
             algorithm_name=self.optimizer_name,
+            algorithm_settings=self.optimizer_settings,
             start_designs=self.optimizer_start_designs,
             connections_algorithm=[
                 (self.mop_predecessor.get_output_slots("OParameterManager")[0], "IParameterManager")
