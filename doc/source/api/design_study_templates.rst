@@ -30,9 +30,6 @@ Workflows
 .. autosummary::
    :toctree: _autosummary
 
-   WorkFlowTemplate
-   ParametricSystemIntegrationTemplate
-   GeneralAlgorithmTemplate
    OptimizationOnMOPTemplate
 
 Helper functions
@@ -43,5 +40,3 @@ Helper functions
    :toctree: _autosummary
 
    go_to_optislang
-   create_optislang_project_with_solver_node
-   create_workflow_from_template
