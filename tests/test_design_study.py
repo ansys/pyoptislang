@@ -31,6 +31,8 @@ from ansys.optislang.core.nodes import Node, ParametricSystem
 from ansys.optislang.core.project_parametric import (
     ComparisonType,
     ConstraintCriterion,
+    Design,
+    DesignVariable,
     ObjectiveCriterion,
     OptimizationParameter,
     Response,
@@ -242,25 +244,25 @@ def test_parametric_desings_study_thread_exec(tmp_path):
     """Test `ParametricDesignStudy` class execution in non-blocking mode."""
     project = tmp_path / "Thread_exec.opf"
 
-    def calculator(designs):
+    def calculator(designs: list[Design]):
         results_designs = []
         for design in designs:
-            for param in design["parameters"]:
-                if param["name"] == "param1":
-                    x1 = param["value"]
-                elif param["name"] == "param2":
-                    x2 = param["value"]
-                elif param["name"] == "param3":
-                    x3 = param["value"]
+            for param in design.parameters:
+                if param.name == "param1":
+                    x1 = param.value
+                elif param.name == "param2":
+                    x2 = param.value
+                elif param.name == "param3":
+                    x3 = param.value
             res1, res2 = calculator_function(x1, x2, x3)
             results_designs.append(
-                {
-                    "hid": design["hid"],
-                    "responses": [
-                        {"name": "response1", "value": res1},
-                        {"name": "response2", "value": res2},
+                Design(
+                    responses=[
+                        DesignVariable("response1", res1),
+                        DesignVariable("response2", res2),
                     ],
-                }
+                    design_id=design.id,
+                )
             )
         return results_designs
 
@@ -411,25 +413,25 @@ def test_parametric_design_study_manager_initialized_osl(tmp_example_project):
 def test_parametric_design_study_manager_initialize_osl(tmp_path):
     """Test `ParametricDesignStudyManaged` class init without provided optiSLang instance."""
 
-    def calculator(designs):
+    def calculator(designs: list[Design]):
         results_designs = []
         for design in designs:
-            for param in design["parameters"]:
-                if param["name"] == "param1":
-                    x1 = param["value"]
-                elif param["name"] == "param2":
-                    x2 = param["value"]
-                elif param["name"] == "param3":
-                    x3 = param["value"]
+            for param in design.parameters:
+                if param.name == "param1":
+                    x1 = param.value
+                elif param.name == "param2":
+                    x2 = param.value
+                elif param.name == "param3":
+                    x3 = param.value
             res1, res2 = calculator_function(x1, x2, x3)
             results_designs.append(
-                {
-                    "hid": design["hid"],
-                    "responses": [
-                        {"name": "response1", "value": res1},
-                        {"name": "response2", "value": res2},
+                Design(
+                    responses=[
+                        DesignVariable("response1", res1),
+                        DesignVariable("response2", res2),
                     ],
-                }
+                    design_id=design.id,
+                )
             )
         return results_designs
 
