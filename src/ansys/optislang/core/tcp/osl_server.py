@@ -722,6 +722,9 @@ class TcpOslListener:
             Nodes: [ "ACTOR_STATE_CHANGED", "ACTOR_ACTIVE_CHANGED", "ACTOR_NAME_CHANGED",
                 "ACTOR_CONTENTS_CHANGED", "ACTOR_DATA_CHANGED" ].
             Defaults to ``None``.
+        register_timeout : Optional[int], optional
+            Register timeout for TCP listeners in milliseconds. Defaults to ``None`` which
+            results in optiSLang using the default timeout value of 60000 milliseconds.
 
     Raises
     ------
@@ -756,6 +759,7 @@ class TcpOslListener:
         uid: Optional[str] = None,
         logger: Optional[Any] = None,
         notifications: Optional[List[ServerNotification]] = None,
+        register_timeout: Optional[int] = None,
     ):
         """Initialize a new instance of the ``TcpOslListener`` class."""
         self.__uid = uid
@@ -767,6 +771,7 @@ class TcpOslListener:
         self.__run_listening_thread = False
         self.__refresh_listener_registration = False
         self.__notifications = notifications
+        self.__register_timeout = register_timeout
 
         if logger is None:
             self._logger = logging.getLogger(__name__)
@@ -816,6 +821,15 @@ class TcpOslListener:
     @timeout.setter
     def timeout(self, timeout) -> None:
         self.__timeout = timeout
+
+    @property
+    def register_timeout(self) -> Optional[float]:
+        """Register timeout in milliseconds."""
+        return self.__register_timeout
+
+    @register_timeout.setter
+    def register_timeout(self, register_timeout) -> None:
+        self.__register_timeout = register_timeout
 
     @property
     def host_addresses(self) -> List[str]:
@@ -1304,6 +1318,7 @@ class TcpOslServer(OslServer):
         else:
             listener = self.__create_listener(
                 timeout=None,  # type:ignore[arg-type]
+                register_timeout=self.__listeners_default_timeout,
                 name="Main",
                 uid=self.__listener_id,
                 notifications=[
@@ -4970,6 +4985,7 @@ class TcpOslServer(OslServer):
         listener = self.__create_listener(
             uid=self.__listener_id if self.__listener_id else str(uuid.uuid4()),
             timeout=None,  # type: ignore[arg-type]
+            register_timeout=self.__listeners_default_timeout,
             name="Main",
             notifications=[
                 ServerNotification.SERVER_UP,
@@ -5075,6 +5091,7 @@ class TcpOslServer(OslServer):
         name: str,
         uid: Optional[str] = None,
         notifications: Optional[List[ServerNotification]] = None,
+        register_timeout: Optional[int] = None,
     ) -> TcpOslListener:
         """Create new listener.
 
@@ -5094,6 +5111,9 @@ class TcpOslServer(OslServer):
             Nodes: [ "ACTOR_STATE_CHANGED", "ACTOR_ACTIVE_CHANGED", "ACTOR_NAME_CHANGED",
                 "ACTOR_CONTENTS_CHANGED", "ACTOR_DATA_CHANGED" ].
             Defaults to ``None``.
+        register_timeout : Optional[int], optional
+            Register timeout for TCP listeners in milliseconds. Defaults to ``None`` which
+            results in optiSLang using the default timeout value of 60000 milliseconds.
 
         Returns
         -------
@@ -5116,6 +5136,7 @@ class TcpOslServer(OslServer):
             uid=uid,
             logger=self._logger,
             notifications=notifications,
+            register_timeout=register_timeout,
         )
 
         if not listener.is_initialized():
@@ -5145,6 +5166,7 @@ class TcpOslServer(OslServer):
         """
         exec_started_listener = self.__create_listener(
             timeout=timeout,  # type: ignore[arg-type]
+            register_timeout=self.__listeners_default_timeout,
             name="ExecStarted",
             notifications=[
                 ServerNotification.PROCESSING_STARTED,
@@ -5192,6 +5214,7 @@ class TcpOslServer(OslServer):
         """
         exec_finished_listener = self.__create_listener(
             timeout=timeout,  # type: ignore[arg-type]
+            register_timeout=self.__listeners_default_timeout,
             name="ExecFinished",
             notifications=[
                 ServerNotification.EXECUTION_FINISHED,
@@ -5385,7 +5408,8 @@ class TcpOslServer(OslServer):
                                     register_listener_options = {
                                         k: v
                                         for k, v in {
-                                            "timeout": self.__listeners_default_timeout,
+                                            "timeout": listener.register_timeout
+                                            or self.__listeners_default_timeout,
                                             "notifications": listener.notifications,
                                             "explicit_listener_id": listener.uid,
                                         }.items()
@@ -5402,6 +5426,13 @@ class TcpOslServer(OslServer):
                                         listener.uid,
                                         str(e),
                                     )
+                        except Exception as e:
+                            self._logger.debug(
+                                "Refreshing registration for listener %s failed: %s",
+                                listener.uid,
+                                str(e),
+                            )
+                            pass
                 counter = 0
             counter += check_for_refresh
             self.__refresh_listeners_stopped.wait(check_for_refresh)
