@@ -823,12 +823,12 @@ class TcpOslListener:
         self.__timeout = timeout
 
     @property
-    def register_timeout(self) -> Optional[float]:
+    def register_timeout(self) -> Optional[int]:
         """Register timeout in milliseconds."""
         return self.__register_timeout
 
     @register_timeout.setter
-    def register_timeout(self, register_timeout) -> None:
+    def register_timeout(self, register_timeout: Optional[int]) -> None:
         self.__register_timeout = register_timeout
 
     @property
