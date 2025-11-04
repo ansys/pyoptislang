@@ -1312,6 +1312,7 @@ def go_to_optislang(
     parameters: Optional[Iterable[Parameter]] = None,
     responses: Optional[Iterable[Response]] = None,
     connector_settings: Optional[GeneralNodeSettings] = None,
+    **kwargs,
 ) -> Optislang:  # pragma: no cover
     """Generate a new optiSLang project with a parametric system and launch in GUI mode.
 
@@ -1330,16 +1331,29 @@ def go_to_optislang(
         Responses to be included in the parametric system, by default `None`.
     connector_settings : Optional[GeneralNodeSettings], optional
         Settings for the connector actor, by default `None`.
+    **kwargs
+        Additional keyword arguments, used to initialize the optislang instance.
+        `project_path` and `batch` kwargs are ignored.
 
     Returns
     -------
     Path
         The path to the generated optiSLang project file.
     """
+    kwargs.pop("project_path", None)
+    kwargs.pop("batch", None)
+
     create_optislang_project_with_solver_node(
-        project_path, connector_type, omdb_files, parameters, responses, connector_settings
+        project_path,
+        connector_type,
+        omdb_files,
+        parameters,
+        responses,
+        connector_settings,
+        **kwargs,
     )
-    osl = Optislang(project_path=project_path, batch=False)
+
+    osl = Optislang(project_path=project_path, batch=False, **kwargs)
     return osl
 
 
@@ -1350,6 +1364,7 @@ def create_optislang_project_with_solver_node(
     parameters: Optional[Iterable[Parameter]] = None,
     responses: Optional[Iterable[Response]] = None,
     connector_settings: Optional[GeneralNodeSettings] = None,
+    **kwargs,
 ) -> None:
     """Generate a new optiSLang project with a parametric system and specified connector.
 
@@ -1368,8 +1383,12 @@ def create_optislang_project_with_solver_node(
         Response to be included in the parametric system, by default `None`.
     connector_settings : Optional[GeneralSolverNodeSettings], optional
         Settings for the connector actor, by default `None`.
+    **kwargs
+        Additional keyword arguments, used to initialize the optislang instance.
+        `project_path` kwarg is ignored.
     """
-    with Optislang(project_path=project_path) as osl:
+    kwargs["project_path"] = project_path
+    with Optislang(**kwargs) as osl:
         omdb_files_provider = OMDBFilesProvider(omdb_files)
         omdb_paths = omdb_files_provider.get_omdb_files()
         ref_dir = osl.application.project.get_reference_files_dir()
@@ -1402,6 +1421,7 @@ def create_optislang_project_with_solver_node(
 def create_workflow_from_template(
     template: WorkFlowTemplate,
     project_path: Optional[Union[str, Path]] = None,
+    **kwargs,
 ) -> Optislang:
     """Generate a new optiSLang project with a workflow based on the provided template.
 
@@ -1409,13 +1429,20 @@ def create_workflow_from_template(
     ----------
     template : WorkFlowTemplate
         The workflow template to use.
+    project_path: Optional[Union[str,Path]], optional
+        Path to save the generated optiSLang project file.
+    **kwargs
+        Additional keyword arguments, used to initialize the optislang instance.
+        If `project_path` arg is provided, `project_path` kwarg is ignored.
 
     Returns
     -------
     Optislang
         The instance of ``Optislang`` with the generated workflow.
     """
-    osl = Optislang(project_path=project_path)
+    if project_path:
+        kwargs["project_path"] = project_path
+    osl = Optislang(**kwargs)
     if osl.application.project is None:
         raise ValueError("Cannot create a workflow without active project.")
     template.create_workflow(osl.application.project.root_system)
