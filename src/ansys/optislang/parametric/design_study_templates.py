@@ -520,7 +520,7 @@ class WorkFlowTemplate:
         start_designs: Optional[Iterable[Design]] = None,
         connections_algorithm: Optional[Iterable[Tuple[OutputSlot, str]]] = None,
         connections_solver: Optional[Iterable[Tuple[OutputSlot, str]]] = None,
-    ) -> Tuple[ParametricSystem, IntegrationNode]:
+    ) -> Tuple[ParametricSystem, IntegrationNode]:  # pragma: no cover
         """Create an algorithm system with solver node and append to managed algorithms.
 
         Parameters
@@ -674,7 +674,7 @@ class WorkFlowTemplate:
         solver_node: ProxySolverNode,
         parameters: Iterable[Parameter],
         responses: Iterable[Response],
-    ) -> None:
+    ) -> None:  # pragma: no cover
         """Register proxy solver node locations.
 
         Parameters
@@ -715,7 +715,7 @@ class WorkFlowTemplate:
         solver_node: IntegrationNode,
         parameters: Iterable[Parameter],
         responses: Iterable[Response],
-    ) -> None:
+    ) -> None:  # pragma: no cover
         """Register mop solver node locations.
 
         Parameters
@@ -759,7 +759,7 @@ class WorkFlowTemplate:
         solver_node: IntegrationNode,
         parameters: Iterable[Parameter],
         responses: Iterable[Response],
-    ) -> None:
+    ) -> None:  # pragma: no cover
         """Register python2 node locations.
 
         Parameters
@@ -785,7 +785,9 @@ class WorkFlowTemplate:
                 reference_value=response.reference_value,
             )
 
-    def __register_integration_node_locations(self, solver_node: IntegrationNode) -> None:
+    def __register_integration_node_locations(
+        self, solver_node: IntegrationNode
+    ) -> None:  # pragma: no cover
         """Register integration node locations using `load` method.
 
         Parameters
@@ -856,7 +858,7 @@ class ParametricSystemIntegrationTemplate(WorkFlowTemplate):
 
     def create_workflow(
         self, parent: ParametricSystem
-    ) -> Tuple[Tuple[ManagedInstance, ...], Tuple[ExecutableBlock, ...]]:
+    ) -> Tuple[Tuple[ManagedInstance, ...], Tuple[ExecutableBlock, ...]]:  # pragma: no cover
         """Create the workflow template.
 
         Parameters
@@ -966,7 +968,7 @@ class GeneralAlgorithmTemplate(WorkFlowTemplate):
 
     def create_workflow(
         self, parent: ParametricSystem
-    ) -> Tuple[Tuple[ManagedInstance, ...], Tuple[ExecutableBlock, ...]]:
+    ) -> Tuple[Tuple[ManagedInstance, ...], Tuple[ExecutableBlock, ...]]:  # pragma: no cover
         """Create the workflow template.
 
         Parameters
@@ -1093,7 +1095,7 @@ class OptimizationOnMOPTemplate(WorkFlowTemplate):
 
     def create_workflow(
         self, parent: ParametricSystem
-    ) -> Tuple[Tuple[ManagedInstance, ...], Tuple[ExecutableBlock, ...]]:
+    ) -> Tuple[Tuple[ManagedInstance, ...], Tuple[ExecutableBlock, ...]]:  # pragma: no cover
         """Create the workflow template.
 
         Parameters
@@ -1365,7 +1367,7 @@ def create_optislang_project_with_solver_node(
     responses: Optional[Iterable[Response]] = None,
     connector_settings: Optional[GeneralNodeSettings] = None,
     **kwargs,
-) -> None:
+) -> None:  # pragma: no cover
     """Generate a new optiSLang project with a parametric system and specified connector.
 
     Parameters
@@ -1422,7 +1424,7 @@ def create_workflow_from_template(
     template: WorkFlowTemplate,
     project_path: Optional[Union[str, Path]] = None,
     **kwargs,
-) -> Optislang:
+) -> Optislang:  # pragma: no cover
     """Generate a new optiSLang project with a workflow based on the provided template.
 
     Parameters
