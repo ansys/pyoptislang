@@ -22,7 +22,7 @@
 
 """Module for generation of all server commands."""
 import json
-from typing import Any, Dict, Iterable, Optional, Sequence, Union
+from typing import Any, Dict, Iterable, List, Optional, Sequence, Union
 
 from ansys.optislang.core.placeholder_types import PlaceholderType, UserLevel
 from ansys.optislang.core.slot_types import SlotTypeHint
@@ -1940,15 +1940,17 @@ def set_registered_file_value(
     )
 
 
-def set_start_designs(actor_uid: str, start_designs: Dict, password: Optional[str] = None) -> str:
+def set_start_designs(
+    actor_uid: str, start_designs: List[dict], password: Optional[str] = None
+) -> str:
     """Generate JSON string of ``set start designs`` command.
 
     Parameters
     ----------
     actor_uid: str
         Actor uid entry.
-    start_designs: Dict
-        Dictionary of settings.
+    start_designs: List[dict]
+        List of start designs.
     password : Optional[str], optional
         Password, by default ``None``.
 

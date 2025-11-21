@@ -6,7 +6,7 @@ import os
 from ansys_sphinx_theme import ansys_favicon, get_version_match, pyansys_logo_black
 from sphinx_gallery.sorting import FileNameSortKey
 
-import ansys.optislang.core as pyoptislang
+import ansys.optislang.core as core
 from ansys.optislang.core import __version__
 
 # Project information
@@ -17,7 +17,7 @@ release = version = __version__
 cname = os.getenv("DOCUMENTATION_CNAME", "nocname.com")
 
 # necessary when building the sphinx gallery
-pyoptislang.BUILDING_GALLERY = True
+core.BUILDING_GALLERY = True
 
 # Sphinx extensions
 extensions = [
@@ -128,7 +128,7 @@ sphinx_gallery_conf = {
     # directory where function granular galleries are stored
     "backreferences_dir": None,
     # Modules for which function level galleries are created.  In
-    "doc_module": "ansys-optislang-core",
+    "doc_module": ("ansys-optislang-core", "ansys-optislang-parametric"),
     "ignore_pattern": "flycheck*",
     "thumbnail_size": (350, 350),
     # Execute scripts?

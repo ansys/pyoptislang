@@ -17,5 +17,7 @@ API documentation.
    project
    nodes
    project_parametric
+   design_study
+   design_study_templates
    logging
    utils

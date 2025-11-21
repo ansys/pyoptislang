@@ -321,6 +321,30 @@ class DesignManager:
         """
         pass
 
+    @abstractmethod
+    def set_start_designs(
+        self,
+        start_designs: Iterable[Design],
+    ) -> None:  # pragma: no cover
+        """Set unevaluated start designs for the parametric system.
+
+        Parameters
+        ----------
+        id : str
+            Design id.
+        start_designs: Iterable[Design]
+            Iterable of `Design` instances containing parameters with values.
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        pass
+
     @staticmethod
     @abstractmethod
     def filter_designs_by(

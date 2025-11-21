@@ -1,6 +1,7 @@
 ignore:
   - "src/ansys/optislang/core/examples"
   - "src/ansys/optislang/core/tcp"
+  - "src/ansys/optislang/parametric/design_study.py"
 
 comment:
   layout: "diff"
