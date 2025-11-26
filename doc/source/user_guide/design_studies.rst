@@ -13,7 +13,7 @@ of design parameters and responses within a structured workflow created from var
 Design study manager
 --------------------
 
-TheA **parametric design study** module encapsulates the creation and execution of a design study, using a
+The **parametric design study** module encapsulates the creation and execution of a design study, using a
 :py:class:`ParametricDesignStudyManager <ansys.optislang.parametric.design_study.ParametricDesignStudyManager>` instance, 
 operating on an :py:class:`Optislang <ansys.optislang.core.optislang.Optislang>` instance. It may contain a single
 or multiple parametric design studies.
