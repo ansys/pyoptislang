@@ -52,8 +52,8 @@ from ansys.optislang.parametric.design_study_templates import (
     ParametricSystemIntegrationTemplate,
     ProxySolverNodeSettings,
     PythonSolverNodeSettings,
-    create_optislang_project_with_solver_node,
     create_design_study_from_template,
+    create_optislang_project_with_solver_node,
 )
 
 _PARAMETERS = [
