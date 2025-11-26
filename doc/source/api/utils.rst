@@ -23,3 +23,10 @@ to the :py:mod:`ansys.optislang.core.io <ansys.optislang.core.io>` module:
    RegisteredFile
    FileOutputFormat
    RegisteredFileUsage
+   OptislangPathType
+   AbsolutePath
+   WorkingDirRelativePath
+   ProjectRelativePath
+   ProjectWorkingDirRelativePath
+   ReferenceFilesDirRelativePath
+   RegisteredFilePath

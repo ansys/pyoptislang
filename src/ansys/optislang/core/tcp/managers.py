@@ -597,6 +597,49 @@ class TcpDesignManagerProxy(DesignManager):
             f.write(file_output)
         return File(file_path)
 
+    def set_start_designs(
+        self,
+        start_designs: Iterable[Design],
+    ) -> None:
+        """Set unevaluated start designs for the parametric system.
+
+        Parameters
+        ----------
+        id : str
+            Design id.
+        start_designs: Iterable[Design]
+            Iterable of `Design` instances containing parameters with values.
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        # TODO: unit test
+        # TODO: extend for option to set evaluated designs
+        design_dicts = []
+        for design in start_designs:
+            design_dict = {
+                "activation_state": {"value": "active"},
+                "is_approximated": False,
+                "iteration_number": 0,
+                "run_state": {"value": "awaiting"},
+            }
+            if design.id:
+                design_dict["id"] = design.id
+            if design.parameters:
+                design_dict["parameters"] = {
+                    "header": 0,
+                    "sequence": [
+                        {"First": par.name, "Second": par.value} for par in design.parameters
+                    ],
+                }
+            design_dicts.append(design_dict)
+        self.__osl_server.set_start_designs(actor_uid=self.__uid, start_designs=design_dicts)
+
     @staticmethod
     def filter_designs_by(
         designs: Iterable[Design],

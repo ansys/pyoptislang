@@ -81,6 +81,9 @@ def test_project_queries(optislang: Optislang, tmp_example_project):
     wdir = project.get_working_dir()
     assert isinstance(wdir, Path)
 
+    refdir = project.get_reference_files_dir()
+    assert isinstance(refdir, Path)
+
     project_tree = project._get_project_tree()
     assert isinstance(project_tree, list)
 
