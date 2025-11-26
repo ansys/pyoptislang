@@ -60,7 +60,7 @@ def optislang(tmp_example_project, scope="function", autouse=False) -> Optislang
     Optislang:
         Connects to the optiSLang application and provides an API to control it.
     """
-    osl = Optislang(project_path=tmp_example_project("calculator_with_params"), ini_timeout=90)
+    osl = Optislang(project_path=tmp_example_project("calculator_with_params"), ini_timeout=90, loglevel="DEBUG")
     osl.timeout = 60
     yield osl
     osl.dispose()
@@ -338,6 +338,28 @@ def test_modify_parameter_property(optislang: Optislang):
     assert modified_parameter.type == ParameterType.STOCHASTIC
     assert modified_parameter.reference_value == 10.0
     assert modified_parameter.const == False
+
+
+def test_modify_parameter_property_deterministic_property(optislang: Optislang):
+    """Test ``test_modify_parameter_property_range``."""
+    parameter_manager = optislang.project.root_system.parameter_manager
+    parameter = [
+        parameter for parameter in parameter_manager.get_parameters() if parameter.name == "b"
+    ][0]
+    deterministic_property = parameter.to_dict()["deterministic_property"]
+    range_dict = {
+        "lower_bound": -10.0,
+        "upper_bound": 10.0,
+    }
+    deterministic_property.update(range_dict)
+
+    parameter_manager.modify_parameter_property(
+        parameter_name="b", property_name="deterministic_property", property_value=deterministic_property
+    )
+    modified_parameter = [
+        parameter for parameter in parameter_manager.get_parameters() if parameter.name == "b"
+    ][0]
+    assert modified_parameter.range == (-10.0, 10.0)
 
 
 def test_remove_parameter(optislang: Optislang):

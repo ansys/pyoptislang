@@ -13,22 +13,22 @@ of design parameters and responses within a structured workflow created from var
 Design study manager
 --------------------
 
-A **parametric design study** module encapsulates creation and execution of workflows, using
+TheA **parametric design study** module encapsulates the creation and execution of a design study, using a
 :py:class:`ParametricDesignStudyManager <ansys.optislang.parametric.design_study.ParametricDesignStudyManager>` instance, 
-operating on :py:class:`Optislang <ansys.optislang.core.optislang.Optislang>` instance. It may contain a single
+operating on an :py:class:`Optislang <ansys.optislang.core.optislang.Optislang>` instance. It may contain a single
 or multiple parametric design studies.
 
-To create a new parametric design study, create a template (see :ref:`ref_workflow_templates`) and run 
-:py:meth:`create_design_study() <ansys.optislang.parametric.design_study.ParametricDesignStudyManager.create_design_study>` method, returning
+To create a new parametric design study, create a template (see :ref:`ref_design_study_templates`) and run 
+:py:meth:`create_design_study() <ansys.optislang.parametric.design_study.ParametricDesignStudyManager.create_design_study>` method. This will generate
 an instance of :py:class:`ParametricDesignStudy <ansys.optislang.parametric.design_study.ParametricDesignStudy>`, that can be then used to 
-execute the created workflow.
+execute the created design study.
 
 Design study
 ------------
-To automatically execute design study workflow, use :py:meth:`execute() <ansys.optislang.parametric.design_study.ParametricDesignStudy.execute>`
-method, which is execute in a blocking mode.
+To automatically execute a design study, use :py:meth:`execute() <ansys.optislang.parametric.design_study.ParametricDesignStudy.execute>`
+method, which runs in a blocking mode.
 
-If a non-blocking execution is wanted, use :py:meth:`start_in_thread() <ansys.optislang.parametric.design_study.ParametricDesignStudy.start_in_thread>` 
+If a non-blocking execution is desired, use :py:meth:`start_in_thread() <ansys.optislang.parametric.design_study.ParametricDesignStudy.start_in_thread>` 
 method, executing the study in a separate thread. This allows to manually handle execution of the 
 :py:class:`ProxySolverNode <ansys.optislang.core.nodes.ProxySolverNode>` instances, using built-in methods 
 :py:meth:`get_designs() <ansys.optislang.parametric.design_study.ParametricDesignStudy.get_designs>` and

@@ -1,16 +1,15 @@
-.. _ref_workflow_templates:
+.. _ref_design_study_templates:
 
 Parametric design study templates
 =================================
 
 The :mod:`ansys.optislang.parametric.design_study_templates` module provides
 ready-to-use **template classes** for constructing common types of
-parametric workflows in optiSLang.
+parametric design studies in optiSLang.
 
-Templates encapsulate predefined study configurations such as optimization
-on a metamodel (MOP), design exploration, or response-surface workflows.
+Templates encapsulate predefined study configurations such as optimization, design exploration, uncertainty quantification and metamodel generation.
 Each template defines the data structure, parameter setup, and workflow logic
-required for a particular analysis type.
+required for a particular design study type.
 
 
 Optimization on MOP

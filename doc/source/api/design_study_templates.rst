@@ -23,7 +23,7 @@ System settings
    GeneralParametricSystemSettings
    GeneralAlgorithmSettings
 
-Workflows
+Templates
 ---------
 .. currentmodule:: ansys.optislang.parametric.design_study_templates
 

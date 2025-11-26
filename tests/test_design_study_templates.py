@@ -53,7 +53,7 @@ from ansys.optislang.parametric.design_study_templates import (
     ProxySolverNodeSettings,
     PythonSolverNodeSettings,
     create_optislang_project_with_solver_node,
-    create_workflow_from_template,
+    create_design_study_from_template,
 )
 
 _PARAMETERS = [
@@ -277,7 +277,7 @@ except:
         "Python",
         PythonSolverNodeSettings(None, python_code),
     )
-    instances, executable_blocks = template.create_workflow(
+    instances, executable_blocks = template.create_design_study(
         optislang.application.project.root_system
     )
     assert len(instances) == 1
@@ -302,7 +302,7 @@ def test_general_algorithm_template(optislang: Optislang):
         "Python",
         PythonSolverNodeSettings(None, _PYTHON_SOURCE_CODE),
     )
-    instances, executable_blocks = template.create_workflow(
+    instances, executable_blocks = template.create_design_study(
         optislang.application.project.root_system
     )
     assert len(instances) == 1
@@ -332,7 +332,7 @@ except:
         solver_settings=PythonSolverNodeSettings(None, python_code),
     )
 
-    instances, executable_blocks = mop_template.create_workflow(
+    instances, executable_blocks = mop_template.create_design_study(
         optislang.application.project.root_system
     )
     assert len(instances) == 1
@@ -345,7 +345,7 @@ except:
         mop_predecessor,
         callback=lambda x: x**2,
     )
-    instances, executable_blocks = template.create_workflow(
+    instances, executable_blocks = template.create_design_study(
         optislang.application.project.root_system
     )
     assert len(instances) == 5
@@ -383,8 +383,8 @@ def test_create_optislang_project_with_solver_node(tmp_path, tmp_example_project
 
 
 @pytest.mark.local_osl
-def test_create_workflow_from_template(tmp_path):
-    """Test `create_workflow_from_template` method."""
+def test_create_design_study_from_template(tmp_path):
+    """Test `create_design_study_from_template` method."""
     template = GeneralAlgorithmTemplate(
         _PARAMETERS,
         _CRITERIA,
@@ -397,7 +397,7 @@ def test_create_workflow_from_template(tmp_path):
         PythonSolverNodeSettings(None, _PYTHON_SOURCE_CODE),
     )
     project_path = tmp_path / "test_create_workflow.opf"
-    osl = create_workflow_from_template(template, project_path)
+    osl = create_design_study_from_template(template, project_path)
     nodes = osl.application.project.root_system.get_nodes()
     assert len(nodes) > 0
     osl.dispose()

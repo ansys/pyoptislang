@@ -303,7 +303,7 @@ def test_parametric_desings_study_thread_exec(tmp_path):
         solver_settings=proxy_solver_settings,
     )
     with Optislang(project_path=project) as osl:
-        instances, blocks = template.create_workflow(osl.application.project.root_system)
+        instances, blocks = template.create_design_study(osl.application.project.root_system)
         study = ParametricDesignStudy(osl, instances, blocks)
         study.start_in_thread()
         while True:

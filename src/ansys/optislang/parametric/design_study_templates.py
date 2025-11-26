@@ -20,7 +20,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-"""Contains classes creating a workflow from template."""
+"""Contains classes creating a design study from template."""
 from __future__ import annotations
 
 from abc import abstractmethod
@@ -482,12 +482,12 @@ class GeneralAlgorithmSettings(GeneralParametricSystemSettings):
 # endregion
 
 
-# region Workflow templates
-class WorkFlowTemplate:
-    """Base class for workflow templates."""
+# region design study templates
+class DesignStudyTemplate:
+    """Base class for design study templates."""
 
     @abstractmethod
-    def create_workflow(
+    def create_design_study(
         self, parent: ParametricSystem
     ) -> Tuple[Tuple[ManagedInstance, ...], Tuple[ExecutableBlock, ...]]:  # pragma: no cover
         """Abstract method implemented in derived classes.
@@ -495,7 +495,7 @@ class WorkFlowTemplate:
         Parameters
         ----------
         parent : ParametricSystem
-            Parent system to create the workflow in.
+            Parent system to create the design study in.
 
         Returns
         -------
@@ -800,7 +800,7 @@ class WorkFlowTemplate:
         solver_node.register_locations_as_response()
 
 
-class ParametricSystemIntegrationTemplate(WorkFlowTemplate):
+class ParametricSystemIntegrationTemplate(DesignStudyTemplate):
     """Template for parametric system with integration node solver."""
 
     def __init__(
@@ -856,15 +856,15 @@ class ParametricSystemIntegrationTemplate(WorkFlowTemplate):
         self.algorithm_connections = algorithm_connections
         self.solver_connections = solver_connections
 
-    def create_workflow(
+    def create_design_study(
         self, parent: ParametricSystem
     ) -> Tuple[Tuple[ManagedInstance, ...], Tuple[ExecutableBlock, ...]]:  # pragma: no cover
-        """Create the workflow template.
+        """Create the design study template.
 
         Parameters
         ----------
         parent : ParametricSystem
-            Parent system to create the workflow in.
+            Parent system to create the design study in.
         Returns
         -------
         Tuple[Tuple[ManagedInstance, ...], Tuple[ExecutableBlock, ...]]
@@ -901,7 +901,7 @@ class ParametricSystemIntegrationTemplate(WorkFlowTemplate):
         return ((instance,), (executable_block,))
 
 
-class GeneralAlgorithmTemplate(WorkFlowTemplate):
+class GeneralAlgorithmTemplate(DesignStudyTemplate):
     """Template for general algorithm."""
 
     def __init__(
@@ -919,7 +919,7 @@ class GeneralAlgorithmTemplate(WorkFlowTemplate):
         algorithm_connections: Optional[Iterable[Tuple[OutputSlot, str]]] = None,
         solver_connections: Optional[Iterable[Tuple[OutputSlot, str]]] = None,
     ):
-        """Initialize the GeneralAlgorithmWorkflow.
+        """Initialize the GeneralAlgorithmTemplate.
 
         Parameters
         ----------
@@ -966,15 +966,15 @@ class GeneralAlgorithmTemplate(WorkFlowTemplate):
         self.algorithm_connections = algorithm_connections
         self.solver_connections = solver_connections
 
-    def create_workflow(
+    def create_design_study(
         self, parent: ParametricSystem
     ) -> Tuple[Tuple[ManagedInstance, ...], Tuple[ExecutableBlock, ...]]:  # pragma: no cover
-        """Create the workflow template.
+        """Create the design study template.
 
         Parameters
         ----------
         parent : ParametricSystem
-            Parent system to create the workflow in.
+            Parent system to create the design study in.
 
         Returns
         -------
@@ -1026,7 +1026,7 @@ class GeneralAlgorithmTemplate(WorkFlowTemplate):
         return ((instance,), (executable_block,))
 
 
-class OptimizationOnMOPTemplate(WorkFlowTemplate):
+class OptimizationOnMOPTemplate(DesignStudyTemplate):
     """Template creating optimization on MOP and validation with proxy solver.
 
     Notes
@@ -1063,7 +1063,7 @@ class OptimizationOnMOPTemplate(WorkFlowTemplate):
         responses : Iterable[Response]
             Responses to be used by optimization algorithm and validator.
         mop_predecessor: Node
-            Predecessor of the workflow. Must be either MOP node or AMOP system.
+            Predecessor of the design study. Must be either MOP node or AMOP system.
         optimizer_name: Optional[str]
             Name of the optimization algorithm.
         optimizer_type: nt.NodeType
@@ -1093,15 +1093,15 @@ class OptimizationOnMOPTemplate(WorkFlowTemplate):
         else:
             self.validator_solver_settings = ProxySolverNodeSettings(callback=callback)
 
-    def create_workflow(
+    def create_design_study(
         self, parent: ParametricSystem
     ) -> Tuple[Tuple[ManagedInstance, ...], Tuple[ExecutableBlock, ...]]:  # pragma: no cover
-        """Create the workflow template.
+        """Create the design study template.
 
         Parameters
         ----------
         parent : ParametricSystem
-            Parent system to create the workflow in.
+            Parent system to create the design study in.
 
         Returns
         -------
@@ -1416,21 +1416,21 @@ def create_optislang_project_with_solver_node(
             solver_settings=connector_settings,
         )
 
-        template.create_workflow(osl.application.project.root_system)
+        template.create_design_study(osl.application.project.root_system)
         osl.application.save()
 
 
-def create_workflow_from_template(
-    template: WorkFlowTemplate,
+def create_design_study_from_template(
+    template: DesignStudyTemplate,
     project_path: Optional[Union[str, Path]] = None,
     **kwargs,
 ) -> Optislang:  # pragma: no cover
-    """Generate a new optiSLang project with a workflow based on the provided template.
+    """Generate a new optiSLang project with a design study based on the provided template.
 
     Parameters
     ----------
-    template : WorkFlowTemplate
-        The workflow template to use.
+    template : DesignStudyTemplate
+        The design study template to use.
     project_path: Optional[Union[str,Path]], optional
         Path to save the generated optiSLang project file.
     **kwargs
@@ -1440,14 +1440,14 @@ def create_workflow_from_template(
     Returns
     -------
     Optislang
-        The instance of ``Optislang`` with the generated workflow.
+        The instance of ``Optislang`` with the generated design study.
     """
     if project_path:
         kwargs["project_path"] = project_path
     osl = Optislang(**kwargs)
     if osl.application.project is None:
-        raise ValueError("Cannot create a workflow without active project.")
-    template.create_workflow(osl.application.project.root_system)
+        raise ValueError("Cannot create a design study without active project.")
+    template.create_design_study(osl.application.project.root_system)
     return osl
 
 

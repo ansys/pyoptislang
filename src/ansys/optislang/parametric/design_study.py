@@ -52,7 +52,7 @@ if TYPE_CHECKING:
     from ansys.optislang.core.project_parametric import (
         Design,
     )
-    from ansys.optislang.parametric.design_study_templates import WorkFlowTemplate
+    from ansys.optislang.parametric.design_study_templates import DesignStudyTemplate
 
 
 # region OMDB files
@@ -550,7 +550,7 @@ class ParametricDesignStudy:
         self.__is_complete = False
 
     def get_result_designs(self) -> Tuple[Design, ...]:
-        """Get the result designs of the final parametric system workflow component.
+        """Get the result designs of the design study.
 
         Returns
         -------
@@ -832,13 +832,13 @@ class ParametricDesignStudyManager:
                 design_study.delete()
         self.__design_studies.clear()
 
-    def create_design_study(self, workflow: WorkFlowTemplate) -> ParametricDesignStudy:
-        """Create a design study based on the provided workflow template.
+    def create_design_study(self, template: DesignStudyTemplate) -> ParametricDesignStudy:
+        """Create a design study based on the provided template.
 
         Parameters
         ----------
-        workflow : WorkFlowTemplate
-            The workflow template defining the design study.
+        template : DesignStudyTemplate
+            The template defining the design study.
 
         Returns
         -------
@@ -846,7 +846,7 @@ class ParametricDesignStudyManager:
             The created design study.
         """
         if self.optislang.application.project:
-            managed_instances, executable_blocks = workflow.create_workflow(
+            managed_instances, executable_blocks = template.create_design_study(
                 self.optislang.application.project.root_system
             )
             design_study = ParametricDesignStudy(
