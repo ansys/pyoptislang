@@ -60,7 +60,7 @@ def optislang(tmp_example_project, scope="function", autouse=False) -> Optislang
     Optislang:
         Connects to the optiSLang application and provides an API to control it.
     """
-    osl = Optislang(project_path=tmp_example_project("calculator_with_params"), ini_timeout=90, loglevel="DEBUG")
+    osl = Optislang(project_path=tmp_example_project("calculator_with_params"), ini_timeout=90)
     osl.timeout = 60
     yield osl
     osl.dispose()
@@ -354,7 +354,9 @@ def test_modify_parameter_property_deterministic_property(optislang: Optislang):
     deterministic_property.update(range_dict)
 
     parameter_manager.modify_parameter_property(
-        parameter_name="b", property_name="deterministic_property", property_value=deterministic_property
+        parameter_name="b",
+        property_name="deterministic_property",
+        property_value=deterministic_property,
     )
     modified_parameter = [
         parameter for parameter in parameter_manager.get_parameters() if parameter.name == "b"
