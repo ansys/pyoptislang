@@ -23,13 +23,11 @@
 """
 optiSLang.
 
-core
+parametric
 """
 
-import importlib.metadata
 import importlib.util
 import os
-import sys
 
 from ansys.optislang import __version__
 from ansys.optislang.core.logging import OslLogger
@@ -41,8 +39,7 @@ LOG.logger.debug("Loaded logging module as LOG")
 FIRST_SUPPORTED_VERSION = 231
 
 from ansys.optislang.core.optislang import Optislang
-from ansys.optislang.core.osl_process import OslServerProcess, ServerNotification
-from ansys.optislang.core.placeholder_types import PlaceholderInfo, PlaceholderType, UserLevel
+from ansys.optislang.parametric.design_study import ParametricDesignStudyManager
 
 # Provide examples directory path
 EXAMPLES_MODULE = "ansys.optislang.core.examples"
