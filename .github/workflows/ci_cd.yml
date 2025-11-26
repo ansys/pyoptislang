@@ -9,10 +9,10 @@ on:
       - main
 
 env:
-  MAIN_PYTHON_VERSION: '3.13'
-  PACKAGE_NAME: 'ansys-optislang-core'
-  PACKAGE_NAMESPACE: 'ansys.optislang.core'
-  DOCUMENTATION_CNAME: 'optislang.docs.pyansys.com'
+  MAIN_PYTHON_VERSION: "3.13"
+  PACKAGE_NAME: "ansys-optislang-core"
+  PACKAGE_NAMESPACE: "ansys.optislang"
+  DOCUMENTATION_CNAME: "optislang.docs.pyansys.com"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -21,7 +21,6 @@ concurrency:
 permissions: {}
 
 jobs:
-
   style:
     name: "Code style"
     runs-on: ubuntu-latest
@@ -34,7 +33,7 @@ jobs:
     name: "Type check"
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
+      - uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v6.0.0
         with:
           persist-credentials: false
       - uses: actions/setup-python@e797f83bcb11b83ae66e0230d6156d7c80228e7c # v6.0.0
@@ -51,7 +50,6 @@ jobs:
         run: |
           . ./venv/bin/activate
           python -m mypy src
-
 
   doc-style:
     name: "Doc style check"
@@ -70,7 +68,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest]
-        python-version: ['3.9', '3.10', '3.11', '3.12', '3.13']
+        python-version: ["3.9", "3.10", "3.11", "3.12", "3.13"]
     steps:
       - uses: ansys/actions/build-wheelhouse@v10
         with:
@@ -86,14 +84,14 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest]
-        python-version: ['3.9', '3.10', '3.11', '3.12', '3.13']
+        python-version: ["3.9", "3.10", "3.11", "3.12", "3.13"]
       fail-fast: false
     steps:
       - name: "Run pytest with desired markers and extra arguments"
         uses: ansys/actions/tests-pytest@v10
         with:
           python-version: ${{ matrix.python-version }}
-          pytest-extra-args:  --cov=ansys.optislang.core --cov-report=term --cov-report=xml:.cov/coverage.xml --cov-report=html:.cov/html
+          pytest-extra-args: --cov=ansys.optislang --cov-report=term --cov-report=xml:.cov/coverage.xml --cov-report=html:.cov/html
 
       - name: "Upload coverage results as artifacts"
         uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5.0.0
@@ -117,7 +115,7 @@ jobs:
         with:
           generate-summary: true
           token: ${{ secrets.GITHUB_TOKEN }}
-          auditing-level: 'high'
+          auditing-level: "high"
           trust-ansys-actions: true
 
   vulnerabilities:
@@ -128,7 +126,7 @@ jobs:
         with:
           python-version: ${{ env.MAIN_PYTHON_VERSION }}
           token: ${{ secrets.PYANSYS_CI_BOT_TOKEN }}
-          python-package-name: 'ansys-optislang-core'
+          python-package-name: "ansys-optislang-core"
           dev-mode: ${{ github.ref != 'refs/heads/main' }}
           bandit-configfile: "pyproject.toml"
 
@@ -138,14 +136,14 @@ jobs:
     needs: doc-style
     steps:
       #- name: Install Quarto
-        #uses: quarto-dev/quarto-actions/setup@9e48da27e184aa238fcb49f5db75469626d43adb # v2.1.9
+      #uses: quarto-dev/quarto-actions/setup@9e48da27e184aa238fcb49f5db75469626d43adb # v2.1.9
       #- name: Check Quarto Version
-        #shell: bash
-        #run: |
-          #quarto --version
+      #shell: bash
+      #run: |
+      #quarto --version
       #- name: Verify tinytex is installed
-        #run: |
-          #quarto install tinytex --no-prompt --update-path
+      #run: |
+      #quarto install tinytex --no-prompt --update-path
       - name: Build Documentation
         uses: ansys/actions/doc-build@v10
         with:
