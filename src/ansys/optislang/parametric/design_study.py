@@ -87,9 +87,9 @@ class OMDBFilesProvider:
 
         Returns
         -------
-        Optional[Union[Union[Path,str], List[Union[Path, str]], BaseSolverManager]]
+        Optional[Union[Union[Path,str], List[Union[Path, str]], ParametricDesignStudyManager]]
             Input specifying the OMDB files. Can be a path to a folder, a list of paths,
-            or an instance of BaseSolverManager.
+            or an instance of ParametricDesignStudyManager.
         """
         return self.__input
 
@@ -164,9 +164,10 @@ class OMDBFilesProvider:
 
         Parameters
         ----------
-        input : Optional[Union[Union[Path, str], List[Union[Path, str]], BaseSolverManager]]
+        input : Optional[Union[Union[Path, str], List[Union[Path, str]],
+            ParametricDesignStudyManager]]
             Input specifying the OMDB files. Can be a path to a folder, a list of paths,
-            or an instance of BaseSolverManager.
+            or an instance of ParametricDesignStudyManager.
 
         Returns
         -------
