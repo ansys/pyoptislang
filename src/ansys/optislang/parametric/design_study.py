@@ -148,7 +148,7 @@ class OMDBFilesProvider:
             folder_path = Path(self.input)
             return tuple([file for file in folder_path.rglob("*.omdb") if file.is_file()])
         elif self.omdb_files_specification == OMDBFilesSpecificationEnum.OMDB_FILES:
-            if not isinstance(self.input, List):
+            if not isinstance(self.input, Sequence):
                 raise TypeError("Unexpected input type: `{}`".format(type(self.input)))
             return tuple([Path(file) for file in self.input])
         else:
@@ -177,7 +177,7 @@ class OMDBFilesProvider:
             return OMDBFilesSpecificationEnum.DESIGN_STUDY_MANAGER
         elif isinstance(input, (str, Path)) and Path(input).is_dir():
             return OMDBFilesSpecificationEnum.OMDB_FOLDER
-        elif isinstance(input, list) and all(
+        elif isinstance(input, Sequence) and all(
             isinstance(item, (str, Path)) and Path(item).suffix == ".omdb" for item in input
         ):
             return OMDBFilesSpecificationEnum.OMDB_FILES
