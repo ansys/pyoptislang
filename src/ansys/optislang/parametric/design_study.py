@@ -87,9 +87,9 @@ class OMDBFilesProvider:
 
         Returns
         -------
-        Optional[Union[Union[Path,str], List[Union[Path, str]], BaseSolverManager]]
+        Optional[Union[Union[Path,str], List[Union[Path, str]], ParametricDesignStudyManager]]
             Input specifying the OMDB files. Can be a path to a folder, a list of paths,
-            or an instance of BaseSolverManager.
+            or an instance of ParametricDesignStudyManager.
         """
         return self.__input
 
@@ -148,7 +148,7 @@ class OMDBFilesProvider:
             folder_path = Path(self.input)
             return tuple([file for file in folder_path.rglob("*.omdb") if file.is_file()])
         elif self.omdb_files_specification == OMDBFilesSpecificationEnum.OMDB_FILES:
-            if not isinstance(self.input, List):
+            if not isinstance(self.input, Sequence):
                 raise TypeError("Unexpected input type: `{}`".format(type(self.input)))
             return tuple([Path(file) for file in self.input])
         else:
@@ -164,9 +164,10 @@ class OMDBFilesProvider:
 
         Parameters
         ----------
-        input : Optional[Union[Union[Path, str], List[Union[Path, str]], BaseSolverManager]]
+        input : Optional[Union[Union[Path, str], List[Union[Path, str]],
+            ParametricDesignStudyManager]]
             Input specifying the OMDB files. Can be a path to a folder, a list of paths,
-            or an instance of BaseSolverManager.
+            or an instance of ParametricDesignStudyManager.
 
         Returns
         -------
@@ -177,7 +178,7 @@ class OMDBFilesProvider:
             return OMDBFilesSpecificationEnum.DESIGN_STUDY_MANAGER
         elif isinstance(input, (str, Path)) and Path(input).is_dir():
             return OMDBFilesSpecificationEnum.OMDB_FOLDER
-        elif isinstance(input, list) and all(
+        elif isinstance(input, Sequence) and all(
             isinstance(item, (str, Path)) and Path(item).suffix == ".omdb" for item in input
         ):
             return OMDBFilesSpecificationEnum.OMDB_FILES
