@@ -1,0 +1,6 @@
+PARAMETER\_MANAGER
+==================
+
+.. currentmodule:: ansys.optislang.core.slot_types
+
+.. autoattribute:: SlotTypeHint.PARAMETER_MANAGER
