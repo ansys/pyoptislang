@@ -19,7 +19,7 @@ operating on an :py:class:`Optislang <ansys.optislang.core.optislang.Optislang>`
 or multiple parametric design studies.
 
 To create a new parametric design study, create a template (see :ref:`ref_design_study_templates`) and run 
-:py:meth:`create_design_study() <ansys.optislang.parametric.design_study.ParametricDesignStudyManager.create_design_study>` method. This will generate
+:py:meth:`create_design_study() <ansys.optislang.parametric.design_study.ParametricDesignStudyManager.create_design_study>` method. This generates
 an instance of :py:class:`ParametricDesignStudy <ansys.optislang.parametric.design_study.ParametricDesignStudy>`, that can be then used to 
 execute the created design study.
 
