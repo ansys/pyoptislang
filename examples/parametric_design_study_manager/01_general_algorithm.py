@@ -21,14 +21,14 @@
 # SOFTWARE.
 
 """
-.. _ref_optimization_on_mop:
+.. _ref_general_algorithm:
 
-Optimization on MOP with proxy solver
-=====================================
+Optimization with proxy solver
+==============================
 
-This example demonstrates how to create optimization on MOP workflow.
+This example demonstrates how to create and execute optimization using ``ParametricDesignStudyManager``.
 
-It creates multiple parametric systems using `ProxySolver` node as a solver and then runs the workflow.
+It creates an algorithm with ``ProxySolver`` node as a solver and then runs the created design study.
 """
 
 #########################################################
@@ -51,7 +51,6 @@ from ansys.optislang.core.project_parametric import (
 from ansys.optislang.parametric.design_study import ParametricDesignStudyManager
 from ansys.optislang.parametric.design_study_templates import (
     GeneralAlgorithmTemplate,
-    OptimizationOnMOPTemplate,
     ProxySolverNodeSettings,
 )
 
@@ -68,10 +67,11 @@ parameters = [
     for i in range(1, 6)
 ]
 responses = [Response(name="Y", reference_value=0.0)]
+criteria = [ObjectiveCriterion("minY", expression="Y")]
 
 
 def callback(designs: list[Design]) -> list[Design]:
-    """Calculate kursawe function for provided designs."""
+    """Calculate coupled function for provided designs."""
     results_designs = []
     for design in designs:
         X1 = design.parameters[design.parameters_names.index("X1")].value
@@ -95,50 +95,28 @@ def callback(designs: list[Design]) -> list[Design]:
 solver_settings = ProxySolverNodeSettings(callback=callback, multi_design_launch_num=-1)
 
 #########################################################
-# Create AMOP template
-# --------------------
-# Define template that will be transformed into an AMOP system with proxy solver.
+# Create NLPQLP template
+# ----------------------
+# Define template that will be transformed into a NLPQLP system with proxy solver.
 
-amop_template = GeneralAlgorithmTemplate(
+nlpqlp_template = GeneralAlgorithmTemplate(
     parameters=parameters,
-    criteria=[],
+    criteria=criteria,
     responses=responses,
-    algorithm_type=nt.AMOP,
+    algorithm_type=nt.NLPQLP,
     solver_type=nt.ProxySolver,
     solver_settings=solver_settings,
 )
 
 
 #########################################################
-# Create AMOP system
-# ------------------
+# Create NLPQLP system
+# --------------------
 # Instantiate parametric design study manager, create and execute the design study.
 
 design_study_manager = ParametricDesignStudyManager(project_path=project_path)
-study = design_study_manager.create_design_study(template=amop_template)
+study = design_study_manager.create_design_study(template=nlpqlp_template)
 study.execute()
-design_study_manager.save()
-
-
-#########################################################
-# Create Optimization on MOP
-# --------------------------
-# Create optimization with MOP solver and validation system, execute.
-# Database from the previous design study is used as an input for the MOP Solver.
-
-criteria = [ObjectiveCriterion("minY", expression="Y")]
-amop_system = study.managed_instances[0].instance
-
-optimization_template = OptimizationOnMOPTemplate(
-    parameters=parameters,
-    criteria=criteria,
-    responses=responses,
-    mop_predecessor=amop_system,
-    callback=callback,
-)
-
-optimization_study = design_study_manager.create_design_study(optimization_template)
-optimization_study.execute()
 design_study_manager.save()
 
 #########################################################
@@ -154,6 +132,6 @@ design_study_manager.optislang.dispose()
 # -----------------------
 # This image shows the generated workflow.
 #
-# .. image:: ../../_static/01_optimization_on_mop.png
-#  :width: 1200
+# .. image:: ../../_static/01_general_algorithm.png
+#  :width: 400
 #  :alt: Result of script.
