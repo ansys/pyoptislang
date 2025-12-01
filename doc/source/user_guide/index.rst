@@ -15,7 +15,6 @@ This section provides an overview of how you use PyOptiSLang.
    design_evaluation
    create_workflow
    design_studies
-   design_study_templates
    placeholders_howto
    run_python
    osl_server_usage
