@@ -924,7 +924,7 @@ class GeneralAlgorithmTemplate(DesignStudyTemplate):
         Parameters
         ----------
         parameters : Iterable[Parameter]
-                Parameters to be included in the algorithm.
+            Parameters to be included in the algorithm.
         criteria : Iterable[Criterion]
             Criteria to be included in the algorithm.
         responses : Iterable[Response]
@@ -1140,6 +1140,7 @@ class OptimizationOnMOPTemplate(DesignStudyTemplate):
             responses=self.responses,
             algorithm_type=nt.Sensitivity,
             solver_type=nt.ProxySolver,
+            algorithm_name="Validation System",
             algorithm_settings=validator_settings,
             solver_settings=self.validator_solver_settings,
             connections_algorithm=[
