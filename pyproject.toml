@@ -57,7 +57,7 @@ build = [
     "twine>=4.0.1",
 ]
 typing = [
-    "mypy==1.18.2",
+    "mypy==1.19.0",
     "types-Deprecated",
     "types-psutil"
 ]
