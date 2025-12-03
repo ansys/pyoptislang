@@ -30,6 +30,7 @@ Templates
 .. autosummary::
    :toctree: _autosummary
 
+   GeneralAlgorithmTemplate
    OptimizationOnMOPTemplate
 
 Helper functions
