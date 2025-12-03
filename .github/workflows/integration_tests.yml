@@ -36,7 +36,7 @@ jobs:
         username: ansys-bot
         password: ${{ secrets.GITHUB_TOKEN }}
     permissions:
-      packages: read
+      packages: read # To access container images
     steps:
       - name: "Pytest"
         env:
