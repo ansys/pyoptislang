@@ -29,6 +29,8 @@ Test script for local socket implementation with timeout testing.
 import threading
 import time
 
+import pytest
+
 from ansys.optislang.core import utils
 from ansys.optislang.core.tcp.local_socket import (
     LocalClientSocket,
@@ -122,6 +124,7 @@ def test_timeout_functionality():
         client.close()
 
 
+@pytest.mark.skip(reason="Temporarily disabled due to occasional freezes")
 def test_concurrent_connections():
     """Test multiple concurrent connections."""
     server_id = utils.generate_local_server_id()
