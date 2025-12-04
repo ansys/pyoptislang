@@ -92,6 +92,12 @@ class Optislang:
         Defines the communication channel to be used for the optiSLang server.
         If not specified, local domain communication channel will be used.
         Defaults to ``CommunicationChannel.LOCAL_DOMAIN``.
+
+        ..warning:: If set to CommunicationChannel.TCP, insecure communication mode without TLS
+        will be used. This mode allows remote communication but is not recommended.
+        For more details on the implications and usage of insecure mode,
+        refer to the optiSLang documentation.
+
     server_address : Optional[str], optional
         In case an optiSLang server is to be started, this defines the address
         of the optiSLang server. If not specified, optiSLang will be listening on
