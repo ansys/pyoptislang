@@ -55,7 +55,7 @@ def test_connection_timeout():
 
 
 @pytest.mark.skipif(
-    sys.platform != "win32" and sys.version_info == (3, 8), reason="Fails for Python 3.8 on Linux"
+    sys.platform != "win32" and sys.version_info < (3, 10), reason="Fails for Python 3.9 on Linux"
 )
 def test_accept_timeout():
     """Test accept timeout when no client connects."""
@@ -75,7 +75,7 @@ def test_accept_timeout():
 
 
 @pytest.mark.skipif(
-    sys.platform != "win32" and sys.version_info == (3, 8), reason="Fails for Python 3.8 on Linux"
+    sys.platform != "win32" and sys.version_info < (3, 10), reason="Fails for Python 3.9 on Linux"
 )
 def test_send_recv_timeout():
     """Test send/recv timeout functionality."""

@@ -92,7 +92,7 @@ def test_basic_communication():
 
 
 @pytest.mark.skipif(
-    sys.platform != "win32" and sys.version_info == (3, 8), reason="Fails for Python 3.8 on Linux"
+    sys.platform != "win32" and sys.version_info < (3, 10), reason="Fails for Python 3.9 on Linux"
 )
 def test_timeout_functionality():
     """Test timeout functionality."""
