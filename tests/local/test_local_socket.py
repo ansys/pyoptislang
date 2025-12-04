@@ -26,6 +26,7 @@
 Test script for local socket implementation with timeout testing.
 """
 
+import sys
 import threading
 import time
 
