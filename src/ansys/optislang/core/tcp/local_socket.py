@@ -233,7 +233,9 @@ class LocalClientSocket(LocalSocket):
                         raise ConnectionError(f"Send wait failed with result: {wait_result}")
 
                     try:
-                        bytes_written = win32file.GetOverlappedResult(self._handle, overlapped, False)
+                        bytes_written = win32file.GetOverlappedResult(
+                            self._handle, overlapped, False
+                        )
                     except pywintypes.error as e:
                         bytes_written = 0
                     return bytes_written
