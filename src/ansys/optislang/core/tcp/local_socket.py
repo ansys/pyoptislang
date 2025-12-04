@@ -51,10 +51,10 @@ class LocalSocket:
             Logger instance. If None, creates a default logger.
         """
         self._logger = logger or logging.getLogger(__name__)
-        self._socket = None
+        self._socket: Optional[socket.socket] = None
         self._handle = None
-        self._address = None
-        self._timeout = None  # Store timeout for Windows named pipes
+        self._address: Optional[str] = None
+        self._timeout: Optional[float] = None  # Store timeout for Windows named pipes
 
     @property
     def address(self) -> Optional[str]:
@@ -74,7 +74,7 @@ class LocalSocket:
         if sys.platform == "win32":
             if self._handle is not None:
                 try:
-                    win32api.CloseHandle(self._handle)
+                    win32api.CloseHandle(self._handle)  # type: ignore[name-defined]
                 except Exception as e:
                     self._logger.warning(f"Error closing Windows pipe handle: {e}")
                 self._handle = None
@@ -126,17 +126,17 @@ class LocalClientSocket(LocalSocket):
         while True:
             try:
                 # Try to open the pipe with overlapped flag for async operations
-                self._handle = win32file.CreateFile(
+                self._handle = win32file.CreateFile(  # type: ignore[name-defined]
                     pipe_name,
-                    win32file.GENERIC_READ | win32file.GENERIC_WRITE,
+                    win32file.GENERIC_READ | win32file.GENERIC_WRITE,  # type: ignore[name-defined]
                     0,
                     None,
-                    win32file.OPEN_EXISTING,
-                    win32file.FILE_FLAG_OVERLAPPED,  # Enable overlapped I/O
+                    win32file.OPEN_EXISTING,  # type: ignore[name-defined]
+                    win32file.FILE_FLAG_OVERLAPPED,  # type: ignore[name-defined]
                     None,
                 )
                 return
-            except pywintypes.error as e:
+            except pywintypes.error as e:  # type: ignore[name-defined]
                 if e.winerror == 2:  # File not found (pipe doesn't exist)
                     if deadline and time.time() > deadline:
                         raise ConnectionRefusedError(f"Named pipe {pipe_name} not found")
@@ -151,7 +151,10 @@ class LocalClientSocket(LocalSocket):
                     else:
                         remaining_ms = 1000  # Default 1 second wait
 
-                    if not win32pipe.WaitNamedPipe(pipe_name, remaining_ms):
+                    wait_succeeded = win32pipe.WaitNamedPipe(  # type: ignore[name-defined]
+                        pipe_name, remaining_ms
+                    )
+                    if not wait_succeeded:
                         if deadline and time.time() > deadline:
                             raise ConnectionRefusedError(f"Named pipe {pipe_name} busy - timeout")
                         continue
@@ -211,38 +214,44 @@ class LocalClientSocket(LocalSocket):
                 raise ConnectionError("Not connected")
             try:
                 # Create overlapped structure for async operation
-                overlapped = pywintypes.OVERLAPPED()
-                overlapped.hEvent = win32event.CreateEvent(None, True, False, None)
+                overlapped = pywintypes.OVERLAPPED()  # type: ignore[name-defined]
+                overlapped.hEvent = win32event.CreateEvent(  # type: ignore[name-defined]
+                    None, True, False, None
+                )
 
                 try:
                     # Attempt to write with overlapped I/O
-                    win32file.WriteFile(self._handle, data, overlapped)
+                    win32file.WriteFile(  # type: ignore[name-defined]
+                        self._handle, data, overlapped
+                    )
 
                     # Wait for completion with timeout
                     if timeout is not None:
                         timeout_ms = int(timeout * 1000)
                     else:
-                        timeout_ms = win32event.INFINITE
+                        timeout_ms = win32event.INFINITE  # type: ignore[name-defined]
 
-                    wait_result = win32event.WaitForSingleObject(overlapped.hEvent, timeout_ms)
+                    wait_result = win32event.WaitForSingleObject(  # type: ignore[name-defined]
+                        overlapped.hEvent, timeout_ms
+                    )
 
-                    if wait_result == win32event.WAIT_TIMEOUT:
-                        win32file.CancelIo(self._handle)
+                    if wait_result == win32event.WAIT_TIMEOUT:  # type: ignore[name-defined]
+                        win32file.CancelIo(self._handle)  # type: ignore[name-defined]
                         raise TimeoutError("Send operation timed out")
-                    elif wait_result != win32event.WAIT_OBJECT_0:
+                    elif wait_result != win32event.WAIT_OBJECT_0:  # type: ignore[name-defined]
                         raise ConnectionError(f"Send wait failed with result: {wait_result}")
 
                     try:
-                        bytes_written = win32file.GetOverlappedResult(
+                        bytes_written = win32file.GetOverlappedResult(  # type: ignore[name-defined]
                             self._handle, overlapped, False
                         )
-                    except pywintypes.error as e:
+                    except pywintypes.error as e:  # type: ignore[name-defined]
                         bytes_written = 0
                     return bytes_written
                 finally:
-                    win32api.CloseHandle(overlapped.hEvent)
+                    win32api.CloseHandle(overlapped.hEvent)  # type: ignore[name-defined]
 
-            except pywintypes.error as e:
+            except pywintypes.error as e:  # type: ignore[name-defined]
                 raise ConnectionError(f"Send failed: {e}")
         else:
             if self._socket is None:
@@ -292,36 +301,44 @@ class LocalClientSocket(LocalSocket):
                 raise ConnectionError("Not connected")
             try:
                 # Create overlapped structure for async operation
-                overlapped = pywintypes.OVERLAPPED()
-                overlapped.hEvent = win32event.CreateEvent(None, True, False, None)
+                overlapped = pywintypes.OVERLAPPED()  # type: ignore[name-defined]
+                overlapped.hEvent = win32event.CreateEvent(  # type: ignore[name-defined]
+                    None, True, False, None
+                )
 
                 try:
                     # Attempt to read with overlapped I/O
-                    _, data = win32file.ReadFile(self._handle, bufsize, overlapped)
+                    _, data = win32file.ReadFile(  # type: ignore[name-defined]
+                        self._handle, bufsize, overlapped
+                    )
 
                     # Wait for completion with timeout
                     if timeout is not None:
                         timeout_ms = int(timeout * 1000)
                     else:
-                        timeout_ms = win32event.INFINITE
+                        timeout_ms = win32event.INFINITE  # type: ignore[name-defined]
 
-                    wait_result = win32event.WaitForSingleObject(overlapped.hEvent, timeout_ms)
+                    wait_result = win32event.WaitForSingleObject(  # type: ignore[name-defined]
+                        overlapped.hEvent, timeout_ms
+                    )
 
-                    if wait_result == win32event.WAIT_TIMEOUT:
-                        win32file.CancelIo(self._handle)
+                    if wait_result == win32event.WAIT_TIMEOUT:  # type: ignore[name-defined]
+                        win32file.CancelIo(self._handle)  # type: ignore[name-defined]
                         raise TimeoutError("Receive operation timed out")
-                    elif wait_result != win32event.WAIT_OBJECT_0:
+                    elif wait_result != win32event.WAIT_OBJECT_0:  # type: ignore[name-defined]
                         raise ConnectionError(f"Receive wait failed with result: {wait_result}")
 
                     try:
-                        bytes_read = win32file.GetOverlappedResult(self._handle, overlapped, False)
-                    except pywintypes.error as e:
+                        bytes_read = win32file.GetOverlappedResult(  # type: ignore[name-defined]
+                            self._handle, overlapped, False
+                        )
+                    except pywintypes.error as e:  # type: ignore[name-defined]
                         bytes_read = 0
                     return data[:bytes_read] if bytes_read < len(data) else data
                 finally:
-                    win32api.CloseHandle(overlapped.hEvent)
+                    win32api.CloseHandle(overlapped.hEvent)  # type: ignore[name-defined]
 
-            except pywintypes.error as e:
+            except pywintypes.error as e:  # type: ignore[name-defined]
                 raise ConnectionError(f"Receive failed: {e}")
         else:
             if self._socket is None:
@@ -355,7 +372,6 @@ class LocalServerSocket(LocalSocket):
     def __init__(self, logger: Optional[logging.Logger] = None):
         """Initialize local server socket."""
         super().__init__(logger)
-        self._pipe_instances = []  # For Windows named pipe instances
 
     def bind_and_listen(self, server_id: str, backlog: int = 5) -> None:
         """Bind to address and start listening.
@@ -380,25 +396,27 @@ class LocalServerSocket(LocalSocket):
         """Create Windows named pipe server with overlapped I/O support."""
         try:
             # Create security descriptor to restrict access to current user
-            security_descriptor = win32security.SECURITY_DESCRIPTOR()
+            security_descriptor = win32security.SECURITY_DESCRIPTOR()  # type: ignore[name-defined]
             security_descriptor.SetSecurityDescriptorDacl(1, None, 0)
 
-            security_attributes = win32security.SECURITY_ATTRIBUTES()
+            security_attributes = win32security.SECURITY_ATTRIBUTES()  # type: ignore[name-defined]
             security_attributes.SECURITY_DESCRIPTOR = security_descriptor
 
-            self._handle = win32pipe.CreateNamedPipe(
+            self._handle = win32pipe.CreateNamedPipe(  # type: ignore[name-defined]
                 pipe_name,
-                win32pipe.PIPE_ACCESS_DUPLEX
-                | win32file.FILE_FLAG_OVERLAPPED,  # Enable overlapped I/O
-                win32pipe.PIPE_TYPE_BYTE | win32pipe.PIPE_READMODE_BYTE | win32pipe.PIPE_WAIT,
-                win32pipe.PIPE_UNLIMITED_INSTANCES,
+                win32pipe.PIPE_ACCESS_DUPLEX  # type: ignore[name-defined]
+                | win32file.FILE_FLAG_OVERLAPPED,  # type: ignore[name-defined]
+                win32pipe.PIPE_TYPE_BYTE  # type: ignore[name-defined]
+                | win32pipe.PIPE_READMODE_BYTE  # type: ignore[name-defined]
+                | win32pipe.PIPE_WAIT,  # type: ignore[name-defined]
+                win32pipe.PIPE_UNLIMITED_INSTANCES,  # type: ignore[name-defined]
                 65536,  # out buffer size
                 65536,  # in buffer size
                 0,  # default timeout
                 security_attributes,
             )
 
-            if self._handle == win32file.INVALID_HANDLE_VALUE:
+            if self._handle == win32file.INVALID_HANDLE_VALUE:  # type: ignore[name-defined]
                 raise OSError("Failed to create named pipe")
 
         except Exception as e:
@@ -449,14 +467,18 @@ class LocalServerSocket(LocalSocket):
 
         try:
             # Create overlapped structure for async operation
-            overlapped = pywintypes.OVERLAPPED()
-            overlapped.hEvent = win32event.CreateEvent(None, True, False, None)
+            overlapped = pywintypes.OVERLAPPED()  # type: ignore[name-defined]
+            overlapped.hEvent = win32event.CreateEvent(  # type: ignore[name-defined]
+                None, True, False, None
+            )
 
             try:
                 # Start asynchronous ConnectNamedPipe operation
                 try:
-                    win32pipe.ConnectNamedPipe(self._handle, overlapped)
-                except pywintypes.error as e:
+                    win32pipe.ConnectNamedPipe(  # type: ignore[name-defined]
+                        self._handle, overlapped
+                    )
+                except pywintypes.error as e:  # type: ignore[name-defined]
                     if e.winerror != 997:  # ERROR_IO_PENDING
                         # If it's not a pending operation, it might be an immediate connection
                         if e.winerror == 535:  # ERROR_PIPE_CONNECTED
@@ -469,24 +491,28 @@ class LocalServerSocket(LocalSocket):
                 if timeout is not None:
                     timeout_ms = int(timeout * 1000)
                 else:
-                    timeout_ms = win32event.INFINITE
+                    timeout_ms = win32event.INFINITE  # type: ignore[name-defined]
 
-                wait_result = win32event.WaitForSingleObject(overlapped.hEvent, timeout_ms)
+                wait_result = win32event.WaitForSingleObject(  # type: ignore[name-defined]
+                    overlapped.hEvent, timeout_ms
+                )
 
-                if wait_result == win32event.WAIT_TIMEOUT:
+                if wait_result == win32event.WAIT_TIMEOUT:  # type: ignore[name-defined]
                     # Cancel the overlapped operation
                     try:
-                        win32file.CancelIo(self._handle)
+                        win32file.CancelIo(self._handle)  # type: ignore[name-defined]
                     except:
                         pass
                     raise TimeoutError(f"Accept operation timed out after {timeout} seconds")
-                elif wait_result != win32event.WAIT_OBJECT_0:
+                elif wait_result != win32event.WAIT_OBJECT_0:  # type: ignore[name-defined]
                     raise ConnectionError(f"Wait for connection failed with result: {wait_result}")
 
                 # Get the result of the overlapped operation
                 try:
-                    win32file.GetOverlappedResult(self._handle, overlapped, False)
-                except pywintypes.error as e:
+                    win32file.GetOverlappedResult(  # type: ignore[name-defined]
+                        self._handle, overlapped, False
+                    )
+                except pywintypes.error as e:  # type: ignore[name-defined]
                     if e.winerror != 535:  # ERROR_PIPE_CONNECTED is expected
                         raise ConnectionError(f"GetOverlappedResult failed: {e}")
 
@@ -501,9 +527,9 @@ class LocalServerSocket(LocalSocket):
                 return client, self._address
 
             finally:
-                win32api.CloseHandle(overlapped.hEvent)
+                win32api.CloseHandle(overlapped.hEvent)  # type: ignore[name-defined]
 
-        except pywintypes.error as e:
+        except pywintypes.error as e:  # type: ignore[name-defined]
             raise ConnectionError(f"Accept failed: {e}")
 
     def _accept_unix_socket(self, timeout: Optional[float]) -> Tuple[LocalClientSocket, str]:
@@ -533,14 +559,7 @@ class LocalServerSocket(LocalSocket):
         super().close()
 
         # Close any additional pipe instances on Windows
-        if sys.platform == "win32":
-            for handle in self._pipe_instances:
-                try:
-                    win32api.CloseHandle(handle)
-                except Exception:
-                    pass
-            self._pipe_instances.clear()
-        else:
+        if sys.platform != "win32":
             # Clean up socket file
             if self._address and os.path.exists(self._address):
                 try:

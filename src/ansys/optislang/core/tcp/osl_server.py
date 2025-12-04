@@ -924,7 +924,7 @@ class TcpOslListener:
         self.__refresh_listener_registration = False
         self.__notifications = notifications
         self.__register_timeout = register_timeout
-        self._local_server_id = None
+        self._local_server_id: Optional[str] = None
 
         if logger is None:
             self._logger = logging.getLogger(__name__)
@@ -1541,11 +1541,12 @@ class TcpOslServer(OslServer):
                 }.items()
                 if v is not None
             }
-            if self.__communication_channel is CommunicationChannel.LOCAL_DOMAIN:
-                listener.uid = self.__register_local_listener(
-                    local_server_id=listener.local_server_id,
-                    **register_listener_options,  # type: ignore[arg-type]
-                )
+            if self.__communication_channel == CommunicationChannel.LOCAL_DOMAIN:
+                if listener.local_server_id is not None:
+                    listener.uid = self.__register_local_listener(
+                        local_server_id=listener.local_server_id,
+                        **register_listener_options,  # type: ignore[arg-type]
+                    )
             else:
                 listener.uid = self.__register_listener(
                     host_addresses=listener.host_addresses,
@@ -1556,7 +1557,7 @@ class TcpOslServer(OslServer):
             self.__listeners["main_listener"] = listener
             self.__start_listeners_registration_thread()
         else:
-            if self.__communication_channel is CommunicationChannel.TCP:
+            if self.__communication_channel == CommunicationChannel.TCP:
                 if self.__server_address is not None:
                     # In case an IPV4/IPV6 Any address is specified,
                     # we still need to bind to localhost (as optiSLang is started locally),
@@ -4716,12 +4717,16 @@ class TcpOslServer(OslServer):
         for request_attempt in range(1, max_request_attempts + 1):
             start_time = time.time()
             try:
-                if self.__communication_channel is CommunicationChannel.LOCAL_DOMAIN:
+                if self.__communication_channel == CommunicationChannel.LOCAL_DOMAIN:
+                    if self.__local_server_id is None:
+                        raise RuntimeError("Local domain server ID is not set.")
                     client.connect_local(
-                        self.__local_server_id,
+                        local_server_id=self.__local_server_id,
                         timeout=_get_current_timeout(timeout, start_time),
                     )
-                elif self.__communication_channel is CommunicationChannel.TCP:
+                elif self.__communication_channel == CommunicationChannel.TCP:
+                    if self.__host is None or self.__port is None:
+                        raise RuntimeError("TCP host or port is not set.")
                     client.connect(
                         self.__host,
                         self.__port,
@@ -5275,12 +5280,12 @@ class TcpOslServer(OslServer):
 
         wait_for_server_up_queue: Queue = Queue()
 
-        if self.__communication_channel is CommunicationChannel.LOCAL_DOMAIN:
+        if self.__communication_channel == CommunicationChannel.LOCAL_DOMAIN:
             listener.add_callback(
                 self.__class__.__local_listener_notification_received,
                 (wait_for_server_up_queue, self._logger),
             )
-        elif self.__communication_channel is CommunicationChannel.TCP:
+        elif self.__communication_channel == CommunicationChannel.TCP:
             listener.add_callback(
                 self.__class__.__remote_listener_notification_received,
                 (wait_for_server_up_queue, self._logger),
@@ -5297,14 +5302,15 @@ class TcpOslServer(OslServer):
                 list(self.__multi_listener) if self.__multi_listener is not None else []
             )
 
-            if self.__communication_channel is CommunicationChannel.LOCAL_DOMAIN:
-                multi_local_listener.append((listener.local_server_id, listener.uid))
-            elif self.__communication_channel is CommunicationChannel.TCP:
+            if self.__communication_channel == CommunicationChannel.LOCAL_DOMAIN:
+                if listener.local_server_id is not None:
+                    multi_local_listener.append((listener.local_server_id, listener.uid))
+            elif self.__communication_channel == CommunicationChannel.TCP:
                 for host_address in listener.host_addresses:
                     multi_listener.append((host_address, listener.port, listener.uid))
 
             if (
-                self.__communication_channel is CommunicationChannel.LOCAL_DOMAIN
+                self.__communication_channel == CommunicationChannel.LOCAL_DOMAIN
                 and self.__local_server_id is None
             ):
                 # Generate local server ID if not provided
@@ -5335,9 +5341,9 @@ class TcpOslServer(OslServer):
                 force=self.__force,
                 reset=self.__reset,
                 auto_relocate=self.__auto_relocate,
-                enable_tcp_server=self.__communication_channel is CommunicationChannel.TCP,
+                enable_tcp_server=self.__communication_channel == CommunicationChannel.TCP,
                 enable_local_domain_server=self.__communication_channel
-                is CommunicationChannel.LOCAL_DOMAIN,
+                == CommunicationChannel.LOCAL_DOMAIN,
                 env_vars=self.__env_vars,
                 import_project_properties_file=self.__import_project_properties_file,
                 export_project_properties_file=self.__export_project_properties_file,
@@ -5351,7 +5357,7 @@ class TcpOslServer(OslServer):
             self.__osl_process.start()
 
             if (
-                self.__communication_channel is CommunicationChannel.LOCAL_DOMAIN
+                self.__communication_channel == CommunicationChannel.LOCAL_DOMAIN
                 and self.__local_server_id is None
             ):
                 self.__local_server_id = self.__osl_process.local_server_id
@@ -5376,7 +5382,7 @@ class TcpOslServer(OslServer):
 
             if not wait_for_server_up_queue.empty():
                 listener_received_callback = True
-                if self.__communication_channel is CommunicationChannel.TCP:
+                if self.__communication_channel == CommunicationChannel.TCP:
                     self.__port = wait_for_server_up_queue.get()
 
         except Exception:
@@ -5505,11 +5511,12 @@ class TcpOslServer(OslServer):
             }.items()
             if v is not None
         }
-        if self.__communication_channel is CommunicationChannel.LOCAL_DOMAIN:
-            exec_started_listener.uid = self.__register_local_listener(
-                local_server_id=exec_started_listener.local_server_id,
-                **register_listener_options,  # type: ignore[arg-type]
-            )
+        if self.__communication_channel == CommunicationChannel.LOCAL_DOMAIN:
+            if exec_started_listener.local_server_id is not None:
+                exec_started_listener.uid = self.__register_local_listener(
+                    local_server_id=exec_started_listener.local_server_id,
+                    **register_listener_options,  # type: ignore[arg-type]
+                )
         else:
             exec_started_listener.uid = self.__register_listener(
                 host_addresses=exec_started_listener.host_addresses,
@@ -5560,11 +5567,12 @@ class TcpOslServer(OslServer):
             }.items()
             if v is not None
         }
-        if self.__communication_channel is CommunicationChannel.LOCAL_DOMAIN:
-            exec_finished_listener.uid = self.__register_local_listener(
-                local_server_id=exec_finished_listener.local_server_id,
-                **register_listener_options,  # type: ignore[arg-type]
-            )
+        if self.__communication_channel == CommunicationChannel.LOCAL_DOMAIN:
+            if exec_finished_listener.local_server_id is not None:
+                exec_finished_listener.uid = self.__register_local_listener(
+                    local_server_id=exec_finished_listener.local_server_id,
+                    **register_listener_options,  # type: ignore[arg-type]
+                )
         else:
             exec_finished_listener.uid = self.__register_listener(
                 host_addresses=exec_finished_listener.host_addresses,
@@ -5779,70 +5787,70 @@ class TcpOslServer(OslServer):
         while not self.__refresh_listeners_stopped.is_set():
             if counter >= self.__listeners_refresh_interval:
                 for listener in self.__listeners.values():
-                    if listener.refresh_listener_registration:
-                        try:
-                            self._logger.debug(
-                                "Refreshing registration for listener: %s", listener.uid
+                    if not listener.refresh_listener_registration:
+                        continue
+                    try:
+                        self._logger.debug("Refreshing registration for listener: %s", listener.uid)
+                        if listener.uid is not None:
+                            max_request_attempts = self.max_request_attempts_register.get_value(
+                                current_func_name
                             )
-                            if listener.uid is not None:
-                                max_request_attempts = self.max_request_attempts_register.get_value(
-                                    current_func_name
-                                )
-                                self.send_command(
-                                    commands.refresh_listener_registration(
-                                        uid=listener.uid,
-                                        password=self.__password,
-                                    ),
-                                    timeout=self.timeouts_register.get_value(current_func_name),
-                                    max_request_attempts=max_request_attempts,
-                                )
-                        except OslCommandError as e:
-                            self._logger.debug(
-                                "Refreshing registration for listener %s failed: %s",
-                                listener.uid,
-                                str(e),
+                            self.send_command(
+                                commands.refresh_listener_registration(
+                                    uid=listener.uid,
+                                    password=self.__password,
+                                ),
+                                timeout=self.timeouts_register.get_value(current_func_name),
+                                max_request_attempts=max_request_attempts,
                             )
-                            if "No such listener" in str(e):
-                                self._logger.debug("Re-register listener: %s", listener.uid)
-                                try:
-                                    # re-register the listener
-                                    register_listener_options = {
-                                        k: v
-                                        for k, v in {
-                                            "timeout": listener.register_timeout
-                                            or self.__listeners_default_timeout,
-                                            "notifications": listener.notifications,
-                                            "explicit_listener_id": listener.uid,
-                                        }.items()
-                                        if v is not None
-                                    }
-                                    if (
-                                        self.__communication_channel
-                                        is CommunicationChannel.LOCAL_DOMAIN
-                                    ):
+                    except OslCommandError as e:
+                        self._logger.debug(
+                            "Refreshing registration for listener %s failed: %s",
+                            listener.uid,
+                            str(e),
+                        )
+                        if "No such listener" in str(e):
+                            self._logger.debug("Re-register listener: %s", listener.uid)
+                            try:
+                                # re-register the listener
+                                register_listener_options = {
+                                    k: v
+                                    for k, v in {
+                                        "timeout": listener.register_timeout
+                                        or self.__listeners_default_timeout,
+                                        "notifications": listener.notifications,
+                                        "explicit_listener_id": listener.uid,
+                                    }.items()
+                                    if v is not None
+                                }
+                                if (
+                                    self.__communication_channel
+                                    == CommunicationChannel.LOCAL_DOMAIN
+                                ):
+                                    if listener.local_server_id is not None:
                                         listener.uid = self.__register_local_listener(
                                             local_server_id=listener.local_server_id,
                                             **register_listener_options,  # type: ignore[arg-type]
                                         )
-                                    else:
-                                        listener.uid = self.__register_listener(
-                                            host_addresses=listener.host_addresses,
-                                            port=listener.port,
-                                            **register_listener_options,  # type: ignore[arg-type]
-                                        )
-                                except Exception as e:
-                                    self._logger.debug(
-                                        "Re-registering listener %s failed: %s",
-                                        listener.uid,
-                                        str(e),
+                                else:
+                                    listener.uid = self.__register_listener(
+                                        host_addresses=listener.host_addresses,
+                                        port=listener.port,
+                                        **register_listener_options,  # type: ignore[arg-type]
                                     )
-                        except Exception as e:
-                            self._logger.debug(
-                                "Refreshing registration for listener %s failed: %s",
-                                listener.uid,
-                                str(e),
-                            )
-                            pass
+                            except Exception as e:
+                                self._logger.debug(
+                                    "Re-registering listener %s failed: %s",
+                                    listener.uid,
+                                    str(e),
+                                )
+                    except Exception as e:
+                        self._logger.debug(
+                            "Refreshing registration for listener %s failed: %s",
+                            listener.uid,
+                            str(e),
+                        )
+                        pass
                 counter = 0
             counter += check_for_refresh
             self.__refresh_listeners_stopped.wait(check_for_refresh)

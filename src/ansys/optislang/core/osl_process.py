@@ -903,20 +903,19 @@ class OslServerProcess:
             args.append(f"--tcp-listener-id={self.__listener_id}")
 
         if self.__multi_local_listener is not None:
-            multi_listeners = list(self.__multi_local_listener)
-            if len(multi_listeners) >= 1:
+            local_listeners = list(self.__multi_local_listener)
+            if len(local_listeners) >= 1:
                 args.append("--register-multi-local-listeners")
-            for listener in multi_listeners:
-                if len(listener) >= 2 and listener[1] is not None:
-                    args.append(f"{listener[0]}+{listener[1]}")
+            for local_listener in local_listeners:
+                if len(local_listener) >= 2 and local_listener[1] is not None:
+                    args.append(f"{local_listener[0]}+{local_listener[1]}")
                 else:
-                    args.append(f"{listener[0]}")
-
+                    args.append(f"{local_listener[0]}")
         if self.__multi_listener is not None:
-            multi_listeners = list(self.__multi_listener)
-            if len(multi_listeners) >= 1:
+            listeners = list(self.__multi_listener)
+            if len(listeners) >= 1:
                 args.append("--register-multi-tcp-listeners")
-            for listener in multi_listeners:
+            for listener in listeners:
                 if len(listener) >= 3 and listener[2] is not None:
                     args.append(f"{listener[0]}:{listener[1]}+{listener[2]}")
                 else:
