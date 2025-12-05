@@ -128,13 +128,13 @@ def test_timeout_functionality():
         client.close()
 
 
-@pytest.mark.skip(reason="Temporarily disabled due to occasional freezes")
 def test_concurrent_connections():
     """Test multiple concurrent connections."""
     server_id = utils.generate_local_server_id()
 
     server = LocalServerSocket()
     server_running = threading.Event()
+    connection_ready = threading.Event()
     test_results = []
 
     def server_thread():
@@ -146,19 +146,30 @@ def test_concurrent_connections():
             # Accept multiple connections
             for i in range(3):
                 try:
+                    # Signal that server is ready for next connection
+                    connection_ready.set()
+                    
                     client, addr = server.accept(timeout=5.0)
+                    
+                    # Clear the event after accepting connection
+                    connection_ready.clear()
 
                     # Echo back the received data
                     data = client.recv(1024)
                     client.send(data)
                     client.close()
                     test_results.append(True)
+                    
+                    # Small delay to ensure pipe is fully recreated for next connection
+                    time.sleep(0.05)
 
                 except Exception as e:
                     test_results.append(False)
+                    connection_ready.set()  # Ensure clients don't hang on failure
 
         except Exception as e:
             test_results.append(False)
+            connection_ready.set()  # Ensure clients don't hang on failure
 
     # Start server thread
     server_thread_obj = threading.Thread(target=server_thread)
@@ -171,7 +182,16 @@ def test_concurrent_connections():
     # Create multiple client connections
     for i in range(3):
         try:
+            # Wait for server to be ready for this connection
+            if not connection_ready.wait(timeout=5.0):
+                raise TimeoutError(f"Server not ready for connection {i+1}")
+            
+            # Small delay after server signals ready
+            time.sleep(0.05)
+            
             client = LocalClientSocket()
+            client.settimeout(timeout=5.0)
+
             client.connect(server_id, timeout=5.0)
 
             test_msg = f"Message from client {i+1}".encode()
