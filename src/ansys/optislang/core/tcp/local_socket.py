@@ -126,7 +126,7 @@ class LocalClientSocket(LocalSocket):
         while True:
             try:
                 # Try to open the pipe with overlapped flag for async operations
-                self._handle = win32file.CreateFile(  # type: ignore[name-defined]
+                self._handle = win32file.CreateFile(  # type: ignore[name-defined, assignment]
                     pipe_name,
                     win32file.GENERIC_READ | win32file.GENERIC_WRITE,  # type: ignore[name-defined]
                     0,
@@ -151,13 +151,9 @@ class LocalClientSocket(LocalSocket):
                     else:
                         remaining_ms = 1000  # Default 1 second wait
 
-                    wait_succeeded = win32pipe.WaitNamedPipe(  # type: ignore[name-defined]
+                    win32pipe.WaitNamedPipe(  # type: ignore[name-defined]
                         pipe_name, remaining_ms
                     )
-                    if not wait_succeeded:
-                        if deadline and time.time() > deadline:
-                            raise ConnectionRefusedError(f"Named pipe {pipe_name} busy - timeout")
-                        continue
                 else:
                     raise ConnectionRefusedError(f"Cannot connect to named pipe {pipe_name}: {e}")
 
@@ -166,7 +162,7 @@ class LocalClientSocket(LocalSocket):
     ) -> None:
         """Connect to Unix domain socket."""
         try:
-            self._socket = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+            self._socket = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)  # type: ignore[attr-defined]
             if timeout is not None:
                 remaining_timeout = timeout - (time.time() - start_time)
                 if remaining_timeout <= 0:
@@ -397,12 +393,12 @@ class LocalServerSocket(LocalSocket):
         try:
             # Create security descriptor to restrict access to current user
             security_descriptor = win32security.SECURITY_DESCRIPTOR()  # type: ignore[name-defined]
-            security_descriptor.SetSecurityDescriptorDacl(1, None, 0)
+            security_descriptor.SetSecurityDescriptorDacl(1, None, 0)  # type: ignore[arg-type]
 
             security_attributes = win32security.SECURITY_ATTRIBUTES()  # type: ignore[name-defined]
             security_attributes.SECURITY_DESCRIPTOR = security_descriptor
 
-            self._handle = win32pipe.CreateNamedPipe(  # type: ignore[name-defined]
+            self._handle = win32pipe.CreateNamedPipe(  # type: ignore[name-defined, assignment]
                 pipe_name,
                 win32pipe.PIPE_ACCESS_DUPLEX  # type: ignore[name-defined]
                 | win32file.FILE_FLAG_OVERLAPPED,  # type: ignore[name-defined]
@@ -429,7 +425,7 @@ class LocalServerSocket(LocalSocket):
             if os.path.exists(socket_path):
                 os.remove(socket_path)
 
-            self._socket = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+            self._socket = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)  # type: ignore[attr-defined]
             self._socket.bind(socket_path)
             self._socket.listen(backlog)
 
