@@ -285,9 +285,9 @@ class Node(ABC):
         self,
         command: str,
         hid: Optional[str] = None,
-        wait_for_completion: bool = True,
+        wait_for_completion: bool = False,
         timeout: Union[float, int] = 100,
-    ) -> Optional[bool]:  # pragma: no cover
+    ) -> bool:  # pragma: no cover
         """Control the node state.
 
         Parameters
@@ -298,13 +298,22 @@ class Node(ABC):
         hid: Optional[str], optional
             Hid entry. The default is ``None``.
         wait_for_completion: bool, optional
-            Whether to wait for completion. The default is ``True``.
+            Whether to wait for completion. The default is ``False``.
+
+            .. deprecated:: 1.1.0
+                This argument is ignored and will be removed in future versions.
+                Waiting for command completion is currently not supported.
+
         timeout: Union[float, int], optional
             Time limit for monitoring the status of the command. The default is ``100 s``.
 
+            .. deprecated:: 1.1.0
+                This argument is ignored and will be removed in future versions.
+                Waiting for command completion is currently not supported.
+
         Returns
         -------
-        Optional[bool]
+        bool
             ``True`` when successful, ``False`` when failed.
         """
         pass
@@ -1747,7 +1756,7 @@ class RootSystem(ParametricSystem):
         hid: Optional[str] = None,
         wait_for_completion: bool = True,
         timeout: Union[float, int] = 100,
-    ) -> Optional[bool]:  # pragma: no cover
+    ) -> bool:  # pragma: no cover
         """Control the node state.
 
         Parameters
@@ -1764,7 +1773,7 @@ class RootSystem(ParametricSystem):
 
         Returns
         -------
-        Optional[bool]
+        bool
             ``True`` when successful, ``False`` when failed.
         """
         pass
