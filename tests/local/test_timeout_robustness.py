@@ -24,11 +24,8 @@
 
 """Test timeout functionality of the overlapped I/O implementation."""
 
-import sys
 import threading
 import time
-
-import pytest
 
 from ansys.optislang.core import utils
 from ansys.optislang.core.tcp.local_socket import (
@@ -54,9 +51,6 @@ def test_connection_timeout():
         client.close()
 
 
-@pytest.mark.skipif(
-    sys.platform != "win32" and sys.version_info < (3, 10), reason="Fails for Python 3.9 on Linux"
-)
 def test_accept_timeout():
     """Test accept timeout when no client connects."""
     server_id = utils.generate_local_server_id()
@@ -74,9 +68,6 @@ def test_accept_timeout():
         server.close()
 
 
-@pytest.mark.skipif(
-    sys.platform != "win32" and sys.version_info < (3, 10), reason="Fails for Python 3.9 on Linux"
-)
 def test_send_recv_timeout():
     """Test send/recv timeout functionality."""
     server_id = utils.generate_local_server_id()

@@ -26,11 +26,8 @@
 Test script for local socket implementation with timeout testing.
 """
 
-import sys
 import threading
 import time
-
-import pytest
 
 from ansys.optislang.core import utils
 from ansys.optislang.core.tcp.local_socket import (
@@ -91,9 +88,6 @@ def test_basic_communication():
         server_thread.join()
 
 
-@pytest.mark.skipif(
-    sys.platform != "win32" and sys.version_info < (3, 10), reason="Fails for Python 3.9 on Linux"
-)
 def test_timeout_functionality():
     """Test timeout functionality."""
     # Test connection timeout to non-existent server
@@ -148,9 +142,9 @@ def test_concurrent_connections():
                 try:
                     # Signal that server is ready for next connection
                     connection_ready.set()
-                    
+
                     client, addr = server.accept(timeout=5.0)
-                    
+
                     # Clear the event after accepting connection
                     connection_ready.clear()
 
@@ -159,7 +153,7 @@ def test_concurrent_connections():
                     client.send(data)
                     client.close()
                     test_results.append(True)
-                    
+
                     # Small delay to ensure pipe is fully recreated for next connection
                     time.sleep(0.05)
 
@@ -185,10 +179,10 @@ def test_concurrent_connections():
             # Wait for server to be ready for this connection
             if not connection_ready.wait(timeout=5.0):
                 raise TimeoutError(f"Server not ready for connection {i+1}")
-            
+
             # Small delay after server signals ready
             time.sleep(0.05)
-            
+
             client = LocalClientSocket()
             client.settimeout(timeout=5.0)
 

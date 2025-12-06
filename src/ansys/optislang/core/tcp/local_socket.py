@@ -151,9 +151,7 @@ class LocalClientSocket(LocalSocket):
                     else:
                         remaining_ms = 1000  # Default 1 second wait
 
-                    win32pipe.WaitNamedPipe(  # type: ignore[name-defined]
-                        pipe_name, remaining_ms
-                    )
+                    win32pipe.WaitNamedPipe(pipe_name, remaining_ms)  # type: ignore[name-defined]
                 else:
                     raise ConnectionRefusedError(f"Cannot connect to named pipe {pipe_name}: {e}")
 
@@ -162,13 +160,23 @@ class LocalClientSocket(LocalSocket):
     ) -> None:
         """Connect to Unix domain socket."""
         try:
-            self._socket = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)  # type: ignore[attr-defined]
+            self._socket = socket.socket(
+                socket.AF_UNIX,  # type: ignore[attr-defined]
+                socket.SOCK_STREAM,
+            )
             if timeout is not None:
                 remaining_timeout = timeout - (time.time() - start_time)
                 if remaining_timeout <= 0:
                     raise TimeoutError("Connection timeout")
                 self._socket.settimeout(remaining_timeout)
             self._socket.connect(socket_path)
+        except socket.timeout:
+            # In Python 3.9, socket.timeout is not a subclass of TimeoutError
+            # Convert to TimeoutError for consistency
+            if self._socket:
+                self._socket.close()
+                self._socket = None
+            raise TimeoutError("Connection timeout")
         except OSError as e:
             if self._socket:
                 self._socket.close()
@@ -257,6 +265,10 @@ class LocalClientSocket(LocalSocket):
                 self._socket.settimeout(timeout)
                 try:
                     return self._socket.send(data)
+                except socket.timeout:
+                    # In Python 3.9, socket.timeout is not a subclass of TimeoutError
+                    # Convert to TimeoutError for consistency
+                    raise TimeoutError("Send operation timed out")
                 finally:
                     self._socket.settimeout(original_timeout)
             else:
@@ -344,6 +356,10 @@ class LocalClientSocket(LocalSocket):
                 self._socket.settimeout(timeout)
                 try:
                     return self._socket.recv(bufsize)
+                except socket.timeout:
+                    # In Python 3.9, socket.timeout is not a subclass of TimeoutError
+                    # Convert to TimeoutError for consistency
+                    raise TimeoutError("Receive operation timed out")
                 finally:
                     self._socket.settimeout(original_timeout)
             else:
@@ -425,7 +441,10 @@ class LocalServerSocket(LocalSocket):
             if os.path.exists(socket_path):
                 os.remove(socket_path)
 
-            self._socket = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)  # type: ignore[attr-defined]
+            self._socket = socket.socket(
+                socket.AF_UNIX,  # type: ignore[attr-defined]
+                socket.SOCK_STREAM,
+            )
             self._socket.bind(socket_path)
             self._socket.listen(backlog)
 
@@ -547,6 +566,10 @@ class LocalServerSocket(LocalSocket):
 
             return client, addr
 
+        except socket.timeout:
+            # In Python 3.9, socket.timeout is not a subclass of TimeoutError
+            # Convert to TimeoutError for consistency
+            raise TimeoutError(f"Accept operation timed out after {timeout} seconds")
         finally:
             self._socket.settimeout(original_timeout)
 
