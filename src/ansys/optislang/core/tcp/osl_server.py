@@ -1545,25 +1545,19 @@ class TcpOslServer(OslServer):
                     ServerNotification.SERVER_DOWN,
                 ],
             )
-            register_listener_options = {
-                k: v
-                for k, v in {
-                    "timeout": self.__listeners_default_timeout,
-                    "notifications": listener.notifications,
-                }.items()
-                if v is not None
-            }
             if self.__communication_channel == CommunicationChannel.LOCAL_DOMAIN:
                 if listener.local_server_id is not None:
                     listener.uid = self.__register_local_listener(
                         local_server_id=listener.local_server_id,
-                        **register_listener_options,  # type: ignore[arg-type]
+                        timeout=self.__listeners_default_timeout,
+                        notifications=listener.notifications,
                     )
             else:
                 listener.uid = self.__register_listener(
                     host_addresses=listener.host_addresses,
                     port=listener.port,
-                    **register_listener_options,  # type: ignore[arg-type]
+                    timeout=self.__listeners_default_timeout,
+                    notifications=listener.notifications,
                 )
             listener.refresh_listener_registration = True
             self.__listeners["main_listener"] = listener
@@ -5521,25 +5515,19 @@ class TcpOslServer(OslServer):
                 ServerNotification.CHECK_FAILED,
             ],
         )
-        register_listener_options = {
-            k: v
-            for k, v in {
-                "timeout": self.__listeners_default_timeout,
-                "notifications": exec_started_listener.notifications,
-            }.items()
-            if v is not None
-        }
         if self.__communication_channel == CommunicationChannel.LOCAL_DOMAIN:
             if exec_started_listener.local_server_id is not None:
                 exec_started_listener.uid = self.__register_local_listener(
                     local_server_id=exec_started_listener.local_server_id,
-                    **register_listener_options,  # type: ignore[arg-type]
+                    timeout=self.__listeners_default_timeout,
+                    notifications=exec_started_listener.notifications,
                 )
         else:
             exec_started_listener.uid = self.__register_listener(
                 host_addresses=exec_started_listener.host_addresses,
                 port=exec_started_listener.port,
-                **register_listener_options,  # type: ignore[arg-type]
+                timeout=self.__listeners_default_timeout,
+                notifications=exec_started_listener.notifications,
             )
         exec_started_listener.refresh_listener_registration = True
         self.__listeners["exec_started_listener"] = exec_started_listener
@@ -5577,25 +5565,19 @@ class TcpOslServer(OslServer):
                 ServerNotification.CHECK_FAILED,
             ],
         )
-        register_listener_options = {
-            k: v
-            for k, v in {
-                "timeout": self.__listeners_default_timeout,
-                "notifications": exec_finished_listener.notifications,
-            }.items()
-            if v is not None
-        }
         if self.__communication_channel == CommunicationChannel.LOCAL_DOMAIN:
             if exec_finished_listener.local_server_id is not None:
                 exec_finished_listener.uid = self.__register_local_listener(
                     local_server_id=exec_finished_listener.local_server_id,
-                    **register_listener_options,  # type: ignore[arg-type]
+                    timeout=self.__listeners_default_timeout,
+                    notifications=exec_finished_listener.notifications,
                 )
         else:
             exec_finished_listener.uid = self.__register_listener(
                 host_addresses=exec_finished_listener.host_addresses,
                 port=exec_finished_listener.port,
-                **register_listener_options,  # type: ignore[arg-type]
+                timeout=self.__listeners_default_timeout,
+                notifications=exec_finished_listener.notifications,
             )
         exec_finished_listener.refresh_listener_registration = True
         self.__listeners["exec_finished_listener"] = exec_finished_listener
@@ -5649,7 +5631,7 @@ class TcpOslServer(OslServer):
     def __register_local_listener(
         self,
         local_server_id: str,
-        timeout: int = 60000,
+        timeout: Optional[int] = None,
         explicit_listener_id: Optional[str] = None,
         notifications: Optional[List[ServerNotification]] = None,
     ) -> str:
@@ -5659,7 +5641,7 @@ class TcpOslServer(OslServer):
         ----------
         local_server_id: str
             The ID of the local server.
-        timeout: float
+        timeout: Optional[int], optional
             Listener will remain active for ``timeout`` ms unless refreshed.
         explicit_listener_id: Optional[str], optional
             Explicitly requested listener ID.
@@ -5716,7 +5698,7 @@ class TcpOslServer(OslServer):
         self,
         host_addresses: Iterable[str],
         port: int,
-        timeout: int = 60000,
+        timeout: Optional[int] = None,
         explicit_listener_id: Optional[str] = None,
         notifications: Optional[List[ServerNotification]] = None,
     ) -> str:
@@ -5728,7 +5710,7 @@ class TcpOslServer(OslServer):
             String representations of IPv4/v6 addresses.
         port: int
             A numeric port number of listener.
-        timeout: float
+        timeout: Optional[int], optional
             Listener will remain active for ``timeout`` ms unless refreshed.
         explicit_listener_id: Optional[str], optional
             Explicitly requested listener ID.
@@ -5831,16 +5813,6 @@ class TcpOslServer(OslServer):
                             self._logger.debug("Re-register listener: %s", listener.uid)
                             try:
                                 # re-register the listener
-                                register_listener_options = {
-                                    k: v
-                                    for k, v in {
-                                        "timeout": listener.register_timeout
-                                        or self.__listeners_default_timeout,
-                                        "notifications": listener.notifications,
-                                        "explicit_listener_id": listener.uid,
-                                    }.items()
-                                    if v is not None
-                                }
                                 if (
                                     self.__communication_channel
                                     == CommunicationChannel.LOCAL_DOMAIN
@@ -5848,13 +5820,19 @@ class TcpOslServer(OslServer):
                                     if listener.local_server_id is not None:
                                         listener.uid = self.__register_local_listener(
                                             local_server_id=listener.local_server_id,
-                                            **register_listener_options,  # type: ignore[arg-type]
+                                            timeout=listener.register_timeout
+                                            or self.__listeners_default_timeout,
+                                            notifications=listener.notifications,
+                                            explicit_listener_id=listener.uid,
                                         )
                                 else:
                                     listener.uid = self.__register_listener(
                                         host_addresses=listener.host_addresses,
                                         port=listener.port,
-                                        **register_listener_options,  # type: ignore[arg-type]
+                                        timeout=listener.register_timeout
+                                        or self.__listeners_default_timeout,
+                                        notifications=listener.notifications,
+                                        explicit_listener_id=listener.uid,
                                     )
                             except Exception as e:
                                 self._logger.debug(
