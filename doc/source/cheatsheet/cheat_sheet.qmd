@@ -59,7 +59,7 @@ In this case, the instance must be disposed of when it is no longer needed.
 
 ### Connect to existing optiSLang
 
-To connect to an already running optiSLang instance, use the `host` and `port` arguments.
+To connect to an already running optiSLang instance, use the `local_server_id` or `host` and `port` arguments.
 
 ```{python}
 # Connect to an existing optiSLang instance
