@@ -86,12 +86,16 @@ class OslServerProcess:
 
         ..note:: Cannot be used in combination with batch mode.
 
+    local_server_id : Optional[str], optional
+        This defines the unique ID of the optiSLang local server if ``enable_local_domain_server``
+        is ``True``. If not specified, an auto-generated ID will be used.
+        Defaults to ``None``.
     server_address : Optional[str], optional
-        This defines the address of the optiSLang server. If not specified, optiSLang will be
-        listening on local host only. Defaults to ``None``.
+        This defines the address of the optiSLang TCP server if ``enable_tcp_server`` is ``True``.
+        If not specified, optiSLang will be listening on local host only. Defaults to ``None``.
     port_range : Optional[Tuple[int, int]], optional
-        This restricts the port range for the optiSLang server. If not specified, optiSLang
-        will be allowed to listen on any port. Defaults to ``None``.
+        This restricts the port range for the optiSLang server if ``enable_tcp_server`` is ``True``.
+        If not specified, optiSLang will be allowed to listen on any port. Defaults to ``None``.
     password : Optional[str], optional
         The server password. Use when communication with the server requires the request
         to contain a password entry. Defaults to ``None``.
@@ -126,20 +130,30 @@ class OslServerProcess:
 
         .. note:: Only supported in batch mode.
 
+    enable_local_domain_server : bool, optional
+        Determines whether to enable optiSLang local domain server.
+        Defaults to ``False``.
     enable_tcp_server : bool, optional
         Determines whether to enable optiSLang TCP server.
-        Defaults to ``True``.
+        Defaults to ``False``.
     server_info : Optional[Union[str, pathlib.Path]], optional
         Path to the server information file. If a relative path is provided, it is considered
         to be relative to the project working directory. If ``None``, no server information file
         will be written. Defaults to ``None``.
     log_commands : bool, optional
         Determines whether to display server events in the Message log pane. Defaults to ``False``.
+    local_listener : Optional[str], optional
+        Server ID of the local listener (local domain socket based) to be registered at optiSLang
+        server. Defaults to ``None``.
     listener : Optional[Tuple[str, int]], optional
         Host and port of the remote listener (plain TCP/IP based) to be registered at optiSLang
         server. Defaults to ``None``.
     listener_id : Optional[str], optional
         Specific unique ID for the TCP listener. Defaults to ``None``.
+    multi_local_listener : Iterable[Tuple[str, Optional[str]]], optional
+        Multiple local listeners (local domain socket based) to be registered at optiSLang server.
+        Each listener is a combination of server ID and (optionally) listener ID.
+        Defaults to ``None``.
     multi_listener : Iterable[Tuple[str, int, Optional[str]]], optional
         Multiple remote listeners (plain TCP/IP based) to be registered at optiSLang server.
         Each listener is a combination of host, port and (optionally) listener ID.
@@ -230,6 +244,7 @@ class OslServerProcess:
         project_path: Optional[Union[str, Path]] = None,
         batch: bool = True,
         service: bool = False,
+        local_server_id: Optional[str] = None,
         server_address: Optional[str] = None,
         port_range: Optional[Tuple[int, int]] = None,
         password: Optional[str] = None,
@@ -238,11 +253,14 @@ class OslServerProcess:
         force: bool = True,
         reset: bool = False,
         auto_relocate: bool = False,
-        enable_tcp_server: bool = True,
+        enable_local_domain_server: bool = False,
+        enable_tcp_server: bool = False,
         server_info: Optional[Union[str, Path]] = None,
         log_server_events: bool = False,
+        local_listener: Optional[str] = None,
         listener: Optional[Tuple[str, int]] = None,
         listener_id: Optional[str] = None,
+        multi_local_listener: Optional[Iterable[Tuple[str, Optional[str]]]] = None,
         multi_listener: Optional[Iterable[Tuple[str, int, Optional[str]]]] = None,
         listeners_default_timeout: Optional[int] = None,
         notifications: Optional[Iterable[ServerNotification]] = None,
@@ -302,7 +320,7 @@ class OslServerProcess:
         self.__output_file = validated_path(output_file)
         self.__dump_project_state = validated_path(dump_project_state)
         self.__opx_project_definition_file = validated_path(opx_project_definition_file)
-
+        self.__local_server_id = local_server_id
         self.__server_address = server_address
         self.__port_range = port_range
         self.__password = password
@@ -311,10 +329,13 @@ class OslServerProcess:
         self.__force = force
         self.__reset = reset
         self.__auto_relocate = auto_relocate
+        self.__enable_local_domain_server = enable_local_domain_server
         self.__enable_tcp_server = enable_tcp_server
         self.__log_server_events = log_server_events
+        self.__local_listener = local_listener
         self.__listener = listener
         self.__listener_id = listener_id
+        self.__multi_local_listener = multi_local_listener
         self.__multi_listener = multi_listener
         self.__listeners_default_timeout = listeners_default_timeout
         self.__notifications = tuple(notifications) if notifications is not None else None
@@ -326,6 +347,9 @@ class OslServerProcess:
 
         if "PYOPTISLANG_DISABLE_OPTISLANG_OUTPUT" in os.environ:
             self.__log_process_stdout, self.__log_process_stderr = False, False
+
+        if self.__enable_local_domain_server and self.__local_server_id is None:
+            self.__local_server_id = utils.generate_local_server_id()
 
     @property
     def executable(self) -> Path:
@@ -360,6 +384,17 @@ class OslServerProcess:
             otherwise.
         """
         return self.__batch
+
+    @property
+    def local_server_id(self) -> Optional[str]:
+        """Unique ID of the optiSLang local server.
+
+        Returns
+        -------
+        Optional[str]
+            Unique ID of the optiSLang local server, if defined; ``None`` otherwise.
+        """
+        return self.__local_server_id
 
     @property
     def server_address(self) -> Optional[str]:
@@ -442,6 +477,17 @@ class OslServerProcess:
         return self.__auto_relocate
 
     @property
+    def enable_local_domain_server(self) -> bool:
+        """Get whether to enable optiSLang local domain server.
+
+        Returns
+        -------
+        bool
+            ``True`` if optiSLang local domain server is enabled; ``False`` otherwise.
+        """
+        return self.__enable_local_domain_server
+
+    @property
     def enable_tcp_server(self) -> bool:
         """Get whether to enable optiSLang TCP server.
 
@@ -476,6 +522,17 @@ class OslServerProcess:
         return self.__log_server_events
 
     @property
+    def local_listener(self) -> Optional[str]:
+        """Server ID of the local listener to be registered at optiSLang server.
+
+        Returns
+        -------
+        Optional[str]
+            Server ID of the local listener, if defined; ``None`` otherwise.
+        """
+        return self.__local_listener
+
+    @property
     def listener(self) -> Optional[Tuple[str, int]]:
         """Host and port of the remote listener.
 
@@ -498,6 +555,19 @@ class OslServerProcess:
             Specific unique ID for the TCP listener, if defined; ``None`` otherwise.
         """
         return self.__listener_id
+
+    @property
+    def multi_local_listener(self) -> Optional[Iterable[Tuple[str, Optional[str]]]]:
+        """Multi local listener definitions.
+
+        Each listener (local domain socket based) is registered at optiSLang server.
+
+        Returns
+        -------
+        Optional[Iterable[Tuple[str, Optional[str]]]]
+            Multi local listener combinations, if defined; ``None`` otherwise.
+        """
+        return self.__multi_local_listener
 
     @property
     def multi_listener(self) -> Optional[Iterable[Tuple[str, int, Optional[str]]]]:
@@ -788,6 +858,10 @@ class OslServerProcess:
                 else:
                     args.append(f"--dump-project-state={str(self.__dump_project_state)}")
 
+        # Enables local domain surveillance (local domain socket based).
+        if self.__enable_local_domain_server:
+            args.append(f"--enable-local-server={self.__local_server_id}")
+
         # Enables remote surveillance (plain TCP/IP based), the port indication is optional.
         if self.__enable_tcp_server:
             if self.__port_range is not None:
@@ -816,6 +890,10 @@ class OslServerProcess:
             # Displays server events in the Message log pane.
             args.append("--log-server-events")
 
+        if self.__local_listener is not None:
+            # Registers the local listener (local domain socket based) for specified server ID.
+            args.append(f"--register-local-listener={self.__local_listener}")
+
         if self.__listener is not None:
             # Registers the remote listener (plain TCP/IP based) for specified host and port.
             args.append(f"--register-tcp-listener={self.__listener[0]}:{self.__listener[1]}")
@@ -824,11 +902,20 @@ class OslServerProcess:
             # Sets a specific unique ID for the TCP listener.
             args.append(f"--tcp-listener-id={self.__listener_id}")
 
+        if self.__multi_local_listener is not None:
+            local_listeners = list(self.__multi_local_listener)
+            if len(local_listeners) >= 1:
+                args.append("--register-multi-local-listeners")
+            for local_listener in local_listeners:
+                if len(local_listener) >= 2 and local_listener[1] is not None:
+                    args.append(f"{local_listener[0]}+{local_listener[1]}")
+                else:
+                    args.append(f"{local_listener[0]}")
         if self.__multi_listener is not None:
-            multi_listeners = list(self.__multi_listener)
-            if len(multi_listeners) >= 1:
+            listeners = list(self.__multi_listener)
+            if len(listeners) >= 1:
                 args.append("--register-multi-tcp-listeners")
-            for listener in multi_listeners:
+            for listener in listeners:
                 if len(listener) >= 3 and listener[2] is not None:
                     args.append(f"{listener[0]}:{listener[1]}+{listener[2]}")
                 else:
@@ -1072,7 +1159,7 @@ class OslServerProcess:
             if self.is_running():
                 try:
                     self.__process.wait(timeout)
-                except:
+                except Exception:
                     pass
             return self.__process.returncode
         return None
@@ -1157,7 +1244,7 @@ class OslServerProcess:
                                 if is_decode:
                                     line = encoding.force_text(line)
                                 handler("optiSLang " + name + ": " + line)
-                            except:
+                            except Exception:
                                 handler("optiSLang " + name + ": " + line)
                 except Exception as ex:
                     if logger is not None:
@@ -1177,7 +1264,7 @@ class OslServerProcess:
                                 if is_decode:
                                     line = encoding.force_text(line).rstrip()
                                 handler("optiSLang " + name + ": " + line)
-                            except:
+                            except Exception:
                                 handler("optiSLang " + name + ": " + line)
                 except Exception as ex:
                     if logger is not None:

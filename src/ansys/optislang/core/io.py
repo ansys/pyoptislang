@@ -848,7 +848,7 @@ class ProjectRelativePath(OptislangPath):
             relative_symbols = [relative_count * "../"]
             relative_path = file_path.relative_to(common_path)
             composed_relative_path = Path(*relative_symbols[0:]) / relative_path
-        except:
+        except Exception:
             composed_relative_path = file_path
         return ProjectRelativePath(composed_relative_path, file_path, project_dir)
 
@@ -1114,7 +1114,7 @@ class ReferenceFilesDirRelativePath(OptislangPath):
             relative_symbols = [relative_count * "../"]
             relative_path = file_path.relative_to(common_path)
             composed_relative_path = Path(*relative_symbols[0:]) / relative_path
-        except:
+        except Exception:
             composed_relative_path = file_path
         return ReferenceFilesDirRelativePath(composed_relative_path, file_path, reference_dir)
 
