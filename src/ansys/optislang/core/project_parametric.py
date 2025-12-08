@@ -3650,6 +3650,85 @@ class Design:
                 DesignVariable(name=name, value=value)  # type: ignore[arg-type]
             )
 
+    def set_response(
+        self,
+        response: Union[Response, DesignVariable],
+    ) -> None:
+        """Set the value of a response by instance or add a new response.
+
+        If no instance is specified,  a new response is added.
+
+        Parameters
+        ----------
+        response: Union[Response, DesignVariable]
+            Instance of the ``Response`` or ``DesignVariable`` class.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        TypeError
+            Raised when an invalid type of response is passed.
+        """
+        if isinstance(response, Response):
+            value = response.reference_value
+        elif isinstance(response, DesignVariable):
+            value = response.value  # type: ignore[assignment]
+        else:
+            raise TypeError(f"Invalid type of response: `{type(response)}`.")
+
+        index = self.__find_name_index(name=response.name, type_="response")
+        if index is not None:
+            self.__responses[index].value = value  # type: ignore[assignment]
+        else:
+            self.__responses.append(
+                DesignVariable(name=response.name, value=value)  # type: ignore[arg-type]
+            )
+
+    def set_response_by_name(
+        self,
+        name: str,
+        value: Union[str, float, bool, None] = None,
+    ) -> None:
+        """
+        Set the value of a response by name or add a new response.
+
+        If no name is specified,  a new response is added.
+
+        Parameters
+        ----------
+        name: str
+            Name of the response.
+        value: float
+            Value of the response.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        TypeError
+            Raised when an invalid type of parameter is passed.
+        """
+        if isinstance(name, str):
+            index = self.__find_name_index(name=name, type_="response")
+        else:
+            raise TypeError(f"Invalid type of name: `{type(name)}`.")
+
+        if index is not None:
+            self.__responses[index].value = value  # type: ignore[assignment]
+        else:
+            self.__responses.append(
+                DesignVariable(name=name, value=value)  # type: ignore[arg-type]
+            )
+
     def __find_name_index(self, name: str, type_: str) -> Optional[int]:
         """Find the index of a criterion, parameter, response, or variable by name.
 
