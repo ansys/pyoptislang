@@ -970,7 +970,8 @@ def register_listener(
     port: Optional[int], optional
         Port of the TCP listener, by default ``None``.
     timeout: Optional[int], optional
-        Unregister policy timeout in ms, default 60000 ms, by default ``None``.
+        Unregister policy timeout in ms, by default ``None``.
+        If not specified, defaults to 60000 ms on optiSLang server side.
     notifications: Optional[Sequence], optional
         Notifications, by default ``None``.
     password : Optional[str], optional
