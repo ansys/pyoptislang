@@ -98,7 +98,7 @@ def enum_from_str(
         string = string.upper()
     try:
         return enum_class[string]
-    except:
+    except Exception:
         raise ValueError(f"{string} is not a member of {enum_class.__name__}.")
 
 

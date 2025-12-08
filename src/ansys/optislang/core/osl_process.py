@@ -1159,7 +1159,7 @@ class OslServerProcess:
             if self.is_running():
                 try:
                     self.__process.wait(timeout)
-                except:
+                except Exception:
                     pass
             return self.__process.returncode
         return None
@@ -1244,7 +1244,7 @@ class OslServerProcess:
                                 if is_decode:
                                     line = encoding.force_text(line)
                                 handler("optiSLang " + name + ": " + line)
-                            except:
+                            except Exception:
                                 handler("optiSLang " + name + ": " + line)
                 except Exception as ex:
                     if logger is not None:
@@ -1264,7 +1264,7 @@ class OslServerProcess:
                                 if is_decode:
                                     line = encoding.force_text(line).rstrip()
                                 handler("optiSLang " + name + ": " + line)
-                            except:
+                            except Exception:
                                 handler("optiSLang " + name + ": " + line)
                 except Exception as ex:
                     if logger is not None:

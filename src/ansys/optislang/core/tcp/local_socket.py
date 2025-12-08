@@ -516,7 +516,7 @@ class LocalServerSocket(LocalSocket):
                     # Cancel the overlapped operation
                     try:
                         win32file.CancelIo(self._handle)  # type: ignore[name-defined]
-                    except:
+                    except Exception:
                         pass
                     raise TimeoutError(f"Accept operation timed out after {timeout} seconds")
                 elif wait_result != win32event.WAIT_OBJECT_0:  # type: ignore[name-defined]

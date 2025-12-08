@@ -6072,7 +6072,7 @@ class TcpOslServer(OslServer):
                     results_queue.put(server_address)
                 sender.stop_listening()
                 sender.clear_callbacks()
-        except:
+        except Exception:
             logger.debug("Server address cannot be received from response: %s", str(response))
 
     @staticmethod
@@ -6087,7 +6087,7 @@ class TcpOslServer(OslServer):
                     results_queue.put(port)
                 sender.stop_listening()
                 sender.clear_callbacks()
-        except:
+        except Exception:
             logger.debug("Port cannot be received from response: %s", str(response))
 
     @staticmethod
