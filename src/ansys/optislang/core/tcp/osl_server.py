@@ -853,8 +853,8 @@ class TcpOslListener:
         communication_channel: CommunicationChannel, optional
             Communication channel. Defaults to ``CommunicationChannel.LOCAL_DOMAIN``.
 
-            ..warning:: If set to CommunicationChannel.TCP, insecure communication mode without TLS
-            will be used. This mode allows remote communication but is not recommended.
+            ..warning:: If set to ``CommunicationChannel.TCP``, insecure communication mode without
+            TLS is used. This mode allows remote communication but is not recommended.
             For more details on the implications and usage of insecure mode,
             refer to the optiSLang documentation.
 
@@ -1275,21 +1275,21 @@ class TcpOslServer(OslServer):
 
     communication_channel : CommunicationChannel, optional
         Defines the communication channel to be used for the optiSLang server.
-        If not specified, local domain communication channel will be used.
+        If not specified, local domain communication channel is used.
         Defaults to ``CommunicationChannel.LOCAL_DOMAIN``.
 
-        ..warning:: If set to CommunicationChannel.TCP, insecure communication mode without TLS
-        will be used. This mode allows remote communication but is not recommended.
+        ..warning:: If set to ``CommunicationChannel.TCP``, insecure communication mode without
+        TLS is used. This mode allows remote communication but is not recommended.
         For more details on the implications and usage of insecure mode,
         refer to the optiSLang documentation.
 
     server_address : Optional[str], optional
         In case an optiSLang server is to be started, this defines the address
-        of the optiSLang server. If not specified, optiSLang will be listening on
+        of the optiSLang server. If not specified, optiSLang listens on
         local host only. Defaults to ``None``.
     port_range : Optional[Tuple[int, int]], optional
         In case an optiSLang server is to be started, this restricts the port range
-        for the optiSLang server. If not specified, optiSLang will be allowed to
+        for the optiSLang server. If not specified, optiSLang is allowed to
         listen on any port. Defaults to ``None``.
     no_run : Optional[bool], optional
         Determines whether not to run the specified project when started in batch mode.
@@ -5435,8 +5435,8 @@ class TcpOslServer(OslServer):
         communication_channel: CommunicationChannel, optional
             Communication channel. Defaults to ``CommunicationChannel.LOCAL_DOMAIN``.
 
-            ..warning:: If set to CommunicationChannel.TCP, insecure communication mode without TLS
-            will be used. This mode allows remote communication but is not recommended.
+            ..warning:: If set to ``CommunicationChannel.TCP``, insecure communication mode without
+            TLS is used. This mode allows remote communication but is not recommended.
             For more details on the implications and usage of insecure mode,
             refer to the optiSLang documentation.
 

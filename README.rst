@@ -141,8 +141,8 @@ Launch optiSLang locally
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
 For launching optiSLang locally, use the ``Optislang`` class without specifying either of the
-``local_server_id`` or ``host`` and ``port`` arguments. This will launch optiSLang locally and
-establish a local domain communication channel. The ``communication_channel`` argument can be specified
+``local_server_id`` or ``host`` and ``port`` arguments. This launches optiSLang locally and
+establishes a local domain communication channel. The ``communication_channel`` argument can be specified
 to use remote TCP/IP communication if desired. Other parameters can optionally be specified.
 
 .. code:: python

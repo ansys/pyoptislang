@@ -30,10 +30,10 @@ locally as a server, run this code:
     print(osl)
     osl.dispose()
 
-This will launch optiSLang locally and establish a local domain communication channel in user scope.
+This launches optiSLang locally and establishes a local domain communication channel in user scope.
 In this default mode, only local communication is possible and only the user who started the optiSLang
 instance can connect to and access it. The ``communication_channel`` argument can be specified
-to use (remote) TCP/IP communication if desired. Even in this case, optiSLang will listen on localhost
+to use (remote) TCP/IP communication if desired. Even in this case, optiSLang listens on localhost
 only by default, unless specified otherwise using the ``server_address`` parameter:
 
 .. code:: python
@@ -49,8 +49,8 @@ only by default, unless specified otherwise using the ``server_address`` paramet
 
 .. warning::
 
-    With CommunicationChannel.TCP, insecure communication mode without TLS
-    will be used. This mode allows remote communication but is not recommended.
+    With ``CommunicationChannel.TCP``, insecure communication mode without TLS
+    is used. This mode allows remote communication but is not recommended.
     For more details on the implications and usage of insecure mode,
     refer to the optiSLang documentation.
 
