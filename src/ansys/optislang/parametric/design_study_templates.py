@@ -130,23 +130,23 @@ class MopSolverNodeSettings(GeneralNodeSettings):
         self.__multi_design_launch_num = value
 
     @property
-    def input_file(self) -> Union[OptislangPath, None]:
+    def input_file(self) -> Optional[Union[str, Path, OptislangPath]]:
         """Path to the MOP file.
 
         Returns
         -------
-        Union[OptislangPath, None]
+        Optional[Union[str, Path, OptislangPath]]
             Path to the MOP file or ``None``, if input file is specified by the connection.
         """
         return self.__input_file
 
     @input_file.setter
-    def input_file(self, value: Union[str, Path, OptislangPath, None]) -> None:
+    def input_file(self, value: Optional[Union[str, Path, OptislangPath]]) -> None:
         """Set path to the MOP file.
 
         Parameters
         ----------
-        value : Union[str, Path, OptislangPath, None]
+        value : Optional[Union[str, Path, OptislangPath]]
             Path to the MOP file.
             If ``None``, input file is expected to be specified by the connection.
         """
@@ -318,24 +318,24 @@ class PythonSolverNodeSettings(GeneralNodeSettings):
         self.__input_code = value
 
     @property
-    def input_file(self) -> Union[OptislangPath, None]:
+    def input_file(self) -> Optional[Union[str, Path, OptislangPath]]:
         """Path to the Python file.
 
         Returns
         -------
-        Union[OptislangPath, None]
+        Optional[Union[str, Path, OptislangPath]]
             Path to the Python file or ``None``, if input file is meant to be specified
             by the connection or `input_code`.
         """
         return self.__input_file
 
     @input_file.setter
-    def input_file(self, value: Union[str, Path, OptislangPath, None]) -> None:
+    def input_file(self, value: Optional[Union[str, Path, OptislangPath]]) -> None:
         """Set path to the Python file.
 
         Parameters
         ----------
-        value : Union[str, Path, OptislangPath, None]
+        value : Optional[Union[str, Path, OptislangPath]]
             Path to the Python file.
             If ``None``, input file is expected to be specified either
             by the connection or `input_code`.
@@ -349,7 +349,7 @@ class PythonSolverNodeSettings(GeneralNodeSettings):
 
     def __init__(
         self,
-        input_file: Optional[Union[str, Path]] = None,
+        input_file: Optional[Union[str, Path, OptislangPath]] = None,
         input_code: Optional[str] = None,
         additional_settings: Optional[dict] = {},
     ):
@@ -924,7 +924,7 @@ class GeneralAlgorithmTemplate(DesignStudyTemplate):
         Parameters
         ----------
         parameters : Iterable[Parameter]
-                Parameters to be included in the algorithm.
+            Parameters to be included in the algorithm.
         criteria : Iterable[Criterion]
             Criteria to be included in the algorithm.
         responses : Iterable[Response]
@@ -1140,6 +1140,7 @@ class OptimizationOnMOPTemplate(DesignStudyTemplate):
             responses=self.responses,
             algorithm_type=nt.Sensitivity,
             solver_type=nt.ProxySolver,
+            algorithm_name="Validation System",
             algorithm_settings=validator_settings,
             solver_settings=self.validator_solver_settings,
             connections_algorithm=[
@@ -1324,9 +1325,9 @@ def go_to_optislang(
         Path to save the generated optiSLang project file.
     connector_type : str
         The type of connector actor.
-    omdb_files : Union[Union[str, Path], List[Union[str, Path]], BaseSolverManager]
+    omdb_files : Union[Union[str, Path], List[Union[str, Path]], ParametricDesignStudyManager]
         OMDB files to include in the project. Can be a path to a folder,
-        a list of paths, or an instance of ``BaseSolverManager``.
+        a list of paths, or an instance of ``ParametricDesignStudyManager``.
     parameters: Optional[Iterable[Parameter]], optional
         Parameters to be included in the parametric system, by default `None`.
     response: Optional[Iterable[Response]], optional

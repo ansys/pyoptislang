@@ -40,7 +40,13 @@ from typing import Union
 
 from ansys.optislang.core import Optislang
 import ansys.optislang.core.node_types as node_types
-from ansys.optislang.core.nodes import DesignFlow, IntegrationNode, Node, ParametricSystem
+from ansys.optislang.core.nodes import (
+    DesignFlow,
+    IntegrationNode,
+    Node,
+    ParametricSystem,
+    SlotTypeHint,
+)
 from ansys.optislang.core.project_parametric import (
     ComparisonType,
     MixedParameter,
@@ -302,9 +308,36 @@ append_node: IntegrationNode = osl.application.project.root_system.create_node(
     type_=node_types.DataMining, name="Append Designs"
 )
 
-# python script to workaround missing pyoptislang functionalities
-command = f"append_node = find_actor('Append Designs')\n" "append_node.init_append_best_designs()\n"
-osl.application.project.run_python_script(command)
+if osl.osl_version.major * 10 + osl.osl_version.minor >= 252:
+    # design filter
+    append_node.create_input_slot("IDesigns", SlotTypeHint.DESIGN_CONTAINER)
+    append_node.create_input_slot("IMDBPath", SlotTypeHint.PATH)
+
+    ofilter = {
+        "OValidatedMDBPath": [
+            {
+                "First": {"name": "AppendDesignsToFile"},
+                "Second": [
+                    {"design_container": []},
+                    {"string": "IDesigns"},
+                    {"string": "IMDBPath"},
+                ],
+            }
+        ]
+    }
+    dmm = append_node.get_property("DataMiningManager")
+    dmm["id_filter_list_map"] = ofilter
+    append_node.set_property("DataMiningManager", dmm)
+    append_node.load()
+    append_node.register_location_as_output_slot(
+        location="OValidatedMDBPath", name="OValidatedMDBPath"
+    )
+else:
+    # python script to workaround missing pyoptislang functionalities
+    command = (
+        f"append_node = find_actor('Append Designs')\n" "append_node.init_append_best_designs()\n"
+    )
+    osl.application.project.run_python_script(command)
 
 validator_system.get_output_slots("ODesigns")[0].connect_to(
     append_node.get_input_slots("IDesigns")[0]

@@ -38,7 +38,6 @@ from ansys.optislang.core.errors import OslCommandError
 from ansys.optislang.core.io import File, FileOutputFormat, RegisteredFile, RegisteredFileUsage
 from ansys.optislang.core.node_types import AddinType, NodeType, get_node_type_from_str
 from ansys.optislang.core.nodes import (
-    ACTOR_COMMANDS_RETURN_STATES,
     PROJECT_COMMANDS_RETURN_STATES,
     DesignFlow,
     Edge,
@@ -143,9 +142,9 @@ class TcpNodeProxy(Node):
         self,
         command: str,
         hid: Optional[str] = None,
-        wait_for_completion: bool = True,
+        wait_for_completion: bool = False,
         timeout: Union[float, int] = 100,
-    ) -> Optional[bool]:
+    ) -> bool:
         """Control the node state.
 
         Parameters
@@ -156,13 +155,22 @@ class TcpNodeProxy(Node):
         hid: Optional[str], optional
             Hid entry. The default is ``None``.
         wait_for_completion: bool, optional
-            Whether to wait for completion. The default is ``True``.
+            Whether to wait for completion. The default is ``False``.
+
+            .. deprecated:: 1.1.0
+                This argument is ignored and will be removed in future versions.
+                Waiting for command completion is currently not supported.
+
         timeout: Union[float, int], optional
             Time limit for monitoring the status of the command. The default is ``100 s``.
 
+            .. deprecated:: 1.1.0
+                This argument is ignored and will be removed in future versions.
+                Waiting for command completion is currently not supported.
+
         Returns
         -------
-        Optional[bool]
+        bool
             ``True`` when successful, ``False`` when failed.
         """
         if hid is None:  # Run command against all designs
@@ -182,26 +190,7 @@ class TcpNodeProxy(Node):
             if response[0]["status"] != "success":
                 raise Exception(f"{command} command execution failed.")
 
-        if wait_for_completion:
-            time_stamp = time.time()
-            while True:
-                print(
-                    f"Project: {self.get_name()} | "
-                    f"State: {self.get_status()} | "
-                    f"Time: {round(time.time() - time_stamp)}s"
-                )
-                if self.get_status() == ACTOR_COMMANDS_RETURN_STATES[command]:
-                    print(f"{command} command successfully executed.")
-                    status = True
-                    break
-                if (time.time() - time_stamp) > timeout:
-                    print("Timeout limit reached. Skip monitoring of command {command}.")
-                    status = False
-                    break
-                time.sleep(3)
-            return status
-        else:
-            return None
+        return True
 
     def delete(self) -> None:
         """Delete current node and it's children from active project.
@@ -2757,7 +2746,7 @@ class TcpRootSystemProxy(TcpParametricSystemProxy, RootSystem):
         hid: Optional[str] = None,
         wait_for_completion: bool = True,
         timeout: Union[float, int] = 100,
-    ) -> Optional[bool]:
+    ) -> bool:
         """Control the root system state.
 
         Parameters
@@ -2774,7 +2763,7 @@ class TcpRootSystemProxy(TcpParametricSystemProxy, RootSystem):
 
         Returns
         -------
-        Optional[bool]
+        bool
             ``True`` when successful, ``False`` when failed.
         """
         response = self._osl_server.send_command(getattr(commands, command)())
@@ -2800,7 +2789,7 @@ class TcpRootSystemProxy(TcpParametricSystemProxy, RootSystem):
                 time.sleep(3)
             return status
         else:
-            return None
+            return True
 
     def delete(self) -> None:
         """Delete current node and it's children from active project.
