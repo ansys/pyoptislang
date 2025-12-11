@@ -1,0 +1,6 @@
+design\_studies
+===============
+
+.. currentmodule:: ansys.optislang.parametric.design_study
+
+.. autoproperty:: ParametricDesignStudyManager.design_studies

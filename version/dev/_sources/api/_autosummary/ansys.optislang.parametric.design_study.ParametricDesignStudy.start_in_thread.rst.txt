@@ -1,0 +1,6 @@
+start\_in\_thread
+=================
+
+.. currentmodule:: ansys.optislang.parametric.design_study
+
+.. automethod:: ParametricDesignStudy.start_in_thread

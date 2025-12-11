@@ -1,0 +1,6 @@
+convert\_to\_project\_working\_dir\_relative
+============================================
+
+.. currentmodule:: ansys.optislang.core.io
+
+.. automethod:: AbsolutePath.convert_to_project_working_dir_relative

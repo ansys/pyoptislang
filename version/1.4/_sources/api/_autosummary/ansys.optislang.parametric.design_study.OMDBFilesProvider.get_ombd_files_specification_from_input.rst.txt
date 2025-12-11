@@ -1,0 +1,6 @@
+get\_ombd\_files\_specification\_from\_input
+============================================
+
+.. currentmodule:: ansys.optislang.parametric.design_study
+
+.. automethod:: OMDBFilesProvider.get_ombd_files_specification_from_input

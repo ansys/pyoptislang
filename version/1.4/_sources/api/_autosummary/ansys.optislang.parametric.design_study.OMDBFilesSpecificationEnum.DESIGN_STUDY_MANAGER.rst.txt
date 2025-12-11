@@ -1,0 +1,6 @@
+DESIGN\_STUDY\_MANAGER
+======================
+
+.. currentmodule:: ansys.optislang.parametric.design_study
+
+.. autoattribute:: OMDBFilesSpecificationEnum.DESIGN_STUDY_MANAGER
