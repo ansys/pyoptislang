@@ -5,7 +5,7 @@ build-backend = "flit_core.buildapi"
 [project]
 # Check https://flit.readthedocs.io/en/latest/pyproject_toml.html for all available sections
 name = "ansys-optislang-core"
-version = "1.4.dev0"
+version = "1.5.dev0"
 description = "A Python wrapper for Ansys optiSLang application."
 readme = "README.rst"
 requires-python = ">=3.9,<4"
@@ -33,7 +33,7 @@ classifiers = [
 dependencies = [
     "psutil>=5.9",
     "Deprecated>=1.2.14",
-    "pywin32>=306; sys_platform == 'win32'",
+    "pywin32>=304; sys_platform == 'win32'",
 ]
 
 [project.optional-dependencies]
@@ -43,7 +43,7 @@ tests = [
     "matplotlib>=3.5.3",
 ]
 doc = [
-    "ansys-sphinx-theme==1.6.1",
+    "ansys-sphinx-theme==1.6.4",
     "matplotlib==3.10.1",
     "numpydoc==1.9.0",
     "pypandoc==1.16.2",
