@@ -1,0 +1,6 @@
+create\_placeholder\_from\_actor\_property
+==========================================
+
+.. currentmodule:: ansys.optislang.core.tcp.osl_server
+
+.. automethod:: TcpOslServer.create_placeholder_from_actor_property

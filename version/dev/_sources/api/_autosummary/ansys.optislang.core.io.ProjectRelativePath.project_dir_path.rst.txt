@@ -1,0 +1,6 @@
+project\_dir\_path
+==================
+
+.. currentmodule:: ansys.optislang.core.io
+
+.. autoproperty:: ProjectRelativePath.project_dir_path

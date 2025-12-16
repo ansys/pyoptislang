@@ -1,0 +1,6 @@
+path
+====
+
+.. currentmodule:: ansys.optislang.core.io
+
+.. autoproperty:: WorkingDirRelativePath.path

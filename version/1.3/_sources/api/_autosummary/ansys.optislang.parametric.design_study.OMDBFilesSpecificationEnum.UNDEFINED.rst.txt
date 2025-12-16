@@ -1,0 +1,6 @@
+UNDEFINED
+=========
+
+.. currentmodule:: ansys.optislang.parametric.design_study
+
+.. autoattribute:: OMDBFilesSpecificationEnum.UNDEFINED
