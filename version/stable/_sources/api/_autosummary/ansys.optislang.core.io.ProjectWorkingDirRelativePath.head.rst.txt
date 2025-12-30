@@ -1,0 +1,6 @@
+head
+====
+
+.. currentmodule:: ansys.optislang.core.io
+
+.. autoproperty:: ProjectWorkingDirRelativePath.head
