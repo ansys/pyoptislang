@@ -48,7 +48,7 @@ doc = [
     "numpydoc==1.10.0",
     "pypandoc==1.16.2",
     "quarto-cli==1.8.25",
-    "Sphinx==8.2.3",
+    "Sphinx==9.0.4",
     "sphinx-copybutton==0.5.2",
     "sphinx-gallery==0.19.0",
 ]
