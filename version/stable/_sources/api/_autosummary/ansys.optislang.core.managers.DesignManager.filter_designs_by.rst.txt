@@ -1,0 +1,6 @@
+filter\_designs\_by
+===================
+
+.. currentmodule:: ansys.optislang.core.managers
+
+.. automethod:: DesignManager.filter_designs_by

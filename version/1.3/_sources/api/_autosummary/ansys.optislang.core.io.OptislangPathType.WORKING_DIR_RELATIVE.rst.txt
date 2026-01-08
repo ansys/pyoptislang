@@ -1,0 +1,6 @@
+WORKING\_DIR\_RELATIVE
+======================
+
+.. currentmodule:: ansys.optislang.core.io
+
+.. autoattribute:: OptislangPathType.WORKING_DIR_RELATIVE

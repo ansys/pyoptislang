@@ -1,0 +1,6 @@
+save\_designs\_as\_json
+=======================
+
+.. currentmodule:: ansys.optislang.core.managers
+
+.. automethod:: DesignManager.save_designs_as_json
