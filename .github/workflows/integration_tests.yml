@@ -1,9 +1,5 @@
 name: Integration Tests
-on:
-  workflow_dispatch:
-  pull_request:
-    types:
-      - closed
+on: workflow_dispatch
 
 permissions: {}
 
