@@ -31,6 +31,7 @@ from typing import TYPE_CHECKING, Any, Callable, Iterable, List, Optional, Tuple
 import warnings
 
 from ansys.optislang.core import Optislang
+from ansys.optislang.core.errors import OslCommandError
 from ansys.optislang.core.io import AbsolutePath, OptislangPath
 import ansys.optislang.core.node_types as nt
 from ansys.optislang.core.nodes import (
@@ -771,7 +772,12 @@ class DesignStudyTemplate:
         responses: Iterable[Response]
             Responses to be registered.
         """
-        solver_node.load()
+        try:
+            solver_node.load()
+        except OslCommandError:
+            # load call may fail for older optiSLang versions that didn't implement it yet
+            # It's safe to proceed though, as we are passing name and ref value
+            pass
         for parameter in parameters:
             solver_node.register_location_as_parameter(
                 location=parameter.name,
