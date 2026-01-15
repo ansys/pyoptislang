@@ -28,6 +28,7 @@ import pytest
 from ansys.optislang.core import Optislang
 import ansys.optislang.core.node_types as nt
 from ansys.optislang.core.nodes import Node, ParametricSystem
+from ansys.optislang.core.osl_server import OslVersion
 from ansys.optislang.core.project_parametric import (
     ComparisonType,
     ConstraintCriterion,
@@ -103,7 +104,10 @@ def test_omdb_files_provider(tmp_example_project):
 def test_managed_instances(tmp_example_project):
     """Test `ManagedInstance` classes."""
     project_path = tmp_example_project("omdb_files")
-    with Optislang(project_path=project_path) as osl:
+    with Optislang(project_path=project_path, ini_timeout=120) as osl:
+        if osl.osl_version < OslVersion(25, 2, 0, 0):
+            pytest.skip(f"Not compatible with {osl.osl_version_string}")
+
         sensitivity: ParametricSystem = osl.application.project.root_system.find_nodes_by_name(
             "Sensitivity"
         )[0]
@@ -133,7 +137,7 @@ def test_managed_instances(tmp_example_project):
 def test_executable_block(tmp_example_project):
     """Test `ExecutableBlock` class."""
     project_path = tmp_example_project("omdb_files")
-    with Optislang(project_path=project_path) as osl:
+    with Optislang(project_path=project_path, ini_timeout=120) as osl:
         sensitivity: ParametricSystem = osl.application.project.root_system.find_nodes_by_name(
             "Sensitivity"
         )[0]
@@ -178,7 +182,7 @@ def test_executable_block(tmp_example_project):
 def test_parametric_design_study(tmp_example_project):
     """Test `ParametricDesignStudy` class init and properties."""
     project_path = tmp_example_project("omdb_files")
-    with Optislang(project_path=project_path) as osl:
+    with Optislang(project_path=project_path, ini_timeout=120) as osl:
         sensitivity: ParametricSystem = osl.application.project.root_system.find_nodes_by_name(
             "Sensitivity"
         )[0]
@@ -302,7 +306,10 @@ def test_parametric_desings_study_thread_exec(tmp_path):
         nt.ProxySolver,
         solver_settings=proxy_solver_settings,
     )
-    with Optislang(project_path=project) as osl:
+    with Optislang(project_path=project, ini_timeout=120) as osl:
+        if osl.osl_version < OslVersion(25, 2, 0, 0):
+            pytest.skip(f"Not compatible with {osl.osl_version_string}")
+
         instances, blocks = template.create_design_study(osl.application.project.root_system)
         study = ParametricDesignStudy(osl, instances, blocks)
         study.start_in_thread()
@@ -325,7 +332,7 @@ def test_parametric_desings_study_thread_exec(tmp_path):
 def test_paramatric_design_study_auto_detect_executable_blocks(tmp_example_project):
     """Test `ParametricDesignStudy` class auto-detection of executable-blocks."""
     project_path = tmp_example_project("omdb_files")
-    with Optislang(project_path=project_path) as osl:
+    with Optislang(project_path=project_path, ini_timeout=120) as osl:
         sensitivity: ParametricSystem = osl.application.project.root_system.find_nodes_by_name(
             "Sensitivity"
         )[0]
@@ -366,7 +373,7 @@ def test_paramatric_design_study_auto_detect_executable_blocks(tmp_example_proje
 def test_parametric_design_study_manager_initialized_osl(tmp_example_project):
     """Test `ParametricDesignStudyManaged` class initialization with provided optiSLang instance."""
     project_path = tmp_example_project("omdb_files")
-    with Optislang(project_path=project_path) as osl:
+    with Optislang(project_path=project_path, ini_timeout=120) as osl:
         sensitivity: ParametricSystem = osl.application.project.root_system.find_nodes_by_name(
             "Sensitivity"
         )[0]
@@ -476,6 +483,10 @@ def test_parametric_design_study_manager_initialize_osl(tmp_path):
     project_path = tmp_path / "test_manager.opf"
 
     manager = ParametricDesignStudyManager()
+
+    if manager.optislang.osl_version < OslVersion(25, 2, 0, 0):
+        pytest.skip(f"Not compatible with {manager.optislang.osl_version_string}")
+
     manager.save_as(project_path)
     manager.create_design_study(template)
     assert len(manager.design_studies) == 1

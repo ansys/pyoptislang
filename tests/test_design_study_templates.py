@@ -33,6 +33,7 @@ from ansys.optislang.core.io import (
 )
 import ansys.optislang.core.node_types as nt
 from ansys.optislang.core.nodes import IntegrationNode, ParametricSystem
+from ansys.optislang.core.osl_server import OslVersion
 from ansys.optislang.core.project_parametric import (
     ObjectiveCriterion,
     OptimizationParameter,
@@ -80,8 +81,8 @@ def optislang(scope="function", autouse=False) -> Optislang:
     Optislang:
         Connects to the optiSLang application and provides an API to control it.
     """
-    osl = Optislang(ini_timeout=90)
-    osl.timeout = 60
+    osl = Optislang(ini_timeout=120)
+    osl.timeout = 120
     yield osl
     osl.dispose()
 
@@ -262,6 +263,9 @@ def test_general_algorithm_settings():
 @pytest.mark.local_osl
 def test_parametric_system_integration_template(optislang: Optislang):
     """Test `ParametricSystemIntegrationTemplate` class."""
+    if optislang.osl_version < OslVersion(25, 2, 0, 0):
+        pytest.skip(f"Not compatible with {optislang.osl_version_string}")
+
     python_code = r"""
 try:
     Y = X1 + X2 + X3
@@ -291,6 +295,9 @@ except:
 @pytest.mark.local_osl
 def test_general_algorithm_template(optislang: Optislang):
     """Test `GeneralAlgorithmTemplate` class."""
+    if optislang.osl_version < OslVersion(25, 2, 0, 0):
+        pytest.skip(f"Not compatible with {optislang.osl_version_string}")
+
     template = GeneralAlgorithmTemplate(
         _PARAMETERS,
         _CRITERIA,
@@ -316,6 +323,8 @@ def test_general_algorithm_template(optislang: Optislang):
 @pytest.mark.local_osl
 def test_optimization_on_mop_template(optislang: Optislang):
     """Test `OptimizationOnMOPTemplate` class."""
+    if optislang.osl_version < OslVersion(25, 2, 0, 0):
+        pytest.skip(f"Not compatible with {optislang.osl_version_string}")
 
     python_code = r"""
 try:
@@ -367,6 +376,10 @@ def test_create_optislang_project_with_solver_node(tmp_path, tmp_example_project
     example_wdir = example_project.with_suffix(".opd")
 
     with Optislang(project_path=example_project) as osl:
+
+        if osl.osl_version < OslVersion(25, 2, 0, 0):
+            pytest.skip(f"Not compatible with {osl.osl_version_string}")
+
         osl.application.project.reset()
         osl.application.project.start()
     create_optislang_project_with_solver_node(
