@@ -47,7 +47,6 @@ doc = [
     "matplotlib==3.10.8",
     "numpydoc==1.10.0",
     "pypandoc==1.16.2",
-
     "quarto-cli==1.8.26",
     "Sphinx==9.0.4",
     "sphinx-copybutton==0.5.2",
