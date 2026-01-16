@@ -892,7 +892,7 @@ class TcpOslListener:
     --------
     Create listener
 
-    >>> from ansys.optislang.core.tcp_osl_server import TcpOslListener
+    >>> from ansys.optislang.core.tcp.osl_server import TcpOslListener
     >>> general_listener = TcpOslListener(
     >>>     port_range = (49152, 65535),
     >>>     timeout = 30,
@@ -1234,7 +1234,7 @@ class TcpOslServer(OslServer):
 
     TcpOslServer class provides explicit methods for accessing specific optiSLang API endpoints.
     Additionally, the generic
-    :py:mod:`send_command <ansys.optislang.core.tcp_osl_server.TcpOslServer.send_command>` method
+    :py:mod:`send_command <ansys.optislang.core.tcp.osl_server.TcpOslServer.send_command>` method
     can be used in conjunction with the convenience functions from the
     :ref:`ansys.optislang.core.tcp.tcp_server_queries <ref_osl_server_api_queries>` and
     :ref:`ansys.optislang.core.tcp.tcp_server_commands <ref_osl_server_api_commands>` modules.
@@ -1401,7 +1401,7 @@ class TcpOslServer(OslServer):
     --------
     Start local optiSLang server, get optiSLang version and shutdown the server.
 
-    >>> from ansys.optislang.core.tcp_osl_server import TcpOslServer
+    >>> from ansys.optislang.core.tcp.osl_server import TcpOslServer
     >>> osl_server = TcpOslServer()
     >>> osl_version = osl_server.osl_version_string
     >>> print(osl_version)
@@ -1409,7 +1409,7 @@ class TcpOslServer(OslServer):
 
     Connect to the remote optiSLang server, get optiSLang version and shutdown the server.
 
-    >>> from ansys.optislang.core.tcp_osl_server import TcpOslServer
+    >>> from ansys.optislang.core.tcp.osl_server import TcpOslServer
     >>> host = "192.168.101.1"  # IP address of the remote host
     >>> port = 49200            # Port of the remote optiSLang server
     >>> osl_server = TcpOslServer(host, port)
