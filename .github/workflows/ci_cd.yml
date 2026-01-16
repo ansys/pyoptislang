@@ -11,7 +11,7 @@ on:
 env:
   MAIN_PYTHON_VERSION: '3.13'
   PACKAGE_NAME: 'ansys-optislang-core'
-  PACKAGE_NAMESPACE: 'ansys.optislang.core'
+  PACKAGE_NAMESPACE: 'ansys.optislang'
   DOCUMENTATION_CNAME: 'optislang.docs.pyansys.com'
 
 concurrency:
@@ -59,7 +59,7 @@ jobs:
     needs: [wheelhouse]
     runs-on: ${{ matrix.os }}
     env:
-      PYTEST_EXTRA_ARGS: "--cov=ansys.optislang.core --cov-report=term --cov-report=xml:.cov/coverage.xml --cov-report=html:.cov/html"
+      PYTEST_EXTRA_ARGS: "--cov=ansys.optislang --cov-report=term --cov-report=xml:.cov/coverage.xml --cov-report=html:.cov/html"
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest]
