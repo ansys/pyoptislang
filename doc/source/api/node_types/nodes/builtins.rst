@@ -8,7 +8,6 @@ Built-in
     AbaqusProcess
     AmesimInput
     AnsysAPDLParameterize
-    AnsysWorkbench
     AppendDesignsToBinFile
     ASCMOsolver
     BashScript
