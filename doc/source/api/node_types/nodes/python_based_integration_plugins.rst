@@ -25,7 +25,7 @@ Python based integration_plugins
     CFturbo_input
     COMSOL2
     COMSOL2_Input
-    COMSOL2_Onput
+    COMSOL2_Output
     COMSOL2_Solver
     Convert_OMDB_to_BIN_SoS
     ETK_nD
