@@ -2243,7 +2243,7 @@ def subscribe_for_push_notifications(
             Nodes: [ "ACTOR_STATE_CHANGED", "ACTOR_ACTIVE_CHANGED", "ACTOR_NAME_CHANGED",
             ACTOR_CONTENTS_CHANGED", "ACTOR_DATA_CHANGED" ].
     node_types: Optional[Sequence], optional
-       Node types, e.g. ["Sensitivity", "AnsysWorkbench"]. By default ``None``.
+       Node types, e.g. ["Sensitivity"]. By default ``None``.
     password : Optional[str], optional
         Password, by default ``None``.
 
