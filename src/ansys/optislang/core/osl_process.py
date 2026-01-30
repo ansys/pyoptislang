@@ -679,9 +679,9 @@ class OslServerProcess:
             if utils.is_iron_python():
                 # System.Diagnostics.Process uses ExitCode property
                 # ExitCode is only valid after the process has exited
-                if self.__process.HasExited:
+                if self.__process.HasExited:  # type:ignore[attr-defined]
                     # Ensure the exit code is treated as a signed 32-bit integer
-                    exit_code = self.__process.ExitCode
+                    exit_code = self.__process.ExitCode  # type:ignore[attr-defined]
                     # Convert to signed int32 if needed (handle potential unsigned interpretation)
                     if exit_code > 2147483647:
                         exit_code = exit_code - 4294967296
@@ -1159,7 +1159,7 @@ class OslServerProcess:
 
         if utils.is_iron_python():
             # System.Diagnostics.Process uses HasExited property
-            return not self.__process.HasExited
+            return not self.__process.HasExited  # type:ignore[attr-defined]
         else:
             return self.__process.poll() is None
 
@@ -1184,9 +1184,9 @@ class OslServerProcess:
                         # System.Diagnostics.Process uses WaitForExit(milliseconds)
                         if timeout is not None:
                             timeout_ms = int(timeout * 1000)
-                            self.__process.WaitForExit(timeout_ms)
+                            self.__process.WaitForExit(timeout_ms)  # type:ignore[attr-defined]
                         else:
-                            self.__process.WaitForExit()
+                            self.__process.WaitForExit()  # type:ignore[attr-defined]
                     else:
                         self.__process.wait(timeout)
                 except Exception:
