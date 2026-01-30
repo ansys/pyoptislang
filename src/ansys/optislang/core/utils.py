@@ -456,8 +456,45 @@ def iter_awp_roots() -> Iterator[Tuple[int, Path]]:
 
 
 def is_iron_python():
-    """Whether current platform is IronPython."""
+    """Whether current platform is IronPython.
+
+    Returns
+    -------
+    bool
+        ``True`` if running under IronPython; ``False`` otherwise.
+
+    Notes
+    -----
+    IronPython is detected by checking if ``sys.platform == "cli"``.
+    This is different from Python.NET, which runs CPython with .NET interop.
+    """
     return sys.platform == "cli"
+
+
+def is_pythonnet():
+    """Whether Python.NET (pythonnet) is available.
+
+    Returns
+    -------
+    bool
+        ``True`` if Python.NET is loaded; ``False`` otherwise.
+
+    Notes
+    -----
+    Python.NET allows CPython to interoperate with .NET assemblies.
+    This is different from IronPython - Python.NET uses standard CPython
+    with a bridge to .NET, while IronPython is a complete reimplementation
+    of Python in C#.
+
+    When Python.NET is loaded, ``sys.platform`` remains "win32" or "linux",
+    and standard Python libraries (like subprocess) continue to work normally.
+    """
+    try:
+        import clr  # noqa: F401
+
+        return True
+    except ImportError:
+        return False
 
 
 def get_localhost_addresses() -> List[str]:

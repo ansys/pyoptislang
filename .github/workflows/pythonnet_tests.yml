@@ -1,0 +1,198 @@
+name: Python.NET Compatibility Tests
+
+# Tests PyOptiSLang compatibility with Python.NET (pythonnet).
+# These are UNIT tests that do NOT require optiSLang installation.
+# For integration tests with actual optiSLang processes, see integration_tests.yml.
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+env:
+  MAIN_PYTHON_VERSION: '3.10'
+  DOCUMENTATION_CNAME: 'optislang.docs.pyansys.com'
+  LIBRARY_NAME: 'ansys-optislang-core'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  pythonnet-tests:
+    name: Python.NET compatibility (${{ matrix.os }}, Python ${{ matrix.python-version }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        python-version: ['3.9', '3.10', '3.11', '3.12', '3.13']
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install .NET SDK (for Python.NET)
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Install package with test dependencies (includes pythonnet)
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e .[tests]
+
+      - name: Verify pythonnet installation
+        run: |
+          python -c "import clr; print(f'Python.NET version: {clr.__version__}')"
+          python -c "import sys; print(f'sys.platform: {sys.platform}')"
+          python -c "from ansys.optislang.core import utils; print(f'is_iron_python(): {utils.is_iron_python()}')"
+
+      - name: Run Python.NET compatibility tests
+        run: |
+          pytest tests/test_pythonnet_compatibility.py -v --cov=ansys.optislang.core --cov-report=xml --cov-report=term
+        # Note: These tests do NOT require optiSLang (no --local_osl flag)
+
+      - name: Upload coverage to Codecov
+        if: matrix.python-version == env.MAIN_PYTHON_VERSION && matrix.os == 'ubuntu-latest'
+        uses: codecov/codecov-action@v4
+        with:
+          files: ./coverage.xml
+          flags: pythonnet
+          name: pythonnet-${{ matrix.os }}-${{ matrix.python-version }}
+
+      - name: Test basic PyOptiSLang imports with CLR loaded
+        run: |
+          python -c "
+          import clr
+          import System
+          print('CLR loaded successfully')
+
+          # Now import PyOptiSLang - should work without conflicts
+          from ansys.optislang.core import Optislang
+          from ansys.optislang.core import OslServerProcess
+          print('PyOptiSLang imports successful with CLR present')
+          "
+
+      - name: Test subprocess with CLR loaded (Windows only)
+        if: runner.os == 'Windows'
+        run: |
+          python -c "
+          import clr
+          import subprocess
+
+          # Verify subprocess still works with CLR loaded
+          result = subprocess.run(['cmd', '/c', 'echo', 'test'], capture_output=True, text=True)
+          assert result.returncode == 0
+          assert 'test' in result.stdout
+          print('subprocess works correctly with CLR loaded')
+          "
+
+      - name: Test subprocess with CLR loaded (Linux only)
+        if: runner.os == 'Linux'
+        run: |
+          python -c "
+          import clr
+          import subprocess
+
+          # Verify subprocess still works with CLR loaded
+          result = subprocess.run(['echo', 'test'], capture_output=True, text=True)
+          assert result.returncode == 0
+          assert 'test' in result.stdout
+          print('subprocess works correctly with CLR loaded')
+          "
+
+  pythonnet-integration:
+    name: Python.NET integration test (Windows, .NET calling Python)
+    runs-on: windows-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.MAIN_PYTHON_VERSION }}
+
+      - name: Install .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Install package with pythonnet
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e .
+          pip install pythonnet
+
+      - name: Create C# test program
+        run: |
+          New-Item -ItemType Directory -Force -Path test_dotnet
+          Set-Content -Path test_dotnet/Program.cs -Value @'
+          using System;
+          using Python.Runtime;
+
+          class Program
+          {
+              static void Main()
+              {
+                  // Initialize Python.NET
+                  Runtime.PythonDLL = @"${{ env.pythonLocation }}\python${{ env.MAIN_PYTHON_VERSION.replace('.', '') }}.dll";
+                  PythonEngine.Initialize();
+
+                  try
+                  {
+                      using (Py.GIL())
+                      {
+                          // Import PyOptiSLang from .NET
+                          dynamic sys = Py.Import("sys");
+                          Console.WriteLine($"Python version: {sys.version}");
+                          Console.WriteLine($"Platform: {sys.platform}");
+
+                          // Test importing PyOptiSLang modules
+                          dynamic utils = Py.Import("ansys.optislang.core.utils");
+                          Console.WriteLine($"is_iron_python(): {utils.is_iron_python()}");
+
+                          // Import main class
+                          dynamic core = Py.Import("ansys.optislang.core");
+                          Console.WriteLine("Successfully imported PyOptiSLang from .NET!");
+
+                          // Verify process management imports
+                          dynamic osl_process = Py.Import("ansys.optislang.core.osl_process");
+                          Console.WriteLine("Process management module loaded successfully");
+                      }
+                  }
+                  finally
+                  {
+                      PythonEngine.Shutdown();
+                  }
+              }
+          }
+          '@
+
+          Set-Content -Path test_dotnet/test_dotnet.csproj -Value @'
+          <Project Sdk="Microsoft.NET.Sdk">
+            <PropertyGroup>
+              <OutputType>Exe</OutputType>
+              <TargetFramework>net8.0</TargetFramework>
+            </PropertyGroup>
+            <ItemGroup>
+              <PackageReference Include="pythonnet" Version="3.0.5" />
+            </ItemGroup>
+          </Project>
+          '@
+        shell: pwsh
+
+      - name: Build and run C# test
+        run: |
+          cd test_dotnet
+          dotnet build
+          dotnet run
+        shell: pwsh
