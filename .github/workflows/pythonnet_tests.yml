@@ -20,10 +20,13 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+permissions: {}
+
 jobs:
   pythonnet-tests:
     name: Python.NET compatibility (${{ matrix.os }}, Python ${{ matrix.python-version }})
     runs-on: ${{ matrix.os }}
+    permissions: {}
     strategy:
       fail-fast: false
       matrix:
@@ -32,15 +35,17 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+        with:
+          persist-credentials: false
 
       - name: Setup Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@83679a892e2d95755f2dac6acb0bfd1e9ac5d548 # v6.1.0
         with:
           python-version: ${{ matrix.python-version }}
 
       - name: Install .NET SDK (for Python.NET)
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@3e891f28f6c83cd13c64c55e075c9a48cd71eaaf # v4.2.0
         with:
           dotnet-version: '8.0.x'
 
@@ -62,7 +67,7 @@ jobs:
 
       - name: Upload coverage to Codecov
         if: matrix.python-version == env.MAIN_PYTHON_VERSION && matrix.os == 'ubuntu-latest'
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@015f24e6818733317a2da2edd6290ab26238649a # v5.0.7
         with:
           files: ./coverage.xml
           flags: pythonnet
@@ -112,17 +117,20 @@ jobs:
   pythonnet-integration:
     name: Python.NET integration test (Windows, .NET calling Python)
     runs-on: windows-latest
+    permissions: {}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+        with:
+          persist-credentials: false
 
       - name: Setup Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@83679a892e2d95755f2dac6acb0bfd1e9ac5d548 # v6.1.0
         with:
           python-version: ${{ env.MAIN_PYTHON_VERSION }}
 
       - name: Install .NET SDK
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@3e891f28f6c83cd13c64c55e075c9a48cd71eaaf # v4.2.0
         with:
           dotnet-version: '8.0.x'
 
@@ -132,10 +140,24 @@ jobs:
           pip install -e .
           pip install pythonnet
 
+      - name: Get Python DLL location
+        id: python-dll
+        shell: pwsh
+        run: |
+          $pythonExe = python -c "import sys; print(sys.executable)"
+          $pythonDir = Split-Path -Parent $pythonExe
+          $pythonVer = "${{ env.MAIN_PYTHON_VERSION }}".Replace(".", "")
+          $pythonDll = Join-Path $pythonDir "python${pythonVer}.dll"
+          Write-Host "Python DLL: $pythonDll"
+          "dll-path=$pythonDll" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+
       - name: Create C# test program
+        env:
+          PYTHON_DLL: ${{ steps.python-dll.outputs.dll-path }}
         run: |
           New-Item -ItemType Directory -Force -Path test_dotnet
-          Set-Content -Path test_dotnet/Program.cs -Value @'
+          $dllPath = $env:PYTHON_DLL
+          Set-Content -Path test_dotnet/Program.cs -Value @"
           using System;
           using Python.Runtime;
 
@@ -144,7 +166,7 @@ jobs:
               static void Main()
               {
                   // Initialize Python.NET
-                  Runtime.PythonDLL = @"${{ env.pythonLocation }}\python${{ env.MAIN_PYTHON_VERSION.replace('.', '') }}.dll";
+                  Runtime.PythonDLL = @"$dllPath";
                   PythonEngine.Initialize();
 
                   try
@@ -175,7 +197,7 @@ jobs:
                   }
               }
           }
-          '@
+          "@
 
           Set-Content -Path test_dotnet/test_dotnet.csproj -Value @'
           <Project Sdk="Microsoft.NET.Sdk">
