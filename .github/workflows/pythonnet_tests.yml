@@ -45,7 +45,7 @@ jobs:
           python-version: ${{ matrix.python-version }}
 
       - name: Install .NET SDK (for Python.NET)
-        uses: actions/setup-dotnet@3e891f28f6c83cd13c64c55e075c9a48cd71eaaf # v4.2.0
+        uses: actions/setup-dotnet@87b7050bc53ea08284295505d98d2aa94301e852 # v4.2.0
         with:
           dotnet-version: '8.0.x'
 
@@ -130,7 +130,7 @@ jobs:
           python-version: ${{ env.MAIN_PYTHON_VERSION }}
 
       - name: Install .NET SDK
-        uses: actions/setup-dotnet@3e891f28f6c83cd13c64c55e075c9a48cd71eaaf # v4.2.0
+        uses: actions/setup-dotnet@87b7050bc53ea08284295505d98d2aa94301e852 # v4.2.0
         with:
           dotnet-version: '8.0.x'
 
@@ -146,7 +146,8 @@ jobs:
         run: |
           $pythonExe = python -c "import sys; print(sys.executable)"
           $pythonDir = Split-Path -Parent $pythonExe
-          $pythonVer = "${{ env.MAIN_PYTHON_VERSION }}".Replace(".", "")
+          # Get Python version directly from Python to avoid template expansion
+          $pythonVer = python -c "import sys; print(f'{sys.version_info.major}{sys.version_info.minor}')"
           $pythonDll = Join-Path $pythonDir "python${pythonVer}.dll"
           Write-Host "Python DLL: $pythonDll"
           "dll-path=$pythonDll" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
