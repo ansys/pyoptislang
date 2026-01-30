@@ -89,6 +89,8 @@ jobs:
     steps:
       - name: "Run pytest with desired markers and extra arguments"
         uses: ansys/actions/tests-pytest@v10
+        env:
+          PYTHONNET_RUNTIME: ${{ runner.os == 'Linux' && 'coreclr' || '' }}
         with:
           python-version: ${{ matrix.python-version }}
           pytest-extra-args: --cov=ansys.optislang --cov-report=term --cov-report=xml:.cov/coverage.xml --cov-report=html:.cov/html
