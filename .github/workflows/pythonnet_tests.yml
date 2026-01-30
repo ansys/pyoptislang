@@ -54,6 +54,11 @@ jobs:
           python -m pip install --upgrade pip
           pip install -e .[tests]
 
+      - name: Configure Python.NET runtime (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          echo "PYTHONNET_RUNTIME=coreclr" >> $GITHUB_ENV
+
       - name: Verify pythonnet installation
         run: |
           python -c "import clr; print(f'Python.NET version: {clr.__version__}')"
