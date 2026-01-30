@@ -490,7 +490,7 @@ def is_pythonnet():
     and standard Python libraries (like subprocess) continue to work normally.
     """
     try:
-        import clr  # type: ignore[import-untyped]  # noqa: F401
+        import clr  # type: ignore[import-untyped, import-not-found]  # noqa: F401
 
         return True
     except ImportError:
