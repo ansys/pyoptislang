@@ -282,7 +282,8 @@ class OslServerProcess:
         self.__batch = batch if not service else False
         self.__service = service
         self._logger = logging.getLogger(__name__) if logger is None else logger
-        self.__process: Optional[subprocess.Popen] = None
+        # Process can be either subprocess.Popen (Python) or System.Diagnostics.Process (IronPython)
+        self.__process: Optional[subprocess.Popen] = None  # type: ignore[assignment]
         self.__handle_process_output_thread = None
 
         self.__tempdir = None
@@ -675,7 +676,19 @@ class OslServerProcess:
             Process return code, if exists; ``None`` otherwise.
         """
         if self.__process is not None:
-            return self.__process.returncode
+            if utils.is_iron_python():
+                # System.Diagnostics.Process uses ExitCode property
+                # ExitCode is only valid after the process has exited
+                if self.__process.HasExited:
+                    # Ensure the exit code is treated as a signed 32-bit integer
+                    exit_code = self.__process.ExitCode
+                    # Convert to signed int32 if needed (handle potential unsigned interpretation)
+                    if exit_code > 2147483647:
+                        exit_code = exit_code - 4294967296
+                    return exit_code
+                return None
+            else:
+                return self.__process.returncode
         return None
 
     @property
@@ -1115,7 +1128,12 @@ class OslServerProcess:
         """Terminate optiSLang server process."""
         if self.__process is not None:
             self.__terminate_osl_child_processes()
-            self.__process.terminate()
+            if utils.is_iron_python():
+                # System.Diagnostics.Process uses Kill() method
+                if not self.__process.HasExited:
+                    self.__process.Kill()
+            else:
+                self.__process.terminate()
 
         if (
             self.__handle_process_output_thread is not None
@@ -1139,7 +1157,11 @@ class OslServerProcess:
         if self.__process is None:
             return False
 
-        return self.__process.poll() is None
+        if utils.is_iron_python():
+            # System.Diagnostics.Process uses HasExited property
+            return not self.__process.HasExited
+        else:
+            return self.__process.poll() is None
 
     def wait_for_finished(self, timeout: Optional[float] = None) -> Optional[int]:
         """Wait for the process to finish.
@@ -1158,17 +1180,34 @@ class OslServerProcess:
         if self.__process is not None:
             if self.is_running():
                 try:
-                    self.__process.wait(timeout)
+                    if utils.is_iron_python():
+                        # System.Diagnostics.Process uses WaitForExit(milliseconds)
+                        if timeout is not None:
+                            timeout_ms = int(timeout * 1000)
+                            self.__process.WaitForExit(timeout_ms)
+                        else:
+                            self.__process.WaitForExit()
+                    else:
+                        self.__process.wait(timeout)
                 except Exception:
                     pass
-            return self.__process.returncode
+            return self.returncode
         return None
 
     def __start_process_output_thread(self):
         """Start new thread responsible for logging of STDOUT/STDERR of the optiSLang process."""
 
         def finalize_process(process, **kwargs):
-            process.wait(**kwargs)
+            if utils.is_iron_python():
+                # System.Diagnostics.Process uses WaitForExit()
+                timeout = kwargs.get("timeout")
+                if timeout is not None:
+                    timeout_ms = int(timeout * 1000)
+                    process.WaitForExit(timeout_ms)
+                else:
+                    process.WaitForExit()
+            else:
+                process.wait(**kwargs)
 
         self.__handle_process_output_thread = Thread(
             target=self.__handle_process_output,
