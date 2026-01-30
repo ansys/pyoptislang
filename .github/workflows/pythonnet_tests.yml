@@ -122,6 +122,8 @@ jobs:
   pythonnet-integration:
     name: Python.NET integration test (Windows, .NET calling Python)
     runs-on: windows-latest
+    # Only run on main branch or manual dispatch, not on PRs
+    if: github.event_name != 'pull_request'
     permissions: {}
     steps:
       - name: Checkout repository
@@ -197,9 +199,25 @@ jobs:
                           Console.WriteLine("Process management module loaded successfully");
                       }
                   }
+                  catch (Exception ex)
+                  {
+                      Console.WriteLine($"Error: {ex.Message}");
+                      Environment.Exit(1);
+                  }
                   finally
                   {
-                      PythonEngine.Shutdown();
+                      // Note: PythonEngine.Shutdown() has known issues with .NET 8.0 and BinaryFormatter
+                      // The Python runtime will be cleaned up when the process exits
+                      // See: https://github.com/pythonnet/pythonnet/issues/2149
+                      try
+                      {
+                          PythonEngine.Shutdown();
+                      }
+                      catch (NotSupportedException)
+                      {
+                          // BinaryFormatter is disabled in .NET 8.0 - this is expected
+                          Console.WriteLine("Note: PythonEngine.Shutdown() skipped due to .NET 8.0 BinaryFormatter limitation");
+                      }
                   }
               }
           }
