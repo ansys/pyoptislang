@@ -87,10 +87,13 @@ jobs:
         python-version: ["3.9", "3.10", "3.11", "3.12", "3.13"]
       fail-fast: false
     steps:
+      - name: "Configure Python.NET runtime for Linux"
+        if: runner.os == 'Linux'
+        run: echo "PYTHONNET_RUNTIME=coreclr" >> $GITHUB_ENV
+        shell: bash
+
       - name: "Run pytest with desired markers and extra arguments"
         uses: ansys/actions/tests-pytest@v10
-        env:
-          PYTHONNET_RUNTIME: ${{ runner.os == 'Linux' && 'coreclr' || '' }}
         with:
           python-version: ${{ matrix.python-version }}
           pytest-extra-args: --cov=ansys.optislang --cov-report=term --cov-report=xml:.cov/coverage.xml --cov-report=html:.cov/html
