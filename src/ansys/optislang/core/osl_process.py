@@ -38,6 +38,10 @@ from ansys.optislang.core import encoding, utils
 if utils.is_iron_python():
     import System  # type: ignore[import-not-found]
 
+# Constants for int32 conversion (used when handling returncodes across Python↔.NET boundary)
+INT32_MAX = 2147483647  # Maximum value for signed 32-bit integer
+UINT32_RANGE = 4294967296  # 2^32, used to convert unsigned to signed int32
+
 
 class ServerNotification(Enum):
     """Push notifications available for subscription from the optiSLang server."""
@@ -683,12 +687,18 @@ class OslServerProcess:
                     # Ensure the exit code is treated as a signed 32-bit integer
                     exit_code = self.__process.ExitCode  # type:ignore[attr-defined]
                     # Convert to signed int32 if needed (handle potential unsigned interpretation)
-                    if exit_code > 2147483647:
-                        exit_code = exit_code - 4294967296
+                    if exit_code > INT32_MAX:
+                        exit_code = exit_code - UINT32_RANGE
                     return exit_code
                 return None  # pragma: no cover
             else:  # pragma: no cover
-                return self.__process.returncode
+                rc = self.__process.returncode
+                # Defensive: When Python.NET is loaded, ensure returncode is treated as signed int32
+                # to prevent marshaling issues at the Python↔.NET boundary where Python integers
+                # might be interpreted as UInt32 instead of Int32 by .NET code consuming this value
+                if rc is not None and utils.is_pythonnet() and rc > INT32_MAX:
+                    rc = rc - UINT32_RANGE
+                return rc
         return None  # pragma: no cover
 
     @property

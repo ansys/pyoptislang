@@ -26,6 +26,12 @@ import sys
 
 import pytest
 
+# Constants for int32 testing
+INT32_MIN = -2147483648  # Minimum value for signed 32-bit integer
+INT32_MAX = 2147483647  # Maximum value for signed 32-bit integer
+UINT32_MAX = 4294967295  # Maximum value for unsigned 32-bit integer (2^32 - 1)
+UINT32_RANGE = 4294967296  # 2^32, used to convert unsigned to signed int32
+
 
 def test_pythonnet_available():
     """Test that pythonnet is installed and importable."""
@@ -165,7 +171,7 @@ def test_negative_returncode_with_clr():
     # On Linux, exit 255 or signal termination can result in negative values
     # Just verify we get an integer, not an overflow
     assert isinstance(proc.returncode, int)
-    assert -2147483648 <= proc.returncode <= 2147483647  # Within int32 range
+    assert INT32_MIN <= proc.returncode <= INT32_MAX  # Within int32 range
 
 
 def test_clr_and_encoding():
@@ -383,3 +389,59 @@ def test_is_pythonnet_detection_without_pythonnet():
         # Restore original clr module if it existed
         if original_clr is not None:
             sys.modules["clr"] = original_clr
+
+
+def test_pythonnet_returncode_marshaling_protection():
+    """Test that return codes are properly converted to signed int32 for Python.NET marshaling.
+
+    This test verifies the defensive conversion that prevents Python.NET marshaling issues
+    where Python integers might be interpreted as UInt32 instead of Int32 at the
+    Python↔.NET boundary, causing negative exit codes to appear as large positive values.
+    """
+    try:
+        import clr  # noqa: F401
+    except ImportError:
+        pytest.skip("pythonnet not installed")
+
+    import subprocess
+    from unittest.mock import Mock, patch
+
+    from ansys.optislang.core.osl_process import OslServerProcess
+
+    # Create a mock process with a simulated large unsigned value
+    # (as might be received from .NET marshaling of -1)
+    mock_popen = Mock(spec=subprocess.Popen)
+
+    # Mock the initialization to avoid file checks and process start
+    with (
+        patch("os.path.isfile", return_value=True),
+        patch.object(OslServerProcess, "start"),
+        patch("subprocess.Popen", return_value=mock_popen),
+    ):
+        osl_proc = OslServerProcess(executable="/fake/path")
+        osl_proc._OslServerProcess__process = mock_popen
+
+        # Test with large unsigned value (as if -1 was marshaled as unsigned)
+        mock_popen.returncode = UINT32_MAX  # This is -1 interpreted as unsigned 32-bit
+        result = osl_proc.returncode
+        assert result == -1, f"Expected -1, got {result}"
+
+        # Test with a normal positive return code (should remain unchanged)
+        mock_popen.returncode = 1
+        result = osl_proc.returncode
+        assert result == 1, f"Expected 1, got {result}"
+
+        # Test with None (process still running)
+        mock_popen.returncode = None
+        result = osl_proc.returncode
+        assert result is None, f"Expected None, got {result}"
+
+        # Test with max signed int32 value (should remain unchanged)
+        mock_popen.returncode = INT32_MAX
+        result = osl_proc.returncode
+        assert result == INT32_MAX, f"Expected INT32_MAX ({INT32_MAX}), got {result}"
+
+        # Test with value just above max signed int32 (should be converted)
+        mock_popen.returncode = INT32_MAX + 1  # This is INT32_MIN as signed
+        result = osl_proc.returncode
+        assert result == INT32_MIN, f"Expected INT32_MIN ({INT32_MIN}), got {result}"
