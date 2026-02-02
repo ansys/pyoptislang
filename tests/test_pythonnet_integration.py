@@ -118,9 +118,10 @@ def test_optislang_tcp_connection_with_pythonnet():
         pytest.skip("pythonnet not installed")
 
     from ansys.optislang.core import Optislang
+    from ansys.optislang.core.communication_channels import CommunicationChannel
 
-    # Start with TCP/IP server
-    osl = Optislang(ini_timeout=60)
+    # Start with TCP/IP server (explicitly specify TCP communication)
+    osl = Optislang(ini_timeout=60, communication_channel=CommunicationChannel.TCP)
 
     try:
         # Verify connection
