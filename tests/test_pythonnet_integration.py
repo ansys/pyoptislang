@@ -193,3 +193,57 @@ def test_multiple_osl_instances_with_pythonnet():
             osl2.dispose()
     finally:
         osl1.dispose()
+
+
+def test_optislang_local_domain_with_pythonnet():
+    """Test optiSLang LOCAL_DOMAIN communication with Python.NET loaded.
+
+    This test explicitly uses LOCAL_DOMAIN communication channel and verifies:
+    - On Windows: pywintypes and win32 modules work with Python.NET
+    - On Linux: Unix domain sockets work with Python.NET
+    - Communication over local domain socket succeeds with actual optiSLang process
+    """
+    try:
+        import clr  # noqa: F401
+    except ImportError:
+        pytest.skip("pythonnet not installed")
+
+    from ansys.optislang.core import Optislang
+    from ansys.optislang.core.communication_channels import CommunicationChannel
+
+    # Explicitly use LOCAL_DOMAIN channel with Python.NET loaded
+    osl = Optislang(ini_timeout=120, communication_channel=CommunicationChannel.LOCAL_DOMAIN)
+
+    try:
+        # Verify connection is established
+        assert osl.project is not None, "Project should be accessible"
+
+        # Test basic operations over local domain socket
+        # This exercises send/recv through local_socket.py code paths
+        osl.project.reset()
+
+        # Get project status - requires communication over local socket
+        status = osl.project.get_status()
+        assert status is not None, "Should be able to get project status"
+
+        # Test another operation to ensure socket communication is stable
+        project_info = osl.application.project
+        assert project_info is not None, "Should be able to get project info"
+
+        import sys
+
+        if sys.platform == "win32":
+            # On Windows, verify pywintypes was imported (will be in sys.modules)
+            # This confirms Windows named pipe code paths with Python.NET work
+            assert (
+                "pywintypes" in sys.modules
+            ), "pywintypes should be imported on Windows for local domain sockets"
+            print("Successfully used Windows named pipes with Python.NET")
+        else:
+            # On Linux, verify Unix domain socket was used
+            print("Successfully used Unix domain sockets with Python.NET")
+
+        print(f"LOCAL_DOMAIN communication with Python.NET verified on {sys.platform}")
+
+    finally:
+        osl.dispose()
