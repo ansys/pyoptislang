@@ -43,3 +43,53 @@ jobs:
           python-version: "3.13"
           pytest-extra-args: "--local_osl --ignore=tests/test_examples.py"
           use-python-cache: false
+
+  pythonnet-integration:
+    strategy:
+      fail-fast: false
+      matrix:
+        osl_image:
+          - version: 23.2.0
+            hash: b84ee0d2395238b7f2c61bde85cdc6afcf67345de48cb9fcb1318e8615f263f9
+          - version: 25.2.0
+            hash: e2ee15479dc58413b37699fdbdbd60d551a31916b556d6dda74c3ed3dc0f7783
+    name: "Python.NET with optiSLang ${{ matrix.osl_image.version }}"
+    if: github.event.name != 'pull_request' || github.event.pull_request.merged == true
+    runs-on: ubuntu-22.04
+    container:
+      image: ${{ format('ghcr.io/ansys/optislang@sha256:{0}', matrix.osl_image.hash) }} # zizmor: ignore[unpinned-images]
+      credentials:
+        username: ansys-bot
+        password: ${{ secrets.GITHUB_TOKEN }}
+    permissions:
+      packages: read # To access container images
+    steps:
+      - name: "Install .NET SDK for Python.NET"
+        run: |
+          apt-get update
+          apt-get install -y wget
+          wget https://dot.net/v1/dotnet-install.sh -O dotnet-install.sh
+          chmod +x dotnet-install.sh
+          ./dotnet-install.sh --channel 8.0 --install-dir /usr/share/dotnet
+          ln -s /usr/share/dotnet/dotnet /usr/bin/dotnet
+          dotnet --version
+
+      - name: "Install test dependencies (includes pythonnet)"
+        run: |
+          python3 -m pip install pytest pythonnet
+
+      - name: "Verify pythonnet installation"
+        run: |
+          python3 -c "import clr; print(f'Python.NET version: {clr.__version__}')"
+          python3 -c "from ansys.optislang.core import utils; print(f'is_pythonnet(): {utils.is_pythonnet()}')"
+          python3 -c "from ansys.optislang.core import utils; print(f'is_iron_python(): {utils.is_iron_python()}')"
+
+      - name: "Pytest with Python.NET"
+        env:
+          PYOPTISLANG_DISABLE_OPTISLANG_OUTPUT: true
+          ANSYSLMD_LICENSE_FILE: ${{ format('1055@{0}', secrets.LICENSE_SERVER) }}
+        uses: ansys/actions/tests-pytest@v10
+        with:
+          python-version: "3.13"
+          pytest-extra-args: "--local_osl tests/test_pythonnet_integration.py -v"
+          use-python-cache: false
