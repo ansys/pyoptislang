@@ -336,3 +336,50 @@ def test_dotnet_process_not_interfering():
     # Both should have succeeded independently
     assert proc1.returncode == 0
     assert proc2.ExitCode == 0
+
+
+def test_is_pythonnet_detection_with_pythonnet():
+    """Test is_pythonnet() returns True when pythonnet is installed."""
+    from ansys.optislang.core.utils import is_pythonnet
+
+    try:
+        import clr  # noqa: F401
+
+        # If we can import clr, is_pythonnet() should return True
+        assert is_pythonnet() is True
+    except ImportError:
+        pytest.skip("pythonnet not installed")
+
+
+def test_is_pythonnet_detection_without_pythonnet():
+    """Test is_pythonnet() returns False when clr import fails."""
+    import sys
+    from unittest.mock import patch
+
+    from ansys.optislang.core.utils import is_pythonnet
+
+    # Save the original clr module if it exists
+    original_clr = sys.modules.get("clr", None)
+
+    try:
+        # Remove clr from sys.modules to simulate it not being installed
+        if "clr" in sys.modules:
+            del sys.modules["clr"]
+
+        # Mock the import to raise ImportError for clr
+        with patch(
+            "builtins.__import__",
+            side_effect=lambda name, *args, **kwargs: (
+                (_ for _ in ()).throw(ImportError("Mocked clr import failure"))
+                if name == "clr"
+                else __import__(name, *args, **kwargs)
+            ),
+        ):
+            # This should return False since clr import will fail
+            result = is_pythonnet()
+            assert result is False
+
+    finally:
+        # Restore original clr module if it existed
+        if original_clr is not None:
+            sys.modules["clr"] = original_clr

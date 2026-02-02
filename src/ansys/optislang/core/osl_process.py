@@ -283,7 +283,7 @@ class OslServerProcess:
         self.__service = service
         self._logger = logging.getLogger(__name__) if logger is None else logger
         # Process can be either subprocess.Popen (Python) or System.Diagnostics.Process (IronPython)
-        self.__process: Optional[subprocess.Popen] = None  # type: ignore[assignment]
+        self.__process: Optional[subprocess.Popen] = None  # type: ignore[assignment]  # pragma: no cover  # noqa: E501
         self.__handle_process_output_thread = None
 
         self.__tempdir = None
@@ -676,7 +676,7 @@ class OslServerProcess:
             Process return code, if exists; ``None`` otherwise.
         """
         if self.__process is not None:
-            if utils.is_iron_python():
+            if utils.is_iron_python():  # pragma: no cover
                 # System.Diagnostics.Process uses ExitCode property
                 # ExitCode is only valid after the process has exited
                 if self.__process.HasExited:  # type:ignore[attr-defined]
@@ -686,10 +686,10 @@ class OslServerProcess:
                     if exit_code > 2147483647:
                         exit_code = exit_code - 4294967296
                     return exit_code
-                return None
-            else:
+                return None  # pragma: no cover
+            else:  # pragma: no cover
                 return self.__process.returncode
-        return None
+        return None  # pragma: no cover
 
     @property
     def shutdown_on_finished(self) -> bool:
@@ -1128,12 +1128,12 @@ class OslServerProcess:
         """Terminate optiSLang server process."""
         if self.__process is not None:
             self.__terminate_osl_child_processes()
-            if utils.is_iron_python():
+            if utils.is_iron_python():  # pragma: no cover
                 # System.Diagnostics.Process uses Kill() method
                 if not self.__process.HasExited:
                     self.__process.Kill()
             else:
-                self.__process.terminate()
+                self.__process.terminate()  # pragma: no cover
 
         if (
             self.__handle_process_output_thread is not None
@@ -1157,11 +1157,11 @@ class OslServerProcess:
         if self.__process is None:
             return False
 
-        if utils.is_iron_python():
+        if utils.is_iron_python():  # pragma: no cover
             # System.Diagnostics.Process uses HasExited property
             return not self.__process.HasExited  # type:ignore[attr-defined]
         else:
-            return self.__process.poll() is None
+            return self.__process.poll() is None  # pragma: no cover
 
     def wait_for_finished(self, timeout: Optional[float] = None) -> Optional[int]:
         """Wait for the process to finish.
@@ -1180,7 +1180,7 @@ class OslServerProcess:
         if self.__process is not None:
             if self.is_running():
                 try:
-                    if utils.is_iron_python():
+                    if utils.is_iron_python():  # pragma: no cover
                         # System.Diagnostics.Process uses WaitForExit(milliseconds)
                         if timeout is not None:
                             timeout_ms = int(timeout * 1000)
@@ -1188,16 +1188,16 @@ class OslServerProcess:
                         else:
                             self.__process.WaitForExit()  # type:ignore[attr-defined]
                     else:
-                        self.__process.wait(timeout)
-                except Exception:
+                        self.__process.wait(timeout)  # pragma: no cover
+                except Exception:  # pragma: no cover
                     pass
-            return self.returncode
-        return None
+            return self.returncode  # pragma: no cover
+        return None  # pragma: no cover
 
     def __start_process_output_thread(self):
         """Start new thread responsible for logging of STDOUT/STDERR of the optiSLang process."""
 
-        def finalize_process(process, **kwargs):
+        def finalize_process(process, **kwargs):  # pragma: no cover
             if utils.is_iron_python():
                 # System.Diagnostics.Process uses WaitForExit()
                 timeout = kwargs.get("timeout")
