@@ -82,6 +82,7 @@ jobs:
 
       - name: "Pytest with Python.NET"
         env:
+          PYTHONNET_RUNTIME: coreclr
           PYOPTISLANG_DISABLE_OPTISLANG_OUTPUT: true
           ANSYSLMD_LICENSE_FILE: ${{ format('1055@{0}', secrets.LICENSE_SERVER) }}
         uses: ansys/actions/tests-pytest@v10
