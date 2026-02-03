@@ -51,6 +51,12 @@ jobs:
         osl_image:
           - version: 23.2.0
             hash: b84ee0d2395238b7f2c61bde85cdc6afcf67345de48cb9fcb1318e8615f263f9
+          - version: 24.1.0
+            hash: 56d2c4b526af6347bf4eaedfed5f86222ab8a53be7bed40eef9ebe9e350d8796
+          - version: 24.2.0
+            hash: 4a43d7d1afb610a9da172307a045c7a2ceaf4e9d9761c0189eafd0d69af4eb01
+          - version: 25.1.0
+            hash: cc49a0d8d58b40e793cbc1328fdc3b45fdc99233cd5b8281d20a700bf6a92769
           - version: 25.2.0
             hash: e2ee15479dc58413b37699fdbdbd60d551a31916b556d6dda74c3ed3dc0f7783
     name: "Python.NET with optiSLang ${{ matrix.osl_image.version }}"
@@ -74,16 +80,6 @@ jobs:
           ln -s /usr/share/dotnet/dotnet /usr/bin/dotnet
           dotnet --version
 
-      - name: "Install test dependencies (includes pythonnet)"
-        run: |
-          python3 -m pip install pytest pythonnet
-
-      - name: "Verify pythonnet installation"
-        run: |
-          python3 -c "import clr; print(f'Python.NET version: {clr.__version__}')"
-          python3 -c "from ansys.optislang.core import utils; print(f'is_pythonnet(): {utils.is_pythonnet()}')"
-          python3 -c "from ansys.optislang.core import utils; print(f'is_iron_python(): {utils.is_iron_python()}')"
-
       - name: "Pytest with Python.NET"
         env:
           PYOPTISLANG_DISABLE_OPTISLANG_OUTPUT: true
@@ -93,3 +89,10 @@ jobs:
           python-version: "3.13"
           pytest-extra-args: "--local_osl tests/test_pythonnet_integration.py -v"
           use-python-cache: false
+
+      - name: "Verify pythonnet installation"
+        run: |
+          source .venv/bin/activate
+          python -c "import clr; print(f'Python.NET version: {clr.__version__}')"
+          python -c "from ansys.optislang.core import utils; print(f'is_pythonnet(): {utils.is_pythonnet()}')"
+          python -c "from ansys.optislang.core import utils; print(f'is_iron_python(): {utils.is_iron_python()}')"
