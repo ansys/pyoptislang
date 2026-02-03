@@ -93,6 +93,8 @@ jobs:
 
       - name: "Verify pythonnet installation"
         shell: bash
+        env:
+          PYTHONNET_RUNTIME: coreclr
         run: |
           source .venv/bin/activate
           python -c "import clr; print(f'Python.NET version: {clr.__version__}')"
