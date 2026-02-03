@@ -360,7 +360,6 @@ def test_is_pythonnet_detection_with_pythonnet():
 def test_is_pythonnet_detection_without_pythonnet():
     """Test is_pythonnet() returns False when clr import fails."""
     import sys
-    from unittest.mock import patch
 
     from ansys.optislang.core.utils import is_pythonnet
 
@@ -368,22 +367,13 @@ def test_is_pythonnet_detection_without_pythonnet():
     original_clr = sys.modules.get("clr", None)
 
     try:
-        # Remove clr from sys.modules to simulate it not being installed
+        # Remove clr from sys.modules to simulate it not being loaded
         if "clr" in sys.modules:
             del sys.modules["clr"]
 
-        # Mock the import to raise ImportError for clr
-        with patch(
-            "builtins.__import__",
-            side_effect=lambda name, *args, **kwargs: (
-                (_ for _ in ()).throw(ImportError("Mocked clr import failure"))
-                if name == "clr"
-                else __import__(name, *args, **kwargs)
-            ),
-        ):
-            # This should return False since clr import will fail
-            result = is_pythonnet()
-            assert result is False
+        # This should return False since clr is not loaded
+        result = is_pythonnet()
+        assert result is False
 
     finally:
         # Restore original clr module if it existed
