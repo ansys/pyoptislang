@@ -41,7 +41,7 @@ jobs:
         uses: ansys/actions/tests-pytest@v10
         with:
           python-version: "3.13"
-          pytest-extra-args: "--local_osl --ignore=tests/test_examples.py"
+          pytest-extra-args: "--local_osl --ignore=tests/test_examples.py --ignore=tests/test_pythonnet_compatibility.py --ignore=tests/test_pythonnet_integration.py"
           use-python-cache: false
 
   pythonnet-integration:
