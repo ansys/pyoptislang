@@ -88,7 +88,7 @@ jobs:
         uses: ansys/actions/tests-pytest@v10
         with:
           python-version: "3.13"
-          pytest-extra-args: "--local_osl tests/test_pythonnet_integration.py -v"
+          pytest-extra-args: "--local_osl tests/test_pythonnet_compatibility.py tests/test_pythonnet_integration.py -v"
           use-python-cache: false
 
       - name: "Verify pythonnet installation"
