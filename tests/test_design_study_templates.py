@@ -421,12 +421,6 @@ def test_create_design_study_from_template(tmp_path):
     )
     project_path = tmp_path / "test_create_workflow.opf"
     osl = create_design_study_from_template(template, project_path)
-
-    # Skip test for optiSLang versions <= 24.2.0
-    major, minor, *_ = osl.osl_version
-    if (major, minor) <= (24, 2):
-        osl.dispose()
-        pytest.skip("Test fails on optiSLang versions <= 24.2.0")
     nodes = osl.application.project.root_system.get_nodes()
     assert len(nodes) > 0
     osl.dispose()

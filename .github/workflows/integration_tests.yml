@@ -34,6 +34,16 @@ jobs:
     permissions:
       packages: read # To access container images
     steps:
+      - name: "Set pytest arguments"
+        id: pytest-args
+        run: |
+          BASE_ARGS="--local_osl --ignore=tests/test_examples.py --ignore=tests/test_pythonnet_compatibility.py --ignore=tests/test_pythonnet_integration.py"
+          if [[ "${{ matrix.osl_image.version }}" == "23.2.0" ]] || [[ "${{ matrix.osl_image.version }}" == "24.1.0" ]] || [[ "${{ matrix.osl_image.version }}" == "24.2.0" ]]; then
+            echo "args=${BASE_ARGS} --deselect=tests/test_design_study_templates.py::test_create_design_study_from_template" >> $GITHUB_OUTPUT
+          else
+            echo "args=${BASE_ARGS}" >> $GITHUB_OUTPUT
+          fi
+
       - name: "Pytest"
         env:
           PYOPTISLANG_DISABLE_OPTISLANG_OUTPUT: true
@@ -41,7 +51,7 @@ jobs:
         uses: ansys/actions/tests-pytest@v10
         with:
           python-version: "3.13"
-          pytest-extra-args: "--local_osl --ignore=tests/test_examples.py --ignore=tests/test_pythonnet_compatibility.py --ignore=tests/test_pythonnet_integration.py"
+          pytest-extra-args: ${{ steps.pytest-args.outputs.args }}
           use-python-cache: false
 
   pythonnet-integration:
