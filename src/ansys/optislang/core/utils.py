@@ -472,7 +472,7 @@ def is_iron_python():
 
 
 def is_pythonnet():
-    """Whether Python.NET (pythonnet) is available.
+    """Whether Python.NET (pythonnet) is currently loaded.
 
     Returns
     -------
@@ -489,12 +489,7 @@ def is_pythonnet():
     When Python.NET is loaded, ``sys.platform`` remains "win32" or "linux",
     and standard Python libraries (like subprocess) continue to work normally.
     """
-    try:
-        import clr  # type: ignore[import-untyped, import-not-found]  # noqa: F401
-
-        return True
-    except ImportError:
-        return False
+    return "clr" in sys.modules
 
 
 def get_localhost_addresses() -> List[str]:

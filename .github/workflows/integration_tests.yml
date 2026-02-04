@@ -41,7 +41,7 @@ jobs:
         uses: ansys/actions/tests-pytest@v10
         with:
           python-version: "3.13"
-          pytest-extra-args: "--local_osl --ignore=tests/test_examples.py"
+          pytest-extra-args: "--local_osl --ignore=tests/test_examples.py --ignore=tests/test_pythonnet_compatibility.py --ignore=tests/test_pythonnet_integration.py"
           use-python-cache: false
 
   pythonnet-integration:
@@ -88,10 +88,13 @@ jobs:
         uses: ansys/actions/tests-pytest@v10
         with:
           python-version: "3.13"
-          pytest-extra-args: "--local_osl tests/test_pythonnet_integration.py -v"
+          pytest-extra-args: "--local_osl tests/test_pythonnet_compatibility.py tests/test_pythonnet_integration.py -v"
           use-python-cache: false
 
       - name: "Verify pythonnet installation"
+        shell: bash
+        env:
+          PYTHONNET_RUNTIME: coreclr
         run: |
           source .venv/bin/activate
           python -c "import clr; print(f'Python.NET version: {clr.__version__}')"
