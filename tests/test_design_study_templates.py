@@ -262,6 +262,11 @@ def test_general_algorithm_settings():
 @pytest.mark.local_osl
 def test_parametric_system_integration_template(optislang: Optislang):
     """Test `ParametricSystemIntegrationTemplate` class."""
+    # Skip test for optiSLang versions <= 24.2.0
+    major, minor, *_ = optislang.osl_version
+    if (major, minor) <= (24, 2):
+        pytest.skip("Test fails on optiSLang versions <= 24.2.0")
+
     python_code = r"""
 try:
     Y = X1 + X2 + X3
@@ -291,6 +296,11 @@ except:
 @pytest.mark.local_osl
 def test_general_algorithm_template(optislang: Optislang):
     """Test `GeneralAlgorithmTemplate` class."""
+    # Skip test for optiSLang versions <= 24.2.0
+    major, minor, *_ = optislang.osl_version
+    if (major, minor) <= (24, 2):
+        pytest.skip("Test fails on optiSLang versions <= 24.2.0")
+
     template = GeneralAlgorithmTemplate(
         _PARAMETERS,
         _CRITERIA,
@@ -316,6 +326,10 @@ def test_general_algorithm_template(optislang: Optislang):
 @pytest.mark.local_osl
 def test_optimization_on_mop_template(optislang: Optislang):
     """Test `OptimizationOnMOPTemplate` class."""
+    # Skip test for optiSLang versions <= 25.1.0
+    major, minor, *_ = optislang.osl_version
+    if (major, minor) <= (25, 1):
+        pytest.skip("Test fails on optiSLang versions <= 25.1.0")
 
     python_code = r"""
 try:
@@ -360,6 +374,15 @@ except:
 def test_create_optislang_project_with_solver_node(tmp_path, tmp_example_project):
     """Test `create_optislang_project_with_solver_node` method."""
     project_path = tmp_path / "test_create_project.opf"
+
+    # Create osl instance early to check version
+    with Optislang(project_path=project_path) as osl:
+        # Skip test for optiSLang versions <= 24.2.0
+        major, minor, *_ = osl.osl_version
+        if (major, minor) <= (24, 2):
+            pytest.skip("Test fails on optiSLang versions <= 24.2.0")
+        osl.dispose()
+
     reference_path = project_path.with_suffix(".opr")
     node_type = nt.Python2
     settings = PythonSolverNodeSettings(input_code=_PYTHON_SOURCE_CODE)
@@ -398,6 +421,12 @@ def test_create_design_study_from_template(tmp_path):
     )
     project_path = tmp_path / "test_create_workflow.opf"
     osl = create_design_study_from_template(template, project_path)
+
+    # Skip test for optiSLang versions <= 24.2.0
+    major, minor, *_ = osl.osl_version
+    if (major, minor) <= (24, 2):
+        osl.dispose()
+        pytest.skip("Test fails on optiSLang versions <= 24.2.0")
     nodes = osl.application.project.root_system.get_nodes()
     assert len(nodes) > 0
     osl.dispose()
