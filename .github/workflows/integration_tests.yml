@@ -97,6 +97,4 @@ jobs:
           PYTHONNET_RUNTIME: coreclr
         run: |
           source .venv/bin/activate
-          python -c "import clr; print(f'Python.NET version: {clr.__version__}')"
-          python -c "from ansys.optislang.core import utils; print(f'is_pythonnet(): {utils.is_pythonnet()}')"
-          python -c "from ansys.optislang.core import utils; print(f'is_iron_python(): {utils.is_iron_python()}')"
+          python -c "import clr; from ansys.optislang.core import utils; print(f'Python.NET version: {clr.__version__}'); print(f'is_pythonnet(): {utils.is_pythonnet()}'); print(f'is_iron_python(): {utils.is_iron_python()}')"
