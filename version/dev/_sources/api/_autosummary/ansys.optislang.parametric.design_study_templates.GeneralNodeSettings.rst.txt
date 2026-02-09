@@ -1,0 +1,32 @@
+﻿GeneralNodeSettings
+===================
+
+.. currentmodule:: ansys.optislang.parametric.design_study_templates
+
+.. autoclass:: GeneralNodeSettings
+
+   
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :toctree:
+   
+      
+      
+      GeneralNodeSettings.convert_properties_to_dict
+      
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+      :toctree:
+   
+      GeneralNodeSettings.additional_settings
+   
+   

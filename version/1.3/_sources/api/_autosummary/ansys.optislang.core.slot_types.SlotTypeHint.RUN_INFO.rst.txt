@@ -1,0 +1,6 @@
+RUN\_INFO
+=========
+
+.. currentmodule:: ansys.optislang.core.slot_types
+
+.. autoattribute:: SlotTypeHint.RUN_INFO
