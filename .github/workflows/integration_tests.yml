@@ -41,10 +41,14 @@ jobs:
         run: |
           BASE_ARGS="--local_osl --ignore=tests/test_examples.py --ignore=tests/test_pythonnet_compatibility.py --ignore=tests/test_pythonnet_integration.py"
           if [[ "${OSL_VERSION}" == "23.2.0" ]] || [[ "${OSL_VERSION}" == "24.1.0" ]] || [[ "${OSL_VERSION}" == "24.2.0" ]]; then
-            echo "args=${BASE_ARGS} --deselect=tests/test_design_study_templates.py::test_create_design_study_from_template" >> $GITHUB_OUTPUT
+            ARGS="${BASE_ARGS} --deselect=tests/test_design_study_templates.py::test_create_design_study_from_template"
+            echo "Deselecting test_create_design_study_from_template for optiSLang ${OSL_VERSION}"
           else
-            echo "args=${BASE_ARGS}" >> $GITHUB_OUTPUT
+            ARGS="${BASE_ARGS}"
+            echo "Running all tests for optiSLang ${OSL_VERSION}"
           fi
+          echo "args=${ARGS}" >> $GITHUB_OUTPUT
+          echo "Final pytest args: ${ARGS}"
 
       - name: "Pytest"
         env:
