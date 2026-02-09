@@ -36,6 +36,7 @@ jobs:
     steps:
       - name: "Set pytest arguments"
         id: pytest-args
+        shell: bash
         env:
           OSL_VERSION: ${{ matrix.osl_image.version }}
         run: |
