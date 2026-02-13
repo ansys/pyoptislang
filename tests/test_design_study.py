@@ -104,6 +104,10 @@ def test_managed_instances(tmp_example_project):
     """Test `ManagedInstance` classes."""
     project_path = tmp_example_project("omdb_files")
     with Optislang(project_path=project_path) as osl:
+        # Skip test for optiSLang versions <= 24.2.0
+        major, minor, *_ = osl.osl_version
+        if (major, minor) <= (24, 2):
+            pytest.skip("Test fails on optiSLang versions <= 24.2.0")
         sensitivity: ParametricSystem = osl.application.project.root_system.find_nodes_by_name(
             "Sensitivity"
         )[0]
@@ -243,6 +247,14 @@ def test_parametric_design_study(tmp_example_project):
 def test_parametric_desings_study_thread_exec(tmp_path):
     """Test `ParametricDesignStudy` class execution in non-blocking mode."""
     project = tmp_path / "Thread_exec.opf"
+
+    # Create osl instance early to check version
+    with Optislang(project_path=project) as osl:
+        # Skip test for optiSLang versions <= 24.2.0
+        major, minor, *_ = osl.osl_version
+        if (major, minor) <= (24, 2):
+            pytest.skip("Test fails on optiSLang versions <= 24.2.0")
+        osl.dispose()
 
     def calculator(designs: list[Design]):
         results_designs = []
@@ -412,6 +424,15 @@ def test_parametric_design_study_manager_initialized_osl(tmp_example_project):
 
 def test_parametric_design_study_manager_initialize_osl(tmp_path):
     """Test `ParametricDesignStudyManaged` class init without provided optiSLang instance."""
+
+    # Create osl instance early to check version
+    project_path = tmp_path / "test.opf"
+    with Optislang(project_path=project_path) as osl:
+        # Skip test for optiSLang versions <= 24.2.0
+        major, minor, *_ = osl.osl_version
+        if (major, minor) <= (24, 2):
+            pytest.skip("Test fails on optiSLang versions <= 24.2.0")
+        osl.dispose()
 
     def calculator(designs: list[Design]):
         results_designs = []

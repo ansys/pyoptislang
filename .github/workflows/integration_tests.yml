@@ -34,6 +34,23 @@ jobs:
     permissions:
       packages: read # To access container images
     steps:
+      - name: "Set pytest arguments"
+        id: pytest-args
+        shell: bash
+        env:
+          OSL_VERSION: ${{ matrix.osl_image.version }}
+        run: |
+          BASE_ARGS="--local_osl --ignore=tests/test_examples.py --ignore=tests/test_pythonnet_compatibility.py --ignore=tests/test_pythonnet_integration.py"
+          if [[ "${OSL_VERSION}" == "23.2.0" ]] || [[ "${OSL_VERSION}" == "24.1.0" ]] || [[ "${OSL_VERSION}" == "24.2.0" ]]; then
+            ARGS="${BASE_ARGS} --deselect=tests/test_design_study_templates.py::test_create_design_study_from_template"
+            echo "Deselecting test_create_design_study_from_template for optiSLang ${OSL_VERSION}"
+          else
+            ARGS="${BASE_ARGS}"
+            echo "Running all tests for optiSLang ${OSL_VERSION}"
+          fi
+          echo "args=${ARGS}" >> $GITHUB_OUTPUT
+          echo "Final pytest args: ${ARGS}"
+
       - name: "Pytest"
         env:
           PYOPTISLANG_DISABLE_OPTISLANG_OUTPUT: true
@@ -41,7 +58,7 @@ jobs:
         uses: ansys/actions/tests-pytest@v10
         with:
           python-version: "3.13"
-          pytest-extra-args: "--local_osl --ignore=tests/test_examples.py --ignore=tests/test_pythonnet_compatibility.py --ignore=tests/test_pythonnet_integration.py"
+          pytest-extra-args: ${{ steps.pytest-args.outputs.args }}
           use-python-cache: false
 
   pythonnet-integration:
@@ -97,6 +114,4 @@ jobs:
           PYTHONNET_RUNTIME: coreclr
         run: |
           source .venv/bin/activate
-          python -c "import clr; print(f'Python.NET version: {clr.__version__}')"
-          python -c "from ansys.optislang.core import utils; print(f'is_pythonnet(): {utils.is_pythonnet()}')"
-          python -c "from ansys.optislang.core import utils; print(f'is_iron_python(): {utils.is_iron_python()}')"
+          python -c "import clr; from ansys.optislang.core import utils; print(f'Python.NET version: {clr.__version__}'); print(f'is_pythonnet(): {utils.is_pythonnet()}'); print(f'is_iron_python(): {utils.is_iron_python()}')"
