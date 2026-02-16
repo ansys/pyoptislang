@@ -182,7 +182,7 @@ Example of TCP communication with localhost binding:
     # TCP communication, localhost only (more secure)
     osl = Optislang(
         communication_channel=CommunicationChannel.TCP,
-        port_range=(5000, 5010)
+        port_range=(5000, 5010),
         # Note: server_address defaults to "127.0.0.1" (localhost only)
     )
 
