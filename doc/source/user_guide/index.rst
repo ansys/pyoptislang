@@ -19,6 +19,7 @@ This section provides an overview of how you use PyOptiSLang.
    run_python
    osl_server_usage
    troubleshooting
+   security_considerations
 
 
 With the :py:class:`Optislang <ansys.optislang.core.optislang.Optislang>` class

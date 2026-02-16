@@ -516,8 +516,8 @@ class LocalServerSocket(LocalSocket):
                     # Cancel the overlapped operation
                     try:
                         win32file.CancelIo(self._handle)  # type: ignore[name-defined]
-                    except Exception:
-                        pass
+                    except Exception as ex:
+                        self._logger.debug(f"Failed to cancel overlapped operation: {ex}")
                     raise TimeoutError(f"Accept operation timed out after {timeout} seconds")
                 elif wait_result != win32event.WAIT_OBJECT_0:  # type: ignore[name-defined]
                     raise ConnectionError(f"Wait for connection failed with result: {wait_result}")
