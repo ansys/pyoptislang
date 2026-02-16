@@ -20,40 +20,40 @@ Process management security
 ============================
 
 PyOptiSLang uses the Python ``subprocess`` module to launch and manage the optiSLang
-server process. This is necessary for the core functionality of the library. The
+server process. This is necessary for the core feature of the library. The
 following security measures are implemented to ensure safe process management:
 
-Subprocess usage (B404)
-------------------------
+``subprocess`` module usage (B404)
+-----------------------------------
 
-**Bandit check:** ``B404`` - Import of subprocess module
+**Bandit check:** ``B404`` - Import of ``subprocess`` module
 
-**Status:** Excluded inline with ``# nosec B404`` comment
+**Status:** excluded inline with ``# nosec B404`` comment
 
 **Justification:**
 
 The ``subprocess`` module is imported in
 :py:mod:`ansys.optislang.core.osl_process` for legitimate process management purposes.
-All subprocess usage in PyOptiSLang follows security best practices:
+All ``subprocess`` usage in PyOptiSLang follows security best practices:
 
-1. **Shell injection prevention**: All subprocess calls use ``shell=False`` to prevent
+1. **Shell injection prevention**: All ``subprocess`` calls use ``shell=False`` to prevent
    shell injection attacks. Arguments are passed as lists rather than shell strings.
 
 2. **Input validation**: The optiSLang executable path is validated to exist during
    initialization. All command-line arguments are constructed from validated internal
    state rather than user-controlled input.
 
-3. **No arbitrary command execution**: The subprocess module is used exclusively to
-   launch the optiSLang application with controlled arguments. No user input is
+3. **No arbitrary command execution**: The ``subprocess`` module is used exclusively to
+   launch the optiSLang app with controlled arguments. No user input is
    directly executed as shell commands.
 
-4. **Secure by design**: All subprocess calls include detailed security comments
+4. **Secure by design**: All ``subprocess`` calls include detailed security comments
    documenting why they are safe (see line 1266-1278 in ``osl_process.py``).
 
 Inline exclusion example
 -------------------------
 
-The subprocess module import includes an inline exclusion following PyAnsys guidelines:
+The ``subprocess`` module import includes an inline exclusion following PyAnsys guidelines:
 
 .. code-block:: python
 
@@ -67,8 +67,8 @@ This approach is preferred over global exclusions because it:
 - Makes code reviews easier by providing context
 - Follows PyAnsys ecosystem standards for vulnerability management
 
-Example of secure subprocess usage
------------------------------------
+Example of secure ``subprocess`` usage
+---------------------------------------
 
 The following code snippet from ``osl_process.py`` demonstrates the secure usage pattern:
 
@@ -147,7 +147,7 @@ local domain communication channel that:
 This default configuration provides the best security for most use cases.
 
 TCP-based communication (opt-in only)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 TCP-based communication is **only enabled when explicitly requested** by setting
 ``communication_channel=CommunicationChannel.TCP``. When using TCP-based communication:
@@ -161,7 +161,7 @@ TCP-based communication is **only enabled when explicitly requested** by setting
 - Only use TCP communication when remote access is specifically required
 - Use appropriate firewall rules to restrict access to the optiSLang server
 - Be aware that communication is not encrypted by default
-- Never expose the server to untrusted networks without additional security measures
+- Never expose the server to unverified networks without additional security measures
 
 Example of secure local communication (default):
 
