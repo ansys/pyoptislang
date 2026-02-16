@@ -25,7 +25,9 @@ from enum import Enum
 import logging
 import os
 from pathlib import Path
-import subprocess
+# Subprocess is required for legitimate optiSLang process management.
+# All arguments are validated and shell=False is enforced. See security audit in __start_in_python.
+import subprocess  # nosec B404
 import sys
 import tempfile
 from threading import Thread
