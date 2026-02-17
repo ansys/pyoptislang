@@ -41,6 +41,7 @@ tests = [
     "pytest==8.4.2",
     "pytest-cov==7.0.0",
     "matplotlib>=3.5.3",
+    "pythonnet>=3.0.0; platform_system != 'Darwin'",  # Python.NET compatibility tests (skip on macOS)
 ]
 doc = [
     "ansys-sphinx-theme==1.6.4",
@@ -109,7 +110,3 @@ exclude = ["00_run_script"]
 
 [tool.bandit]
 exclude_dirs = ["tests", "src/ansys/optislang/core/examples"]
-skips = [
-    "B110",
-    "B404",
-    ]

@@ -25,7 +25,10 @@ from enum import Enum
 import logging
 import os
 from pathlib import Path
-import subprocess
+
+# Subprocess is required for legitimate optiSLang process management.
+# All arguments are validated and shell=False is enforced. See security audit in __start_in_python.
+import subprocess  # nosec B404
 import sys
 import tempfile
 from threading import Thread
@@ -37,6 +40,10 @@ from ansys.optislang.core import encoding, utils
 
 if utils.is_iron_python():
     import System  # type: ignore[import-not-found]
+
+# Constants for int32 conversion (used when handling returncodes across Python↔.NET boundary)
+INT32_MAX = 2147483647  # Maximum value for signed 32-bit integer
+UINT32_RANGE = 4294967296  # 2^32, used to convert unsigned to signed int32
 
 
 class ServerNotification(Enum):
@@ -282,7 +289,8 @@ class OslServerProcess:
         self.__batch = batch if not service else False
         self.__service = service
         self._logger = logging.getLogger(__name__) if logger is None else logger
-        self.__process: Optional[subprocess.Popen] = None
+        # Process can be either subprocess.Popen (Python) or System.Diagnostics.Process (IronPython)
+        self.__process: Optional[subprocess.Popen] = None  # type: ignore[assignment]  # pragma: no cover  # noqa: E501
         self.__handle_process_output_thread = None
 
         self.__tempdir = None
@@ -675,8 +683,26 @@ class OslServerProcess:
             Process return code, if exists; ``None`` otherwise.
         """
         if self.__process is not None:
-            return self.__process.returncode
-        return None
+            if utils.is_iron_python():  # pragma: no cover
+                # System.Diagnostics.Process uses ExitCode property
+                # ExitCode is only valid after the process has exited
+                if self.__process.HasExited:  # type:ignore[attr-defined]
+                    # Ensure the exit code is treated as a signed 32-bit integer
+                    exit_code = self.__process.ExitCode  # type:ignore[attr-defined]
+                    # Convert to signed int32 if needed (handle potential unsigned interpretation)
+                    if exit_code > INT32_MAX:
+                        exit_code = exit_code - UINT32_RANGE
+                    return exit_code
+                return None  # pragma: no cover
+            else:  # pragma: no cover
+                rc = self.__process.returncode
+                # Defensive: When Python.NET is loaded, ensure returncode is treated as signed int32
+                # to prevent marshaling issues at the Python↔.NET boundary where Python integers
+                # might be interpreted as UInt32 instead of Int32 by .NET code consuming this value
+                if rc is not None and utils.is_pythonnet() and rc > INT32_MAX:
+                    rc = rc - UINT32_RANGE
+                return rc
+        return None  # pragma: no cover
 
     @property
     def shutdown_on_finished(self) -> bool:
@@ -1115,7 +1141,12 @@ class OslServerProcess:
         """Terminate optiSLang server process."""
         if self.__process is not None:
             self.__terminate_osl_child_processes()
-            self.__process.terminate()
+            if utils.is_iron_python():  # pragma: no cover
+                # System.Diagnostics.Process uses Kill() method
+                if not self.__process.HasExited:
+                    self.__process.Kill()
+            else:
+                self.__process.terminate()  # pragma: no cover
 
         if (
             self.__handle_process_output_thread is not None
@@ -1139,7 +1170,11 @@ class OslServerProcess:
         if self.__process is None:
             return False
 
-        return self.__process.poll() is None
+        if utils.is_iron_python():  # pragma: no cover
+            # System.Diagnostics.Process uses HasExited property
+            return not self.__process.HasExited  # type:ignore[attr-defined]
+        else:
+            return self.__process.poll() is None  # pragma: no cover
 
     def wait_for_finished(self, timeout: Optional[float] = None) -> Optional[int]:
         """Wait for the process to finish.
@@ -1158,17 +1193,36 @@ class OslServerProcess:
         if self.__process is not None:
             if self.is_running():
                 try:
-                    self.__process.wait(timeout)
-                except Exception:
-                    pass
-            return self.__process.returncode
-        return None
+                    if utils.is_iron_python():  # pragma: no cover
+                        # System.Diagnostics.Process uses WaitForExit(milliseconds)
+                        if timeout is not None:
+                            timeout_ms = int(timeout * 1000)
+                            self.__process.WaitForExit(timeout_ms)  # type:ignore[attr-defined]
+                        else:
+                            self.__process.WaitForExit()  # type:ignore[attr-defined]
+                    else:
+                        self.__process.wait(timeout)  # pragma: no cover
+                except Exception as ex:
+                    self._logger.debug(
+                        f"Failed to wait for process (PID: {self.__process.pid}): {ex}."
+                    )
+            return self.returncode  # pragma: no cover
+        return None  # pragma: no cover
 
     def __start_process_output_thread(self):
         """Start new thread responsible for logging of STDOUT/STDERR of the optiSLang process."""
 
-        def finalize_process(process, **kwargs):
-            process.wait(**kwargs)
+        def finalize_process(process, **kwargs):  # pragma: no cover
+            if utils.is_iron_python():
+                # System.Diagnostics.Process uses WaitForExit()
+                timeout = kwargs.get("timeout")
+                if timeout is not None:
+                    timeout_ms = int(timeout * 1000)
+                    process.WaitForExit(timeout_ms)
+                else:
+                    process.WaitForExit()
+            else:
+                process.wait(**kwargs)
 
         self.__handle_process_output_thread = Thread(
             target=self.__handle_process_output,

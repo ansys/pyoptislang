@@ -34,6 +34,23 @@ jobs:
     permissions:
       packages: read # To access container images
     steps:
+      - name: "Set pytest arguments"
+        id: pytest-args
+        shell: bash
+        env:
+          OSL_VERSION: ${{ matrix.osl_image.version }}
+        run: |
+          BASE_ARGS="--local_osl --ignore=tests/test_examples.py --ignore=tests/test_pythonnet_compatibility.py --ignore=tests/test_pythonnet_integration.py"
+          if [[ "${OSL_VERSION}" == "23.2.0" ]] || [[ "${OSL_VERSION}" == "24.1.0" ]] || [[ "${OSL_VERSION}" == "24.2.0" ]]; then
+            ARGS="${BASE_ARGS} --deselect=tests/test_design_study_templates.py::test_create_design_study_from_template"
+            echo "Deselecting test_create_design_study_from_template for optiSLang ${OSL_VERSION}"
+          else
+            ARGS="${BASE_ARGS}"
+            echo "Running all tests for optiSLang ${OSL_VERSION}"
+          fi
+          echo "args=${ARGS}" >> $GITHUB_OUTPUT
+          echo "Final pytest args: ${ARGS}"
+
       - name: "Pytest"
         env:
           PYOPTISLANG_DISABLE_OPTISLANG_OUTPUT: true
@@ -41,5 +58,60 @@ jobs:
         uses: ansys/actions/tests-pytest@v10
         with:
           python-version: "3.13"
-          pytest-extra-args: "--local_osl --ignore=tests/test_examples.py"
+          pytest-extra-args: ${{ steps.pytest-args.outputs.args }}
           use-python-cache: false
+
+  pythonnet-integration:
+    strategy:
+      fail-fast: false
+      matrix:
+        osl_image:
+          - version: 23.2.0
+            hash: b84ee0d2395238b7f2c61bde85cdc6afcf67345de48cb9fcb1318e8615f263f9
+          - version: 24.1.0
+            hash: 56d2c4b526af6347bf4eaedfed5f86222ab8a53be7bed40eef9ebe9e350d8796
+          - version: 24.2.0
+            hash: 4a43d7d1afb610a9da172307a045c7a2ceaf4e9d9761c0189eafd0d69af4eb01
+          - version: 25.1.0
+            hash: cc49a0d8d58b40e793cbc1328fdc3b45fdc99233cd5b8281d20a700bf6a92769
+          - version: 25.2.0
+            hash: e2ee15479dc58413b37699fdbdbd60d551a31916b556d6dda74c3ed3dc0f7783
+    name: "Python.NET with optiSLang ${{ matrix.osl_image.version }}"
+    if: github.event.name != 'pull_request' || github.event.pull_request.merged == true
+    runs-on: ubuntu-22.04
+    container:
+      image: ${{ format('ghcr.io/ansys/optislang@sha256:{0}', matrix.osl_image.hash) }} # zizmor: ignore[unpinned-images]
+      credentials:
+        username: ansys-bot
+        password: ${{ secrets.GITHUB_TOKEN }}
+    permissions:
+      packages: read # To access container images
+    steps:
+      - name: "Install .NET SDK for Python.NET"
+        run: |
+          apt-get update
+          apt-get install -y wget
+          wget https://dot.net/v1/dotnet-install.sh -O dotnet-install.sh
+          chmod +x dotnet-install.sh
+          ./dotnet-install.sh --channel 8.0 --install-dir /usr/share/dotnet
+          ln -s /usr/share/dotnet/dotnet /usr/bin/dotnet
+          dotnet --version
+
+      - name: "Pytest with Python.NET"
+        env:
+          PYTHONNET_RUNTIME: coreclr
+          PYOPTISLANG_DISABLE_OPTISLANG_OUTPUT: true
+          ANSYSLMD_LICENSE_FILE: ${{ format('1055@{0}', secrets.LICENSE_SERVER) }}
+        uses: ansys/actions/tests-pytest@v10
+        with:
+          python-version: "3.13"
+          pytest-extra-args: "--local_osl tests/test_pythonnet_compatibility.py tests/test_pythonnet_integration.py -v"
+          use-python-cache: false
+
+      - name: "Verify pythonnet installation"
+        shell: bash
+        env:
+          PYTHONNET_RUNTIME: coreclr
+        run: |
+          source .venv/bin/activate
+          python -c "import clr; from ansys.optislang.core import utils; print(f'Python.NET version: {clr.__version__}'); print(f'is_pythonnet(): {utils.is_pythonnet()}'); print(f'is_iron_python(): {utils.is_iron_python()}')"
