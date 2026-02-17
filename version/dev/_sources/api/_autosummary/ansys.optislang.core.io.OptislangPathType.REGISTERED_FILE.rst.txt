@@ -1,0 +1,6 @@
+REGISTERED\_FILE
+================
+
+.. currentmodule:: ansys.optislang.core.io
+
+.. autoattribute:: OptislangPathType.REGISTERED_FILE

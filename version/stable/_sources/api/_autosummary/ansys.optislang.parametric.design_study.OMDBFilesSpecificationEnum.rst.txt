@@ -1,0 +1,25 @@
+﻿OMDBFilesSpecificationEnum
+==========================
+
+.. currentmodule:: ansys.optislang.parametric.design_study
+
+.. autoclass:: OMDBFilesSpecificationEnum
+
+   
+
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+      :toctree:
+   
+      OMDBFilesSpecificationEnum.OMDB_FILES
+      OMDBFilesSpecificationEnum.OMDB_FOLDER
+      OMDBFilesSpecificationEnum.DESIGN_STUDY_MANAGER
+      OMDBFilesSpecificationEnum.UNDEFINED
+   
+   

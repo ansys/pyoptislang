@@ -1,0 +1,6 @@
+create\_algorithm
+=================
+
+.. currentmodule:: ansys.optislang.parametric.design_study_templates
+
+.. automethod:: GeneralAlgorithmTemplate.create_algorithm

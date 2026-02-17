@@ -1,0 +1,6 @@
+CRITERION
+=========
+
+.. currentmodule:: ansys.optislang.core.slot_types
+
+.. autoattribute:: SlotTypeHint.CRITERION

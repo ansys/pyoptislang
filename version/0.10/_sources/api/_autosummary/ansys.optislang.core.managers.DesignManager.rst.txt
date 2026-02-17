@@ -1,0 +1,40 @@
+﻿DesignManager
+=============
+
+.. currentmodule:: ansys.optislang.core.managers
+
+.. autoclass:: DesignManager
+
+   
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :toctree:
+   
+      
+      
+      DesignManager.filter_designs_by
+      
+      
+      DesignManager.get_design
+      
+      
+      DesignManager.get_designs
+      
+      
+      DesignManager.save_designs_as_csv
+      
+      
+      DesignManager.save_designs_as_json
+      
+      
+      DesignManager.sort_designs_by_hid
+      
+   
+   
+
+   
+   
+   

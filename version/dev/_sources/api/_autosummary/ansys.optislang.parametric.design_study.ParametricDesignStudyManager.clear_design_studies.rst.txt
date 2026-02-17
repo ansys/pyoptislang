@@ -1,0 +1,6 @@
+clear\_design\_studies
+======================
+
+.. currentmodule:: ansys.optislang.parametric.design_study
+
+.. automethod:: ParametricDesignStudyManager.clear_design_studies

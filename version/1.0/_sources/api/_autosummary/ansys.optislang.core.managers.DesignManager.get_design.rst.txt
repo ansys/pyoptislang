@@ -1,0 +1,6 @@
+get\_design
+===========
+
+.. currentmodule:: ansys.optislang.core.managers
+
+.. automethod:: DesignManager.get_design

@@ -1,0 +1,6 @@
+local\_server\_id
+=================
+
+.. currentmodule:: ansys.optislang.core.osl_process
+
+.. autoproperty:: OslServerProcess.local_server_id

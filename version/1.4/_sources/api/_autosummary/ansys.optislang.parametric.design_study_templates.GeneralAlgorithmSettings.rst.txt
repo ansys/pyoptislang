@@ -1,0 +1,32 @@
+﻿GeneralAlgorithmSettings
+========================
+
+.. currentmodule:: ansys.optislang.parametric.design_study_templates
+
+.. autoclass:: GeneralAlgorithmSettings
+
+   
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :toctree:
+   
+      
+      
+      GeneralAlgorithmSettings.convert_properties_to_dict
+      
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+      :toctree:
+   
+      GeneralAlgorithmSettings.additional_settings
+   
+   

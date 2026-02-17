@@ -1,0 +1,6 @@
+from\_str
+=========
+
+.. currentmodule:: ansys.optislang.core.io
+
+.. automethod:: OptislangPathType.from_str

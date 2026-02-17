@@ -1,0 +1,6 @@
+save
+====
+
+.. currentmodule:: ansys.optislang.parametric.design_study
+
+.. automethod:: ParametricDesignStudyManager.save

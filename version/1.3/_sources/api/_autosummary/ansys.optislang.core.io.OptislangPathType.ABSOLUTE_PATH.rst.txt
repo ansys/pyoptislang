@@ -1,0 +1,6 @@
+ABSOLUTE\_PATH
+==============
+
+.. currentmodule:: ansys.optislang.core.io
+
+.. autoattribute:: OptislangPathType.ABSOLUTE_PATH

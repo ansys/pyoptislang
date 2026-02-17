@@ -1,0 +1,6 @@
+get\_placeholder\_ids
+=====================
+
+.. currentmodule:: ansys.optislang.core.tcp.osl_server
+
+.. automethod:: TcpOslServer.get_placeholder_ids

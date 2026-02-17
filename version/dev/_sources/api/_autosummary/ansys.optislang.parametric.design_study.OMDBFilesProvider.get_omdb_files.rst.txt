@@ -1,0 +1,6 @@
+get\_omdb\_files
+================
+
+.. currentmodule:: ansys.optislang.parametric.design_study
+
+.. automethod:: OMDBFilesProvider.get_omdb_files

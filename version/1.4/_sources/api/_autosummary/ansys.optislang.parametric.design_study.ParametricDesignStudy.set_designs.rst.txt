@@ -1,0 +1,6 @@
+set\_designs
+============
+
+.. currentmodule:: ansys.optislang.parametric.design_study
+
+.. automethod:: ParametricDesignStudy.set_designs

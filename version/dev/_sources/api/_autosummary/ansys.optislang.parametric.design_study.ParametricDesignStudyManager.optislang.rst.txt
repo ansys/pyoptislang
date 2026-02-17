@@ -1,0 +1,6 @@
+optislang
+=========
+
+.. currentmodule:: ansys.optislang.parametric.design_study
+
+.. autoproperty:: ParametricDesignStudyManager.optislang

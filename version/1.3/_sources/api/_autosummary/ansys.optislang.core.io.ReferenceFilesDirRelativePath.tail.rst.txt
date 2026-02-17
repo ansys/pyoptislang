@@ -1,0 +1,6 @@
+tail
+====
+
+.. currentmodule:: ansys.optislang.core.io
+
+.. autoproperty:: ReferenceFilesDirRelativePath.tail

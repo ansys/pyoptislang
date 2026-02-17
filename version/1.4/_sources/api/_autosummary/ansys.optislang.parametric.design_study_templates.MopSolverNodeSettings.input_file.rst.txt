@@ -1,0 +1,6 @@
+input\_file
+===========
+
+.. currentmodule:: ansys.optislang.parametric.design_study_templates
+
+.. autoproperty:: MopSolverNodeSettings.input_file

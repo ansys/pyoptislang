@@ -1,0 +1,6 @@
+managed\_instances
+==================
+
+.. currentmodule:: ansys.optislang.parametric.design_study
+
+.. autoproperty:: ParametricDesignStudy.managed_instances

@@ -1,0 +1,34 @@
+﻿MopSolverNodeSettings
+=====================
+
+.. currentmodule:: ansys.optislang.parametric.design_study_templates
+
+.. autoclass:: MopSolverNodeSettings
+
+   
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :toctree:
+   
+      
+      
+      MopSolverNodeSettings.convert_properties_to_dict
+      
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+      :toctree:
+   
+      MopSolverNodeSettings.additional_settings
+      MopSolverNodeSettings.input_file
+      MopSolverNodeSettings.multi_design_launch_num
+   
+   

@@ -1,0 +1,17 @@
+User-agent: *
+
+Disallow: /version/1.3
+Disallow: /version/1.2
+Disallow: /version/1.1
+Disallow: /version/1.0
+Disallow: /version/0.10
+Disallow: /version/0.9
+Disallow: /version/0.8
+Disallow: /version/0.7
+Disallow: /version/0.6
+Disallow: /version/0.5
+Disallow: /version/0.4
+Disallow: /version/0.3
+Disallow: /version/0.2
+
+Sitemap: https://optislang.docs.pyansys.com/sitemap.xml

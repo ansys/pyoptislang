@@ -1,0 +1,6 @@
+get\_result\_designs
+====================
+
+.. currentmodule:: ansys.optislang.parametric.design_study
+
+.. automethod:: ParametricDesignStudy.get_result_designs

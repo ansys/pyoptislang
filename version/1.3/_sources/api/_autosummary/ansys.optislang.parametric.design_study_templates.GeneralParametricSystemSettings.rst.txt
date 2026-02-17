@@ -1,0 +1,32 @@
+﻿GeneralParametricSystemSettings
+===============================
+
+.. currentmodule:: ansys.optislang.parametric.design_study_templates
+
+.. autoclass:: GeneralParametricSystemSettings
+
+   
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :toctree:
+   
+      
+      
+      GeneralParametricSystemSettings.convert_properties_to_dict
+      
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+      :toctree:
+   
+      GeneralParametricSystemSettings.additional_settings
+   
+   

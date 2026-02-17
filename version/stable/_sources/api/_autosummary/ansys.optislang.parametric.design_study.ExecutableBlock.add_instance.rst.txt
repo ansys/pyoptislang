@@ -1,0 +1,6 @@
+add\_instance
+=============
+
+.. currentmodule:: ansys.optislang.parametric.design_study
+
+.. automethod:: ExecutableBlock.add_instance
