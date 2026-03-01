@@ -57,7 +57,7 @@ jobs:
           ANSYSLMD_LICENSE_FILE: ${{ format('1055@{0}', secrets.LICENSE_SERVER) }}
         uses: ansys/actions/tests-pytest@v10
         with:
-          python-version: "3.13"
+          python-version: "3.14"
           pytest-extra-args: ${{ steps.pytest-args.outputs.args }}
           use-python-cache: false
 
@@ -104,7 +104,7 @@ jobs:
           ANSYSLMD_LICENSE_FILE: ${{ format('1055@{0}', secrets.LICENSE_SERVER) }}
         uses: ansys/actions/tests-pytest@v10
         with:
-          python-version: "3.13"
+          python-version: "3.14"
           pytest-extra-args: "--local_osl tests/test_pythonnet_compatibility.py tests/test_pythonnet_integration.py -v"
           use-python-cache: false
 
