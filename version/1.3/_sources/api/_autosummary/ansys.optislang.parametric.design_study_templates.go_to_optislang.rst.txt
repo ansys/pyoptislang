@@ -1,0 +1,6 @@
+﻿go\_to\_optislang
+=================
+
+.. currentmodule:: ansys.optislang.parametric.design_study_templates
+
+.. autofunction:: go_to_optislang

@@ -1,0 +1,6 @@
+solver\_node
+============
+
+.. currentmodule:: ansys.optislang.parametric.design_study
+
+.. autoproperty:: ProxySolverManagedParametricSystem.solver_node
