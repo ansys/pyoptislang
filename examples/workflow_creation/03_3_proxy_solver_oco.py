@@ -21,14 +21,15 @@
 # SOFTWARE.
 
 """
-.. _ref_proxy_solver:
+.. _ref_proxy_solver_oco:
 
-Proxy solver
-------------
+Proxy solver with OCO
+---------------------
 
 This example demonstrates how to obtain designs from parametric system and process them externally.
 
-It creates a proxy solver node inside parametric system and solves it's designs externally.
+It creates a proxy solver node inside an OCO parametric system, modifies the maximum number of
+designs in the OCO settings, and solves its designs externally.
 
 This is a unified approach for "optiSLang inside" solutions.
 """
@@ -117,24 +118,28 @@ print(f"Using optiSLang version {osl.osl_version_string}")
 
 root_system = osl.application.project.root_system
 
-# Create the algorithm system of your choice.
+# Create the OCO algorithm system.
 
 algorithm_system: ParametricSystem = root_system.create_node(
-    type_=node_types.Sensitivity, name="Sensitivity"
+    type_=node_types.OCO, name="OCO"
 )
 
-num_discretization = 2000
+# Read the OCO settings and modify the maximum number of designs.
 
-algorithm_settings = algorithm_system.get_property("AlgorithmSettings")
-algorithm_settings["num_discretization"] = num_discretization
-algorithm_system.set_property("AlgorithmSettings", algorithm_settings)
+max_num_designs = 150
+
+oco_settings = algorithm_system.get_property("Settings")
+for entry in oco_settings["sequence"]:
+    if entry["First"] == "Maximum number of samples":
+        entry["Second"] = max_num_designs
+        break
+algorithm_system.set_property("Settings", oco_settings)
 
 # Fast running solver settings
 
 algorithm_system.set_property("AutoSaveMode", "no_auto_save")
 algorithm_system.set_property("SolveTwice", True)
 algorithm_system.set_property("UpdateResultFile", "never")
-algorithm_system.set_property("WriteDesignStartSetFlag", False)
 
 # Add the Proxy Solver node and set the desired maximum number of designs you handle in one go.
 
@@ -189,7 +194,7 @@ algorithm_system.criteria_manager.add_criterion(
 # .. code:: python
 #
 #   dir_path = Path(r"<insert-desired-location>")
-#   project_name = "proxy_solver_workflow.opf"
+#   project_name = "proxy_solver_oco_workflow.opf"
 #   osl.application.save_as(dir_path / project_name)
 
 
@@ -226,7 +231,7 @@ osl.dispose()
 # This image shows the generated workflow.
 # However, it is important to note, that this workflow is only usable through pyoptislang and cannot be used interactively!
 #
-# .. image:: ../../_static/03_ProxySolver.png
+# .. image:: ../../_static/03_3_ProxySolverOCO.png
 #  :width: 400
 #  :alt: Result of script.
 #
