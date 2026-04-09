@@ -122,9 +122,7 @@ root_system = osl.application.project.root_system
 
 # Create the AMOP algorithm system.
 
-algorithm_system: ParametricSystem = root_system.create_node(
-    type_=node_types.AMOP, name="AMOP"
-)
+algorithm_system: ParametricSystem = root_system.create_node(type_=node_types.AMOP, name="AMOP")
 
 # Read the AMOP settings and modify the maximum number of designs.
 

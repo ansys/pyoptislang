@@ -122,9 +122,7 @@ root_system = osl.application.project.root_system
 
 # Create the OCO algorithm system.
 
-algorithm_system: ParametricSystem = root_system.create_node(
-    type_=node_types.OCO, name="OCO"
-)
+algorithm_system: ParametricSystem = root_system.create_node(type_=node_types.OCO, name="OCO")
 
 # Read the OCO settings and modify the maximum number of designs.
 
