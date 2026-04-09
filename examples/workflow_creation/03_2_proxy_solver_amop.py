@@ -103,6 +103,8 @@ def calculate(designs):
 # Find the optiSLang >= 25.1 executable. Initialize the Optislang class instance with the executable.
 
 available_optislang_executables = find_all_osl_exec()
+if not available_optislang_executables:
+    raise KeyError("No optiSLang executables were found, please specify path manually.")
 version, executables = available_optislang_executables.popitem(last=False)
 if not version >= 251:
     raise KeyError("OptiSLang installation >= 25R1 wasn't found, please specify path manually.")
@@ -211,7 +213,7 @@ while not osl.project.root_system.get_status() == "Processing done":
     if len(design_list):
         responses_dict = calculate(design_list)
         proxy_solver.set_designs(responses_dict)
-    # time.sleep(0.1)
+    time.sleep(0.1)
 
 print("Solved Successfully!")
 

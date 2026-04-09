@@ -103,6 +103,8 @@ def calculate(designs):
 # Find the optiSLang >= 25.1 executable. Initialize the Optislang class instance with the executable.
 
 available_optislang_executables = find_all_osl_exec()
+if not available_optislang_executables:
+    raise KeyError("No optiSLang installation was found, please specify path manually.")
 version, executables = available_optislang_executables.popitem(last=False)
 if not version >= 251:
     raise KeyError("OptiSLang installation >= 25R1 wasn't found, please specify path manually.")
@@ -129,10 +131,17 @@ algorithm_system: ParametricSystem = root_system.create_node(
 max_num_designs = 150
 
 oco_settings = algorithm_system.get_property("Settings")
+max_num_samples_entry_found = False
 for entry in oco_settings["sequence"]:
     if entry["First"] == "Maximum number of samples":
         entry["Second"] = max_num_designs
+        max_num_samples_entry_found = True
         break
+if not max_num_samples_entry_found:
+    raise KeyError(
+        'Could not apply OCO setting "Maximum number of samples": '
+        'the entry was not found in Settings["sequence"].'
+    )
 algorithm_system.set_property("Settings", oco_settings)
 
 # Fast running solver settings
@@ -214,7 +223,7 @@ while not osl.project.root_system.get_status() == "Processing done":
     if len(design_list):
         responses_dict = calculate(design_list)
         proxy_solver.set_designs(responses_dict)
-    # time.sleep(0.1)
+    time.sleep(0.1)
 
 print("Solved Successfully!")
 
