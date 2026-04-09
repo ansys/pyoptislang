@@ -1,0 +1,6 @@
+create\_placeholder
+===================
+
+.. currentmodule:: ansys.optislang.core.project
+
+.. automethod:: Project.create_placeholder

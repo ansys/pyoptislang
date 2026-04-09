@@ -1,0 +1,952 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Working with placeholders &#8212; PyOptiSLang</title>
+  
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/ansys-sphinx-theme.css?v=9e79609d" />
+    <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../_static/sg_gallery.css?v=d2d258e8" />
+    <link rel="stylesheet" type="text/css" href="../_static/sg_gallery-binder.css?v=f4aeca0c" />
+    <link rel="stylesheet" type="text/css" href="../_static/sg_gallery-dataframe.css?v=2082cf3c" />
+    <link rel="stylesheet" type="text/css" href="../_static/sg_gallery-rendered-html.css?v=1277b6f3" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/ansys-sphinx-theme.css?v=9e79609d" />
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.23/css/jquery.dataTables.min.css" />
+    <link rel="stylesheet" type="text/css" href="https://www.nerdfonts.com/assets/css/webfont.css" />
+  
+  <!-- So that users can add custom icons -->
+  <script src="../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
+
+
+  <!-- Include desired assets -->
+  <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+  
+
+  
+    <link href="../_static/css/breadcrumbs.css" rel="stylesheet" />
+  
+    <script src="../_static/documentation_options.js?v=b49cbf1a"></script>
+    <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../_static/copybutton.js?v=f281be69"></script>
+    <script src="https://cdn.datatables.net/1.10.23/js/jquery.dataTables.min.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'user_guide/placeholders_howto';</script>
+    <script>
+        DOCUMENTATION_OPTIONS.theme_version = '0.16.1';
+        DOCUMENTATION_OPTIONS.theme_switcher_json_url = 'https://optislang.docs.pyansys.com/versions.json';
+        DOCUMENTATION_OPTIONS.theme_switcher_version_match = 'dev';
+        DOCUMENTATION_OPTIONS.show_version_warning_banner =
+            false;
+        </script>
+    <link rel="icon" href="../_static/ansys-favicon.png"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Executing commands from the optiSLang Python API" href="run_python.html" />
+    <link rel="prev" title="Parametric design studies" href="design_studies.html" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="1.5.dev0" />
+  <meta property="og:site_name" content="PyAnsys" />
+  <meta name="physics" content="Connect" />
+  <link rel="canonical" href="https://optislang.docs.pyansys.com/version/stable/user_guide/placeholders_howto.html" />
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../_static/pyansys_logo_transparent_black.png" class="logo__image only-light" alt="PyOptiSLang - Home"/>
+    <img src="../_static/pyansys_logo_transparent_white.png" class="logo__image only-dark pst-js-only" alt="PyOptiSLang - Home"/>
+  
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../index.html" title="PyOptiSLang home">Home</a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../getting_started/index.html">
+    Getting started
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="index.html">
+    User guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../api/index.html">
+    API reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../osl_server_api/index.html">
+    optiSLang server API reference
+  </a>
+</li>
+
+            <li class="nav-item dropdown">
+                <button class="btn dropdown-toggle nav-item" type="button"
+                data-bs-toggle="dropdown" aria-expanded="false"
+                aria-controls="pst-nav-more-links">
+                    More
+                </button>
+                <ul id="pst-nav-more-links" class="dropdown-menu">
+                    
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="../examples/index.html">
+    Examples
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="../contributing/index.html">
+    Contribute
+  </a>
+</li>
+
+                </ul>
+            </li>
+            
+  </ul>
+</nav>
+</div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+      
+        <div class="navbar-item">
+<div class="search-bar pst-js-only" id="search-bar">
+  <form class="bd-search d-flex align-items-center" action="../search.html" method="get">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <input type="search" class="form-control" name="q" placeholder="Search the docs ..."
+      aria-label="Search the docs ..." autocomplete="off" autocorrect="off"
+      autocapitalize="off" spellcheck="false" />
+    <span class="search-button__kbd-shortcut">
+      <kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd>
+    </span>
+  </form>
+  <div id="static-search-results" class="static-search-results" style="display:none;" tabindex="0"></div>
+</div></div>
+      
+        <div class="navbar-item">
+<div class="version-switcher__container dropdown pst-js-only">
+  <button id="pst-version-switcher-button-2"
+    type="button"
+    class="version-switcher__button btn btn-sm dropdown-toggle"
+    data-bs-toggle="dropdown"
+    aria-haspopup="listbox"
+    aria-controls="pst-version-switcher-list-2"
+    aria-label="Version switcher list"
+  >
+    Choose version  <!-- this text may get changed later by javascript -->
+    <span class="caret"></span>
+  </button>
+  <div id="pst-version-switcher-list-2"
+    class="version-switcher__menu dropdown-menu list-group-flush py-0"
+    role="listbox" aria-labelledby="pst-version-switcher-button-2">
+    <!-- dropdown will be populated by javascript on page load -->
+  </div>
+</div></div>
+      
+        <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/ansys/pyoptislang" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+
+  
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+  
+    <div id="announcement_msg"></div>
+<script>
+  fetch("announcement.html")
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error(`HTTP error: ${response.status}`);
+      }
+      return response.text();
+    })
+    .then(
+      (text) => (document.getElementById("announcement_msg").innerHTML = text),
+    )
+    .catch((error) => console.error(`Fetch problem: ${error.message}`));
+</script>
+  
+
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../index.html" title="PyOptiSLang home">Home</a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../getting_started/index.html">
+    Getting started
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="index.html">
+    User guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../api/index.html">
+    API reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../osl_server_api/index.html">
+    optiSLang server API reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../examples/index.html">
+    Examples
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../contributing/index.html">
+    Contribute
+  </a>
+</li>
+
+  </ul>
+</nav>
+</div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+<div class="search-bar pst-js-only" id="search-bar">
+  <form class="bd-search d-flex align-items-center" action="../search.html" method="get">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <input type="search" class="form-control" name="q" placeholder="Search the docs ..."
+      aria-label="Search the docs ..." autocomplete="off" autocorrect="off"
+      autocapitalize="off" spellcheck="false" />
+    <span class="search-button__kbd-shortcut">
+      <kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd>
+    </span>
+  </form>
+  <div id="static-search-results" class="static-search-results" style="display:none;" tabindex="0"></div>
+</div></div>
+        
+          <div class="navbar-item">
+<div class="version-switcher__container dropdown pst-js-only">
+  <button id="pst-version-switcher-button-3"
+    type="button"
+    class="version-switcher__button btn btn-sm dropdown-toggle"
+    data-bs-toggle="dropdown"
+    aria-haspopup="listbox"
+    aria-controls="pst-version-switcher-list-3"
+    aria-label="Version switcher list"
+  >
+    Choose version  <!-- this text may get changed later by javascript -->
+    <span class="caret"></span>
+  </button>
+  <div id="pst-version-switcher-list-3"
+    class="version-switcher__menu dropdown-menu list-group-flush py-0"
+    role="listbox" aria-labelledby="pst-version-switcher-button-3">
+    <!-- dropdown will be populated by javascript on page load -->
+  </div>
+</div></div>
+        
+          <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/ansys/pyoptislang" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+<nav class="bd-docs-nav bd-links"
+     aria-label="Section Navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
+  <div class="bd-toc-item navbar-nav"><ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="launch.html">OptiSLang instance management</a></li>
+<li class="toctree-l1"><a class="reference internal" href="functions.html">Basic usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="project_content.html">Project</a></li>
+
+
+
+
+
+<li class="toctree-l1"><a class="reference internal" href="design_evaluation.html">Design evaluation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="create_workflow.html">Create workflow</a></li>
+<li class="toctree-l1"><a class="reference internal" href="design_studies.html">Parametric design studies</a></li>
+
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">Working with placeholders</a></li>
+<li class="toctree-l1"><a class="reference internal" href="run_python.html">Executing commands from the optiSLang Python API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="osl_server_usage.html">Direct communication using the optiSLang server API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="troubleshooting.html">Troubleshooting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="security_considerations.html">Security considerations</a></li>
+</ul>
+</div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+<nav aria-label="Breadcrumb">
+  <ul class="bd-breadcrumbs">
+         
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="https://docs.pyansys.com/" class="nav-link">PyAnsys</a>
+    </li>
+     
+    <li class="breadcrumb-item">
+      <a
+        href="../index.html"
+        class="nav-link"
+        aria-label="Home"
+      >
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+     
+    <li class="breadcrumb-item">
+      <a href="index.html" class="nav-link">User guide</a>
+    </li>
+      
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">Working with placeholders</span></li>
+    
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="working-with-placeholders">
+<span id="placeholders-howto"></span><h1>Working with placeholders<a class="headerlink" href="#working-with-placeholders" title="Link to this heading">#</a></h1>
+<p>This guide provides instructions for working with placeholders in optiSLang.</p>
+<section id="overview">
+<h2>Overview<a class="headerlink" href="#overview" title="Link to this heading">#</a></h2>
+<p>In optiSlang, placeholders are variables that can be assigned to workflow component (node) properties, allowing you to easily update properties in more than one workflow component at a time. You can also use placeholders to directly expose workflow component properties for external modification (for example, by a user of an optiSLang App or the command line interface).</p>
+<p>Each placeholder has the following attributes:</p>
+<ul class="simple">
+<li><p><strong>ID</strong>: A unique identifier for the placeholder</p></li>
+<li><p><strong>Data Type</strong>: Specifies what kind of data the placeholder can hold</p></li>
+<li><p><strong>User Level</strong>: Controls which user roles can modify the placeholder</p></li>
+<li><p><strong>Description</strong>: Optional documentation about the placeholder’s purpose</p></li>
+</ul>
+<p>Depending on the desired use case, placeholders can either store fixed values or be composed out of other placeholders via a macro expression. The respective attributes are:</p>
+<ul class="simple">
+<li><p><strong>Value</strong>: The current value stored in the placeholder</p></li>
+<li><p><strong>Range</strong>: The range of allowed values</p></li>
+<li><p><strong>Macro Expression</strong>: The macro expression defining the placeholder’s composition. See “Placeholder Macro Language” in the optiSLang documentation for more information.</p></li>
+</ul>
+<p>API capabilities for managing placeholders include:</p>
+<ul class="simple">
+<li><p>Creating placeholders with specific data types and user access levels</p></li>
+<li><p>Assigning values appropriate to their data type</p></li>
+<li><p>Querying and filtering by ID patterns</p></li>
+<li><p>Renaming and removing</p></li>
+<li><p>Assigning to and unassigning from node properties</p></li>
+</ul>
+<p>The API supports both project-level operations (via <a class="reference internal" href="../api/_autosummary/ansys.optislang.core.project.Project.html#ansys.optislang.core.project.Project" title="ansys.optislang.core.project.Project"><code class="xref py py-class docutils literal notranslate"><span class="pre">Project</span></code></a> class) for managing placeholders globally and node-level operations (via <a class="reference internal" href="../api/_autosummary/ansys.optislang.core.nodes.Node.html#ansys.optislang.core.nodes.Node" title="ansys.optislang.core.nodes.Node"><code class="xref py py-class docutils literal notranslate"><span class="pre">Node</span></code></a> class) for creating placeholders from node properties and managing assignments to them.</p>
+</section>
+<section id="creating-placeholders">
+<h2>Creating placeholders<a class="headerlink" href="#creating-placeholders" title="Link to this heading">#</a></h2>
+<p>Placeholders are intended to be values stored separately from the workflow components in the project and then assigned to one or multiple workflow component properties.
+Creating placeholders can be achieved by either creating a stand-alone (unassigned) one (via <a class="reference internal" href="../api/_autosummary/ansys.optislang.core.project.Project.create_placeholder.html#ansys.optislang.core.project.Project.create_placeholder" title="ansys.optislang.core.project.Project.create_placeholder"><code class="xref py py-meth docutils literal notranslate"><span class="pre">create_placeholder()</span></code></a>) and then assign it to a workflow component property (via <a class="reference internal" href="../api/_autosummary/ansys.optislang.core.nodes.Node.assign_placeholder.html#ansys.optislang.core.nodes.Node.assign_placeholder" title="ansys.optislang.core.nodes.Node.assign_placeholder"><code class="xref py py-meth docutils literal notranslate"><span class="pre">assign_placeholder()</span></code></a>) or directly creating the placeholder from a workflow component property (via via <a class="reference internal" href="../api/_autosummary/ansys.optislang.core.nodes.Node.create_placeholder_from_property.html#ansys.optislang.core.nodes.Node.create_placeholder_from_property" title="ansys.optislang.core.nodes.Node.create_placeholder_from_property"><code class="xref py py-meth docutils literal notranslate"><span class="pre">create_placeholder_from_property()</span></code></a>).</p>
+<section id="variant-1-step-1-create-stand-alone-placeholder">
+<h3>Variant 1 - Step 1: Create stand-alone placeholder<a class="headerlink" href="#variant-1-step-1-create-stand-alone-placeholder" title="Link to this heading">#</a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">ansys.optislang.core</span><span class="w"> </span><span class="kn">import</span> <span class="n">Optislang</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">ansys.optislang.core.placeholder_types</span><span class="w"> </span><span class="kn">import</span> <span class="n">PlaceholderType</span><span class="p">,</span> <span class="n">UserLevel</span>
+
+<span class="c1"># Connect to optiSLang</span>
+<span class="n">osl</span> <span class="o">=</span> <span class="n">Optislang</span><span class="p">()</span>
+
+<span class="c1"># Create a real number placeholder for thickness</span>
+<span class="n">thickness_id</span> <span class="o">=</span> <span class="n">osl</span><span class="o">.</span><span class="n">project</span><span class="o">.</span><span class="n">create_placeholder</span><span class="p">(</span>
+    <span class="n">value</span><span class="o">=</span><span class="mf">5.0</span><span class="p">,</span>
+    <span class="n">placeholder_id</span><span class="o">=</span><span class="s2">&quot;thickness&quot;</span><span class="p">,</span>
+    <span class="n">type_</span><span class="o">=</span><span class="n">PlaceholderType</span><span class="o">.</span><span class="n">REAL</span><span class="p">,</span>
+    <span class="n">user_level</span><span class="o">=</span><span class="n">UserLevel</span><span class="o">.</span><span class="n">COMPUTATION_ENGINEER</span><span class="p">,</span>
+    <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Plate thickness in mm&quot;</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="c1"># Create a string placeholder for material name</span>
+<span class="n">material_id</span> <span class="o">=</span> <span class="n">osl</span><span class="o">.</span><span class="n">project</span><span class="o">.</span><span class="n">create_placeholder</span><span class="p">(</span>
+    <span class="n">value</span><span class="o">=</span><span class="s2">&quot;Steel&quot;</span><span class="p">,</span>
+    <span class="n">placeholder_id</span><span class="o">=</span><span class="s2">&quot;material_name&quot;</span><span class="p">,</span>
+    <span class="n">type_</span><span class="o">=</span><span class="n">PlaceholderType</span><span class="o">.</span><span class="n">STRING</span><span class="p">,</span>
+    <span class="n">user_level</span><span class="o">=</span><span class="n">UserLevel</span><span class="o">.</span><span class="n">FLOW_ENGINEER</span><span class="p">,</span>
+    <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Material name&quot;</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="c1"># Create an integer placeholder for maximum number of parallel executions</span>
+<span class="n">global_max_parallel_id</span> <span class="o">=</span> <span class="n">osl</span><span class="o">.</span><span class="n">project</span><span class="o">.</span><span class="n">create_placeholder</span><span class="p">(</span>
+    <span class="n">value</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span>
+    <span class="n">placeholder_id</span><span class="o">=</span><span class="s2">&quot;global_max_parallel&quot;</span><span class="p">,</span>
+    <span class="n">type_</span><span class="o">=</span><span class="n">PlaceholderType</span><span class="o">.</span><span class="n">UINT</span><span class="p">,</span>
+    <span class="n">user_level</span><span class="o">=</span><span class="n">UserLevel</span><span class="o">.</span><span class="n">FLOW_ENGINEER</span><span class="p">,</span>
+    <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Maximum number of parallel executions&quot;</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="variant-1-step-2-assigning-existing-placeholders">
+<h3>Variant 1 - Step 2: Assigning existing placeholders<a class="headerlink" href="#variant-1-step-2-assigning-existing-placeholders" title="Link to this heading">#</a></h3>
+<p>Placeholders are type-specific. A placeholder can be assigned to a project property only if they share the same data type.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">ansys.optislang.core</span><span class="w"> </span><span class="kn">import</span> <span class="n">node_types</span>
+
+<span class="c1"># Get a node reference</span>
+<span class="n">root_system</span> <span class="o">=</span> <span class="n">osl</span><span class="o">.</span><span class="n">project</span><span class="o">.</span><span class="n">root_system</span>
+<span class="n">mop_solver_node</span> <span class="o">=</span> <span class="n">root_system</span><span class="o">.</span><span class="n">create_node</span><span class="p">(</span>
+    <span class="n">type_</span><span class="o">=</span><span class="n">node_types</span><span class="o">.</span><span class="n">Mopsolver</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;MOPSolver Node&quot;</span>
+<span class="p">)</span>
+
+<span class="c1"># Assign the placeholder to a node property</span>
+<span class="n">mop_solver_node</span><span class="o">.</span><span class="n">assign_placeholder</span><span class="p">(</span>
+    <span class="n">property_name</span><span class="o">=</span><span class="s2">&quot;MaxParallel&quot;</span><span class="p">,</span> <span class="n">placeholder_id</span><span class="o">=</span><span class="s2">&quot;global_max_parallel&quot;</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="variant-2-creating-placeholders-directly-from-node-properties">
+<h3>Variant 2: Creating placeholders directly from node properties<a class="headerlink" href="#variant-2-creating-placeholders-directly-from-node-properties" title="Link to this heading">#</a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">ansys.optislang.core</span><span class="w"> </span><span class="kn">import</span> <span class="n">node_types</span>
+
+<span class="c1"># Get a node reference</span>
+<span class="n">root_system</span> <span class="o">=</span> <span class="n">osl</span><span class="o">.</span><span class="n">project</span><span class="o">.</span><span class="n">root_system</span>
+<span class="n">mop_solver_node</span> <span class="o">=</span> <span class="n">root_system</span><span class="o">.</span><span class="n">create_node</span><span class="p">(</span>
+    <span class="n">type_</span><span class="o">=</span><span class="n">node_types</span><span class="o">.</span><span class="n">Mopsolver</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;MOPSolver Node&quot;</span>
+<span class="p">)</span>
+
+<span class="c1"># Create a placeholder from a node property</span>
+<span class="n">placeholder_id</span> <span class="o">=</span> <span class="n">mop_solver_node</span><span class="o">.</span><span class="n">create_placeholder_from_property</span><span class="p">(</span>
+    <span class="n">property_name</span><span class="o">=</span><span class="s2">&quot;MaxParallel&quot;</span><span class="p">,</span> <span class="n">placeholder_id</span><span class="o">=</span><span class="s2">&quot;max_parallel&quot;</span>
+<span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Created placeholder: </span><span class="si">{</span><span class="n">placeholder_id</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="c1"># Create placeholder with auto-generated ID</span>
+<span class="n">auto_id</span> <span class="o">=</span> <span class="n">mop_solver_node</span><span class="o">.</span><span class="n">create_placeholder_from_property</span><span class="p">(</span><span class="n">property_name</span><span class="o">=</span><span class="s2">&quot;RetryCount&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Auto-generated placeholder ID: </span><span class="si">{</span><span class="n">auto_id</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="creating-placeholders-with-macro-expressions">
+<h3>Creating placeholders with macro expressions<a class="headerlink" href="#creating-placeholders-with-macro-expressions" title="Link to this heading">#</a></h3>
+<p>optiSLang allows you to define macro expressions. Macro expressions create placeholder values composed of other user-defined placeholders or predefined constants. By using macro expressions, complex workflow component properties like algorithm systems parametric can be assembled out of separate placeholder values for e.g parameter reference values or ranges. The separate placeholders can then be configured to be accessible externally.
+The macro language slightly differs between the types, but all types share the same rules for placeholder substitution, text concatenation, and literal escaping. Please refer to the optiSLang documentation on more information on the macro language syntax.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Get a node reference</span>
+<span class="n">root_system</span> <span class="o">=</span> <span class="n">osl</span><span class="o">.</span><span class="n">project</span><span class="o">.</span><span class="n">root_system</span>
+<span class="n">mop_solver_node</span> <span class="o">=</span> <span class="n">root_system</span><span class="o">.</span><span class="n">create_node</span><span class="p">(</span>
+    <span class="n">type_</span><span class="o">=</span><span class="n">node_types</span><span class="o">.</span><span class="n">Mopsolver</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;MOPSolver Node&quot;</span>
+<span class="p">)</span>
+
+<span class="c1"># Create a placeholder as an expression from a node property. The placeholder will be assigned to the node property. The property value will be used as expression value by default.</span>
+<span class="n">placeholder_id</span> <span class="o">=</span> <span class="n">mop_solver_node</span><span class="o">.</span><span class="n">create_placeholder_from_property</span><span class="p">(</span>
+    <span class="n">property_name</span><span class="o">=</span><span class="s2">&quot;MaxParallel&quot;</span><span class="p">,</span> <span class="n">create_as_expression</span><span class="o">=</span><span class="kc">True</span>
+<span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Created expression placeholder: </span><span class="si">{</span><span class="n">placeholder_id</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="c1"># You can also directly specify the expression.</span>
+<span class="n">placeholder_id_2</span> <span class="o">=</span> <span class="n">mop_solver_node</span><span class="o">.</span><span class="n">create_placeholder_from_property</span><span class="p">(</span>
+    <span class="n">property_name</span><span class="o">=</span><span class="s2">&quot;MaxParallel&quot;</span><span class="p">,</span> <span class="n">expression</span><span class="o">=</span><span class="s2">&quot;global_max_parallel/2&quot;</span>
+<span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Created expression placeholder: </span><span class="si">{</span><span class="n">placeholder_id_2</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="unassigning-placeholders-from-nodes">
+<h2>Unassigning placeholders from nodes<a class="headerlink" href="#unassigning-placeholders-from-nodes" title="Link to this heading">#</a></h2>
+<p>Placeholders can be unassigned from node properties when their parametrization is no longer needed by using <a class="reference internal" href="../api/_autosummary/ansys.optislang.core.nodes.Node.unassign_placeholder.html#ansys.optislang.core.nodes.Node.unassign_placeholder" title="ansys.optislang.core.nodes.Node.unassign_placeholder"><code class="xref py py-meth docutils literal notranslate"><span class="pre">unassign_placeholder()</span></code></a>.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Unassign a placeholder from a node property</span>
+<span class="k">try</span><span class="p">:</span>
+    <span class="n">mop_solver_node</span><span class="o">.</span><span class="n">unassign_placeholder</span><span class="p">(</span><span class="n">property_name</span><span class="o">=</span><span class="s2">&quot;MaxParallel&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;✓ Placeholder unassigned from MaxParallel property&quot;</span><span class="p">)</span>
+<span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;✗ Failed to unassign placeholder: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="querying-placeholders">
+<h2>Querying placeholders<a class="headerlink" href="#querying-placeholders" title="Link to this heading">#</a></h2>
+<p>You can query existing placeholders to retrieve information about their configuration by using <a class="reference internal" href="../api/_autosummary/ansys.optislang.core.project.Project.get_placeholder_ids.html#ansys.optislang.core.project.Project.get_placeholder_ids" title="ansys.optislang.core.project.Project.get_placeholder_ids"><code class="xref py py-meth docutils literal notranslate"><span class="pre">get_placeholder_ids()</span></code></a> and <a class="reference internal" href="../api/_autosummary/ansys.optislang.core.project.Project.get_placeholder.html#ansys.optislang.core.project.Project.get_placeholder" title="ansys.optislang.core.project.Project.get_placeholder"><code class="xref py py-meth docutils literal notranslate"><span class="pre">get_placeholder()</span></code></a>.</p>
+<section id="getting-all-placeholder-ids">
+<h3>Getting all placeholder IDs<a class="headerlink" href="#getting-all-placeholder-ids" title="Link to this heading">#</a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Get all placeholder IDs in the project</span>
+<span class="n">placeholder_ids</span> <span class="o">=</span> <span class="n">osl</span><span class="o">.</span><span class="n">project</span><span class="o">.</span><span class="n">get_placeholder_ids</span><span class="p">()</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Found </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">placeholder_ids</span><span class="p">)</span><span class="si">}</span><span class="s2"> placeholders:&quot;</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">placeholder_id</span> <span class="ow">in</span> <span class="n">placeholder_ids</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  - </span><span class="si">{</span><span class="n">placeholder_id</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="getting-placeholder-information">
+<h3>Getting placeholder information<a class="headerlink" href="#getting-placeholder-information" title="Link to this heading">#</a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Get detailed information about a specific placeholder</span>
+<span class="n">placeholder_info</span> <span class="o">=</span> <span class="n">osl</span><span class="o">.</span><span class="n">project</span><span class="o">.</span><span class="n">get_placeholder</span><span class="p">(</span><span class="s2">&quot;thickness&quot;</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Placeholder ID: </span><span class="si">{</span><span class="n">placeholder_info</span><span class="o">.</span><span class="n">placeholder_id</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Type: </span><span class="si">{</span><span class="n">placeholder_info</span><span class="o">.</span><span class="n">type</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;User Level: </span><span class="si">{</span><span class="n">placeholder_info</span><span class="o">.</span><span class="n">user_level</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Description: </span><span class="si">{</span><span class="n">placeholder_info</span><span class="o">.</span><span class="n">description</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Current Value: </span><span class="si">{</span><span class="n">placeholder_info</span><span class="o">.</span><span class="n">value</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="c1"># Get information about all placeholders</span>
+<span class="n">placeholder_ids</span> <span class="o">=</span> <span class="n">osl</span><span class="o">.</span><span class="n">project</span><span class="o">.</span><span class="n">get_placeholder_ids</span><span class="p">()</span>
+<span class="k">for</span> <span class="n">placeholder_id</span> <span class="ow">in</span> <span class="n">placeholder_ids</span><span class="p">:</span>
+    <span class="n">info</span> <span class="o">=</span> <span class="n">osl</span><span class="o">.</span><span class="n">project</span><span class="o">.</span><span class="n">get_placeholder</span><span class="p">(</span><span class="n">placeholder_id</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;ID: </span><span class="si">{</span><span class="n">info</span><span class="o">.</span><span class="n">placeholder_id</span><span class="si">}</span><span class="s2">, Type: </span><span class="si">{</span><span class="n">info</span><span class="o">.</span><span class="n">type</span><span class="si">}</span><span class="s2">, Value: </span><span class="si">{</span><span class="n">info</span><span class="o">.</span><span class="n">value</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="editing-placeholder-configuration-and-setting-values">
+<h2>Editing placeholder configuration and setting values<a class="headerlink" href="#editing-placeholder-configuration-and-setting-values" title="Link to this heading">#</a></h2>
+<p>After creating placeholders, you can modify their configuration by using <a class="reference internal" href="../api/_autosummary/ansys.optislang.core.project.Project.create_placeholder.html#ansys.optislang.core.project.Project.create_placeholder" title="ansys.optislang.core.project.Project.create_placeholder"><code class="xref py py-meth docutils literal notranslate"><span class="pre">create_placeholder()</span></code></a> again and specifying the <code class="docutils literal notranslate"><span class="pre">overwrite</span></code> argument.
+As a convenience you can use <a class="reference internal" href="../api/_autosummary/ansys.optislang.core.project.Project.set_placeholder_value.html#ansys.optislang.core.project.Project.set_placeholder_value" title="ansys.optislang.core.project.Project.set_placeholder_value"><code class="xref py py-meth docutils literal notranslate"><span class="pre">set_placeholder_value()</span></code></a> to set their values specifically.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Modify one or multiple configuration entries of a placeholder</span>
+<span class="n">osl</span><span class="o">.</span><span class="n">project</span><span class="o">.</span><span class="n">create_placeholder</span><span class="p">(</span>
+    <span class="n">placeholder_id</span><span class="o">=</span><span class="s2">&quot;global_max_parallel&quot;</span><span class="p">,</span>
+    <span class="n">value</span><span class="o">=</span><span class="mi">18</span><span class="p">,</span>
+    <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Adapted description for maximum number of parallel executions&quot;</span><span class="p">,</span>
+    <span class="n">overwrite</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="c1"># Set a placeholder value specifically</span>
+<span class="n">osl</span><span class="o">.</span><span class="n">project</span><span class="o">.</span><span class="n">set_placeholder_value</span><span class="p">(</span><span class="s2">&quot;thickness&quot;</span><span class="p">,</span> <span class="mf">7.5</span><span class="p">)</span>
+</pre></div>
+</div>
+<section id="validating-placeholder-updates">
+<h3>Validating placeholder updates<a class="headerlink" href="#validating-placeholder-updates" title="Link to this heading">#</a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Set a value and verify it was updated</span>
+<span class="n">new_value</span> <span class="o">=</span> <span class="mf">8.5</span>
+<span class="n">osl</span><span class="o">.</span><span class="n">project</span><span class="o">.</span><span class="n">set_placeholder_value</span><span class="p">(</span><span class="s2">&quot;thickness&quot;</span><span class="p">,</span> <span class="n">new_value</span><span class="p">)</span>
+
+<span class="c1"># Verify the update</span>
+<span class="n">placeholder_info</span> <span class="o">=</span> <span class="n">osl</span><span class="o">.</span><span class="n">project</span><span class="o">.</span><span class="n">get_placeholder</span><span class="p">(</span><span class="s2">&quot;thickness&quot;</span><span class="p">)</span>
+<span class="n">current_value</span> <span class="o">=</span> <span class="n">placeholder_info</span><span class="o">.</span><span class="n">value</span>
+
+<span class="k">if</span> <span class="n">current_value</span> <span class="o">==</span> <span class="n">new_value</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;✓ Successfully updated thickness to </span><span class="si">{</span><span class="n">new_value</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="k">else</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;✗ Update failed. Expected </span><span class="si">{</span><span class="n">new_value</span><span class="si">}</span><span class="s2">, got </span><span class="si">{</span><span class="n">current_value</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="renaming-placeholders">
+<h2>Renaming placeholders<a class="headerlink" href="#renaming-placeholders" title="Link to this heading">#</a></h2>
+<p>Placeholders can be renamed while preserving their values and assignments by using <a class="reference internal" href="../api/_autosummary/ansys.optislang.core.project.Project.rename_placeholder.html#ansys.optislang.core.project.Project.rename_placeholder" title="ansys.optislang.core.project.Project.rename_placeholder"><code class="xref py py-meth docutils literal notranslate"><span class="pre">rename_placeholder()</span></code></a>.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Rename a placeholder</span>
+<span class="n">old_id</span> <span class="o">=</span> <span class="s2">&quot;thickness&quot;</span>
+<span class="n">new_id</span> <span class="o">=</span> <span class="s2">&quot;plate_thickness&quot;</span>
+<span class="k">try</span><span class="p">:</span>
+    <span class="n">osl</span><span class="o">.</span><span class="n">project</span><span class="o">.</span><span class="n">rename_placeholder</span><span class="p">(</span><span class="n">old_id</span><span class="p">,</span> <span class="n">new_id</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;✓ Renamed &#39;</span><span class="si">{</span><span class="n">old_id</span><span class="si">}</span><span class="s2">&#39; to &#39;</span><span class="si">{</span><span class="n">new_id</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">)</span>
+<span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Failed to rename placeholder: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="removing-placeholders">
+<h2>Removing placeholders<a class="headerlink" href="#removing-placeholders" title="Link to this heading">#</a></h2>
+<p>Placeholders can be removed from the project when no longer needed by using <a class="reference internal" href="../api/_autosummary/ansys.optislang.core.project.Project.remove_placeholder.html#ansys.optislang.core.project.Project.remove_placeholder" title="ansys.optislang.core.project.Project.remove_placeholder"><code class="xref py py-meth docutils literal notranslate"><span class="pre">remove_placeholder()</span></code></a>.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Remove a placeholder by ID</span>
+<span class="k">try</span><span class="p">:</span>
+    <span class="n">osl</span><span class="o">.</span><span class="n">project</span><span class="o">.</span><span class="n">remove_placeholder</span><span class="p">(</span><span class="s2">&quot;plate_thickness&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Placeholder removed successfully&quot;</span><span class="p">)</span>
+<span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Failed to remove placeholder: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+</section>
+
+
+                </article>
+              
+              
+              
+              
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#overview">Overview</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#creating-placeholders">Creating placeholders</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#variant-1-step-1-create-stand-alone-placeholder">Variant 1 - Step 1: Create stand-alone placeholder</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#variant-1-step-2-assigning-existing-placeholders">Variant 1 - Step 2: Assigning existing placeholders</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#variant-2-creating-placeholders-directly-from-node-properties">Variant 2: Creating placeholders directly from node properties</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#creating-placeholders-with-macro-expressions">Creating placeholders with macro expressions</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#unassigning-placeholders-from-nodes">Unassigning placeholders from nodes</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#querying-placeholders">Querying placeholders</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#getting-all-placeholder-ids">Getting all placeholder IDs</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#getting-placeholder-information">Getting placeholder information</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#editing-placeholder-configuration-and-setting-values">Editing placeholder configuration and setting values</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#validating-placeholder-updates">Validating placeholder updates</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#renaming-placeholders">Renaming placeholders</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#removing-placeholders">Removing placeholders</a></li>
+</ul>
+  </nav></div>
+
+  <div class="sidebar-secondary-item"> 
+<div class="tocsection editthispage">
+  <a href="https://github.com/pyansys/pyoptislang/edit/main/doc/source/user_guide/placeholders_howto.rst">
+    <i class="fa-solid fa-pencil"></i>
+       Edit
+    on GitHub  
+  </a>
+</div>
+
+</div>
+
+  <div class="sidebar-secondary-item">
+  <div role="note" aria-label="source link">
+    <ul class="this-page-menu">
+      <li><a href="../_sources/user_guide/placeholders_howto.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
+<script defer src="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
+
+
+  <!-- Include desired assets -->
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.7/require.min.js"></script>
+
+<script>
+// Passing the search options to the search.js file
+const SEARCH_OPTIONS = JSON.parse('{"keys": ["title", "text", "objectID"], "limit": 10, "threshold": 0.2}');
+const SEARCH_FILE = "../_static/search.json";
+const ADVANCE_SEARCH_PATH = "../search.html";
+const EXTRA_SOURCES = JSON.parse('""');
+</script>
+
+
+<script src="../_static/js/search.js"></script>
+
+  
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright (c) 2026 ANSYS, Inc. All rights reserved.
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.0.4.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item"><p class="theme-version">
+  Built with the
+  <a href="https://sphinxdocs.ansys.com/version/stable/index.html"
+    >Ansys Sphinx Theme</a
+  >
+  1.6.4. <br />Last updated on
+  <span id="ast_build_date"></span>
+</p>
+<script>
+  var options = { day: "numeric", month: "long", year: "numeric" };
+  var ast_lastModifiedDate = new Date(document.lastModified);
+  var ast_build_date = ast_lastModifiedDate.toLocaleDateString("en-US", options);
+  document.getElementById("ast_build_date").innerHTML = ast_build_date;
+</script></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>
