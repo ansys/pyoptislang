@@ -8,7 +8,7 @@ name = "ansys-optislang-core"
 version = "1.5.dev0"
 description = "A Python wrapper for Ansys optiSLang application."
 readme = "README.rst"
-requires-python = ">=3.9,<4"
+requires-python = ">=3.10,<4"
 license = {file = "LICENSE"}
 authors = [
     {name = "ANSYS, Inc.", email = "pyansys.core@ansys.com"},
@@ -23,11 +23,11 @@ classifiers = [
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
     "Topic :: Scientific/Engineering",
 ]
 dependencies = [
@@ -41,7 +41,7 @@ tests = [
     "pytest==8.4.2",
     "pytest-cov==7.1.0",
     "matplotlib>=3.5.3",
-    "pythonnet>=3.0.0; platform_system != 'Darwin'",  # Python.NET compatibility tests (skip on macOS)
+    "pythonnet>=v3.1.0-rc0; platform_system != 'Darwin'",  # Python.NET compatibility tests (skip on macOS)
 ]
 doc = [
     "ansys-sphinx-theme==1.6.4",
