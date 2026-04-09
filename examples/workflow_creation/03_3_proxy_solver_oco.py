@@ -26,18 +26,57 @@
 Proxy solver with OCO
 ---------------------
 
-This example demonstrates how to obtain designs from parametric system and process them externally.
+This example demonstrates how to obtain designs from a parametric system and process them externally.
 
 It creates a proxy solver node inside an OCO parametric system, modifies the maximum number of
 designs in the OCO settings, and solves its designs externally.
-
 This is a unified approach for "optiSLang inside" solutions.
+
+**Workflow overview (mapped to code sections below):**
+
+1. **"Perform required imports"** -- Import pyOptislang classes for workflow creation.
+2. **"Create solver"** -- Define a Python calculator function that serves as the external solver.
+   This function receives design dicts with parameter values and returns response values.
+3. **"Create optiSLang instance"** -- Discover an optiSLang >= 25.1 installation and start a
+   headless optiSLang server.
+4. **"Create workflow"** -- Build the parametric workflow:
+
+   a. Create an ``OCO`` system (``node_types.OCO``) -- optiSLang Combined Optimization that
+      automatically selects and combines multiple optimization algorithms (gradient-based,
+      evolutionary, surrogate-based).
+   b. Read and modify algorithm settings via ``get_property("Settings")``:
+      the OCO settings use a ``{"sequence": [{"First": key, "Second": value}, ...]}`` format.
+      This example modifies ``"Maximum number of samples"`` to 150 (default 200).
+   c. Set fast-running solver properties (``AutoSaveMode``, ``SolveTwice``, etc.).
+   d. Add a ``ProxySolver`` node (``DesignFlow.RECEIVE_SEND``) inside the OCO system
+      and configure batch size via ``MultiDesignLaunchNum``.
+   e. Load 5 input parameters (X1..X5) and 1 response (Y) into the proxy solver via ``load()``.
+   f. Register them as system-level parameters/responses and set bounds [-3.14, 3.14].
+   g. Add a minimization criterion on Y.
+
+5. **"Run workflow"** -- Start the project in non-blocking mode and loop externally:
+   poll ``proxy_solver.get_designs()``, compute responses via the calculator,
+   and return results via ``proxy_solver.set_designs()`` until the system finishes.
+6. **"Stop and cancel project"** -- Dispose of the optiSLang instance.
+
+**Key APIs used:**
+
+- ``node_types.OCO`` -- optiSLang Combined Optimization algorithm
+- ``get_property("Settings")`` / ``set_property("Settings", ...)`` -- read/write OCO-specific
+  settings; the dict uses ``{"sequence": [{"First": name, "Second": value}, ...]}`` format
+- ``node_types.ProxySolver`` with ``DesignFlow.RECEIVE_SEND`` -- external solver integration
+- ``proxy_solver.get_designs()`` / ``proxy_solver.set_designs()`` -- design exchange loop
+- ``register_locations_as_parameter()`` / ``register_locations_as_response()`` -- register solver
+  slots as system-level parameters and responses
 """
 
 #########################################################
 # Perform required imports
 # ~~~~~~~~~~~~~~~~~~~~~~~~
-# Perform the required imports.
+# Import the pyOptislang core classes: ``Optislang`` for server management,
+# ``node_types`` for algorithm and solver type constants,
+# ``DesignFlow``/``ParametricSystem``/``ProxySolverNode`` for workflow construction,
+# and parametric classes for defining parameters, criteria, and bounds.
 import time
 
 from ansys.optislang.core import Optislang
@@ -53,7 +92,11 @@ from ansys.optislang.core.utils import find_all_osl_exec
 #########################################################
 # Create solver
 # ~~~~~~~~~~~~~
-# Define a simple calculator function to solve the variations
+# Define the external solver functions that will evaluate designs outside optiSLang.
+# ``calculator()`` computes response Y from 5 input parameters using a nonlinear formula.
+# ``calculate()`` processes a batch of design dicts received from the proxy solver:
+# each design contains ``hid`` (design ID) and ``parameters`` (list of name/value pairs).
+# It returns a list of result dicts with ``hid`` and ``responses`` (list of name/value pairs).
 
 
 def calculator(hid, X1, X2, X3, X4, X5):
@@ -100,7 +143,10 @@ def calculate(designs):
 #########################################################
 # Create optiSLang instance
 # ~~~~~~~~~~~~~~~~~~~~~~~~~
-# Find the optiSLang >= 25.1 executable. Initialize the Optislang class instance with the executable.
+# Discover available optiSLang installations using ``find_all_osl_exec()``.
+# The ProxySolver node requires optiSLang >= 25R1 (version code 251).
+# ``Optislang(executable=...)`` starts a headless optiSLang server process
+# and establishes a TCP connection for remote control.
 
 available_optislang_executables = find_all_osl_exec()
 if not available_optislang_executables:
@@ -117,14 +163,25 @@ print(f"Using optiSLang version {osl.osl_version_string}")
 #########################################################
 # Create workflow
 # ~~~~~~~~~~~~~~~
+# Build the complete parametric workflow. The root system is the top-level
+# container for all nodes in an optiSLang project.
 
 root_system = osl.application.project.root_system
 
-# Create the OCO algorithm system.
+# **Step 4a: Create the OCO algorithm system.**
+# ``node_types.OCO`` (optiSLang Combined Optimization) automatically selects and combines
+# multiple optimization algorithms -- gradient-based (NLPQL, MISQP), evolutionary (EA, PSO),
+# surrogate-based (ARSM, Kriging), and others -- to find optimal solutions efficiently.
 
 algorithm_system: ParametricSystem = root_system.create_node(type_=node_types.OCO, name="OCO")
 
-# Read the OCO settings and modify the maximum number of designs.
+# **Step 4b: Read and modify algorithm settings.**
+# ``get_property("Settings")`` returns the OCO-specific settings dict.
+# Unlike Sensitivity/AMOP, OCO settings use a list-of-pairs format:
+# ``{"sequence": [{"First": key_name, "Second": value}, ...]}``
+# This example modifies ``"Maximum number of samples"`` from the default 200 to 150,
+# which controls how many total designs OCO will evaluate.
+# The loop searches for the matching entry by name and updates its value.
 
 max_num_designs = 150
 
@@ -142,13 +199,23 @@ if not max_num_samples_entry_found:
     )
 algorithm_system.set_property("Settings", oco_settings)
 
-# Fast running solver settings
+# **Step 4c: Set fast-running solver properties.**
+# These reduce I/O overhead for fast external solvers:
+# - ``AutoSaveMode``: disable auto-saving to avoid filesystem delays.
+# - ``SolveTwice``: re-evaluate the reference design for verification.
+# - ``UpdateResultFile``: skip writing intermediate result files.
+# Note: OCO does not support ``WriteDesignStartSetFlag`` (unlike Sensitivity).
 
 algorithm_system.set_property("AutoSaveMode", "no_auto_save")
 algorithm_system.set_property("SolveTwice", True)
 algorithm_system.set_property("UpdateResultFile", "never")
 
-# Add the Proxy Solver node and set the desired maximum number of designs you handle in one go.
+# **Step 4d: Add the Proxy Solver node.**
+# The ``ProxySolver`` with ``DesignFlow.RECEIVE_SEND`` acts as a bridge: optiSLang sends
+# designs to it, and the external Python code retrieves them via ``get_designs()``,
+# evaluates them, and returns results via ``set_designs()``.
+# ``MultiDesignLaunchNum`` controls the batch size (99 = up to 99 designs per batch;
+# set to -1 to receive all pending designs at once).
 
 proxy_solver: ProxySolverNode = algorithm_system.create_node(
     type_=node_types.ProxySolver, name="Calculator", design_flow=DesignFlow.RECEIVE_SEND
@@ -158,7 +225,10 @@ multi_design_launch_num = 99  # set -1 to solve all designs simultaneously
 proxy_solver.set_property("MultiDesignLaunchNum", multi_design_launch_num)
 proxy_solver.set_property("ForwardHPCLicenseContextEnvironment", True)
 
-# Load the available parameters and responses.
+# **Step 4e: Load parameters and responses into the proxy solver.**
+# Define 5 input parameters (X1..X5) with reference value 1.0 and 1 output response (Y)
+# with reference value 3.0. The ``load()`` call configures the proxy solver's interface
+# so optiSLang knows which values to send and expect back.
 
 load_json = {}
 load_json["parameters"] = []
@@ -173,19 +243,23 @@ load_json["responses"].append(response)
 
 proxy_solver.load(args=load_json)
 
-# Register parameters and responses to be available in the algorithm system
+# **Step 4f: Register parameters/responses and set bounds.**
+# ``register_locations_as_parameter()`` promotes the proxy solver's input slots to
+# system-level parameters visible to the OCO algorithm.
+# ``register_locations_as_response()`` does the same for outputs.
+# Then modify each parameter to an ``OptimizationParameter`` with bounds [-3.14, 3.14].
 
 proxy_solver.register_locations_as_parameter()
 proxy_solver.register_locations_as_response()
-
-# Change parameter bounds.
 
 for i in range(1, 6):
     algorithm_system.parameter_manager.modify_parameter(
         OptimizationParameter(name=f"X{i}", reference_value=1.0, range=(-3.14, 3.14))
     )
 
-# Create a criterion in the algorithm system
+# **Step 4g: Add optimization criterion.**
+# Add a minimization objective on the response Y. OCO will use its combined
+# optimization strategy to find the parameter combination that minimizes Y.
 
 algorithm_system.criteria_manager.add_criterion(
     ObjectiveCriterion(name="obj", expression="Y", criterion=ComparisonType.MIN)
@@ -208,13 +282,14 @@ algorithm_system.criteria_manager.add_criterion(
 #########################################################
 # Run workflow
 # ~~~~~~~~~~~~
-# Run the workflow created by the preceding scripts.
+# **Step 5: Execute the workflow with the external proxy solver loop.**
+# ``start(wait_for_finished=False)`` launches the optiSLang project execution in the background.
+# The while-loop then acts as the external solver: it polls ``get_designs()`` to receive
+# pending design batches from optiSLang, evaluates them with the ``calculate()`` function,
+# and returns the computed responses via ``set_designs()``.
+# The loop continues until ``get_status()`` reports ``"Processing done"``.
 
-# Start the optiSLang project execution.
 osl.application.project.start(wait_for_finished=False)
-
-
-# Now loop until get_status() returns "Processing done" for the root system. Use the GET_DESIGNS query and the SET_DESIGNS command for the Proxy Solver node to get designs and set responses until the system is done.
 
 while not osl.project.root_system.get_status() == "Processing done":
     design_list = proxy_solver.get_designs()
@@ -229,7 +304,8 @@ print("Solved Successfully!")
 #########################################################
 # Stop and cancel project
 # ~~~~~~~~~~~~~~~~~~~~~~~
-# Stop and cancel the project.
+# **Step 6: Dispose of the optiSLang instance.**
+# ``dispose()`` stops the optiSLang server process and cleans up resources.
 osl.dispose()
 
 #########################################################
