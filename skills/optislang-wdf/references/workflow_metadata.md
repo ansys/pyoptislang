@@ -77,7 +77,7 @@ Use `"reference_files_directory_storage_mode": "embedded"` to bundle files insid
 
 ### `placeholder_*`
 
-> **On-demand only.** Emit `"placeholder_*": {}` by default. Only add entries when the user explicitly names a file to register.
+> **On-demand only.** Emit `"placeholder_*": {}` by default. Only add entries when the user explicitly defines a placeholder.
 
 ```json
 "placeholder_definitions" : 

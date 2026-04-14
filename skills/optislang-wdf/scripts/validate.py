@@ -50,23 +50,36 @@ def validate_workflow(workflow_path, schema_dir):
         from referencing import Registry, Resource
         from referencing.jsonschema import DRAFT202012
 
-        # Create resources for all schemas
-        resources = []
-        for schema_name, schema_data in schemas.items():
-            if isinstance(schema_name, str) and not schema_name.startswith("http"):
-                # Create a resource for each schema
-                resource = Resource.from_contents(schema_data, default_specification=DRAFT202012)
-                resources.append((schema_name, resource))
+        # Create resources for all schemas. Register each schema under its
+        # canonical $id (when present) and keep existing local aliases such as
+        # "workflow" so both URI-based and filename-based references resolve.
+        resource_map = {}
+        for schema_name, schema_data in schemas.items():
+            if not isinstance(schema_name, str):
+                continue
+
+            resource = Resource.from_contents(
+                schema_data, default_specification=DRAFT202012
+            )
 
-        # Build registry
-        registry = Registry().with_resources(resources)
+            # Preserve existing aliases like "workflow" / "properties".
+            resource_map[schema_name] = resource
+
+            # Also register the canonical schema identifier used by $ref
+            # resolution. Do not skip http(s) URIs.
+            schema_id = schema_data.get("$id")
+            if isinstance(schema_id, str) and schema_id:
+                resource_map[schema_id] = resource
+
+        # Build registry
+        registry = Registry().with_resources(resource_map.items())
 
         # Create validator with registry
         validator = ValidatorClass(workflow_schema, registry=registry)
         print(f"\n  Using validator: {ValidatorClass.__name__} with Registry")
 
-    except (ImportError, Exception) as e:
-        # Fallback: validate without external reference resolution
+    except ImportError:
+        # Fallback only when the optional referencing package is unavailable
         print(f"\n  Using validator: {ValidatorClass.__name__} (no external $ref resolution)")
         validator = ValidatorClass(workflow_schema)
 
@@ -104,7 +117,7 @@ if __name__ == "__main__":
         schema_dir = sys.argv[2]
 
     if not workflow_path or not schema_dir:
-        print("Usage: validate_workflow.py <workflow.json> <schema_directory>")
+        print("Usage: validate.py <workflow.json> <schema_directory>")
         sys.exit(1)
 
     try:

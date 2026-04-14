@@ -70,7 +70,7 @@ optiSLang algorithm nodes are `ControlStatementPlugIn` elements. The `plugInId` 
 |---|---|
 | Sensitivity / DOE | `Sensitivity` |
 | MOP-based optimization | `AMOP` or `SIMPLEX` |
-| One-Click Optimization | `OneClickOptimization` |
+| One-Click Optimization | `CustomAlgorithm_OCO` |
 | Parametric System | `ParametricSystem` |
 | Generic system | Any string (URN or plaintext) |
 

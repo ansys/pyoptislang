@@ -289,7 +289,7 @@ Inside each algorithm system's `children.workflow` DataDependency, always includ
 
 ### Most Ansys and Third-Party CAD/CAE Tools (all `urn:ansys:optislang:component:CustomIntegration_*`) — `osl_properties.JSON`
 
-> **On-demand only.** Only include keys the user explicitly requested or those strictly required, except for `Path`, for specifying the Anysy or 3rd party file to load.
+> **On-demand only.** Only include keys the user explicitly requested or those strictly required, except for `Path`, for specifying the Ansys or 3rd party file to load.
 
 ```json
 "Path" :
@@ -297,7 +297,7 @@ Inside each algorithm system's `children.workflow` DataDependency, always includ
     "path" :
     {
         "base_path_mode" : "ABSOLUTE_PATH",
-        "split_path" : "split_path": { "head": "/path/to/dir", "tail": "file_name.extension" }
+        "split_path" : { "head": "/path/to/dir", "tail": "file_name.extension" }
     }
 }
 ```
@@ -547,7 +547,7 @@ Text Input (`Parameterize`) locations are specified using `line` and `column` va
 
 ### Text Output (`ETK`, `ETKAsciiOutput`)
 
-Text Output (`ETK`) locations are specified using (repeated) markers. In the example, "Mass" is a non-reapeated and "Stress" is an repeated marker:
+Text Output (`ETK`) locations are specified using (repeated) markers. In the example, "Mass" is a non-repeated and "Stress" is a repeated marker:
 
 ```json
 "registered_locations" :
