@@ -1,0 +1,37 @@
+{
+    "$id": "https://ldl-laki.docs.ansys.com/schema/rev00/connections",
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "title": "Laki Definition Language connections schema",
+    "description": "Defines connections between data pins.",
+    "$defs": {
+       "RelativeDataPinReference": {
+          "$comment": "A reference to a datapin using a relative reference in the user visible namespace (after instantiating) using dotted notation",
+          "type": "string"
+       },
+       "Assignment": {
+          "type": "object",
+          "$comment": "A simple assignment where one value is read and one is written",
+          "properties": {
+             "type": {
+                "enum": [
+                   "Assignment"
+                ]
+             },
+             "readFrom": {
+                "$comment": "The value that is read, or the right side of the equality",
+                "$ref": "#/$defs/RelativeDataPinReference"
+             },
+             "writeTo": {
+                "$comment": "The value that is written, or the left side of the equality",
+                "$ref": "#/$defs/RelativeDataPinReference"
+             }
+          },
+          "required": ["readFrom", "writeTo"]
+       }
+    },
+    "type": "array",
+    "items": {
+       "$comment": "Only directional assignment is supported in this version. A future version may support other types of connections.",
+       "$ref": "#/$defs/Assignment"
+    }
+}
