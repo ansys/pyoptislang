@@ -327,9 +327,9 @@ Inside each algorithm system's `children.workflow` DataDependency, always includ
 }
 ```
 
-### Text Input / Output (`Parameterize` / `ETKAsciiOutput`, `ETK`) — `osl_properties.JSON`
+### Text Input (`Parameterize`) — `osl_properties.JSON`
 
-> **0-based indexing.** In `registered_parameters` location entries for `Parameterize`, both `line` and `column` are **0-based** (first line = 0, first column = 0).
+> **0-based indexing.** In `registered_parameters` and `registered_input_slots` location entries for `Parameterize`, both `line` and `column` are **0-based** (first line = 0, first column = 0).
 
 Text Input (`Parameterize`) writes parameter values to a file:
 
@@ -347,6 +347,9 @@ Text Input (`Parameterize`) writes parameter values to a file:
 }
 ```
 
+### Text Output (`ETKAsciiOutput`, `ETK`) — `osl_properties.JSON`
+
+
 Text Output reads variables from a file written by the solver:
 
 ```json
@@ -356,7 +359,7 @@ Text Output reads variables from a file written by the solver:
         "file": {
             "path": {
                 "base_path_mode": "WORKING_DIR_RELATIVE",
-                "split_path": { "head": "", "tail": "results.out" }
+                "split_path": { "head": "/path/to/parent_directory", "tail": "file_name.extension" }
             }
         }
     }
@@ -508,7 +511,7 @@ The calculator expressions are stored in the `internal_variables` entry.
 }
 ```
 
-### Text Input / Output (`Parameterize` / `ETK`, `ETKAsciiOutput`)
+### Text Input (`Parameterize`)
 
 Text Input (`Parameterize`) locations are specified using `line` and `column` values for the loaded input file along with some additional attributes like output `format` (`line` and `column` counting starts at 0):
 
@@ -542,7 +545,9 @@ Text Input (`Parameterize`) locations are specified using `line` and `column` va
 }
 ```
 
-Text Output (`ETK`) locations are specified using (repeated) markers:
+### Text Output (`ETK`, `ETKAsciiOutput`)
+
+Text Output (`ETK`) locations are specified using (repeated) markers. In the example, "Mass" is a non-reapeated and "Stress" is an repeated marker:
 
 ```json
 "registered_locations" :

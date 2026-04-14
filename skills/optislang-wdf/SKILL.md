@@ -19,7 +19,9 @@ WDF files are JSON documents that define optiSLang engineering workflows. They f
 | Algorithm System | `ControlStatementPlugIn` | Hierarchical parametric container that drives a DOE / optimization / reliability loop (e.g. Sensitivity, AMOP, SIMPLEX) |
 | Root System | `ControlStatementPlugIn` | Mandatory outer wrapper of every WDF file (`plugInId: "RunnableSystem"`) |
 
-See [references/osl-components.md](./references/osl-components.md) for the full element taxonomy with all `plugInId` and `source` URN values.
+See [references/osl-components.md](./references/osl-components.md) for the full element taxonomy with all `plugInId` and `source` URN values and registered locations details.
+See [references/file_handling.md](./references/file_handling.md) for file handling details.
+See [references/parametric.md](./references/parametric.md) for parametric (parameters, criteria) details.
 See [references/workflow_metadata.md](./references/workflow_metadata.md) for the global project/workflow metadata.
 
 ## File Skeleton
