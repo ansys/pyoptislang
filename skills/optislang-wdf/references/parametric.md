@@ -2,7 +2,7 @@
 
 ## Parameter Types
 
-Parameters are originally declared in `registered_locations.JSON` → `registered_parameters` at connector components. The configuration of parameters takes place in the `osl_properties.JSON` → `ParameterManager` at algorithm systems. In not specified explicitly, set lower/upper bounds to -10%/+10% for continuous parameters.
+Parameters are originally declared in `registered_locations.JSON` → `registered_parameters` at connector components. The configuration of parameters takes place in the `osl_properties.JSON` → `ParameterManager` at algorithm systems. If not specified explicitly, set lower/upper bounds to -10%/+10% for continuous parameters.
 
 ```json
 "ParameterManager" :
