@@ -1,7 +1,8 @@
 ---
 name: optislang-wdf
-description: 'Create, edit, explain or validate optiSLang Workflow Definition (.wdf) files from natural language prompts. Use this skill whenever the user wants to generate, modify, understand or validate a .wdf file, set up an optiSLang workflow, define parameters/responses, configure a Sensitivity/DOE/Optimization/Reliability workflow, or work with optiSLang components like Python nodes, MOP, Simplex, One-Click Optimization, or any ControlStatementPlugIn. Also trigger when the user mentions workflow definition language, LDL, optiSLang workflow JSON, or asks to wire up components with connections.'
+description: 'Create, edit, explain or validate optiSLang Workflow Definition (.wdf) files from natural language prompts. ALWAYS use this skill whenever the user wants to generate, modify, understand or validate a .wdf file, set up an optiSLang workflow in a descriptive, human-readable manner, register and configure parameters/responses of connector components, configure a Sensitivity/DOE/Optimization/Reliability workflow, or work with optiSLang components like Python nodes, MOP, Simplex, One-Click Optimization, or any other optiSLang algorithm system. Also trigger when the user mentions workflow definition language, LDL, optiSLang workflow JSON, or asks to wire up components with connections.'
 argument-hint: 'Describe the workflow you want to create (e.g. "DOE with Python solver, 10 samples, 4 MaxParallel workers") or the modifications you want to make to an existing WDF file.'
+compatibility: 'Generated .wdf files are consumable by optislang 2027 R1 and later'
 ---
 
 # optiSLang Workflow Definition (WDF) Creator
