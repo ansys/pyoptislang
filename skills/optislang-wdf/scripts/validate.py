@@ -54,13 +54,12 @@ def validate_workflow(workflow_path, schema_dir):
         # canonical $id (when present) and keep existing local aliases such as
         # "workflow" so both URI-based and filename-based references resolve.
         resource_map = {}
-        for schema_name, schema_data in schemas.items():
+        for schema_name, schema_data in schemas.items():
+
             if not isinstance(schema_name, str):
                 continue
-
-            resource = Resource.from_contents(
-                schema_data, default_specification=DRAFT202012
-            )
+
+            resource = Resource.from_contents(schema_data, default_specification=DRAFT202012)
 
             # Preserve existing aliases like "workflow" / "properties".
             resource_map[schema_name] = resource
@@ -71,7 +70,8 @@ def validate_workflow(workflow_path, schema_dir):
             if isinstance(schema_id, str) and schema_id:
                 resource_map[schema_id] = resource
 
-        # Build registry
+        # Build registry
+
         registry = Registry().with_resources(resource_map.items())
 
         # Create validator with registry

@@ -26,7 +26,7 @@ repos:
   rev: v2.4.1
   hooks:
   - id: codespell
-    exclude: "^skills/"
+    exclude: "skills/optislang-wdf/json-schema/|skills/optislang-wdf/references/all_nodes.wdf|skills/optislang-wdf/references/osl_components.md"
 
 - repo: https://github.com/pycqa/pydocstyle
   rev: 6.3.0
