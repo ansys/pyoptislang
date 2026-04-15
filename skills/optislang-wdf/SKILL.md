@@ -182,7 +182,7 @@ Connections wire datapins between elements. Use dot-notation paths relative to t
 
     **⚠ Common placement mistake:** When extending an existing single-algorithm workflow (e.g. appending `MOP` + `Optimizer` after `Sensitivity`), it is easy to accidentally add the new nodes as direct keys of the `DataDependency` object instead of inside its `children` dict. Always double-check: every named node must be inside `.children`, never a sibling of `children`.
 6. **Register parameters/responses** — register parameters and responses at connector components (`registered_locations.JSON`) and configure deterministic/stochastic parameters on the algorithm system inside `osl_properties.JSON.ParameterManager.parameter_container`.
-7. **Schema validation** — on demand, validate the WDF against the schema defined in [json-schema](./json-schema). "./scripts/validate.py" can be used for this. Usage: validate_workflow.py <workflow.json> <schema_directory>.
+7. **Schema validation** — on demand, validate the WDF against the schema defined in [json-schema](./json-schema). "./scripts/validate.py" can be used for this. Usage: validate.py <workflow.json> <schema_directory>.
 
 ## Common Patterns
 
