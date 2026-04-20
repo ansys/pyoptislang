@@ -39,7 +39,7 @@ dependencies = [
 [project.optional-dependencies]
 tests = [
     "pytest==8.4.2",
-    "pytest-cov==7.0.0",
+    "pytest-cov==7.1.0",
     "matplotlib>=3.5.3",
     "pythonnet>=3.0.0; platform_system != 'Darwin'",  # Python.NET compatibility tests (skip on macOS)
 ]
@@ -47,7 +47,7 @@ doc = [
     "ansys-sphinx-theme==1.6.4",
     "matplotlib==3.10.8",
     "numpydoc==1.10.0",
-    "pypandoc==1.16.2",
+    "pypandoc==1.17",
     "quarto-cli==1.8.26",
     "Sphinx==9.0.4",
     "sphinx-copybutton==0.5.2",
