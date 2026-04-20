@@ -9,18 +9,18 @@ version = "1.5.dev0"
 description = "A Python wrapper for Ansys optiSLang application."
 readme = "README.rst"
 requires-python = ">=3.10,<4"
-license = {file = "LICENSE"}
+license = "MIT"
+license-files = ["LICENSE"]
 authors = [
-    {name = "ANSYS, Inc.", email = "pyansys.core@ansys.com"},
+    {name = "ANSYS, Inc.", email = "pyansys.core@ansys.com"}
 ]
 maintainers = [
-    {name = "ANSYS, Inc.", email = "pyansys.core@ansys.com"},
+    {name = "ANSYS, Inc.", email = "pyansys.core@ansys.com"}
 ]
 
 classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Science/Research",
-    "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.10",
@@ -28,18 +28,18 @@ classifiers = [
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
     "Programming Language :: Python :: 3.14",
-    "Topic :: Scientific/Engineering",
+    "Topic :: Scientific/Engineering"
 ]
 dependencies = [
     "psutil>=5.9",
     "Deprecated>=1.2.14",
-    "pywin32>=304; sys_platform == 'win32'",
+    "pywin32>=304; sys_platform == 'win32'"
 ]
 
 [project.optional-dependencies]
 tests = [
     "pytest==8.4.2",
-    "pytest-cov==7.0.0",
+    "pytest-cov==7.1.0",
     "matplotlib>=3.5.3",
     "pythonnet>=v3.1.0-rc0; platform_system != 'Darwin'",  # Python.NET compatibility tests (skip on macOS)
 ]
@@ -47,15 +47,15 @@ doc = [
     "ansys-sphinx-theme==1.6.4",
     "matplotlib==3.10.8",
     "numpydoc==1.10.0",
-    "pypandoc==1.16.2",
+    "pypandoc==1.17",
     "quarto-cli==1.8.25",
     "Sphinx==9.0.4",
     "sphinx-copybutton==0.5.2",
-    "sphinx-gallery==0.19.0",
+    "sphinx-gallery==0.19.0"
 ]
 build = [
     "build>=0.8.0",
-    "twine>=4.0.1",
+    "twine>=4.0.1"
 ]
 typing = [
     "mypy==1.19.1",
@@ -96,7 +96,7 @@ output = ".cov/coverage.xml"
 
 [tool.pytest.ini_options]
 markers = [
-    "local_osl: local optiSLang process is used",
+    "local_osl: local optiSLang process is used"
 ]
 
 [tool.codespell]
