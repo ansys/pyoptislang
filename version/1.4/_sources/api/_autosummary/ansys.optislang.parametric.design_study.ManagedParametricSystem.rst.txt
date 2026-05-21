@@ -1,0 +1,30 @@
+﻿ManagedParametricSystem
+=======================
+
+.. currentmodule:: ansys.optislang.parametric.design_study
+
+.. autoclass:: ManagedParametricSystem
+
+   
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :toctree:
+   
+      
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+      :toctree:
+   
+      ManagedParametricSystem.instance
+      ManagedParametricSystem.solver_node
+   
+   

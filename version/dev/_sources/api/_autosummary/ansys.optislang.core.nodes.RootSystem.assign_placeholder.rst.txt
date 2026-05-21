@@ -1,0 +1,6 @@
+assign\_placeholder
+===================
+
+.. currentmodule:: ansys.optislang.core.nodes
+
+.. automethod:: RootSystem.assign_placeholder

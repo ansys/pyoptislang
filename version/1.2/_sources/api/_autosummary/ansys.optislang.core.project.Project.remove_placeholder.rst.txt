@@ -1,0 +1,6 @@
+remove\_placeholder
+===================
+
+.. currentmodule:: ansys.optislang.core.project
+
+.. automethod:: Project.remove_placeholder

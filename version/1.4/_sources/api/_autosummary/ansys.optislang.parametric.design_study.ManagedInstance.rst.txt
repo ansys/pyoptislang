@@ -1,0 +1,29 @@
+﻿ManagedInstance
+===============
+
+.. currentmodule:: ansys.optislang.parametric.design_study
+
+.. autoclass:: ManagedInstance
+
+   
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :toctree:
+   
+      
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+      :toctree:
+   
+      ManagedInstance.instance
+   
+   

@@ -1,0 +1,6 @@
+OMDB\_FILES
+===========
+
+.. currentmodule:: ansys.optislang.parametric.design_study
+
+.. autoattribute:: OMDBFilesSpecificationEnum.OMDB_FILES

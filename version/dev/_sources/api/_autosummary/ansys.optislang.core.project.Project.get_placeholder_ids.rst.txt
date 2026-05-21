@@ -1,0 +1,6 @@
+get\_placeholder\_ids
+=====================
+
+.. currentmodule:: ansys.optislang.core.project
+
+.. automethod:: Project.get_placeholder_ids

@@ -1,0 +1,41 @@
+﻿RegisteredFilePath
+==================
+
+.. currentmodule:: ansys.optislang.core.io
+
+.. autoclass:: RegisteredFilePath
+
+   
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :toctree:
+   
+      
+      
+      RegisteredFilePath.convert_to_absolute_path
+      
+      
+      RegisteredFilePath.from_dict
+      
+      
+      RegisteredFilePath.to_dict
+      
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+      :toctree:
+   
+      RegisteredFilePath.name
+      RegisteredFilePath.path
+      RegisteredFilePath.type
+      RegisteredFilePath.uuid
+   
+   
