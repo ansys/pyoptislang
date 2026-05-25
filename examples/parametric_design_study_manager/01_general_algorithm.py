@@ -1,4 +1,4 @@
-# Copyright (C) 2022 - 2025 ANSYS, Inc. and/or its affiliates.
+# Copyright (C) 2022 - 2026 ANSYS, Inc. and/or its affiliates.
 # SPDX-License-Identifier: MIT
 #
 #
@@ -30,6 +30,10 @@ This example demonstrates how to create and execute optimization using ``Paramet
 
 It creates an algorithm with ``ProxySolver`` node as a solver and then runs the created design study.
 """
+
+# sphinx_gallery_start_ignore
+# sphinx_gallery_thumbnail_path = "../../doc/source/_static/01_general_algorithm.png"
+# sphinx_gallery_end_ignore
 
 #########################################################
 # Perform required imports
@@ -132,6 +136,6 @@ design_study_manager.optislang.dispose()
 # -----------------------
 # This image shows the generated workflow.
 #
-# .. image:: ../../_static/01_general_algorithm.png
+# .. image:: ../../../_static/01_general_algorithm.png
 #  :width: 400
 #  :alt: Result of script.

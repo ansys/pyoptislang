@@ -1,4 +1,4 @@
-# Copyright (C) 2022 - 2025 ANSYS, Inc. and/or its affiliates.
+# Copyright (C) 2022 - 2026 ANSYS, Inc. and/or its affiliates.
 # SPDX-License-Identifier: MIT
 #
 #
@@ -429,6 +429,19 @@ class ParametricDesignStudy:
             Tuple of executable blocks.
         """
         return tuple(self.__execution_blocks)
+
+    @property
+    def executed_proxy_solver(self) -> Optional[ProxySolverNode]:
+        """Get instance of proxy solver node being executed.
+
+        Applicable when `start_in_thread` was called.
+
+        Returns
+        -------
+        Optional[ProxySolverNode]
+            Instance of proxy solver node.
+        """
+        return self.__current_proxy_solver
 
     @property
     def is_complete(self) -> bool:

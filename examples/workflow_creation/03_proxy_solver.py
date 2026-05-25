@@ -1,4 +1,4 @@
-# Copyright (C) 2022 - 2025 ANSYS, Inc. and/or its affiliates.
+# Copyright (C) 2022 - 2026 ANSYS, Inc. and/or its affiliates.
 # SPDX-License-Identifier: MIT
 #
 #
@@ -32,6 +32,10 @@ It creates a proxy solver node inside parametric system and solves it's designs 
 
 This is a unified approach for "optiSLang inside" solutions.
 """
+
+# sphinx_gallery_start_ignore
+# sphinx_gallery_thumbnail_path = "../../doc/source/_static/03_ProxySolver.png"
+# sphinx_gallery_end_ignore
 
 #########################################################
 # Perform required imports
@@ -226,7 +230,7 @@ osl.dispose()
 # This image shows the generated workflow.
 # However, it is important to note, that this workflow is only usable through pyoptislang and cannot be used interactively!
 #
-# .. image:: ../../_static/03_ProxySolver.png
+# .. image:: ../../../_static/03_ProxySolver.png
 #  :width: 400
 #  :alt: Result of script.
 #

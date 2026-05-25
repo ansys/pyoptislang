@@ -1,4 +1,4 @@
-# Copyright (C) 2022 - 2025 ANSYS, Inc. and/or its affiliates.
+# Copyright (C) 2022 - 2026 ANSYS, Inc. and/or its affiliates.
 # SPDX-License-Identifier: MIT
 #
 #
@@ -34,6 +34,10 @@ truss flow. Then the ``ten_bar_modify_parameters.py`` and
 ``ten_bar_truss_lc2.py`` files are used to modify the flow. Lastly, the project is
 executed and a optionally the project is saved to a desired location.
 """
+
+# sphinx_gallery_start_ignore
+# sphinx_gallery_thumbnail_path = "../../doc/source/_static/01_ten_bar_truss.png"
+# sphinx_gallery_end_ignore
 
 #########################################################
 # Perform required imports
@@ -96,7 +100,7 @@ osl.dispose()
 # ~~~~~~~~~~~~~~~~~~~~~~~
 # This image shows the generated workflow.
 #
-# .. image:: ../../_static/01_ten_bar_truss.png
+# .. image:: ../../../_static/01_ten_bar_truss.png
 #  :width: 400
 #  :alt: Result of script.
 #

@@ -1,4 +1,4 @@
-# Copyright (C) 2022 - 2025 ANSYS, Inc. and/or its affiliates.
+# Copyright (C) 2022 - 2026 ANSYS, Inc. and/or its affiliates.
 # SPDX-License-Identifier: MIT
 #
 #
@@ -33,6 +33,10 @@ configure, and insert an EA (Evolutionary Algorithm) optimizer
 into the scenery. It then explains how you can optionally save
 the project to a desired location.
 """
+
+# sphinx_gallery_start_ignore
+# sphinx_gallery_thumbnail_path = "../../doc/source/_static/05_optimizer_settings.png"
+# sphinx_gallery_end_ignore
 
 # Perform required imports
 # ~~~~~~~~~~~~~~~~~~~~~~~~
@@ -82,7 +86,7 @@ osl.dispose()
 # ~~~~~~~~~~~~~~~~~~~~~~~
 # This image shows the generated workflow.
 #
-# .. image:: ../../_static/05_optimizer_settings.png
+# .. image:: ../../../_static/05_optimizer_settings.png
 #  :width: 300
 #  :alt: Result of script.
 #

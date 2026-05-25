@@ -1,4 +1,4 @@
-# Copyright (C) 2022 - 2025 ANSYS, Inc. and/or its affiliates.
+# Copyright (C) 2022 - 2026 ANSYS, Inc. and/or its affiliates.
 # SPDX-License-Identifier: MIT
 #
 #
@@ -49,9 +49,13 @@ workflows.
 This image shows the workflow:
 """
 
+# sphinx_gallery_start_ignore
+# sphinx_gallery_thumbnail_path = "../../doc/source/_static/01_ten_bar_truss_evaluate_design.png"
+# sphinx_gallery_end_ignore
+
 #########################################################
 # Workflow:
-# .. image:: ../../_static/01_ten_bar_truss_evaluate_design.png
+# .. image:: ../../../_static/01_ten_bar_truss_evaluate_design.png
 #  :width: 400
 #  :alt: Result of script.
 #

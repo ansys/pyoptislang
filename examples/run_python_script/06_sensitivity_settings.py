@@ -1,4 +1,4 @@
-# Copyright (C) 2022 - 2025 ANSYS, Inc. and/or its affiliates.
+# Copyright (C) 2022 - 2026 ANSYS, Inc. and/or its affiliates.
 # SPDX-License-Identifier: MIT
 #
 #
@@ -32,6 +32,10 @@ It creates a system named "Sensitivity". It then finds this system and uses
 the ``sensitivity_settings.py`` file to change some of the settings. Lastly, it
 explains how you can optionally save the project to a desired location.
 """
+
+# sphinx_gallery_start_ignore
+# sphinx_gallery_thumbnail_path = "../../doc/source/_static/06_sensitivity_settings.png"
+# sphinx_gallery_end_ignore
 
 #########################################################
 # Perform required imports
@@ -82,7 +86,7 @@ osl.dispose()
 # ~~~~~~~~~~~~~~~~~~~~~~~
 # This image shows the generated workflow.
 #
-# .. image:: ../../_static/06_sensitivity_settings.png
+# .. image:: ../../../_static/06_sensitivity_settings.png
 #  :width: 300
 #  :alt: Result of script.
 #

@@ -1,4 +1,4 @@
-# Copyright (C) 2022 - 2025 ANSYS, Inc. and/or its affiliates.
+# Copyright (C) 2022 - 2026 ANSYS, Inc. and/or its affiliates.
 # SPDX-License-Identifier: MIT
 #
 #
@@ -30,6 +30,10 @@ This example demonstrates how to create robust design optimization workflow.
 
 It creates multiple parametric systems using `Python` node as a solver and then runs the workflow.
 """
+
+# sphinx_gallery_start_ignore
+# sphinx_gallery_thumbnail_path = "../../doc/source/_static/04_1_RDO_w_python.png"
+# sphinx_gallery_end_ignore
 
 #########################################################
 # Perform required imports
@@ -441,6 +445,6 @@ osl.dispose()
 # -----------------------
 # This image shows the generated workflow.
 #
-# .. image:: ../../_static/04_1_RDO_w_python.png
+# .. image:: ../../../_static/04_1_RDO_w_python.png
 #  :width: 1200
 #  :alt: Result of script.

@@ -1,4 +1,4 @@
-# Copyright (C) 2022 - 2025 ANSYS, Inc. and/or its affiliates.
+# Copyright (C) 2022 - 2026 ANSYS, Inc. and/or its affiliates.
 # SPDX-License-Identifier: MIT
 #
 #
@@ -32,6 +32,10 @@ It creates a direct optimization workflow for an oscillator with the Nature Insp
 (Evolutionary Algorithm) using pyOptiSLang. It then explains how you can optionally save
 the project to a desired location.
 """
+
+# sphinx_gallery_start_ignore
+# sphinx_gallery_thumbnail_path = "../../doc/source/_static/02_3_optimization_on_EA_pyOSL_workflow.png"
+# sphinx_gallery_end_ignore
 
 #########################################################
 # Perform required imports
@@ -190,7 +194,7 @@ osl.dispose()
 # ~~~~~~~~~~~~~~~~~~~~~~~
 # This image shows the generated workflow.
 #
-# .. image:: ../../_static/02_3_optimization_on_EA_pyOSL_workflow.png
+# .. image:: ../../../_static/02_3_optimization_on_EA_pyOSL_workflow.png
 #  :width: 400
 #  :alt: Result of script.
 #

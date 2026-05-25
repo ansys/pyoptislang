@@ -1,4 +1,4 @@
-# Copyright (C) 2022 - 2025 ANSYS, Inc. and/or its affiliates.
+# Copyright (C) 2022 - 2026 ANSYS, Inc. and/or its affiliates.
 # SPDX-License-Identifier: MIT
 #
 #
@@ -33,6 +33,10 @@ run a direct optimization for an oscillator with the EA (Evolutionary
 Algorithm) optimizer. It then explains how you can optionally save
 the project to a desired location.
 """
+
+# sphinx_gallery_start_ignore
+# sphinx_gallery_thumbnail_path = "../../doc/source/_static/02_3_optimization_on_EA.png"
+# sphinx_gallery_end_ignore
 
 #########################################################
 # Perform required imports
@@ -90,7 +94,7 @@ osl.dispose()
 # ~~~~~~~~~~~~~~~~~~~~~~~
 # This image shows the generated workflow.
 #
-# .. image:: ../../_static/02_3_optimization_on_EA.png
+# .. image:: ../../../_static/02_3_optimization_on_EA.png
 #  :width: 400
 #  :alt: Result of script.
 #
