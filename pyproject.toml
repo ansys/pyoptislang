@@ -5,59 +5,60 @@ build-backend = "flit_core.buildapi"
 [project]
 # Check https://flit.readthedocs.io/en/latest/pyproject_toml.html for all available sections
 name = "ansys-optislang-core"
-version = "1.4.dev0"
+version = "1.5.dev0"
 description = "A Python wrapper for Ansys optiSLang application."
 readme = "README.rst"
-requires-python = ">=3.9,<4"
-license = {file = "LICENSE"}
+requires-python = ">=3.10,<4"
+license = "MIT"
+license-files = ["LICENSE"]
 authors = [
-    {name = "ANSYS, Inc.", email = "pyansys.core@ansys.com"},
+    {name = "ANSYS, Inc.", email = "pyansys.core@ansys.com"}
 ]
 maintainers = [
-    {name = "ANSYS, Inc.", email = "pyansys.core@ansys.com"},
+    {name = "ANSYS, Inc.", email = "pyansys.core@ansys.com"}
 ]
 
 classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Science/Research",
-    "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
-    "Topic :: Scientific/Engineering",
+    "Programming Language :: Python :: 3.14",
+    "Topic :: Scientific/Engineering"
 ]
 dependencies = [
     "psutil>=5.9",
     "Deprecated>=1.2.14",
-    "pywin32>=306; sys_platform == 'win32'",
+    "pywin32>=304; sys_platform == 'win32'"
 ]
 
 [project.optional-dependencies]
 tests = [
-    "pytest==8.4.2",
-    "pytest-cov==7.0.0",
+    "pytest==9.0.3",
+    "pytest-cov==7.1.0",
     "matplotlib>=3.5.3",
+    "pythonnet>=v3.1.0-rc1; platform_system != 'Darwin'",  # Python.NET compatibility tests (skip on macOS)
 ]
 doc = [
-    "ansys-sphinx-theme==1.6.4",
-    "matplotlib==3.10.1",
-    "numpydoc==1.9.0",
-    "pypandoc==1.16.2",
-    "quarto-cli==1.8.25",
-    "Sphinx==8.2.3",
+    "ansys-sphinx-theme==1.7.2",
+    "matplotlib==3.10.9",
+    "numpydoc==1.10.0",
+    "pypandoc==1.17",
+    "quarto-cli==1.9.37",
+    "Sphinx==9.0.4",
     "sphinx-copybutton==0.5.2",
-    "sphinx-gallery==0.19.0",
+    "sphinx-gallery==0.21.0"
 ]
 build = [
     "build>=0.8.0",
-    "twine>=4.0.1",
+    "twine>=4.0.1"
 ]
 typing = [
-    "mypy==1.19.0",
+    "mypy==1.19.1",
     "types-Deprecated",
     "types-psutil"
 ]
@@ -95,7 +96,7 @@ output = ".cov/coverage.xml"
 
 [tool.pytest.ini_options]
 markers = [
-    "local_osl: local optiSLang process is used",
+    "local_osl: local optiSLang process is used"
 ]
 
 [tool.codespell]
@@ -109,7 +110,3 @@ exclude = ["00_run_script"]
 
 [tool.bandit]
 exclude_dirs = ["tests", "src/ansys/optislang/core/examples"]
-skips = [
-    "B110",
-    "B404",
-    ]

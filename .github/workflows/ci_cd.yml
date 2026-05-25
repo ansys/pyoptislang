@@ -9,7 +9,7 @@ on:
       - main
 
 env:
-  MAIN_PYTHON_VERSION: "3.13"
+  MAIN_PYTHON_VERSION: "3.14"
   PACKAGE_NAME: "ansys-optislang-core"
   PACKAGE_NAMESPACE: "ansys.optislang"
   DOCUMENTATION_CNAME: "optislang.docs.pyansys.com"
@@ -25,7 +25,7 @@ jobs:
     name: "Code style"
     runs-on: ubuntu-latest
     steps:
-      - uses: ansys/actions/code-style@v10
+      - uses: ansys/actions/code-style@v10.3.0
         with:
           python-version: ${{ env.MAIN_PYTHON_VERSION }}
 
@@ -33,10 +33,10 @@ jobs:
     name: "Type check"
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v6.0.0
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           persist-credentials: false
-      - uses: actions/setup-python@83679a892e2d95755f2dac6acb0bfd1e9ac5d548 # v6.1.0
+      - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
         with:
           python-version: ${{ env.MAIN_PYTHON_VERSION }}
       - shell: bash
@@ -55,7 +55,7 @@ jobs:
     name: "Doc style check"
     runs-on: ubuntu-latest
     steps:
-      - uses: ansys/actions/doc-style@v10
+      - uses: ansys/actions/doc-style@v10.3.0
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           vale-version: "3.4.1"
@@ -68,14 +68,14 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest]
-        python-version: ["3.9", "3.10", "3.11", "3.12", "3.13"]
+        python-version: ["3.10", "3.11", "3.12", "3.13", "3.14"]
     steps:
-      - uses: ansys/actions/build-wheelhouse@v10
+      - uses: ansys/actions/build-wheelhouse@v10.3.0
         with:
           library-name: ${{ env.PACKAGE_NAME }}
           operating-system: ${{ matrix.os }}
           python-version: ${{ matrix.python-version }}
-          check-licenses: ${{ matrix.python-version != '3.9' }}
+          check-licenses: true
 
   tests:
     name: "Test ${{ matrix.os }} using Python ${{ matrix.python-version }}"
@@ -84,17 +84,22 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest]
-        python-version: ["3.9", "3.10", "3.11", "3.12", "3.13"]
+        python-version: ["3.10", "3.11", "3.12", "3.13", "3.14"]
       fail-fast: false
     steps:
+      - name: "Configure Python.NET runtime for Linux"
+        if: runner.os == 'Linux'
+        run: echo "PYTHONNET_RUNTIME=coreclr" >> $GITHUB_ENV
+        shell: bash
+
       - name: "Run pytest with desired markers and extra arguments"
-        uses: ansys/actions/tests-pytest@v10
+        uses: ansys/actions/tests-pytest@v10.3.0
         with:
           python-version: ${{ matrix.python-version }}
           pytest-extra-args: --cov=ansys.optislang --cov-report=term --cov-report=xml:.cov/coverage.xml --cov-report=html:.cov/html
 
       - name: "Upload coverage results as artifacts"
-        uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5.0.0
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: ${{ matrix.python-version == env.MAIN_PYTHON_VERSION && runner.os == 'Linux' }}
         with:
           name: HTML-Coverage
@@ -102,7 +107,7 @@ jobs:
           retention-days: 7
 
       - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@5a1091511ad55cbe89839c7260b706298ca349f7 # v5.5.1
+        uses: codecov/codecov-action@57e3a136b779b570ffcdbf80b3bdc90e7fab3de2 # v6.0.0
         if: ${{ matrix.python-version == env.MAIN_PYTHON_VERSION && runner.os == 'Linux' }}
         with:
           files: .cov/coverage.xml
@@ -111,7 +116,7 @@ jobs:
     name: "Security checks"
     runs-on: ubuntu-latest
     steps:
-      - uses: ansys/actions/check-actions-security@v10
+      - uses: ansys/actions/check-actions-security@v10.3.0
         with:
           generate-summary: true
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -122,7 +127,7 @@ jobs:
     name: "Vulnerability check"
     runs-on: ubuntu-latest
     steps:
-      - uses: ansys/actions/check-vulnerabilities@v10
+      - uses: ansys/actions/check-vulnerabilities@v10.3.0
         with:
           python-version: ${{ env.MAIN_PYTHON_VERSION }}
           token: ${{ secrets.PYANSYS_CI_BOT_TOKEN }}
@@ -145,7 +150,7 @@ jobs:
       #run: |
       #quarto install tinytex --no-prompt --update-path
       - name: Build Documentation
-        uses: ansys/actions/doc-build@v10
+        uses: ansys/actions/doc-build@v10.3.0
         with:
           python-version: ${{ env.MAIN_PYTHON_VERSION }}
           dependencies: "pandoc jupyter"
@@ -156,7 +161,7 @@ jobs:
     needs: [doc, tests]
     runs-on: ubuntu-latest
     steps:
-      - uses: ansys/actions/build-library@v10
+      - uses: ansys/actions/build-library@v10.3.0
         with:
           library-name: ${{ env.PACKAGE_NAME }}
           python-version: ${{ env.MAIN_PYTHON_VERSION }}
@@ -172,13 +177,13 @@ jobs:
       contents: write # To create releases
     steps:
       - name: "Download the library artifacts from build-library step"
-        uses: actions/download-artifact@018cc2cf5baa6db3ef3c5f8a56943fffe632ef53 # v6.0.0
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           name: ${{ env.PACKAGE_NAME }}-artifacts
           path: ${{ env.PACKAGE_NAME }}-artifacts
 
       - name: "Upload artifacts to PyPI using trusted publisher"
-        uses: pypa/gh-action-pypi-publish@ed0c53931b1dc9bd32cbe73a98c7f6766f8a527e # v1.13.0
+        uses: pypa/gh-action-pypi-publish@cef221092ed1bacb1cc03d23a2d87d1d172e277b # v1.14.0
         with:
           repository-url: "https://upload.pypi.org/legacy/"
           print-hash: true
@@ -186,7 +191,7 @@ jobs:
           skip-existing: false
 
       - name: "Release to GitHub"
-        uses: ansys/actions/release-github@v10
+        uses: ansys/actions/release-github@v10.3.0
         with:
           library-name: ${{ env.PACKAGE_NAME }}
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -199,7 +204,7 @@ jobs:
     permissions:
       contents: write # To deploy docs
     steps:
-      - uses: ansys/actions/doc-deploy-dev@v10
+      - uses: ansys/actions/doc-deploy-dev@v10.3.0
         with:
           cname: ${{ env.DOCUMENTATION_CNAME }}
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -214,7 +219,7 @@ jobs:
     permissions:
       contents: write # To deploy docs
     steps:
-      - uses: ansys/actions/doc-deploy-stable@v10
+      - uses: ansys/actions/doc-deploy-stable@v10.3.0
         with:
           cname: ${{ env.DOCUMENTATION_CNAME }}
           token: ${{ secrets.GITHUB_TOKEN }}

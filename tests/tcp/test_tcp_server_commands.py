@@ -271,12 +271,12 @@ def test_create_node():
     assert sorted(dictionary.items()) == sorted(requiered_string.items())
     # with optional values
     json_string = sc.create_node(
-        type_="AnsysWorkbench", name="WB-Actor", parent_uid=parent_uid, design_flow="RECEIVE_SEND"
+        type_="Calculator", name="Calc-Actor", parent_uid=parent_uid, design_flow="RECEIVE_SEND"
     )
     dictionary = json.loads(json_string)
     requiered_string = json.loads(
         '{ "projects": [ { "commands": [ { "type": "builtin", "command": "CREATE_NODE", "args": '
-        '{ "type": "AnsysWorkbench", "name": "WB-Actor", "parent_uid": '
+        '{ "type": "Calculator", "name": "Calc-Actor", "parent_uid": '
         '"fa743edb-4e0b-4302-b962-f2a32119a110","design_flow": "RECEIVE_SEND" } } ] } ] }'
     )
     assert type(json_string) == str
@@ -1650,14 +1650,14 @@ def test_subscribe_for_push_notifications():
     dictionary["notifications"] = ["LOG_INFO", "ACTOR_ACTIVE_CHANGED", "CHECK_FAILED"]
     # optional
     json_string = sc.subscribe_for_push_notifications(
-        uid=uid_, notifications=["ALL"], node_types=["Sensitivity", "AnsysWorkbench"]
+        uid=uid_, notifications=["ALL"], node_types=["Sensitivity"]
     )
     dictionary = json.loads(json_string)
     requiered_string = json.loads(
         '{ "projects": [ { "commands": [ { "type": "builtin", "command": '
         '"SUBSCRIBE_FOR_PUSH_NOTIFICATIONS", "args": { "uid": '
         '"8a79b28a-d79e-4a78-bf22-293f15c02b25", "notifications": '
-        '["ALL"], "node_types": ["Sensitivity", "AnsysWorkbench"] } } ] } ] }'
+        '["ALL"], "node_types": ["Sensitivity"] } } ] } ] }'
     )
     assert type(json_string) == str
     assert sorted(dictionary.items()) == sorted(requiered_string.items())

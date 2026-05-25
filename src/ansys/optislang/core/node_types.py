@@ -151,10 +151,6 @@ AnsysAPDLParameterize = NodeType(
     osl_class_type=NodeClassType.INTEGRATION_NODE,
 )
 """Class :py:class:`~ansys.optislang.core.nodes.IntegrationNode` is created from this node type."""
-AnsysWorkbench = NodeType(
-    id="AnsysWorkbench", subtype=AddinType.BUILT_IN, osl_class_type=NodeClassType.INTEGRATION_NODE
-)
-"""Class :py:class:`~ansys.optislang.core.nodes.IntegrationNode` is created from this node type."""
 AppendDesignsToBinFile = NodeType(
     id="AppendDesignsToBinFile", subtype=AddinType.BUILT_IN, osl_class_type=NodeClassType.NODE
 )
@@ -305,6 +301,10 @@ ETKTurboOpt = NodeType(
     id="ETKTurboOpt", subtype=AddinType.BUILT_IN, osl_class_type=NodeClassType.INTEGRATION_NODE
 )
 """Class :py:class:`~ansys.optislang.core.nodes.IntegrationNode` is created from this node type."""
+ETKAnsysDpf = NodeType(
+    id="ETKAnsysDpf", subtype=AddinType.BUILT_IN, osl_class_type=NodeClassType.INTEGRATION_NODE
+)
+"""Class :py:class:`~ansys.optislang.core.nodes.IntegrationNode` is created from this node type."""
 Excel = NodeType(
     id="Excel", subtype=AddinType.BUILT_IN, osl_class_type=NodeClassType.INTEGRATION_NODE
 )
@@ -336,9 +336,11 @@ Mopsolver = NodeType(
 )
 """Class :py:class:`~ansys.optislang.core.nodes.IntegrationNode` is created from this node type."""
 MultiplasParameterize = NodeType(
-    id="MultiplasParameterize", subtype=AddinType.BUILT_IN, osl_class_type=NodeClassType.NODE
+    id="MultiplasParameterize",
+    subtype=AddinType.BUILT_IN,
+    osl_class_type=NodeClassType.INTEGRATION_NODE,
 )
-"""Class :py:class:`~ansys.optislang.core.nodes.Node` is created from this node type."""
+"""Class :py:class:`~ansys.optislang.core.nodes.IntegrationNode` is created from this node type."""
 Octave = NodeType(
     id="Octave", subtype=AddinType.BUILT_IN, osl_class_type=NodeClassType.INTEGRATION_NODE
 )
@@ -444,6 +446,8 @@ VCollabProcess = NodeType(
 """Class :py:class:`~ansys.optislang.core.nodes.Node` is created from this node type."""
 Wait = NodeType(id="Wait", subtype=AddinType.BUILT_IN, osl_class_type=NodeClassType.NODE)
 """Class :py:class:`~ansys.optislang.core.nodes.Node` is created from this node type."""
+HPS = NodeType(id="HPS", subtype=AddinType.BUILT_IN, osl_class_type=NodeClassType.INTEGRATION_NODE)
+"""Class :py:class:`~ansys.optislang.core.nodes.IntegrationNode` is created from this node type."""
 # endregion
 # region Integration plugins
 awb2_plugin = NodeType(
@@ -598,14 +602,20 @@ COMSOL2 = NodeType(
     osl_class_type=NodeClassType.INTEGRATION_NODE,
 )
 """Class :py:class:`~ansys.optislang.core.nodes.IntegrationNode` is created from this node type."""
-COMSOL_input = NodeType(
-    id="COMSOL_input",
+COMSOL2_Input = NodeType(
+    id="COMSOL2_Input",
     subtype=AddinType.PYTHON_BASED_INTEGRATION_PLUGIN,
     osl_class_type=NodeClassType.INTEGRATION_NODE,
 )
 """Class :py:class:`~ansys.optislang.core.nodes.IntegrationNode` is created from this node type."""
-COMSOL_output = NodeType(
-    id="COMSOL_output",
+COMSOL2_Output = NodeType(
+    id="COMSOL2_Output",
+    subtype=AddinType.PYTHON_BASED_INTEGRATION_PLUGIN,
+    osl_class_type=NodeClassType.INTEGRATION_NODE,
+)
+"""Class :py:class:`~ansys.optislang.core.nodes.IntegrationNode` is created from this node type."""
+COMSOL2_Solver = NodeType(
+    id="COMSOL2_Solver",
     subtype=AddinType.PYTHON_BASED_INTEGRATION_PLUGIN,
     osl_class_type=NodeClassType.INTEGRATION_NODE,
 )
@@ -654,12 +664,6 @@ FloEFD_input = NodeType(
 """Class :py:class:`~ansys.optislang.core.nodes.IntegrationNode` is created from this node type."""
 FloEFD_output = NodeType(
     id="FloEFD_output",
-    subtype=AddinType.PYTHON_BASED_INTEGRATION_PLUGIN,
-    osl_class_type=NodeClassType.INTEGRATION_NODE,
-)
-"""Class :py:class:`~ansys.optislang.core.nodes.IntegrationNode` is created from this node type."""
-Fluent = NodeType(
-    id="Fluent",
     subtype=AddinType.PYTHON_BASED_INTEGRATION_PLUGIN,
     osl_class_type=NodeClassType.INTEGRATION_NODE,
 )
@@ -784,20 +788,8 @@ ModelCenter = NodeType(
     osl_class_type=NodeClassType.INTEGRATION_NODE,
 )
 """Class :py:class:`~ansys.optislang.core.nodes.IntegrationNode` is created from this node type."""
-MotorCAD_input = NodeType(
-    id="MotorCAD_input",
-    subtype=AddinType.PYTHON_BASED_INTEGRATION_PLUGIN,
-    osl_class_type=NodeClassType.INTEGRATION_NODE,
-)
-"""Class :py:class:`~ansys.optislang.core.nodes.IntegrationNode` is created from this node type."""
-MotorCAD_output = NodeType(
-    id="MotorCAD_output",
-    subtype=AddinType.PYTHON_BASED_INTEGRATION_PLUGIN,
-    osl_class_type=NodeClassType.INTEGRATION_NODE,
-)
-"""Class :py:class:`~ansys.optislang.core.nodes.IntegrationNode` is created from this node type."""
-MotorCAD_solve = NodeType(
-    id="MotorCAD_solve",
+MotorCAD = NodeType(
+    id="MotorCAD",
     subtype=AddinType.PYTHON_BASED_INTEGRATION_PLUGIN,
     osl_class_type=NodeClassType.INTEGRATION_NODE,
 )
@@ -894,6 +886,78 @@ ZEMAX_solve = NodeType(
 """Class :py:class:`~ansys.optislang.core.nodes.IntegrationNode` is created from this node type."""
 optislang_omdb = NodeType(
     id="optislang_omdb",
+    subtype=AddinType.PYTHON_BASED_INTEGRATION_PLUGIN,
+    osl_class_type=NodeClassType.INTEGRATION_NODE,
+)
+"""Class :py:class:`~ansys.optislang.core.nodes.IntegrationNode` is created from this node type."""
+LS_OPT = NodeType(
+    id="LS-OPT",
+    subtype=AddinType.PYTHON_BASED_INTEGRATION_PLUGIN,
+    osl_class_type=NodeClassType.INTEGRATION_NODE,
+)
+"""Class :py:class:`~ansys.optislang.core.nodes.IntegrationNode` is created from this node type."""
+NASTRAN_input = NodeType(
+    id="NASTRAN_input",
+    subtype=AddinType.PYTHON_BASED_INTEGRATION_PLUGIN,
+    osl_class_type=NodeClassType.INTEGRATION_NODE,
+)
+"""Class :py:class:`~ansys.optislang.core.nodes.IntegrationNode` is created from this node type."""
+NASTRAN_output = NodeType(
+    id="NASTRAN_output",
+    subtype=AddinType.PYTHON_BASED_INTEGRATION_PLUGIN,
+    osl_class_type=NodeClassType.INTEGRATION_NODE,
+)
+"""Class :py:class:`~ansys.optislang.core.nodes.IntegrationNode` is created from this node type."""
+NASTRAN_solver = NodeType(
+    id="NASTRAN_solver",
+    subtype=AddinType.PYTHON_BASED_INTEGRATION_PLUGIN,
+    osl_class_type=NodeClassType.INTEGRATION_NODE,
+)
+"""Class :py:class:`~ansys.optislang.core.nodes.IntegrationNode` is created from this node type."""
+SimAI_Solver = NodeType(
+    id="SimAI_Solver",
+    subtype=AddinType.PYTHON_BASED_INTEGRATION_PLUGIN,
+    osl_class_type=NodeClassType.INTEGRATION_NODE,
+)
+"""Class :py:class:`~ansys.optislang.core.nodes.IntegrationNode` is created from this node type."""
+SimAI_Training = NodeType(
+    id="SimAI_Training",
+    subtype=AddinType.PYTHON_BASED_INTEGRATION_PLUGIN,
+    osl_class_type=NodeClassType.INTEGRATION_NODE,
+)
+"""Class :py:class:`~ansys.optislang.core.nodes.IntegrationNode` is created from this node type."""
+SimAI_Upload = NodeType(
+    id="SimAI_Upload",
+    subtype=AddinType.PYTHON_BASED_INTEGRATION_PLUGIN,
+    osl_class_type=NodeClassType.INTEGRATION_NODE,
+)
+"""Class :py:class:`~ansys.optislang.core.nodes.IntegrationNode` is created from this node type."""
+fmopsolver = NodeType(
+    id="fmopsolver",
+    subtype=AddinType.PYTHON_BASED_INTEGRATION_PLUGIN,
+    osl_class_type=NodeClassType.INTEGRATION_NODE,
+)
+"""Class :py:class:`~ansys.optislang.core.nodes.IntegrationNode` is created from this node type."""
+freeflow = NodeType(
+    id="freeflow",
+    subtype=AddinType.PYTHON_BASED_INTEGRATION_PLUGIN,
+    osl_class_type=NodeClassType.INTEGRATION_NODE,
+)
+"""Class :py:class:`~ansys.optislang.core.nodes.IntegrationNode` is created from this node type."""
+meshworkflow = NodeType(
+    id="meshworkflow",
+    subtype=AddinType.PYTHON_BASED_INTEGRATION_PLUGIN,
+    osl_class_type=NodeClassType.INTEGRATION_NODE,
+)
+"""Class :py:class:`~ansys.optislang.core.nodes.IntegrationNode` is created from this node type."""
+raptorAI = NodeType(
+    id="raptorAI",
+    subtype=AddinType.PYTHON_BASED_INTEGRATION_PLUGIN,
+    osl_class_type=NodeClassType.INTEGRATION_NODE,
+)
+"""Class :py:class:`~ansys.optislang.core.nodes.IntegrationNode` is created from this node type."""
+rocky2 = NodeType(
+    id="rocky2",
     subtype=AddinType.PYTHON_BASED_INTEGRATION_PLUGIN,
     osl_class_type=NodeClassType.INTEGRATION_NODE,
 )
@@ -999,6 +1063,12 @@ SIMPLEX = NodeType(
     id="SIMPLEX", subtype=AddinType.BUILT_IN, osl_class_type=NodeClassType.PARAMETRIC_SYSTEM
 )
 """Class :py:class:`~ansys.optislang.core.nodes.ParametricSystem` is created from this node type."""
+ParametricService = NodeType(
+    id="ParametricService",
+    subtype=AddinType.BUILT_IN,
+    osl_class_type=NodeClassType.PARAMETRIC_SYSTEM,
+)
+"""Class :py:class:`~ansys.optislang.core.nodes.ParametricSystem` is created from this node type."""
 # endregion
 # region Python based algorithm plugins
 BASS = NodeType(
@@ -1063,6 +1133,12 @@ Unigene_EA = NodeType(
 """Class :py:class:`~ansys.optislang.core.nodes.ParametricSystem` is created from this node type."""
 while_loop = NodeType(
     id="while_loop",
+    subtype=AddinType.PYTHON_BASED_ALGORITHM_PLUGIN,
+    osl_class_type=NodeClassType.PARAMETRIC_SYSTEM,
+)
+"""Class :py:class:`~ansys.optislang.core.nodes.ParametricSystem` is created from this node type."""
+DLS = NodeType(
+    id="DLS",
     subtype=AddinType.PYTHON_BASED_ALGORITHM_PLUGIN,
     osl_class_type=NodeClassType.PARAMETRIC_SYSTEM,
 )

@@ -24,8 +24,9 @@ Python based integration_plugins
     CFX_Solver_v3
     CFturbo_input
     COMSOL2
-    COMSOL_input
-    COMSOL_output
+    COMSOL2_Input
+    COMSOL2_Output
+    COMSOL2_Solver
     Convert_OMDB_to_BIN_SoS
     ETK_nD
     FMU_SoS
@@ -34,10 +35,11 @@ Python based integration_plugins
     Field_MOP_ANSYSMECH_SoS
     FloEFD_input
     FloEFD_output
-    Fluent
     Fluent_mesher
     Fluent_solver
     Flux_input
+    fmopsolver
+    freeflow
     GTSUITE_input
     GTSUITE_output
     Generate_SoS
@@ -50,19 +52,27 @@ Python based integration_plugins
     JSON_input
     JSON_output
     KULI
+    LS_OPT
     Lumerical
-    META_output
     Matlab_mat_input
     Matlab_mat_output
+    meshworkflow
+    META_output
     ModelCenter
-    MotorCAD_input
-    MotorCAD_output
-    MotorCAD_solve
+    MotorCAD
     NASTRAN
+    NASTRAN_input
+    NASTRAN_output
+    NASTRAN_solver
     OpticStudio
     PuTTY_SSH
+    raptorAI
+    rocky2
     ROCKY_input
     ROCKY_output
+    SimAI_Solver
+    SimAI_Training
+    SimAI_Upload
     SPEOSCore
     SPEOS_Report_Reader
     SimulationX_SXOA

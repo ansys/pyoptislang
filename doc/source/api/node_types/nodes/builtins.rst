@@ -8,7 +8,6 @@ Built-in
     AbaqusProcess
     AmesimInput
     AnsysAPDLParameterize
-    AnsysWorkbench
     AppendDesignsToBinFile
     ASCMOsolver
     BashScript
@@ -34,6 +33,7 @@ Built-in
     ETKAdams
     ETKAMESim
     ETKAnsys
+    ETKAnsysDpf
     ETKAsciiOutput
     ETKCetol
     ETKCFturbo
@@ -48,6 +48,7 @@ Built-in
     ETKTurboOpt
     Excel
     FloEFDInput
+    HPS
     IntegrationPlugin
     LSDynaParameterize
     Matlab
