@@ -55,7 +55,7 @@ notebooks and run them locally.
         :link: sphx_glr_examples_gallery_examples_parametric_design_study_manager
         :link-type: ref
 
-        .. image:: ../_static/03_ProxySolver.png
+        .. image:: ../_static/03_1_ProxySolverSensitivity.png
             :height: 150px
             :align: center
 
