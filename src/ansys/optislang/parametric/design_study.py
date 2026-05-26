@@ -431,6 +431,19 @@ class ParametricDesignStudy:
         return tuple(self.__execution_blocks)
 
     @property
+    def executed_proxy_solver(self) -> Optional[ProxySolverNode]:
+        """Get instance of proxy solver node being executed.
+
+        Applicable when `start_in_thread` was called.
+
+        Returns
+        -------
+        Optional[ProxySolverNode]
+            Instance of proxy solver node.
+        """
+        return self.__current_proxy_solver
+
+    @property
     def is_complete(self) -> bool:
         """Get info if design study is finished.
 

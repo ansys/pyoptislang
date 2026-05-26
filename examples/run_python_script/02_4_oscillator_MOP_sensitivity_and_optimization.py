@@ -41,6 +41,10 @@ to a desired location.
 # ~~~~~~~~~~~~~~~~~~~~~~~~
 # Perform the required imports.
 
+# sphinx_gallery_start_ignore
+# sphinx_gallery_thumbnail_path = "../../doc/source/_static/02_4_oscillator_MOP_sensitivity_and_optimization.png"
+# sphinx_gallery_end_ignore
+
 from ansys.optislang.core import Optislang
 import ansys.optislang.core.examples as examples
 
@@ -95,7 +99,7 @@ osl.dispose()
 # ~~~~~~~~~~~~~~~~~~~~~~~
 # This image shows the generated workflow.
 #
-# .. image:: ../../_static/02_4_oscillator_MOP_sensitivity_and_optimization.png
+# .. image:: ../../../_static/02_4_oscillator_MOP_sensitivity_and_optimization.png
 #  :width: 600
 #  :alt: Result of script.
 #
