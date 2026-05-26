@@ -33,14 +33,14 @@ First, the workflow is created, properties are set and project is executed. It e
 how you can save the project to a desired location.
 """
 
-# sphinx_gallery_start_ignore
-# sphinx_gallery_thumbnail_path = "../../doc/source/_static/01_ten_bar_truss_pyOSL_workflow.png"
-# sphinx_gallery_end_ignore
-
 #########################################################
 # Perform required imports
 # ~~~~~~~~~~~~~~~~~~~~~~~~
 # Perform the required imports.
+
+# sphinx_gallery_start_ignore
+# sphinx_gallery_thumbnail_path = "../../doc/source/_static/01_ten_bar_truss_pyOSL_workflow.png"
+# sphinx_gallery_end_ignore
 
 import os
 from pathlib import Path

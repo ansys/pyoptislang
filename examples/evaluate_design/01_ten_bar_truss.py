@@ -49,10 +49,6 @@ workflows.
 This image shows the workflow:
 """
 
-# sphinx_gallery_start_ignore
-# sphinx_gallery_thumbnail_path = "../../doc/source/_static/01_ten_bar_truss_evaluate_design.png"
-# sphinx_gallery_end_ignore
-
 #########################################################
 # Workflow:
 # .. image:: ../../../_static/01_ten_bar_truss_evaluate_design.png
@@ -65,6 +61,10 @@ This image shows the workflow:
 # Perform required imports
 # ~~~~~~~~~~~~~~~~~~~~~~~~
 # Perform the required imports.
+
+# sphinx_gallery_start_ignore
+# sphinx_gallery_thumbnail_path = "../../doc/source/_static/01_ten_bar_truss_evaluate_design.png"
+# sphinx_gallery_end_ignore
 
 from pathlib import Path
 import tempfile

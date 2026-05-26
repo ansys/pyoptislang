@@ -31,15 +31,14 @@ This example demonstrates how to create and execute optimization using ``Paramet
 It creates an algorithm with ``ProxySolver`` node as a solver and then runs the created design study.
 """
 
-# sphinx_gallery_start_ignore
-# sphinx_gallery_thumbnail_path = "../../doc/source/_static/01_general_algorithm.png"
-# sphinx_gallery_end_ignore
-
 #########################################################
 # Perform required imports
 # ------------------------
 # Perform the required imports.
 
+# sphinx_gallery_start_ignore
+# sphinx_gallery_thumbnail_path = "../../doc/source/_static/01_general_algorithm.png"
+# sphinx_gallery_end_ignore
 
 from math import sin
 from pathlib import Path

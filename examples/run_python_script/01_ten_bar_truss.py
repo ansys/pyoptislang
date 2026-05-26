@@ -35,14 +35,14 @@ truss flow. Then the ``ten_bar_modify_parameters.py`` and
 executed and a optionally the project is saved to a desired location.
 """
 
-# sphinx_gallery_start_ignore
-# sphinx_gallery_thumbnail_path = "../../doc/source/_static/01_ten_bar_truss.png"
-# sphinx_gallery_end_ignore
-
 #########################################################
 # Perform required imports
 # ~~~~~~~~~~~~~~~~~~~~~~~~
 # Perform the required imports.
+
+# sphinx_gallery_start_ignore
+# sphinx_gallery_thumbnail_path = "../../doc/source/_static/01_ten_bar_truss.png"
+# sphinx_gallery_end_ignore
 
 from ansys.optislang.core import Optislang
 import ansys.optislang.core.examples as examples

@@ -31,15 +31,14 @@ This example demonstrates how to create and execute optimization on MOP using ``
 It creates multiple parametric systems using ``ProxySolver`` and ``Mopsolver`` nodes as solvers and then runs the created design study.
 """
 
-# sphinx_gallery_start_ignore
-# sphinx_gallery_thumbnail_path = "../../doc/source/_static/02_optimization_on_mop.png"
-# sphinx_gallery_end_ignore
-
 #########################################################
 # Perform required imports
 # ------------------------
 # Perform the required imports.
 
+# sphinx_gallery_start_ignore
+# sphinx_gallery_thumbnail_path = "../../doc/source/_static/02_optimization_on_mop.png"
+# sphinx_gallery_end_ignore
 
 from math import sin
 from pathlib import Path

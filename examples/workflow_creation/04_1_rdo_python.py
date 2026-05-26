@@ -31,14 +31,14 @@ This example demonstrates how to create robust design optimization workflow.
 It creates multiple parametric systems using `Python` node as a solver and then runs the workflow.
 """
 
-# sphinx_gallery_start_ignore
-# sphinx_gallery_thumbnail_path = "../../doc/source/_static/04_1_RDO_w_python.png"
-# sphinx_gallery_end_ignore
-
 #########################################################
 # Perform required imports
 # ------------------------
 # Perform the required imports.
+
+# sphinx_gallery_start_ignore
+# sphinx_gallery_thumbnail_path = "../../doc/source/_static/04_1_RDO_w_python.png"
+# sphinx_gallery_end_ignore
 
 from typing import Union
 

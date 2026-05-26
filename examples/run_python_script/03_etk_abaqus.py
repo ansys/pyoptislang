@@ -34,14 +34,14 @@ actor. It then explains how you can optionally save
 the project to a desired location.
 """
 
-# sphinx_gallery_start_ignore
-# sphinx_gallery_thumbnail_path = "../../doc/source/_static/03_etk_abaqus.png"
-# sphinx_gallery_end_ignore
-
 #########################################################
 # Perform required imports
 # ~~~~~~~~~~~~~~~~~~~~~~~~
 # Perform the required imports.
+
+# sphinx_gallery_start_ignore
+# sphinx_gallery_thumbnail_path = "../../doc/source/_static/03_etk_abaqus.png"
+# sphinx_gallery_end_ignore
 
 from ansys.optislang.core import Optislang
 import ansys.optislang.core.examples as examples

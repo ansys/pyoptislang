@@ -33,14 +33,14 @@ It creates a direct optimization workflow for an oscillator with the Nature Insp
 the project to a desired location.
 """
 
-# sphinx_gallery_start_ignore
-# sphinx_gallery_thumbnail_path = "../../doc/source/_static/02_3_optimization_on_EA_pyOSL_workflow.png"
-# sphinx_gallery_end_ignore
-
 #########################################################
 # Perform required imports
 # ~~~~~~~~~~~~~~~~~~~~~~~~
 # Perform the required imports.
+
+# sphinx_gallery_start_ignore
+# sphinx_gallery_thumbnail_path = "../../doc/source/_static/02_3_optimization_on_EA_pyOSL_workflow.png"
+# sphinx_gallery_end_ignore
 
 import os
 from pathlib import Path

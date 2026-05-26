@@ -31,14 +31,14 @@ This example demonstrates how to create robust design optimization workflow.
 It creates multiple parametric systems using `Proxy Solver` node as a solver and then runs the workflow by parts.
 """
 
-# sphinx_gallery_start_ignore
-# sphinx_gallery_thumbnail_path = "../../doc/source/_static/04_2_RDO_w_proxysolver.png"
-# sphinx_gallery_end_ignore
-
 #########################################################
 # Perform required imports
 # ------------------------
 # Perform the required imports.
+
+# sphinx_gallery_start_ignore
+# sphinx_gallery_thumbnail_path = "../../doc/source/_static/04_2_RDO_w_proxysolver.png"
+# sphinx_gallery_end_ignore
 
 import time
 from typing import Union
