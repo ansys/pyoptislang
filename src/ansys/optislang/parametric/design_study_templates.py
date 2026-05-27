@@ -21,6 +21,7 @@
 # SOFTWARE.
 
 """Contains classes creating a design study from template."""
+
 from __future__ import annotations
 
 from abc import abstractmethod
@@ -42,7 +43,10 @@ from ansys.optislang.core.nodes import (
     ParametricSystem,
     ProxySolverNode,
 )
+import ansys.optislang.core.settings.primitives as primitives
+from ansys.optislang.core.settings.types import SettingModel, SettingProperty
 from ansys.optislang.core.slot_types import SlotTypeHint
+from ansys.optislang.core.tcp.settings import TcpSerializer
 from ansys.optislang.parametric.design_study import (
     ExecutableBlock,
     ManagedInstance,
@@ -59,6 +63,13 @@ if TYPE_CHECKING:
 # region node settings
 class GeneralNodeSettings:
     """Settings specific to all nodes."""
+
+    auto_save_mode: primitives.AutoSaveMode = primitives.AUTO_SAVE_MODE
+    max_runtime: float = primitives.MAX_RUNTIME
+    read_mode: primitives.ReadMode = primitives.READ_MODE
+    starting_delay: float = primitives.STARTING_DELAY
+    stop_after_execution: bool = primitives.STOP_AFTER_EXECUTION
+    path: Union[str, Path, OptislangPath] = primitives.PATH
 
     @property
     def additional_settings(self) -> dict:
@@ -100,8 +111,29 @@ class GeneralNodeSettings:
         dict
             Dictionary of properties.
         """
-        properties = self.additional_settings
+        serializer = TcpSerializer()
+        properties = {}
+
+        for attr_name, prop in self._iter_settings():
+            # skip those that were not modified by the user
+            if not hasattr(self, prop.private_name):
+                continue
+
+            value = getattr(self, attr_name)
+            if value is None:
+                continue
+
+            properties[prop.name] = serializer.serialize(prop, value)
+
+        properties.update(self.additional_settings)
         return properties
+
+    @classmethod
+    def _iter_settings(cls):
+        for base in reversed(cls.__mro__):
+            for name, attr in base.__dict__.items():
+                if isinstance(attr, SettingProperty):
+                    yield name, attr
 
 
 class MopSolverNodeSettings(GeneralNodeSettings):
@@ -410,6 +442,10 @@ class PythonSolverNodeSettings(GeneralNodeSettings):
 class GeneralParametricSystemSettings:
     """Settings common to all parametric systems."""
 
+    sensitivity_algo_settings: primitives.SensitivityAlgorithmSettings = (
+        primitives.SENSITIVITY_ALGORITHM_SETTINGS
+    )
+
     @property
     def additional_settings(self) -> dict:
         """Additional settings for the parametric system.
@@ -450,8 +486,45 @@ class GeneralParametricSystemSettings:
         dict
             Dictionary of properties.
         """
-        properties = self.additional_settings
+        serializer = TcpSerializer()
+        properties = {}
+
+        for attr_name, prop in self._iter_settings():
+            value = getattr(self, attr_name)
+
+            if value is None:
+                continue
+            # treat models first
+            if isinstance(value, SettingModel):
+                if not value.is_modified():
+                    continue
+
+                nested = value.to_dict(serializer)
+
+                if not nested:
+                    continue
+
+                properties[prop.name] = nested
+                continue
+
+            # standard properties
+            if not hasattr(self, prop.private_name):
+                continue
+
+            if value is None:
+                continue
+
+            properties[prop.name] = serializer.serialize(prop, value)
+
+        properties.update(self.additional_settings)
         return properties
+
+    @classmethod
+    def _iter_settings(cls):
+        for base in reversed(cls.__mro__):
+            for name, attr in base.__dict__.items():
+                if isinstance(attr, SettingProperty):
+                    yield name, attr
 
 
 class GeneralAlgorithmSettings(GeneralParametricSystemSettings):
