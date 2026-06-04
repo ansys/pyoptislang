@@ -44,7 +44,7 @@ tests = [
     "pythonnet>=v3.1.0-rc1; platform_system != 'Darwin'",  # Python.NET compatibility tests (skip on macOS)
 ]
 doc = [
-    "ansys-sphinx-theme==1.7.2",
+    "ansys-sphinx-theme==1.8.2",
     "matplotlib==3.10.9",
     "numpydoc==1.10.0",
     "pypandoc==1.17",
