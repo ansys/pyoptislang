@@ -41,7 +41,7 @@ tests = [
     "pytest==9.0.3",
     "pytest-cov==7.1.0",
     "matplotlib>=3.5.3",
-    "pythonnet>=v3.1.0-rc1; platform_system != 'Darwin'",  # Python.NET compatibility tests (skip on macOS)
+    "pythonnet>=v3.1.0; platform_system != 'Darwin'",  # Python.NET compatibility tests (skip on macOS)
 ]
 doc = [
     "ansys-sphinx-theme==1.7.2",
