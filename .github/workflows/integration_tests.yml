@@ -55,7 +55,7 @@ jobs:
         env:
           PYOPTISLANG_DISABLE_OPTISLANG_OUTPUT: true
           ANSYSLMD_LICENSE_FILE: ${{ format('1055@{0}', secrets.LICENSE_SERVER) }}
-        uses: ansys/actions/tests-pytest@v10.3.0
+        uses: ansys/actions/tests-pytest@v10.3.2
         with:
           python-version: "3.14"
           pytest-extra-args: ${{ steps.pytest-args.outputs.args }}
@@ -102,7 +102,7 @@ jobs:
           PYTHONNET_RUNTIME: coreclr
           PYOPTISLANG_DISABLE_OPTISLANG_OUTPUT: true
           ANSYSLMD_LICENSE_FILE: ${{ format('1055@{0}', secrets.LICENSE_SERVER) }}
-        uses: ansys/actions/tests-pytest@v10.3.0
+        uses: ansys/actions/tests-pytest@v10.3.2
         with:
           python-version: "3.14"
           pytest-extra-args: "--local_osl tests/test_pythonnet_compatibility.py tests/test_pythonnet_integration.py -v"
