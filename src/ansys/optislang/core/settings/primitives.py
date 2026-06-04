@@ -33,6 +33,7 @@ from ansys.optislang.core.settings.types import (
 )
 
 from .enums import AutoSaveMode, ReadMode
+import numbers
 
 
 # region setting models
@@ -56,7 +57,7 @@ AUTO_SAVE_MODE: EnumSetting[AutoSaveMode] = EnumSetting(
     default=AutoSaveMode.NO_AUTO_SAVE,
 )
 INSTANT_VARIABLE_UPDATE = TypedSetting("InstantVariableUpdate", bool, True)
-MAX_RUNTIME: TypedSetting[float] = TypedSetting("MaxRuntime", float, -1)
+MAX_RUNTIME: TypedSetting[numbers.Number] = TypedSetting("MaxRuntime", numbers.Number, -1)
 MDB_PATH: PathSetting = PathSetting("MDBPath", export_mode="dict")
 PATH: PathSetting = PathSetting("Path", export_mode="dict")
 READ_MODE: EnumSetting[ReadMode] = EnumSetting(
@@ -66,7 +67,7 @@ SHOW_PP_ON_TERMINATION = TypedSetting("ShowPPOnTermination", bool, False)
 SENSITIVITY_ALGORITHM_SETTINGS: ModelSetting[SensitivityAlgorithmSettings] = ModelSetting(
     "AlgorithmSettings", SensitivityAlgorithmSettings
 )
-STARTING_DELAY: TypedSetting[float] = TypedSetting("StartingDelay", float, 0.0)
+STARTING_DELAY: TypedSetting[numbers.Number] = TypedSetting("StartingDelay", numbers.Number, 0.0)
 STOP_AFTER_EXECUTION: TypedSetting[bool] = TypedSetting("StopAfterExecution", bool, False)
 UPDATE_RESULT_FILE: ChoiceSetting[str] = ChoiceSetting(
     "UpdateResultFile", ["never", "every_design", "every_iteration", "at_end"], "never"

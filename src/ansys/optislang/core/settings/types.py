@@ -27,15 +27,7 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from enum import Enum
 from pathlib import Path
-from typing import (
-    Any,
-    Callable,
-    Generic,
-    Literal,
-    Optional,
-    TypeVar,
-    Union,
-)
+from typing import Any, Callable, Generic, Literal, Optional, TypeVar, Union
 
 from ansys.optislang.core.io import AbsolutePath, OptislangPath
 
@@ -69,6 +61,30 @@ class SettingsSerializer(ABC):
         pass
 
 
+class SettingInstance(Generic[T]):
+
+    def __init__(self, prop: SettingProperty[T]):
+        self._prop = prop
+        self._value: T | None = None
+
+    @property
+    def name(self) -> str:
+        return self._prop.name
+
+    @property
+    def value(self) -> T:
+        return self._value
+
+    @value.setter
+    def value(self, v: T):
+        self._prop.validator(v)
+        self._value = v
+
+    def prepare(self, serializer: SettingsSerializer):
+        transformed = self._prop.transform(self._value)
+        return self._prop.name, serializer.serialize(self._prop, transformed)
+
+
 class SettingProperty(Generic[T]):
 
     def __init__(
@@ -85,6 +101,9 @@ class SettingProperty(Generic[T]):
         self.validator = validator or (lambda x: x)
         self.transform = transform or (lambda x: x)
         self.serialization_style = serialization_style
+
+    def __call__(self: SettingProperty[T]) -> SettingInstance[T]:
+        return SettingInstance(self)
 
     def __set_name__(self, owner, attr_name: str):
         self.attr_name = attr_name
@@ -238,11 +257,21 @@ class SettingModel:
     def is_modified(self):
         return getattr(self, "_modified", False)
 
-    def to_dict(self, serializer: SettingsSerializer):
+    def to_dict(self, serializer: SettingsSerializer, *, modified_only: bool = False):
         properties = {}
 
         for attr_name, prop in self._iter_settings():
+
+            if modified_only and not hasattr(self, prop.private_name):
+                continue
+
             value = getattr(self, attr_name)
+
+            if isinstance(value, SettingModel):
+                properties[prop.name] = value.to_dict(
+                    serializer=serializer, modified_only=modified_only
+                )
+                continue
             properties[prop.name] = serializer.serialize(prop, value)
 
         return properties
@@ -251,9 +280,18 @@ class SettingModel:
 class ModelSetting(SettingProperty[T]):
     """Property representing nested SettingModel."""
 
-    def __init__(self, name: str, model_cls: type[T], *, default_factory=None, **kwargs):
+    def __init__(
+        self,
+        name: str,
+        model_cls: type[T],
+        *,
+        default_factory=None,
+        force_all: bool = True,
+        **kwargs,
+    ):
         self.model_cls = model_cls
         self.default_factory = default_factory or model_cls
+        self.force_all = force_all
 
         def validator(value):
             if value is None:

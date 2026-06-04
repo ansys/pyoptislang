@@ -64,6 +64,9 @@ if TYPE_CHECKING:
 class GeneralNodeSettings:
     """Settings specific to all nodes."""
 
+    # Propetry values differing from general default
+    DEFAULTS = {}
+
     auto_save_mode: primitives.AutoSaveMode = primitives.AUTO_SAVE_MODE
     max_runtime: float = primitives.MAX_RUNTIME
     read_mode: primitives.ReadMode = primitives.READ_MODE
@@ -101,6 +104,12 @@ class GeneralNodeSettings:
         additional_settings : Optional[dict], optional
             Additional settings for the solver node.
         """
+        for key, value in self.DEFAULTS.items():
+            if isinstance(key, SettingProperty):
+                setattr(self, key.attr_name, value)
+            else:
+                setattr(self, key, value)
+
         self.additional_settings = additional_settings if additional_settings else {}
 
     def convert_properties_to_dict(self) -> dict:
@@ -489,6 +498,7 @@ class GeneralParametricSystemSettings:
         serializer = TcpSerializer()
         properties = {}
 
+        x = self._iter_settings()
         for attr_name, prop in self._iter_settings():
             value = getattr(self, attr_name)
 
@@ -496,15 +506,20 @@ class GeneralParametricSystemSettings:
                 continue
             # treat models first
             if isinstance(value, SettingModel):
-                if not value.is_modified():
+                modified = value.is_modified()
+
+                if not modified and not prop.force_all:
                     continue
 
-                nested = value.to_dict(serializer)
+                if prop.force_all:
+                    data = value.to_dict(serializer, modified_only=False)
+                else:
+                    data = value.to_dict(serializer, modified_only=True)
 
-                if not nested:
-                    continue
+                    if not data:
+                        continue
 
-                properties[prop.name] = nested
+                properties[prop.name] = data
                 continue
 
             # standard properties
