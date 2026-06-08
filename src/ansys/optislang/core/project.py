@@ -151,7 +151,7 @@ class Project(ABC):
 
         Returns
         -------
-        str
+        Optional[str]
             Name of the optiSLang project. If no project is loaded in the optiSLang,
             ``None`` is returned.
 
@@ -253,7 +253,7 @@ class Project(ABC):
 
         Returns
         -------
-        str
+        Optional[str]
             Status of the optiSLang project. If no project is loaded in optiSLang,
             ``None`` is returned.
 

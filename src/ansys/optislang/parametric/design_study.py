@@ -253,7 +253,7 @@ class ManagedParametricSystem(ManagedInstance):
         parametric_system: ParametricSystem,
         solver_node: IntegrationNode,
     ):
-        """Initialize the ManagedAlgorithm.
+        """Initialize the ManagedParametricSystem.
 
         Parameters
         ----------
@@ -300,7 +300,7 @@ class ProxySolverManagedParametricSystem(ManagedParametricSystem):
         solver_node: ProxySolverNode,
         callback: Callable,
     ):
-        """Initialize the ManagedAlgorithm.
+        """Initialize the ProxySolverManagedParametricSystem.
 
         Parameters
         ----------
@@ -498,7 +498,7 @@ class ParametricDesignStudy:
         self.__is_complete = False
 
     def delete(self) -> None:
-        """Delete the managed algorithm from the project."""
+        """Delete all managed instances from the current project."""
         for item in self.__managed_instances:
             item.instance.delete()
 
@@ -605,11 +605,11 @@ class ParametricDesignStudy:
 
     # region proxy solver related
     def get_designs(self) -> Optional[List[Design]]:
-        """Call ``get_designs`` command on proxy solver node in use.
+        """Call ``get_designs`` command on the proxy solver node in use.
 
         Returns
         -------
-        Optional[Design]
+        Optional[List[Design]]
             List of designs, if proxy_solver is being executed, else ``None``.
         """
         if self.__current_proxy_solver is not None:
@@ -619,12 +619,12 @@ class ParametricDesignStudy:
             return None
 
     def set_designs(self, designs: List[Design]):
-        """Call ``set_designs`` command on proxy solver node in use.
+        """Call ``set_designs`` command on the proxy solver node in use.
 
         Parameters
         ----------
-        List[Design]
-            List of solved design instances.
+        designs: List[Design]
+            Solved designs to send back to the proxy solver node in use.
         """
         if self.__current_proxy_solver is not None:
             responses: list[dict] = self.__class__.__convert_design_object_to_response(designs)
@@ -645,9 +645,10 @@ class ParametricDesignStudy:
         Returns
         -------
         Optional[ProxySolverNode]
-            Proxy solver (if defined in current designs study, else ``None``).
+            First proxy solver found in the provided instances or in all managed instances,
+            if instances are not provided. Returns ``None`` if no proxy solver is found.
         """
-        for item in self.__managed_instances:
+        for item in self.__managed_instances if not instances else instances:
             if isinstance(item, ProxySolverManagedParametricSystem):
                 return item.solver_node
         return None
@@ -661,7 +662,7 @@ class ParametricDesignStudy:
 
         Parameters
         ----------
-        execution_option: ExecutionOption
+        execution_options: ExecutionOption
             Execution option to be set to all managed instances.
             Multiple options can be specified using bitwise operator.
         instances: Optional[Iterable[ManagedInstance]], optional
@@ -821,7 +822,7 @@ class ParametricDesignStudyManager:
             )
 
     def clear_design_studies(self, delete: Optional[bool] = False) -> None:
-        """Remove all designs studies managed by the instance of ParametricDesignStudyManager.
+        """Remove all design studies managed by the instance of ParametricDesignStudyManager.
 
         Parameters
         ----------
@@ -859,7 +860,7 @@ class ParametricDesignStudyManager:
             raise RuntimeError("No project loaded.")
 
     def dispose(self):
-        """Dispose the instance of SolverManager and close the associated optiSLang instance."""
+        """Clear all managed design studies and dispose the associated optiSLang instance."""
         self.__design_studies.clear()
         if self.optislang:
             self.optislang.dispose()
