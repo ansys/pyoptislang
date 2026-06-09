@@ -18,7 +18,11 @@ configuring parameters and evaluation settings, and triggering execution.
 ---
 
 ## Scope
-This file defines how AI coding assistants should interpret and modify the codebase.
+This guidance applies to:
+- Source code interpretation
+- Source code modifications
+- API design changes
+- Documentation updates
 
 ---
 
@@ -62,6 +66,19 @@ The PyOptiSLang API follows a hierarchical structure:
 
 Optislang → Application → Project → RootSystem → Nodes
 
+
+### Key Modules and Entry Points
+
+- `ansys.optislang.core/...`: Core API interfaces and functionality
+- `ansys.optislang.core.tcp/...`: Transport-specific implementations
+- `ansys.optislang.parametric/...`: Convenience abstractions
+
+Primary entry points:
+- `Optislang`
+- `Application`
+- `Project`
+
+
 ### Core Hierarchy
 
 - Optislang
@@ -103,7 +120,7 @@ The workflow is composed of nodes with the following inheritance structure:
     - ParameterManager
     - CriteriaManager
     - ResponseManager
-	- DesignManager
+	  - DesignManager
   - Responsible for generating and managing designs.
 
 
@@ -162,6 +179,14 @@ The API uses a proxy pattern:
 When modifying code:
 - Prefer working at the API/interface level unless implementation changes are required
 - Be aware that modifying only interface definitions may not affect runtime behavior
+
+
+### Testing Guidelines
+
+- All public API changes must include tests
+- Use pytest framework
+- Prefer integration-style tests for workflow logic without excessive mocking
+
 
 
 ### Convenience Layer: Parametric Module
