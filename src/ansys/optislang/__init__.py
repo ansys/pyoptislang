@@ -28,6 +28,10 @@ optislang
 
 
 from importlib import metadata as _metadata
+from pkgutil import extend_path
+
+# Allow third-party distributions to provide subpackages under ansys.optislang.
+__path__ = extend_path(__path__, __name__)
 
 _DISTRIBUTION_NAME = "ansys-optislang-core"
 
