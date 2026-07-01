@@ -120,7 +120,7 @@ The workflow is composed of nodes with the following inheritance structure:
     - ParameterManager
     - CriteriaManager
     - ResponseManager
-	  - DesignManager
+    - DesignManager
   - Responsible for generating and managing designs.
 
 
@@ -250,3 +250,50 @@ Do NOT:
 - change docstring style (enforced externally)
 - modify private APIs unless required
 - introduce breaking changes
+
+## Workflow Authoring Guardrails for AI
+
+Use these rules when generating workflow scripts for users.
+
+### Missing information policy (mandatory)
+
+If node choice, node properties, or location mappings are unspecified, the agent must ask the user
+before generating final runnable code.
+
+Required clarification topics:
+- exact node type(s) to create (there are many specialized nodes),
+- exact property names and target values to set,
+- required input/output locations and registration mapping,
+- required execution policy (including whether project path is user-defined),
+- any version constraints affecting available properties or nodes.
+
+Do not assume node-specific property names when they are not explicitly provided by the user
+or confirmed by repository examples/API references.
+
+### Node-agnostic workflow rules (mandatory)
+
+- Choose node APIs based on the selected node type only.
+- Keep all setup/registration/execution calls consistent with that node's API surface.
+- Do not mix APIs from different node patterns in one setup.
+- When unknown, inspect with `get_property(...)` before `set_property(...)`.
+- If ambiguity remains after inspection, ask the user for explicit confirmation.
+
+### Execution lifecycle rule (mandatory)
+
+- Save project before execution.
+- If no save path is provided, ask the user for one before generating final runnable code.
+- Run `project.start()` only after successful `save_as(...)` (or explicit save step requested by the user).
+
+### Pre-delivery checklist for generated scripts
+
+- Chosen node type(s) and APIs match user-confirmed workflow intent.
+- Parameter/response registration API matches selected node type.
+- Criteria types match optimization intent (MAX/MIN, constraint direction).
+- Study algorithm node (Sensitivity/AMOP/OCO/...) matches requested study type.
+- No node-type-specific APIs from different patterns are mixed.
+- Project save step is present before execution.
+
+
+## Agent Skills
+
+See [SKILL.md](./SKILL.md) for PyOptiSLang workflow generation guidance.
