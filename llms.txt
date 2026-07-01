@@ -2,27 +2,26 @@
 schema_version: 1
 
 metadata:
-	project: PyOptiSLang
-	language: python
-	description: Python API for interacting with OptiSLang instances and executing parametric studies.
+  project: PyOptiSLang
+  language: python
+  description: Python API for interacting with OptiSLang instances and executing parametric studies.
 
 documentation:
-	docstring_style: numpy
-	docstring_validation: enforced via documentation tooling
+  docstring_style: numpy
+  docstring_validation: enforced via documentation tooling
 
 api_model:
-	entry_points:
-		- Optislang
-		- Application
-		- Project
-	core_hierarchy: Optislang -> Application -> Project -> RootSystem -> Nodes
-	node_types:
-		- Node
-		- System
-		- ParametricSystem
-		- RootSystem
-		- IntegrationNode
-
+  entry_points:
+    - Optislang
+    - Application
+    - Project
+  core_hierarchy: Optislang -> Application -> Project -> RootSystem -> Nodes
+  node_types:
+    - Node
+    - System
+    - ParametricSystem
+    - RootSystem
+    - IntegrationNode
 workflow:
 	pattern:
 		- connect/create Optislang instance
