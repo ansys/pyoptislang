@@ -23,30 +23,30 @@ api_model:
     - RootSystem
     - IntegrationNode
 workflow:
-	pattern:
-		- connect/create Optislang instance
-		- open/create Project
-		- modify workflow (systems, nodes)
-		- configure parameters/criteria/responses
-		- execute project
-		- retrieve results
+  pattern:
+    - connect/create Optislang instance
+    - open/create Project
+    - modify workflow (systems, nodes)
+    - configure parameters/criteria/responses
+    - execute project
+    - retrieve results
 
 object_management:
-	access:
-		- objects accessed via parent structures
-		- avoid direct instantiation of internal classes
-	routing:
-		execution_and_status: use Project APIs
-		topology_changes: perform via project.root_system (or descendant systems)
+  access:
+    - objects accessed via parent structures
+    - avoid direct instantiation of internal classes
+  routing:
+    execution_and_status: use Project APIs
+    topology_changes: perform via project.root_system (or descendant systems)
 
 parametric_layer:
-	module: parametric
-	components:
-		- ParametricDesignStudyManager
-		- ParametricDesignStudy
-		- DesignStudyTemplate
-	constraints:
-		- parametric module is a convenience layer for workflow creation
+  module: parametric
+  components:
+    - ParametricDesignStudyManager
+    - ParametricDesignStudy
+    - DesignStudyTemplate
+  constraints:
+    - parametric module is a convenience layer for workflow creation
 		- design study templates and settings can be prepared before server connection/project availability
 		- creating, resetting, or executing a design study requires an active loaded project
 		- not strictly proxy-based
