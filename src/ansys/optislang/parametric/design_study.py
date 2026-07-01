@@ -633,7 +633,7 @@ class ParametricDesignStudy:
     # endregion
 
     def __get_proxy_solver(
-        self, instances: Optional[Iterable[ManagedInstance]] = []
+        self, instances: Optional[Iterable[ManagedInstance]] = None
     ) -> Optional[ProxySolverNode]:
         """Loop through managed instances and return proxy solver.
 
@@ -648,7 +648,7 @@ class ParametricDesignStudy:
             First proxy solver found in the provided instances or in all managed instances,
             if instances are not provided. Returns ``None`` if no proxy solver is found.
         """
-        for item in self.__managed_instances if not instances else instances:
+        for item in self.__managed_instances if instances is None else instances:
             if isinstance(item, ProxySolverManagedParametricSystem):
                 return item.solver_node
         return None
@@ -656,7 +656,7 @@ class ParametricDesignStudy:
     def __set_managed_instances_exec_options(
         self,
         execution_options: ExecutionOption,
-        instances: Optional[Iterable[ManagedInstance]] = [],
+        instances: Optional[Iterable[ManagedInstance]] = None,
     ) -> None:
         """Set execution options of all managed instances.
 
@@ -668,7 +668,7 @@ class ParametricDesignStudy:
         instances: Optional[Iterable[ManagedInstance]], optional
             Instances to operate with. All managed instances are used by default.
         """
-        used_instances = instances if instances else self.managed_instances
+        used_instances = instances if instances is not None else self.managed_instances
         for item in used_instances:
             item.instance.set_execution_options(execution_options)
 

@@ -47,17 +47,17 @@ parametric_layer:
     - DesignStudyTemplate
   constraints:
     - parametric module is a convenience layer for workflow creation
-		- design study templates and settings can be prepared before server connection/project availability
-		- creating, resetting, or executing a design study requires an active loaded project
-		- not strictly proxy-based
+    - design study templates and settings can be prepared before server connection/project availability
+    - creating, resetting, or executing a design study requires an active loaded project
+    - not strictly proxy-based
 
 llm_guidance:
-	prefer:
-		- documented/exported user-facing APIs
-		- Application/Project APIs over deprecated Optislang passthrough methods
-		- explicit behavior and naming
-		- API stability
-	avoid:
-		- transport-specific modules (e.g. core.tcp)
-	allowed_when_explicitly_requested:
-		- transport-specific/internal proxy classes
+  prefer:
+    - documented/exported user-facing APIs
+    - Application/Project APIs over deprecated Optislang passthrough methods
+    - explicit behavior and naming
+    - API stability
+  avoid:
+    - transport-specific modules (e.g. core.tcp)
+  allowed_when_explicitly_requested:
+    - transport-specific/internal proxy classes

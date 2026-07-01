@@ -90,7 +90,7 @@ class GeneralNodeSettings:
         additional_settings : Optional[dict], optional
             Additional settings for the solver node.
         """
-        self.additional_settings = additional_settings if additional_settings else {}
+        self.additional_settings = additional_settings if additional_settings is not None else {}
 
     def convert_properties_to_dict(self) -> dict:
         """Convert the named tuple to a dictionary of properties.
@@ -161,7 +161,7 @@ class MopSolverNodeSettings(GeneralNodeSettings):
         self,
         input_file: Optional[Union[str, Path, OptislangPath]] = None,
         multi_design_launch_num: Optional[int] = None,
-        additional_settings: Optional[dict] = {},
+        additional_settings: Optional[dict] = None,
     ):
         """Initialize the MopSolverNodeSettings.
 
@@ -256,7 +256,7 @@ class ProxySolverNodeSettings(GeneralNodeSettings):
         self,
         callback: Callable,
         multi_design_launch_num: int = 1,
-        additional_settings: Optional[dict] = {},
+        additional_settings: Optional[dict] = None,
     ):
         """Initialize the ProxySolverNodeSettings.
 
@@ -349,7 +349,7 @@ class PythonSolverNodeSettings(GeneralNodeSettings):
         self,
         input_file: Optional[Union[str, Path, OptislangPath]] = None,
         input_code: Optional[str] = None,
-        additional_settings: Optional[dict] = {},
+        additional_settings: Optional[dict] = None,
     ):
         """Initialize the PythonSolverNodeSettings.
 
@@ -455,7 +455,7 @@ class GeneralParametricSystemSettings:
 class GeneralAlgorithmSettings(GeneralParametricSystemSettings):
     """Settings common to all algorithms."""
 
-    def __init__(self, additional_settings: Optional[dict] = {}):
+    def __init__(self, additional_settings: Optional[dict] = None):
         """Initialize the GeneralAlgorithmSettings.
 
         Parameters
