@@ -61,7 +61,7 @@ Inheritance reminders:
 - Access workflow through:
 
 ```python
-    root_system = osl.application.project.root_system
+root_system = osl.application.project.root_system
 ```
 
 ### 2.3 Node Types and Responsibilities
@@ -109,14 +109,14 @@ Possible registration targets include:
 
 Some nodes require `load` prior to location registration.
 ```python
-    integration_node.load()
+integration_node.load()
 ```
 
 Some nodes support location discovery:
 
 ```python
-    available_input_locations = integration_node.get_available_input_locations()
-    available_output_locations = integration_node.get_available_output_locations()
+available_input_locations = integration_node.get_available_input_locations()
+available_output_locations = integration_node.get_available_output_locations()
 ```
 
 **Agent rules:**
@@ -174,19 +174,21 @@ Typical steps:
 Template:
 
 ```python
-    from ansys.optislang.core import Optislang
-    import ansys.optislang.core.node_types as nt
-    from ansys.optislang.core.nodes import DesignFlow
+from ansys.optislang.core import Optislang
+import ansys.optislang.core.node_types as nt
+from ansys.optislang.core.nodes import DesignFlow
 
-    osl = Optislang()
-    root = osl.application.project.root_system
+osl = Optislang()
+root = osl.application.project.root_system
 
-    system = root.create_node(type_=nt.Sensitivity, name="Study")
-    node = system.create_node(type_=nt.Python2, name="Solver", design_flow=DesignFlow.RECEIVE_SEND)
+system = root.create_node(type_=nt.Sensitivity, name="Study")
+node = system.create_node(
+    type_=nt.Python2, name="Solver", design_flow=DesignFlow.RECEIVE_SEND
+)
 
-    value = node.get_property("SomeProperty")
-    # modify the value as needed
-    node.set_property("SomeProperty", value)
+value = node.get_property("SomeProperty")
+# modify the value as needed
+node.set_property("SomeProperty", value)
 ```
 
 ### 4.2 Parametric Workflow Structure
@@ -311,10 +313,10 @@ nodes = root_system.find_node_by_name("MyNode", search_depth=2)
 Reverse access from node to parent system is also supported:
 
 ```python
-    # get direct parent system
-    parent = node.get_parent()
-    # get whole ancestor chain starting from the root system
-    ancestors = node.get_ancestors()
+# get direct parent system
+parent = node.get_parent()
+# get whole ancestor chain starting from the root system
+ancestors = node.get_ancestors()
 ```
 
 
@@ -350,7 +352,10 @@ Recommended when user asks for template-driven study creation rather than manual
 
 ```python
 from ansys.optislang.parametric.design_study import ParametricDesignStudyManager
-from ansys.optislang.parametric.design_study_templates import GeneralAlgorithmTemplate, PythonSolverNodeSettings
+from ansys.optislang.parametric.design_study_templates import (
+    GeneralAlgorithmTemplate,
+    PythonSolverNodeSettings,
+)
 from ansys.optislang.core.project_parametric import OptimizationParameter, Response
 import ansys.optislang.core.node_types as nt
 
@@ -364,9 +369,7 @@ template = GeneralAlgorithmTemplate(
     responses=responses,
     algorithm_type=nt.Sensitivity,
     solver_type=nt.Python2,
-    solver_settings = PythonSolverNodeSettings(
-        input_code = "Y = X**2"
-    )
+    solver_settings=PythonSolverNodeSettings(input_code="Y = X**2"),
 )
 study = manager.create_design_study(template=template)
 ```
