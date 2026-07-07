@@ -21,6 +21,7 @@
 # SOFTWARE.
 
 """Contains abstract base classes ``Node``, ``System``, ``ParametricSystem`` and ``RootSystem``."""
+
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
@@ -61,6 +62,9 @@ ACTOR_COMMANDS_RETURN_STATES = {
     "stop_gently": "Gently stopped",
     "reset": "Finished",
 }
+
+PropertyName = str
+PropertyValue = Any
 
 
 class DesignFlow(Enum):
@@ -533,17 +537,37 @@ class Node(ABC):
         pass
 
     @abstractmethod
-    def get_property(self, name: str) -> Any:  # pragma: no cover
+    def get_properties(self) -> dict[PropertyName, PropertyValue]:
+        """Get the full dictionary of the node properties.
+
+        Returns
+        -------
+        dict[PropertyName, PropertyValue]
+            Dictionary with the node properties.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        pass
+
+    @abstractmethod
+    def get_property(self, name: PropertyName) -> PropertyValue:  # pragma: no cover
         """Get property from properties dictionary.
 
         Parameters
         ----------
-        name
+        name: PropertyName
             Name of property to be returned.
 
         Returns
         -------
-        Any
+        PropertyValue
             Value of given property, ``None`` if property doesn't exits.
 
         Raises
