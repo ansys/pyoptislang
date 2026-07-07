@@ -63,9 +63,6 @@ ACTOR_COMMANDS_RETURN_STATES = {
     "reset": "Finished",
 }
 
-PropertyName = str
-PropertyValue = Any
-
 
 class DesignFlow(Enum):
     """Provides design flow options."""
@@ -537,12 +534,12 @@ class Node(ABC):
         pass
 
     @abstractmethod
-    def get_properties(self) -> dict[PropertyName, PropertyValue]:
+    def get_properties(self) -> dict[str, Any]:
         """Get the full dictionary of the node properties.
 
         Returns
         -------
-        dict[PropertyName, PropertyValue]
+        dict[str, Any]
             Dictionary with the node properties.
 
         Raises
@@ -557,18 +554,18 @@ class Node(ABC):
         pass
 
     @abstractmethod
-    def get_property(self, name: PropertyName) -> PropertyValue:  # pragma: no cover
+    def get_property(self, name: str) -> Any:  # pragma: no cover
         """Get property from properties dictionary.
 
         Parameters
         ----------
-        name: PropertyName
+        name: str
             Name of property to be returned.
 
         Returns
         -------
-        PropertyValue
-            Value of given property, ``None`` if property doesn't exits.
+        Any
+            Value of given property, ``None`` if property doesn't exists.
 
         Raises
         ------
