@@ -1,3 +1,16 @@
+# Copyright (C) 2022 - 2026 ANSYS, Inc. and/or its affiliates.
+# SPDX-License-Identifier: MIT
+#
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
 #
 # THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 # IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -42,26 +55,18 @@ The parametric design study is executed then.
 # sphinx_gallery_end_ignore
 
 
-from math import sin
 from pathlib import Path
 
-import ansys.optislang.core.node_types as nt
-from ansys.optislang.core.nodes import ParametricSystem, ProxySolverNode, IntegrationNode
+from ansys.optislang.core.nodes import IntegrationNode, ParametricSystem, ProxySolverNode
 from ansys.optislang.core.project_parametric import Design, DesignVariable
-
 from ansys.optislang.parametric.design_study import (
-    ParametricDesignStudyManager,
-    ParametricDesignStudy,
-    ManagedInstance,
-    ManagedParametricSystem,
-    ProxySolverManagedParametricSystem,
     ExecutableBlock,
     ExecutionOption,
-)
-from ansys.optislang.parametric.design_study_templates import (
-    GeneralAlgorithmTemplate,
-    OptimizationOnMOPTemplate,
-    ProxySolverNodeSettings,
+    ManagedInstance,
+    ManagedParametricSystem,
+    ParametricDesignStudy,
+    ParametricDesignStudyManager,
+    ProxySolverManagedParametricSystem,
 )
 
 #########################################################
