@@ -64,7 +64,7 @@ if TYPE_CHECKING:
 class GeneralNodeSettings:
     """Settings specific to all nodes."""
 
-    # Propetry values differing from general default
+    # Property values differing from general default
     DEFAULTS = {}
 
     auto_save_mode: primitives.AutoSaveMode = primitives.AUTO_SAVE_MODE
@@ -1139,6 +1139,8 @@ class OptimizationOnMOPTemplate(DesignStudyTemplate):
         optimizer_settings: Optional[GeneralAlgorithmSettings] = None,
         optimizer_start_designs: Optional[Iterable[Design]] = None,
         callback: Optional[Callable] = None,
+        extrapolate: Optional[str] = None,
+        number_of_best_designs_to_validate: int = 2,
     ):
         """Initialize the OptimizationOnMOPTemplate.
 
@@ -1166,6 +1168,15 @@ class OptimizationOnMOPTemplate(DesignStudyTemplate):
             execution of the proxy solver must be performed by the user.
             Input into callback function is a list of `Design` instances, iterable
             of resulting `Design` instances is expected as output.
+        extrapolate: Optional[str]
+            Mop solver extrapolation type, options are:
+                - "extrapolate"
+                - "inside_defined_bounds" (initial sampling bounds, default)
+                - "inside_sampling_bounds" (reduced sampling bounds)
+        number_of_best_designs_to_validate: int
+            Number of the best designs to be validated, by default `2`. This setting
+            takes effect only for multi-objective design studies, a single design
+            is validated otherwise irrespective of this setting.
         """
         self.parameters = parameters
         self.criteria = criteria
@@ -1175,6 +1186,8 @@ class OptimizationOnMOPTemplate(DesignStudyTemplate):
         self.optimizer_type = optimizer_type
         self.optimizer_settings = optimizer_settings
         self.optimizer_start_designs = optimizer_start_designs
+        self.extrapolate = extrapolate
+        self.number_of_best_designs_to_validate = number_of_best_designs_to_validate
         if not callback:
             self.validator_solver_settings = ProxySolverNodeSettings(self.__class__._empty_callback)
             warnings.warn("Callback was not provided, automatic execution won't be possible.")
@@ -1197,6 +1210,10 @@ class OptimizationOnMOPTemplate(DesignStudyTemplate):
             Tuple of managed instances and executable blocks.
         """
         # optimizer
+        if self.extrapolate:
+            mop_solver_settings = GeneralNodeSettings(
+                additional_settings={"ExtrapolationType": {"value": self.extrapolate}}
+            )
         optimizer_algorithm, optimizer_solver_node = self.create_algorithm(
             parent_system=parent,
             parameters=self.parameters,
@@ -1206,6 +1223,7 @@ class OptimizationOnMOPTemplate(DesignStudyTemplate):
             solver_type=nt.Mopsolver,
             algorithm_name=self.optimizer_name,
             algorithm_settings=self.optimizer_settings,
+            solver_settings=mop_solver_settings if self.extrapolate else None,
             start_designs=self.optimizer_start_designs,
             connections_algorithm=[
                 (self.mop_predecessor.get_output_slots("OParameterManager")[0], "IParameterManager")
@@ -1274,7 +1292,10 @@ class OptimizationOnMOPTemplate(DesignStudyTemplate):
 
         getbestdesigns = {
             "First": {"name": "GetBestDesigns"},
-            "Second": [{"design_container": []}, {"design_entry": 1}],
+            "Second": [
+                {"design_container": []},
+                {"design_entry": self.number_of_best_designs_to_validate},
+            ],
         }
 
         dmm = filter_node.get_property("DataMiningManager")
