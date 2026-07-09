@@ -37,7 +37,7 @@ parametric system, process them externally and then, return them back to the opt
 
 Accessing nodes inside a design study
 -------------------------------------
-The :py:class:`ParametricDesignStudy <ansys.optislang.parametric.design_study.ParametricDesignStudy>` provides access to workflow objects mananaged by the design study, 
+The :py:class:`ParametricDesignStudy <ansys.optislang.parametric.design_study.ParametricDesignStudy>` provides access to workflow objects managed by the design study,
 through the :py:attr:`managed_instances <ansys.optislang.parametric.design_study.ParametricDesignStudy.managed_instances>` property, allowing inspection and advanced customization of the design study workflow.
 
 Each managed instance exposes the underlying PyOptiSLang object through the
@@ -47,6 +47,38 @@ or :py:attr:`solver_node <ansys.optislang.parametric.design_study.ProxySolverMan
 
 To access (and/or modify) the callback function in case of the :py:class:`ProxySolverManagedParametricSystem <ansys.optislang.parametric.design_study.ProxySolverManagedParametricSystem>`,
 use the :py:attr:`callback <ansys.optislang.parametric.design_study.ProxySolverManagedParametricSystem.callback>` property.
+
+
+Customizing an existing design study
+------------------------------------
+After creating a study from a template, you can still adapt it to your workflow without rebuilding the project.
+Typical use cases include:
+
+- appending additional workflow elements to an existing study,
+- removing or replacing parts of a study for scenario-based execution,
+- reordering execution phases before starting the run,
+- changing execution behavior of selected workflow parts.
+
+In practice, these operations are centered around the
+:py:class:`ParametricDesignStudy <ansys.optislang.parametric.design_study.ParametricDesignStudy>`
+instance and its execution order.
+
+
+Execution blocks and execution order
+------------------------------------
+Execution in a design study is organized into ordered blocks. Each block defines what is executed together in one stage.
+This gives you a convenient entry point for controlling staged runs.
+
+By default, execution blocks are created automatically from managed instances. You can also edit the execution order manually
+to fit advanced workflows.
+
+Important behavior notes:
+
+- Each execution block is intended to contain at most one managed parametric system.
+- Execution options stored in a block are applied when the block starts execution.
+- Managed instances can appear in more than one block in edge cases, but this should be used with care.
+- Removing managed instances updates block contents, and empty blocks are removed from the execution order.
+
 
 
 .. _ref_design_study_templates:
