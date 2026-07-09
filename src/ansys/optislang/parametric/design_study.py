@@ -468,31 +468,30 @@ class ParametricDesignStudy:
         self.__osl_instance: Optislang = osl_instance
         self.__managed_instances: List[ManagedInstance] = list(managed_instances)
         if execution_blocks is not None:
-            self.__execution_blocks = execution_blocks
+            self.__execution_blocks = list(execution_blocks)
         else:
-            block = ExecutableBlock()
-            blocks = []
+            blocks: List[ExecutableBlock] = []
+            current_items: List[tuple[ManagedInstance, ExecutionOption]] = []
+            current_block_has_parametric_system = False
+
             for instance in self.managed_instances:
-                if isinstance(instance, ManagedParametricSystem):
-                    if block.instances_with_execution_options:
-                        blocks.append(block)
-                        block = ExecutableBlock()
-                    blocks.append(
-                        ExecutableBlock(
-                            [
-                                (
-                                    instance,
-                                    ExecutionOption.ACTIVE
-                                    | ExecutionOption.STARTING_POINT
-                                    | ExecutionOption.END_POINT,
-                                ),
-                            ]
-                        )
-                    )
-                else:
-                    block.add_instance(instance, ExecutionOption.ACTIVE)
-            if block.instances_with_execution_options:
-                blocks.append(block)
+                is_parametric_system = isinstance(instance, ManagedParametricSystem)
+
+                # At most one ManagedParametricSystem per block.
+                if is_parametric_system and current_block_has_parametric_system:
+                    # Finalize current block
+                    blocks.append(ExecutableBlock(current_items))
+                    current_items = []
+                    current_block_has_parametric_system = False
+
+                current_items.append((instance, ExecutionOption.ACTIVE))
+                if is_parametric_system:
+                    current_block_has_parametric_system = True
+
+            if current_items:
+                # Finalize trailing block
+                blocks.append(ExecutableBlock(current_items))
+
             self.__execution_blocks = blocks
         self.__current_proxy_solver: ProxySolverNode | None = None
         self.__is_complete = False
