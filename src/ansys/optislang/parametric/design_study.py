@@ -279,6 +279,17 @@ class ProxySolverManagedParametricSystem(ManagedParametricSystem):
             A callback function to handle design evaluation results.
         """
         return self.__callback
+    
+    @callback.setter
+    def callback(self, value: Callable):
+        """Set a callback function to handle design evaluation results.
+
+        Parameters
+        ----------
+        value : Callable
+            A callback function to handle design evaluation results.
+        """
+        self.__callback = value
 
     @property
     def solver_node(self) -> ProxySolverNode:

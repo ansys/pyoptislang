@@ -45,6 +45,9 @@ Each managed instance exposes the underlying PyOptiSLang object through the
 through the :py:attr:`solver_node <ansys.optislang.parametric.design_study.ManagedParametricSystem.solver_node>` property 
 or :py:attr:`solver_node <ansys.optislang.parametric.design_study.ProxySolverManagedParametricSystem.solver_node>` property in the case of a managed parametric system with proxy solver.
 
+To access (and/or modify) the callback function in case of the :py:class:`ProxySolverManagedParametricSystem <ansys.optislang.parametric.design_study.ProxySolverManagedParametricSystem>`,
+use the :py:attr:`callback <ansys.optislang.parametric.design_study.ProxySolverManagedParametricSystem.callback>` property.
+
 
 .. _ref_design_study_templates:
 
