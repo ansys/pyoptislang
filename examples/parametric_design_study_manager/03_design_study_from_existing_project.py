@@ -92,12 +92,12 @@ def calculate(designs: list[Design]):
         X4 = design.parameters[design.parameters_names.index("X4")].value
         X5 = design.parameters[design.parameters_names.index("X5")].value
         Y, Z = calculator(X1, X2, X3, X4, X5)
-        id = design.id
+        design_id = design.id
 
         # create instance of design with new values
         output_design = Design(
             responses=[DesignVariable("Y", Y), DesignVariable("Z", Z)],
-            design_id=id,
+            design_id=design_id,
         )
         result_designs.append(output_design)
     return result_designs
