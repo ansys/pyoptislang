@@ -29,7 +29,7 @@ notebooks and run them locally.
             :height: 150px
             :align: center
 
-        These examples demonstrate how to use the explixit API to communicate with optiSLang.
+        These examples demonstrate how to use the explicit API to communicate with optiSLang.
 
     .. grid-item-card:: Evaluate designs
         :link: sphx_glr_examples_gallery_examples_evaluate_design
