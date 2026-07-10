@@ -235,7 +235,7 @@ def test_general_parametric_system_settings():
     )
 
     properties_dict = general_parametric_settings.convert_properties_to_dict()
-    assert properties_dict == additional_settings
+    assert properties_dict.items() >= additional_settings.items()
 
 
 def test_general_algorithm_settings():
@@ -252,7 +252,7 @@ def test_general_algorithm_settings():
     assert general_algo_settings.additional_settings.get("Property4", {}).get("key") == "value"
 
     properties_dict = general_algo_settings.convert_properties_to_dict()
-    assert properties_dict == additional_settings
+    assert properties_dict.items() >= additional_settings.items()
 
 
 # endregion

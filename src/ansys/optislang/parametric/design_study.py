@@ -21,6 +21,7 @@
 # SOFTWARE.
 
 """Contains classes managing algorithms with solver nodes and helper functions."""
+
 from __future__ import annotations
 
 from enum import Enum
@@ -279,7 +280,7 @@ class ProxySolverManagedParametricSystem(ManagedParametricSystem):
             A callback function to handle design evaluation results.
         """
         return self.__callback
-    
+
     @callback.setter
     def callback(self, value: Callable):
         """Set a callback function to handle design evaluation results.
@@ -385,31 +386,32 @@ class ExecutableBlock:
             Managed instance.
         execution_options : ExecutionOption
             Execution options.
-        
+
         Raises
         ------
         ValueError
             If an instance with the same uid already exists in the block.
-        
+
         ValueError
             If adding a managed parametric system when one already exists in the block.
         """
-        if isinstance(instance, ManagedParametricSystem) and self.get_managed_parametric_system() is not None:
-            raise ValueError(
-                "Only one managed parametric system is allowed in the block."
-            )
+        if (
+            isinstance(instance, ManagedParametricSystem)
+            and self.get_managed_parametric_system() is not None
+        ):
+            raise ValueError("Only one managed parametric system is allowed in the block.")
         if self.__find_instance_idx_by_uid(instance.instance.uid) < 0:
             self.__instances.append((instance, execution_options))
         else:
             raise ValueError(
                 "Instance with uid `{}` already exists in the block.".format(instance.instance.uid)
             )
-    
+
     def apply_execution_options(self) -> None:
         """Apply stored execution options to all instances in the block."""
         for instance, exec_option in self.__instances:
             instance.instance.set_execution_options(exec_option)
-    
+
     def deactivate(self) -> None:
         """Deactivates all instances in the block, irrespective of the stored execution options."""
         inactive = ExecutionOption.INACTIVE
@@ -488,14 +490,18 @@ class ExecutableBlock:
 
     def set_execution_options_to_inactive(self) -> None:
         """Set execution options of all instances in the block to "Inactive".
-        
+
         Notes
         -----
         - This method changes only the stored execution options of the instances in the block, it does not change the actual state.
         """
-        self.__instances = [(instance, ExecutionOption.INACTIVE) for instance, _ in self.__instances]
-    
-    def set_instance_execution_option_by_uid(self, uid: str, execution_options: ExecutionOption) -> None:
+        self.__instances = [
+            (instance, ExecutionOption.INACTIVE) for instance, _ in self.__instances
+        ]
+
+    def set_instance_execution_option_by_uid(
+        self, uid: str, execution_options: ExecutionOption
+    ) -> None:
         """Set execution options of a specific instance in the block.
 
         Notes
@@ -532,43 +538,43 @@ class ExecutableBlock:
             if instance.instance.uid == uid:
                 return idx
         return -1
-    
+
     def __validate_instances_for_execution_block(
         self,
         instances: Iterable[Tuple[ManagedInstance, ExecutionOption]],
     ) -> None:
-            """Validate instances uniqueness and a single parametric system.
+        """Validate instances uniqueness and a single parametric system.
 
-            Parameters
-            ----------
-            instances : Iterable[Tuple[ManagedInstance, ExecutionOption]]
-                Managed instances and execution options to be validated.
+        Parameters
+        ----------
+        instances : Iterable[Tuple[ManagedInstance, ExecutionOption]]
+            Managed instances and execution options to be validated.
 
-            Raises
-            ------
-            ValueError
-                If there are duplicate uids among the managed instances.
-            
-            ValueError
-                If there is more than one managed parametric system among the managed instances.
-            """
-            seen_uids = set()
-            managed_instances: List[ManagedInstance] = []
-            for instance, _ in instances:
-                uid = instance.instance.uid
-                if uid in seen_uids:
-                    raise ValueError(
-                        "Duplicate uid `{}` found among the managed instances.".format(uid)
-                    )
-                seen_uids.add(uid)
-                managed_instances.append(instance)
-            if len(self.__class__.__find_managed_parametric_systems(managed_instances)) > 1:
+        Raises
+        ------
+        ValueError
+            If there are duplicate uids among the managed instances.
+
+        ValueError
+            If there is more than one managed parametric system among the managed instances.
+        """
+        seen_uids = set()
+        managed_instances: List[ManagedInstance] = []
+        for instance, _ in instances:
+            uid = instance.instance.uid
+            if uid in seen_uids:
                 raise ValueError(
-                    "Only one managed parametric system is allowed in an execution block."
+                    "Duplicate uid `{}` found among the managed instances.".format(uid)
                 )
+            seen_uids.add(uid)
+            managed_instances.append(instance)
+        if len(self.__class__.__find_managed_parametric_systems(managed_instances)) > 1:
+            raise ValueError("Only one managed parametric system is allowed in an execution block.")
 
     @staticmethod
-    def __find_managed_parametric_systems(instances: Iterable[ManagedInstance]) -> List[ManagedParametricSystem]:
+    def __find_managed_parametric_systems(
+        instances: Iterable[ManagedInstance],
+    ) -> List[ManagedParametricSystem]:
         """Get all managed parametric systems from the instances.
 
         Parameters
@@ -583,7 +589,6 @@ class ExecutableBlock:
         """
         return [instance for instance in instances if isinstance(instance, ManagedParametricSystem)]
 
-    
 
 # endregion
 
@@ -680,7 +685,12 @@ class ParametricDesignStudy:
         self.__current_proxy_solver: ProxySolverNode | None = None
         self.__is_complete = False
 
-    def add_managed_instance(self, instance: ManagedInstance, execution_block_idx: int = None, execution_option: ExecutionOption = ExecutionOption.ACTIVE) -> None:
+    def add_managed_instance(
+        self,
+        instance: ManagedInstance,
+        execution_block_idx: int = None,
+        execution_option: ExecutionOption = ExecutionOption.ACTIVE,
+    ) -> None:
         """Add a managed instance to the design study.
 
         Parameters
@@ -691,7 +701,7 @@ class ParametricDesignStudy:
             The index of the execution block to which the instance should be added. If not provided, new execution block is created at the end of the execution order.
         execution_option : ExecutionOption, optional
             The execution option for the instance. Default is `ExecutionOption.ACTIVE`.
-        
+
         Raises
         ------
         IndexError
@@ -705,7 +715,9 @@ class ParametricDesignStudy:
             )
         if execution_block_idx is not None:
             if 0 <= execution_block_idx < len(self.__execution_blocks):
-                self.__execution_blocks[execution_block_idx].add_instance(instance, execution_option)
+                self.__execution_blocks[execution_block_idx].add_instance(
+                    instance, execution_option
+                )
             else:
                 raise IndexError("Execution block index out of range.")
         else:
@@ -727,7 +739,7 @@ class ParametricDesignStudy:
             The execution block to be added.
         index : int, optional
             The index at which to insert the new execution block. If not provided, the block is added at the end of the execution order.
-        
+
         Raises
         ------
         IndexError
@@ -760,7 +772,7 @@ class ParametricDesignStudy:
 
         for item in self.__managed_instances:
             item.instance.delete()
-        
+
         self.__managed_instances.clear()
         self.__execution_blocks.clear()
 
@@ -910,7 +922,7 @@ class ParametricDesignStudy:
 
     def remove_managed_instance(self, instance: ManagedInstance) -> None:
         """Remove a top level managed instance from the design study.
-        
+
         Notes
         -----
         - Managed instance is also removed from any execution block it belongs to, blocks without any instances are removed from the execution order.
@@ -932,7 +944,7 @@ class ParametricDesignStudy:
         for block in self.__execution_blocks:
             block.remove_instance_by_uid(instance.instance.uid)
         self.__execution_blocks = [block for block in self.__execution_blocks if block.instances]
-    
+
     def remove_execution_block(self, idx: int) -> None:
         """Remove an execution block by its index from the design study.
 
@@ -963,7 +975,7 @@ class ParametricDesignStudy:
                     break
             if not exists_elsewhere:
                 self.remove_managed_instance(instance)
-        
+
     def reset(self):
         """Reset the parametric design study.
 
