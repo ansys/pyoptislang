@@ -38,7 +38,7 @@ dependencies = [
 
 [project.optional-dependencies]
 tests = [
-    "pytest==9.0.3",
+    "pytest==9.1.1",
     "pytest-cov==7.1.0",
     "matplotlib>=3.5.3",
     "pythonnet>=v3.1.0; platform_system != 'Darwin'",  # Python.NET compatibility tests (skip on macOS)
