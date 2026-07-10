@@ -49,7 +49,7 @@ notebooks and run them locally.
             :height: 150px
             :align: center
 
-        These examples demonstrate how to use PyOptiSLang to perform raw communiction with the optiSLang server.
+        These examples demonstrate how to use PyOptiSLang to perform raw communication with the optiSLang server.
 
     .. grid-item-card:: Parametric Design Study Manager
         :link: sphx_glr_examples_gallery_examples_parametric_design_study_manager
