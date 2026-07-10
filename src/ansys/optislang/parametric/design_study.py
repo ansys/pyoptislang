@@ -21,6 +21,7 @@
 # SOFTWARE.
 
 """Contains classes managing algorithms with solver nodes and helper functions."""
+
 from __future__ import annotations
 
 from enum import Enum
@@ -429,19 +430,6 @@ class ParametricDesignStudy:
             Tuple of executable blocks.
         """
         return tuple(self.__execution_blocks)
-
-    @property
-    def executed_proxy_solver(self) -> Optional[ProxySolverNode]:
-        """Get instance of proxy solver node being executed.
-
-        Applicable when `start_in_thread` was called.
-
-        Returns
-        -------
-        Optional[ProxySolverNode]
-            Instance of proxy solver node.
-        """
-        return self.__current_proxy_solver
 
     @property
     def is_complete(self) -> bool:
