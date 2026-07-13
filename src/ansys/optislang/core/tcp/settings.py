@@ -31,19 +31,19 @@ class TcpSerializer(SettingsSerializer):
 
     def serialize(self, prop, value):
         """Serialize the setting value based on its type and serialization mode.
-        
+
         Parameters
         ----------
         prop : SettingProperty
             The setting property to serialize.
         value : Any
             The value of the setting to serialize.
-        
+
         Returns
         -------
         dict or str or None
             The serialized representation of the setting value.
-        
+
         Raises
         ------
         TypeError
@@ -66,7 +66,9 @@ class TcpSerializer(SettingsSerializer):
                 # with serializer
                 return value.serialize(self)
             except TypeError:
-                raise TypeError(f"Cannot serialize value of type {type(value)} for property {prop.name}")
+                raise TypeError(
+                    f"Cannot serialize value of type {type(value)} for property {prop.name}"
+                )
 
         if mode == SerializationMode.VALUE_WRAPPER:
             return {"value": value}

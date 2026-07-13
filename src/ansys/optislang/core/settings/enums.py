@@ -30,6 +30,7 @@ from enum import Enum
 # region enums
 class AutoSaveMode(str, Enum):
     """Enum for auto-save mode options."""
+
     NO_AUTO_SAVE = "no_auto_save"
     AS_ACTOR_FINISHED = "as_actor_finished"
     AS_PSS_NTH_DESIGN_COLLECTED = "as_pss_nth_design_collected"
@@ -38,6 +39,7 @@ class AutoSaveMode(str, Enum):
 
 class ReadMode(str, Enum):
     """Enum for read mode options."""
+
     READ_AND_WRITE_MODE = "read_and_write_mode"
     CLASSIC_REEVALUATE_MODE = "classic_reevaluate_mode"
 
