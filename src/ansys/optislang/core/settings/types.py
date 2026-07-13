@@ -27,12 +27,13 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from enum import Enum
 from pathlib import Path
-from typing import Any, Callable, Generic, Literal, Optional, TypeVar, Union
+from typing import Any, Callable, Generic, Literal, Optional, TypeVar, Union, cast
 
 from ansys.optislang.core.io import AbsolutePath, OptislangPath
 
 T = TypeVar("T")
 E = TypeVar("E", bound=Enum)
+M = TypeVar("M", bound="SettingModel")
 
 
 class SerializationMode(str, Enum):
@@ -119,7 +120,9 @@ class SettingInstance(Generic[T]):
         T
             Current value of the setting instance
         """
-        return self._value
+        if self._value is None:
+            raise AttributeError(f"Value for setting '{self.name}' is not set.")
+        return cast(T, self._value)
 
     @value.setter
     def value(self, v: T):
@@ -204,7 +207,7 @@ class SettingProperty(Generic[T]):
     def __get__(self, instance, owner) -> T:
         """Get the value of the setting property from the instance."""
         if instance is None:
-            return self
+            return cast(T, self)
 
         if hasattr(instance, self.private_name):
             return getattr(instance, self.private_name, self.default)
@@ -247,7 +250,7 @@ class TypedSetting(SettingProperty[T]):
 class ChoiceSetting(SettingProperty[T]):
     """Property that restricts its value to a predefined set of options."""
 
-    def __init__(self, name: str, options: list[T], default: T = None, **kwargs):
+    def __init__(self, name: str, options: list[T], default: Optional[T] = None, **kwargs):
         """Initialize a choice setting property.
 
         Parameters
@@ -465,13 +468,13 @@ class SettingModel:
         return properties
 
 
-class ModelSetting(SettingProperty[T]):
+class ModelSetting(SettingProperty[M], Generic[M]):
     """Property representing nested SettingModel."""
 
     def __init__(
         self,
         name: str,
-        model_cls: type[T],
+        model_cls: type[M],
         *,
         default_factory=None,
         force_all: bool = True,
@@ -505,17 +508,17 @@ class ModelSetting(SettingProperty[T]):
 
         super().__init__(name, default=None, validator=validator, **kwargs)
 
-    def __get__(self, instance, owner):
+    def __get__(self, instance, owner) -> M:
         """Get the nested SettingModel instance from the parent instance."""
         if instance is None:
-            return self
+            return cast(M, self)
 
         # do not create model unless accessed
         value = getattr(instance, self.private_name, None)
 
         if value is None:
             value = self.default_factory()
-            value._parent_property = self
+            cast(SettingModel, value)._parent_property = self
             setattr(instance, self.private_name, value)
 
         return value

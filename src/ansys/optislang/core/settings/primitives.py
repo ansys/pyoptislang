@@ -60,7 +60,7 @@ AUTO_SAVE_MODE: EnumSetting[AutoSaveMode] = EnumSetting(
     default=AutoSaveMode.NO_AUTO_SAVE,
 )
 """Setting for auto-save mode."""
-INSTANT_VARIABLE_UPDATE = TypedSetting("InstantVariableUpdate", bool, True)
+INSTANT_VARIABLE_UPDATE: TypedSetting[bool] = TypedSetting("InstantVariableUpdate", bool, True)
 """Setting for instant variable update."""
 MAX_RUNTIME: TypedSetting[numbers.Number] = TypedSetting("MaxRuntime", numbers.Number, -1)
 """Setting for maximum runtime."""
@@ -72,7 +72,7 @@ READ_MODE: EnumSetting[ReadMode] = EnumSetting(
     "ReadMode", ReadMode, default=ReadMode.READ_AND_WRITE_MODE
 )
 """Setting for read mode."""
-SHOW_PP_ON_TERMINATION = TypedSetting("ShowPPOnTermination", bool, False)
+SHOW_PP_ON_TERMINATION: TypedSetting[bool] = TypedSetting("ShowPPOnTermination", bool, False)
 """Setting for showing post-processing on termination."""
 SENSITIVITY_ALGORITHM_SETTINGS: ModelSetting[SensitivityAlgorithmSettings] = ModelSetting(
     "AlgorithmSettings", SensitivityAlgorithmSettings

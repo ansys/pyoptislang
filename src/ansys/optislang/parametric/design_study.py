@@ -691,7 +691,7 @@ class ParametricDesignStudy:
     def add_managed_instance(
         self,
         instance: ManagedInstance,
-        execution_block_idx: int = None,
+        execution_block_idx: Optional[int] = None,
         execution_option: ExecutionOption = ExecutionOption.ACTIVE,
     ) -> None:
         """Add a managed instance to the design study.
@@ -730,7 +730,7 @@ class ParametricDesignStudy:
             self.__execution_blocks.append(new_block)
         self.__managed_instances.append(instance)
 
-    def add_execution_block(self, block: ExecutableBlock, index: int = None) -> None:
+    def add_execution_block(self, block: ExecutableBlock, index: Optional[int] = None) -> None:
         """Add a new execution block to the design study.
 
         Notes

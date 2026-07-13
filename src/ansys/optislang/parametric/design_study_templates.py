@@ -69,6 +69,24 @@ if TYPE_CHECKING:
 class _BaseSettings:
     """Base class for design-study settings classes."""
 
+    @property
+    def additional_settings(self) -> dict[str, Any]:
+        """Additional free-form settings serialized verbatim."""
+        return getattr(self, "_additional_settings", {})
+
+    @additional_settings.setter
+    def additional_settings(self, value: dict[str, Any]) -> None:
+        """Set additional free-form settings serialized verbatim."""
+        self._additional_settings = value
+
+    @classmethod
+    def _iter_settings(cls) -> Iterable[tuple[str, SettingProperty[Any]]]:
+        """Iterate over all setting descriptors defined in class hierarchy."""
+        for base in reversed(cls.__mro__):
+            for name, attr in base.__dict__.items():
+                if isinstance(attr, SettingProperty):
+                    yield name, attr
+
     def _convert_to_transport(
         self, serializer: SettingsSerializer, *, modified_only: bool = True
     ) -> dict[str, Any]:
@@ -155,36 +173,22 @@ class GeneralNodeSettings(_BaseSettings):
     """Settings specific to all nodes."""
 
     # Property values differing from general default
-    DEFAULTS = {}
+    DEFAULTS: dict[str | SettingProperty[Any], Any] = {}
 
-    auto_save_mode: primitives.AutoSaveMode = primitives.AUTO_SAVE_MODE
-    max_runtime: float = primitives.MAX_RUNTIME
-    read_mode: primitives.ReadMode = primitives.READ_MODE
-    starting_delay: float = primitives.STARTING_DELAY
-    stop_after_execution: bool = primitives.STOP_AFTER_EXECUTION
-    path: Union[str, Path, OptislangPath] = primitives.PATH
-
-    @property
-    def additional_settings(self) -> dict:
-        """Additional settings for the solver node.
-
-        Returns
-        -------
-        dict
-            Additional settings for the solver node.
-        """
-        return self.__additional_settings
-
-    @additional_settings.setter
-    def additional_settings(self, value: dict):
-        """Set additional settings for the solver node.
-
-        Parameters
-        ----------
-        value : dict
-            Additional settings for the solver node.
-        """
-        self.__additional_settings = value
+    if TYPE_CHECKING:
+        auto_save_mode: primitives.AutoSaveMode
+        max_runtime: float
+        read_mode: primitives.ReadMode
+        starting_delay: float
+        stop_after_execution: bool
+        path: Union[str, Path, OptislangPath]
+    else:
+        auto_save_mode = primitives.AUTO_SAVE_MODE
+        max_runtime = primitives.MAX_RUNTIME
+        read_mode = primitives.READ_MODE
+        starting_delay = primitives.STARTING_DELAY
+        stop_after_execution = primitives.STOP_AFTER_EXECUTION
+        path = primitives.PATH
 
     def __init__(
         self,
@@ -226,7 +230,7 @@ class GeneralNodeSettings(_BaseSettings):
         if path is not None:
             self.path = path
 
-    def convert_properties_to_dict(self) -> dict:
+    def convert_properties_to_dict(self, *, modified_only: bool = True) -> dict[str, Any]:
         """Convert the named tuple to a dictionary of properties.
 
         Returns
@@ -234,14 +238,7 @@ class GeneralNodeSettings(_BaseSettings):
         dict
             Dictionary of properties.
         """
-        return self.convert_properties_to_dict(modified_only=True)
-
-    @classmethod
-    def _iter_settings(cls):
-        for base in reversed(cls.__mro__):
-            for name, attr in base.__dict__.items():
-                if isinstance(attr, SettingProperty):
-                    yield name, attr
+        return super().convert_properties_to_dict(modified_only=modified_only)
 
 
 class MopSolverNodeSettings(GeneralNodeSettings):
@@ -335,7 +332,7 @@ class MopSolverNodeSettings(GeneralNodeSettings):
             multi_design_launch_num if multi_design_launch_num is not None else 1
         )
 
-    def convert_properties_to_dict(self):
+    def convert_properties_to_dict(self, *, modified_only: bool = True) -> dict[str, Any]:
         """Get properties dictionary.
 
         Returns
@@ -343,12 +340,12 @@ class MopSolverNodeSettings(GeneralNodeSettings):
         dict
             Dictionary with properties.
         """
-        properties = {}
+        properties: dict[str, Any] = {}
         properties["MultiDesignNum"] = self.multi_design_launch_num
         if self.input_file:
             if isinstance(self.input_file, OptislangPath):
                 properties["MDBPath"] = self.input_file.to_dict()
-        properties.update(super().convert_properties_to_dict())
+        properties.update(super().convert_properties_to_dict(modified_only=modified_only))
         return properties
 
 
@@ -445,7 +442,7 @@ class ProxySolverNodeSettings(GeneralNodeSettings):
             multi_design_launch_num if multi_design_launch_num is not None else 1
         )
 
-    def convert_properties_to_dict(self) -> dict:
+    def convert_properties_to_dict(self, *, modified_only: bool = True) -> dict[str, Any]:
         """Get properties dictionary.
 
         Returns
@@ -453,9 +450,9 @@ class ProxySolverNodeSettings(GeneralNodeSettings):
         dict
             Dictionary with properties.
         """
-        properties = {}
+        properties: dict[str, Any] = {}
         properties["MultiDesignLaunchNum"] = self.multi_design_launch_num
-        properties.update(super().convert_properties_to_dict())
+        properties.update(super().convert_properties_to_dict(modified_only=modified_only))
         return properties
 
 
@@ -566,7 +563,7 @@ class PythonSolverNodeSettings(GeneralNodeSettings):
             self.input_file = None
             self.input_code = None
 
-    def convert_properties_to_dict(self):
+    def convert_properties_to_dict(self, *, modified_only: bool = True) -> dict[str, Any]:
         """Get properties dictionary.
 
         Returns
@@ -574,17 +571,20 @@ class PythonSolverNodeSettings(GeneralNodeSettings):
         dict
             Dictionary with properties.
         """
-        properties = {}
+        properties: dict[str, Any] = {}
         if self.input_file and self.input_code:
             raise AttributeError(
                 "Arguments `input_file` and `input_code` cannot be specified simultaneously."
             )
         elif self.input_file:
-            properties["Path"] = self.input_file.to_dict()
+            if isinstance(self.input_file, OptislangPath):
+                properties["Path"] = self.input_file.to_dict()
+            else:
+                properties["Path"] = AbsolutePath(self.input_file).to_dict()
             # content mode
         elif self.input_code:
             properties["Source"] = self.input_code
-        properties.update(super().convert_properties_to_dict())
+        properties.update(super().convert_properties_to_dict(modified_only=modified_only))
         return properties
 
 
@@ -595,31 +595,10 @@ class PythonSolverNodeSettings(GeneralNodeSettings):
 class GeneralParametricSystemSettings(_BaseSettings):
     """Settings common to all parametric systems."""
 
-    sensitivity_algo_settings: primitives.SensitivityAlgorithmSettings = (
-        primitives.SENSITIVITY_ALGORITHM_SETTINGS
-    )
-
-    @property
-    def additional_settings(self) -> dict:
-        """Additional settings for the parametric system.
-
-        Returns
-        -------
-        dict
-            Additional settings for the parametric system.
-        """
-        return self.__additional_settings
-
-    @additional_settings.setter
-    def additional_settings(self, value: dict):
-        """Set additional settings for the parametric system.
-
-        Parameters
-        ----------
-        value : dict
-            Additional settings for the parametric system.
-        """
-        self.__additional_settings = value
+    if TYPE_CHECKING:
+        sensitivity_algo_settings: primitives.SensitivityAlgorithmSettings
+    else:
+        sensitivity_algo_settings = primitives.SENSITIVITY_ALGORITHM_SETTINGS
 
     def __init__(
         self,
@@ -639,7 +618,7 @@ class GeneralParametricSystemSettings(_BaseSettings):
         if sensitivity_algo_settings is not None:
             self.sensitivity_algo_settings = sensitivity_algo_settings
 
-    def convert_properties_to_dict(self) -> dict:
+    def convert_properties_to_dict(self, *, modified_only: bool = True) -> dict[str, Any]:
         """Convert the named tuple to a dictionary of properties.
 
         Returns
@@ -647,14 +626,7 @@ class GeneralParametricSystemSettings(_BaseSettings):
         dict
             Dictionary of properties.
         """
-        return self.convert_properties_to_dict(modified_only=True)
-
-    @classmethod
-    def _iter_settings(cls):
-        for base in reversed(cls.__mro__):
-            for name, attr in base.__dict__.items():
-                if isinstance(attr, SettingProperty):
-                    yield name, attr
+        return super().convert_properties_to_dict(modified_only=modified_only)
 
 
 class GeneralAlgorithmSettings(GeneralParametricSystemSettings):
@@ -670,7 +642,7 @@ class GeneralAlgorithmSettings(GeneralParametricSystemSettings):
         """
         super().__init__(additional_settings=additional_settings)
 
-    def convert_properties_to_dict(self) -> dict:
+    def convert_properties_to_dict(self, *, modified_only: bool = True) -> dict[str, Any]:
         """Convert the named tuple to a dictionary of properties.
 
         Returns
@@ -678,8 +650,7 @@ class GeneralAlgorithmSettings(GeneralParametricSystemSettings):
         dict
             Dictionary of properties.
         """
-        properties = self.additional_settings
-        return properties
+        return dict(self.additional_settings)
 
 
 # endregion
