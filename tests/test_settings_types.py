@@ -57,7 +57,8 @@ def test_setting_property_call_creates_setting_instance_and_validates_argument_c
 
     empty = prop()
     assert empty.name == "my_setting"
-    assert empty.value is None
+    with pytest.raises(AttributeError):
+        empty.value
 
     empty_with_default = prop_with_default()
     assert empty_with_default.name == "my_setting_with_default"

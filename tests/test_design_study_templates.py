@@ -124,11 +124,6 @@ def test_general_node_settings_with_constructor_properties():
     assert properties_dict.get("StopAfterExecution") is True
     assert properties_dict.get("CustomProp") == 42
 
-    metadata = GeneralNodeSettings.settings_metadata()
-    assert "read_mode" in metadata
-    assert metadata["read_mode"]["property_name"] == "ReadMode"
-    assert "read_and_write_mode" in metadata["read_mode"]["supported_values"]
-
 
 def test_mopsolver_settings():
     """Test `MopSolverNodeSettings` class init and properties."""

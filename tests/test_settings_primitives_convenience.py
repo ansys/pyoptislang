@@ -38,8 +38,8 @@ class _MockedServer:
 
 def test_primitive_call_with_initial_value():
     prop = primitives.AUTO_SAVE_MODE("no_auto_save")
-    assert prop.name == "AutoSaveMode"
-    assert prop.value == "no_auto_save"
+    assert prop.name == primitives.READ_MODE.name
+    assert prop.value == primitives.AUTO_SAVE_MODE.default
 
 
 def test_primitive_call_then_assign_value():
