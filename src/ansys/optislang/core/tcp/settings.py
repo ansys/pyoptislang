@@ -27,8 +27,28 @@ from ansys.optislang.core.settings.types import SerializationMode, SettingsSeria
 
 
 class TcpSerializer(SettingsSerializer):
+    """Serializer for TCP settings."""
 
     def serialize(self, prop, value):
+        """Serialize the setting value based on its type and serialization mode.
+        
+        Parameters
+        ----------
+        prop : SettingProperty
+            The setting property to serialize.
+        value : Any
+            The value of the setting to serialize.
+        
+        Returns
+        -------
+        dict or str or None
+            The serialized representation of the setting value.
+        
+        Raises
+        ------
+        TypeError
+            If the value type is not supported for serialization.
+        """
         if value is None:
             return None
 
@@ -40,14 +60,13 @@ class TcpSerializer(SettingsSerializer):
                 return str(value)
             return value.to_dict()
 
-        # nested model cas
-        if hasattr(value, "to_dict"):
+        # nested model case
+        if hasattr(value, "serialize"):
             try:
                 # with serializer
-                return value.to_dict(self)
+                return value.serialize(self)
             except TypeError:
-                # without serializer support
-                return value.to_dict()
+                raise TypeError(f"Cannot serialize value of type {type(value)} for property {prop.name}")
 
         if mode == SerializationMode.VALUE_WRAPPER:
             return {"value": value}

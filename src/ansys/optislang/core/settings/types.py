@@ -86,6 +86,7 @@ class SettingsSerializer(ABC):
 
 
 class SettingInstance(Generic[T]):
+    """Instance of a setting property with an optional assigned value."""
 
     def __init__(self, prop: SettingProperty[T]):
         """Instance of a setting property with an optional assigned value.
@@ -181,7 +182,8 @@ class SettingProperty(Generic[T]):
 
         Examples
         --------
-        ``prop()`` creates an empty instance.
+        ``prop()`` creates an instance initialized with the property's
+        default value if present, otherwise an empty instance.
         ``prop(value)`` creates an instance with ``value`` already assigned.
         """
         if len(args) > 1:
@@ -190,6 +192,8 @@ class SettingProperty(Generic[T]):
         instance = SettingInstance(self)
         if len(args) == 1:
             instance.value = args[0]
+        elif self.default is not None:
+            instance.value = self.default
         return instance
 
     def __set_name__(self, owner, attr_name: str):
@@ -392,6 +396,7 @@ class PathSetting(SettingProperty[Union[str, Path, OptislangPath]]):
         )
 
     def serialize(self, value):
+        """Serialize the path setting value based on the export mode."""
         if value is None:
             return None
 
@@ -488,7 +493,6 @@ class ModelSetting(SettingProperty[T]):
         **kwargs : Any
             Additional keyword arguments passed to the base class.
         """
-
         self.model_cls = model_cls
         self.default_factory = default_factory or model_cls
         self.force_all = force_all

@@ -40,6 +40,7 @@ from .enums import AutoSaveMode, ReadMode
 
 # region setting models
 class SensitivityAlgorithmSettings(SettingModel):
+    """Model for sensitivity algorithm settings."""
 
     num_dimensions: TypedSetting[int] = TypedSetting("num_dimensions", int, 0)
     num_discretization: TypedSetting[int] = TypedSetting("num_discretization", int, 100)
@@ -58,21 +59,32 @@ AUTO_SAVE_MODE: EnumSetting[AutoSaveMode] = EnumSetting(
     AutoSaveMode,
     default=AutoSaveMode.NO_AUTO_SAVE,
 )
+"""Setting for auto-save mode."""
 INSTANT_VARIABLE_UPDATE = TypedSetting("InstantVariableUpdate", bool, True)
+"""Setting for instant variable update."""
 MAX_RUNTIME: TypedSetting[numbers.Number] = TypedSetting("MaxRuntime", numbers.Number, -1)
+"""Setting for maximum runtime."""
 MDB_PATH: PathSetting = PathSetting("MDBPath", export_mode=SerializationMode.PATH_DICT)
+"""Setting for MDB path."""
 PATH: PathSetting = PathSetting("Path", export_mode=SerializationMode.PATH_DICT)
+"""Setting for general path."""
 READ_MODE: EnumSetting[ReadMode] = EnumSetting(
     "ReadMode", ReadMode, default=ReadMode.READ_AND_WRITE_MODE
 )
+"""Setting for read mode."""
 SHOW_PP_ON_TERMINATION = TypedSetting("ShowPPOnTermination", bool, False)
+"""Setting for showing post-processing on termination."""
 SENSITIVITY_ALGORITHM_SETTINGS: ModelSetting[SensitivityAlgorithmSettings] = ModelSetting(
     "AlgorithmSettings", SensitivityAlgorithmSettings
 )
+"""Setting for sensitivity algorithm settings."""
 STARTING_DELAY: TypedSetting[numbers.Number] = TypedSetting("StartingDelay", numbers.Number, 0.0)
+"""Setting for starting delay."""
 STOP_AFTER_EXECUTION: TypedSetting[bool] = TypedSetting("StopAfterExecution", bool, False)
+"""Setting for stopping after execution."""
 UPDATE_RESULT_FILE: ChoiceSetting[str] = ChoiceSetting(
     "UpdateResultFile", ["never", "every_design", "every_iteration", "at_end"], "never"
 )
+"""Setting for updating the result file."""
 
 # endregion

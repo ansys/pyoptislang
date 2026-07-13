@@ -51,6 +51,7 @@ class _MockedSerializer(SettingsSerializer):
 
 def test_setting_property_call_creates_setting_instance_and_validates_argument_count():
     prop = SettingProperty("my_setting")
+    prop_with_default = SettingProperty("my_setting_with_default", default=10)
 
     assert prop.serialization_mode == SerializationMode.DEFAULT
 
@@ -58,12 +59,34 @@ def test_setting_property_call_creates_setting_instance_and_validates_argument_c
     assert empty.name == "my_setting"
     assert empty.value is None
 
+    empty_with_default = prop_with_default()
+    assert empty_with_default.name == "my_setting_with_default"
+    assert empty_with_default.value == 10
+
     initialized = prop(123)
     assert initialized.name == "my_setting"
     assert initialized.value == 123
 
     with pytest.raises(TypeError, match="Expected at most one value"):
         prop(1, 2)
+
+
+def test_setting_property_call_prefers_user_value_over_default():
+    def _validator(v):
+        if not isinstance(v, int):
+            raise TypeError("must be int")
+
+    prop = SettingProperty(
+        "my_setting_with_default",
+        default="invalid-default",
+        validator=_validator,
+    )
+
+    initialized = prop(5)
+    assert initialized.value == 5
+
+    with pytest.raises(TypeError, match="must be int"):
+        prop()
 
 
 def test_setting_instance_serialize_value_applies_transform_before_serializer():
