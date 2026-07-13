@@ -44,7 +44,12 @@ from ansys.optislang.core.nodes import (
     ProxySolverNode,
 )
 import ansys.optislang.core.settings.primitives as primitives
-from ansys.optislang.core.settings.types import ModelSetting, SettingModel, SettingProperty, SettingsSerializer
+from ansys.optislang.core.settings.types import (
+    ModelSetting,
+    SettingModel,
+    SettingProperty,
+    SettingsSerializer,
+)
 from ansys.optislang.core.slot_types import SlotTypeHint
 from ansys.optislang.core.tcp.settings import TcpSerializer
 from ansys.optislang.parametric.design_study import (
@@ -68,7 +73,7 @@ class _BaseSettings:
         self, serializer: SettingsSerializer, *, modified_only: bool = True
     ) -> dict[str, Any]:
         """Convert known properties and raw additions to transport format.
-        
+
         Parameters
         ----------
         serializer : SettingsSerializer
@@ -76,17 +81,17 @@ class _BaseSettings:
         modified_only : bool, optional
             If ``True``, only include properties that have been modified from their defaults.
             If ``False``, include all properties, by default ``True``.
-        
+
         Returns
         -------
         dict[str, Any]
             Dictionary of properties in transport format.
-        
+
         Raises
         ------
         TypeError
             If a model setting does not contain a SettingModel value.
-        
+
         """
         properties = {}
         for attr_name, prop in self._iter_settings():
@@ -126,24 +131,25 @@ class _BaseSettings:
 
     def convert_properties_to_dict(self, *, modified_only: bool = True) -> dict[str, Any]:
         """Convert settings to TCP-compatible property dictionary.
-        
+
         Parameters
         ----------
         modified_only : bool, optional
             If ``True``, only include properties that have been modified from their defaults.
             If ``False``, include all properties, by default ``True``.
-        
+
         Returns
         -------
         dict[str, Any]
             Dictionary of properties.
-        
+
         Raises
         ------
         TypeError
             If a model setting does not contain a SettingModel value.
         """
         return self._convert_to_transport(TcpSerializer(), modified_only=modified_only)
+
 
 class GeneralNodeSettings(_BaseSettings):
     """Settings specific to all nodes."""

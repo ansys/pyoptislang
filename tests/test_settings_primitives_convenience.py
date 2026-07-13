@@ -20,11 +20,12 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+import pytest
+
 from ansys.optislang.core.node_types import AddinType, NodeType
 from ansys.optislang.core.settings.enums import ReadMode
 import ansys.optislang.core.settings.primitives as primitives
 from ansys.optislang.core.tcp.nodes import TcpNodeProxy
-import pytest
 
 
 class _MockedServer:
@@ -44,8 +45,10 @@ def test_primitive_call_with_initial_value():
 def test_primitive_call_then_assign_value():
     prop = primitives.READ_MODE()
     prop.value = "read_and_write_mode"
-    assert prop.name == "ReadMode"
+    assert prop.name == primitives.READ_MODE.name
     assert prop.value == "read_and_write_mode"
+    prop.value = ReadMode.CLASSIC_REEVALUATE_MODE
+    assert prop.value == ReadMode.CLASSIC_REEVALUATE_MODE.value
 
 
 def test_tcp_node_set_property_accepts_setting_instance():

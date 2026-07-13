@@ -220,9 +220,7 @@ def test_setting_model_serialize_supports_modified_only_and_nested_models():
     assert parent.serialize(serializer=serializer, modified_only=True) == {}
 
     parent.mode = "on"
-    assert parent.serialize(serializer=serializer, modified_only=True) == {
-        "mode": {"value": "on"}
-    }
+    assert parent.serialize(serializer=serializer, modified_only=True) == {"mode": {"value": "on"}}
 
     parent.child.count = 3
     assert parent.serialize(serializer=serializer, modified_only=True) == {

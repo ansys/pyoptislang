@@ -89,7 +89,7 @@ class SettingInstance(Generic[T]):
 
     def __init__(self, prop: SettingProperty[T]):
         """Instance of a setting property with an optional assigned value.
-        
+
         Parameters
         ----------
         prop: SettingProperty[T]
@@ -101,7 +101,7 @@ class SettingInstance(Generic[T]):
     @property
     def name(self) -> str:
         """Name of the setting property.
-        
+
         Returns
         -------
         str
@@ -275,11 +275,13 @@ class ChoiceSetting(SettingProperty[T]):
 
 class EnumSetting(SettingProperty[E], Generic[E]):
     """Property that restricts its value to a specific Enum type.
-    
+
     Notes
-    ----- 
-    - The EnumSetting class is designed to accept either an instance of the Enum or a string that matches one of the Enum's values.
-    - The value is transformed to a lowercase string representation of the Enum name for serialization.
+    -----
+    - The EnumSetting class is designed to accept either an instance of the Enum
+    or a string that matches one of the Enum's values.
+    - The value is transformed to a lowercase string representation
+    of the Enum name for serialization.
     """
 
     def __init__(self, name: str, enum_cls: type[E], default=None, **kwargs):
@@ -339,7 +341,8 @@ class PathSetting(SettingProperty[Union[str, Path, OptislangPath]]):
 
     Notes
     -----
-    - The PathSetting class is designed to accept a string, a Path object, or an OptislangPath object as its value.
+    - The PathSetting class is designed to accept a string, a Path object,
+    or an OptislangPath object as its value.
     - The value is transformed to an AbsolutePath for serialization.
     - The export_mode parameter controls whether the serialized output is a dictionary or a string.
     """
@@ -351,7 +354,8 @@ class PathSetting(SettingProperty[Union[str, Path, OptislangPath]]):
         export_mode: SerializationMode = SerializationMode.PATH_DICT,
         **kwargs,
     ):
-        """
+        """Initialize a path setting property.
+
         Parameters
         ----------
         name : str
@@ -402,8 +406,10 @@ class SettingModel:
 
     Notes
     -----
-    - The SettingModel class is designed to be subclassed to define specific models with various settings.
-    - It provides mechanisms for lazy instantiation of nested models, type validation, and serialization of settings.
+    - The SettingModel class is designed to be subclassed to define specific models
+    with various settings.
+    - It provides mechanisms for lazy instantiation of nested models, type validation,
+    and serialization of settings.
     """
 
     def __init__(self):
@@ -477,7 +483,8 @@ class ModelSetting(SettingProperty[T]):
         default_factory : Callable[[], T], optional
             Factory function to create a default instance of the model.
         force_all : bool, optional
-            If True, all settings in the nested model will be serialized, even if they are not modified.
+            If True, all settings in the nested model will be serialized,
+            even if they are not modified.
         **kwargs : Any
             Additional keyword arguments passed to the base class.
         """

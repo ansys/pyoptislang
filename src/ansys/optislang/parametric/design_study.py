@@ -484,7 +484,8 @@ class ExecutableBlock:
 
         Notes
         -----
-        - This method changes only the stored execution options of the instances in the block, it does not change the actual state.
+        - This method changes only the stored execution options of the instances in the block,
+        it does not change the actual state.
         """
         self.__instances = [(instance, ExecutionOption.ACTIVE) for instance, _ in self.__instances]
 
@@ -493,7 +494,8 @@ class ExecutableBlock:
 
         Notes
         -----
-        - This method changes only the stored execution options of the instances in the block, it does not change the actual state.
+        - This method changes only the stored execution options of the instances in the block,
+        it does not change the actual state.
         """
         self.__instances = [
             (instance, ExecutionOption.INACTIVE) for instance, _ in self.__instances
@@ -506,7 +508,8 @@ class ExecutableBlock:
 
         Notes
         -----
-        - This method changes only the stored execution options of the instance in the block, it does not change the actual state.
+        - This method changes only the stored execution options of the instance in the block,
+        it does not change the actual state.
 
         Parameters
         ----------
@@ -649,8 +652,8 @@ class ParametricDesignStudy:
         execution_blocks: Optional[Iterable[ExecutableBlock]], optional
             Iterable of executable blocks. Blocks must be provided in execution order.
             Each execution block contains a subset of instances managed by a single
-            parametric design study. Execution blocks should collectively contain all managed instances
-            without overlap. Created automatically from managed instances ordered,
+            parametric design study. Execution blocks should collectively contain all managed
+            instances without overlap. Created automatically from managed instances ordered,
             if not provided.
         """
         self.__validate_instances(managed_instances)
@@ -698,7 +701,8 @@ class ParametricDesignStudy:
         instance : ManagedInstance
             The managed instance to be added.
         execution_block_idx : int, optional
-            The index of the execution block to which the instance should be added. If not provided, new execution block is created at the end of the execution order.
+            The index of the execution block to which the instance should be added.
+            If not provided, new execution block is created at the end of the execution order.
         execution_option : ExecutionOption, optional
             The execution option for the instance. Default is `ExecutionOption.ACTIVE`.
 
@@ -731,14 +735,16 @@ class ParametricDesignStudy:
 
         Notes
         -----
-        - If managed instances in the new block are not already part of the design study, they will be added to the managed instances list.
+        - If managed instances in the new block are not already part of the design study,
+        they will be added to the managed instances list.
 
         Parameters
         ----------
         block : ExecutableBlock
             The execution block to be added.
         index : int, optional
-            The index at which to insert the new execution block. If not provided, the block is added at the end of the execution order.
+            The index at which to insert the new execution block. If not provided,
+            the block is added at the end of the execution order.
 
         Raises
         ------
@@ -769,7 +775,6 @@ class ParametricDesignStudy:
 
     def delete(self) -> None:
         """Delete the managed instances from the design study and the project."""
-
         for item in self.__managed_instances:
             item.instance.delete()
 
@@ -809,7 +814,8 @@ class ParametricDesignStudy:
         Returns
         -------
         Optional[int]
-            The index of the execution block containing the specified managed instance, if found, else `None`.
+            The index of the execution block containing the specified managed instance,
+            if found, else `None`.
         """
         for idx, block in enumerate(self.execution_order):
             for inst in block.instances:
@@ -822,7 +828,8 @@ class ParametricDesignStudy:
 
         Notes
         -----
-        - Solver nodes cannot accessed directly by this method, they must be accessed through the associated parametric system.
+        - Solver nodes cannot accessed directly by this method, they must be accessed through
+        the associated parametric system.
 
         Parameters
         ----------
@@ -925,8 +932,10 @@ class ParametricDesignStudy:
 
         Notes
         -----
-        - Managed instance is also removed from any execution block it belongs to, blocks without any instances are removed from the execution order.
-        - Solver nodes cannot be removed separately, they must be removed together with the associated parametric system.
+        - Managed instance is also removed from any execution block it belongs to,
+        blocks without any instances are removed from the execution order.
+        - Solver nodes cannot be removed separately, they must be removed together
+        with the associated parametric system.
 
         Parameters
         ----------
@@ -950,7 +959,8 @@ class ParametricDesignStudy:
 
         Notes
         -----
-        - All managed instances withing the removed block are also removed from the design study, unless they are also present in other execution blocks.
+        - All managed instances within the removed block are also removed from the design study,
+        unless they are also present in other execution blocks.
 
         Parameters
         ----------

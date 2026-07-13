@@ -22,6 +22,8 @@
 
 """Contains definitions of the TCP settings."""
 
+import numbers
+
 from ansys.optislang.core.nodes import SamplingType
 from ansys.optislang.core.settings.types import (
     ChoiceSetting,
@@ -34,7 +36,6 @@ from ansys.optislang.core.settings.types import (
 )
 
 from .enums import AutoSaveMode, ReadMode
-import numbers
 
 
 # region setting models

@@ -158,9 +158,7 @@ def test_executable_block_mocked():
         [
             (
                 managed_instance_1,
-                ExecutionOption.STARTING_POINT
-                | ExecutionOption.END_POINT
-                | ExecutionOption.ACTIVE,
+                ExecutionOption.STARTING_POINT | ExecutionOption.END_POINT | ExecutionOption.ACTIVE,
             ),
             (
                 managed_instance_2,
