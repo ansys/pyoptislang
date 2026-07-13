@@ -1,0 +1,17 @@
+{
+    "$id": "https://ldl-laki.docs.ansys.com/schema/rev00/settings",
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "title": "Laki Definition Language workflow settings schema",
+    "description": "Defines a common set of workflow configurations that can be applied to any workflow.",
+    "$defs": {
+    },
+    "type": "object",
+    "properties": {
+        "resetTimeout": {
+            "type": "integer",
+            "description": "Specifies the amount of time, in seconds, that the reset command will wait for the reset response before failing.",
+            "minimum": 1,
+            "default": 60            
+        }
+    }
+}
