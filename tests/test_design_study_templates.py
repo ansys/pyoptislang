@@ -106,6 +106,30 @@ def test_general_node_settings():
     assert properties_dict == additional_settings
 
 
+def test_general_node_settings_with_constructor_properties():
+    """Test constructor-based setting values and metadata hints."""
+    settings = GeneralNodeSettings(
+        additional_settings={"CustomProp": 42},
+        max_runtime=100,
+        read_mode="read_and_write_mode",
+        stop_after_execution=True,
+    )
+
+    assert settings.max_runtime == 100
+    assert settings.stop_after_execution is True
+
+    properties_dict = settings.convert_properties_to_dict()
+    assert properties_dict.get("MaxRuntime") == 100
+    assert properties_dict.get("ReadMode") == {"value": "read_and_write_mode"}
+    assert properties_dict.get("StopAfterExecution") is True
+    assert properties_dict.get("CustomProp") == 42
+
+    metadata = GeneralNodeSettings.settings_metadata()
+    assert "read_mode" in metadata
+    assert metadata["read_mode"]["property_name"] == "ReadMode"
+    assert "read_and_write_mode" in metadata["read_mode"]["supported_values"]
+
+
 def test_mopsolver_settings():
     """Test `MopSolverNodeSettings` class init and properties."""
     mopsolver = MopSolverNodeSettings()
@@ -235,7 +259,20 @@ def test_general_parametric_system_settings():
     )
 
     properties_dict = general_parametric_settings.convert_properties_to_dict()
-    assert properties_dict == additional_settings
+    assert properties_dict.get("Property1") == "string"
+    assert properties_dict.get("Property4", {}).get("key") == "value"
+    assert "AlgorithmSettings" in properties_dict
+    assert properties_dict["AlgorithmSettings"].get("num_dimensions") == 0
+
+
+def test_general_parametric_system_settings_constructor_model():
+    """Test constructor-based nested model settings for parametric systems."""
+    settings = GeneralParametricSystemSettings()
+    settings.sensitivity_algo_settings.num_dimensions = 7
+
+    properties_dict = settings.convert_properties_to_dict()
+    assert "AlgorithmSettings" in properties_dict
+    assert properties_dict["AlgorithmSettings"].get("num_dimensions") == 7
 
 
 def test_general_algorithm_settings():

@@ -28,6 +28,7 @@ from ansys.optislang.core.settings.types import (
     EnumSetting,
     ModelSetting,
     PathSetting,
+    SerializationMode,
     SettingModel,
     TypedSetting,
 )
@@ -58,8 +59,8 @@ AUTO_SAVE_MODE: EnumSetting[AutoSaveMode] = EnumSetting(
 )
 INSTANT_VARIABLE_UPDATE = TypedSetting("InstantVariableUpdate", bool, True)
 MAX_RUNTIME: TypedSetting[numbers.Number] = TypedSetting("MaxRuntime", numbers.Number, -1)
-MDB_PATH: PathSetting = PathSetting("MDBPath", export_mode="dict")
-PATH: PathSetting = PathSetting("Path", export_mode="dict")
+MDB_PATH: PathSetting = PathSetting("MDBPath", export_mode=SerializationMode.PATH_DICT)
+PATH: PathSetting = PathSetting("Path", export_mode=SerializationMode.PATH_DICT)
 READ_MODE: EnumSetting[ReadMode] = EnumSetting(
     "ReadMode", ReadMode, default=ReadMode.READ_AND_WRITE_MODE
 )

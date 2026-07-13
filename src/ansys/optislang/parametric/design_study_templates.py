@@ -44,7 +44,7 @@ from ansys.optislang.core.nodes import (
     ProxySolverNode,
 )
 import ansys.optislang.core.settings.primitives as primitives
-from ansys.optislang.core.settings.types import SettingModel, SettingProperty
+from ansys.optislang.core.settings.types import ModelSetting, SettingModel, SettingProperty, SettingsSerializer
 from ansys.optislang.core.slot_types import SlotTypeHint
 from ansys.optislang.core.tcp.settings import TcpSerializer
 from ansys.optislang.parametric.design_study import (
@@ -61,7 +61,91 @@ if TYPE_CHECKING:
 
 
 # region node settings
-class GeneralNodeSettings:
+class _BaseSettings:
+    """Base class for design-study settings classes."""
+
+    def _convert_to_transport(
+        self, serializer: SettingsSerializer, *, modified_only: bool = True
+    ) -> dict[str, Any]:
+        """Convert known properties and raw additions to transport format.
+        
+        Parameters
+        ----------
+        serializer : SettingsSerializer
+            Serializer to use for converting property values.
+        modified_only : bool, optional
+            If ``True``, only include properties that have been modified from their defaults.
+            If ``False``, include all properties, by default ``True``.
+        
+        Returns
+        -------
+        dict[str, Any]
+            Dictionary of properties in transport format.
+        
+        Raises
+        ------
+        TypeError
+            If a model setting does not contain a SettingModel value.
+        
+        """
+        properties = {}
+        for attr_name, prop in self._iter_settings():
+            value = getattr(self, attr_name)
+
+            if isinstance(prop, ModelSetting):
+                if value is None:
+                    continue
+                if not isinstance(value, SettingModel):
+                    raise TypeError(
+                        f"Model setting '{attr_name}' does not contain SettingModel value."
+                    )
+
+                modified = value.is_modified()
+                if modified_only and not modified and not prop.force_all:
+                    continue
+
+                nested_modified_only = modified_only and not prop.force_all
+                data = value.serialize(serializer=serializer, modified_only=nested_modified_only)
+
+                if modified_only and not prop.force_all and not data:
+                    continue
+
+                properties[prop.name] = data
+                continue
+
+            if modified_only and not hasattr(self, prop.private_name):
+                continue
+
+            if value is None:
+                continue
+
+            properties[prop.name] = serializer.serialize(prop, value)
+
+        properties.update(self.additional_settings)
+        return properties
+
+    def convert_properties_to_dict(self, *, modified_only: bool = True) -> dict[str, Any]:
+        """Convert settings to TCP-compatible property dictionary.
+        
+        Parameters
+        ----------
+        modified_only : bool, optional
+            If ``True``, only include properties that have been modified from their defaults.
+            If ``False``, include all properties, by default ``True``.
+        
+        Returns
+        -------
+        dict[str, Any]
+            Dictionary of properties.
+        
+        Raises
+        ------
+        TypeError
+            If a model setting does not contain a SettingModel value.
+        """
+        return self._convert_to_transport(TcpSerializer(), modified_only=modified_only)
+
+class GeneralNodeSettings(_BaseSettings):
     """Settings specific to all nodes."""
 
     # Property values differing from general default
@@ -96,7 +180,17 @@ class GeneralNodeSettings:
         """
         self.__additional_settings = value
 
-    def __init__(self, additional_settings: Optional[dict] = None):
+    def __init__(
+        self,
+        additional_settings: Optional[dict] = None,
+        *,
+        auto_save_mode: Any = None,
+        max_runtime: Any = None,
+        read_mode: Any = None,
+        starting_delay: Any = None,
+        stop_after_execution: Any = None,
+        path: Any = None,
+    ):
         """Initialize the GeneralNodeSettings.
 
         Parameters
@@ -112,6 +206,20 @@ class GeneralNodeSettings:
 
         self.additional_settings = additional_settings if additional_settings else {}
 
+        # Apply only explicitly provided values. Descriptor validation handles type checks.
+        if auto_save_mode is not None:
+            self.auto_save_mode = auto_save_mode
+        if max_runtime is not None:
+            self.max_runtime = max_runtime
+        if read_mode is not None:
+            self.read_mode = read_mode
+        if starting_delay is not None:
+            self.starting_delay = starting_delay
+        if stop_after_execution is not None:
+            self.stop_after_execution = stop_after_execution
+        if path is not None:
+            self.path = path
+
     def convert_properties_to_dict(self) -> dict:
         """Convert the named tuple to a dictionary of properties.
 
@@ -120,22 +228,7 @@ class GeneralNodeSettings:
         dict
             Dictionary of properties.
         """
-        serializer = TcpSerializer()
-        properties = {}
-
-        for attr_name, prop in self._iter_settings():
-            # skip those that were not modified by the user
-            if not hasattr(self, prop.private_name):
-                continue
-
-            value = getattr(self, attr_name)
-            if value is None:
-                continue
-
-            properties[prop.name] = serializer.serialize(prop, value)
-
-        properties.update(self.additional_settings)
-        return properties
+        return self.convert_properties_to_dict(modified_only=True)
 
     @classmethod
     def _iter_settings(cls):
@@ -202,7 +295,14 @@ class MopSolverNodeSettings(GeneralNodeSettings):
         self,
         input_file: Optional[Union[str, Path, OptislangPath]] = None,
         multi_design_launch_num: Optional[int] = None,
-        additional_settings: Optional[dict] = {},
+        additional_settings: Optional[dict] = None,
+        *,
+        auto_save_mode: Any = None,
+        max_runtime: Any = None,
+        read_mode: Any = None,
+        starting_delay: Any = None,
+        stop_after_execution: Any = None,
+        path: Any = None,
     ):
         """Initialize the MopSolverNode.
 
@@ -215,7 +315,15 @@ class MopSolverNodeSettings(GeneralNodeSettings):
         additional_settings : Optional[dict], optional
             Additional settings for the solver node.
         """
-        super().__init__(additional_settings=additional_settings)
+        super().__init__(
+            additional_settings=additional_settings,
+            auto_save_mode=auto_save_mode,
+            max_runtime=max_runtime,
+            read_mode=read_mode,
+            starting_delay=starting_delay,
+            stop_after_execution=stop_after_execution,
+            path=path,
+        )
         self.input_file = input_file
         self.multi_design_launch_num = (
             multi_design_launch_num if multi_design_launch_num is not None else 1
@@ -297,7 +405,14 @@ class ProxySolverNodeSettings(GeneralNodeSettings):
         self,
         callback: Callable,
         multi_design_launch_num: Optional[int] = None,
-        additional_settings: Optional[dict] = {},
+        additional_settings: Optional[dict] = None,
+        *,
+        auto_save_mode: Any = None,
+        max_runtime: Any = None,
+        read_mode: Any = None,
+        starting_delay: Any = None,
+        stop_after_execution: Any = None,
+        path: Any = None,
     ):
         """Initialize the MopSolverNode.
 
@@ -310,7 +425,15 @@ class ProxySolverNodeSettings(GeneralNodeSettings):
         additional_settings : Optional[dict], optional
             Additional settings for the solver node.
         """
-        super().__init__(additional_settings=additional_settings)
+        super().__init__(
+            additional_settings=additional_settings,
+            auto_save_mode=auto_save_mode,
+            max_runtime=max_runtime,
+            read_mode=read_mode,
+            starting_delay=starting_delay,
+            stop_after_execution=stop_after_execution,
+            path=path,
+        )
         self.callback = callback
         self.multi_design_launch_num = (
             multi_design_launch_num if multi_design_launch_num is not None else 1
@@ -392,7 +515,14 @@ class PythonSolverNodeSettings(GeneralNodeSettings):
         self,
         input_file: Optional[Union[str, Path, OptislangPath]] = None,
         input_code: Optional[str] = None,
-        additional_settings: Optional[dict] = {},
+        additional_settings: Optional[dict] = None,
+        *,
+        auto_save_mode: Any = None,
+        max_runtime: Any = None,
+        read_mode: Any = None,
+        starting_delay: Any = None,
+        stop_after_execution: Any = None,
+        path: Any = None,
     ):
         """Initialize the PythonSolverNode.
 
@@ -407,7 +537,15 @@ class PythonSolverNodeSettings(GeneralNodeSettings):
         additional_settings : Optional[dict], optional
             Additional settings for the solver node.
         """
-        super().__init__(additional_settings=additional_settings)
+        super().__init__(
+            additional_settings=additional_settings,
+            auto_save_mode=auto_save_mode,
+            max_runtime=max_runtime,
+            read_mode=read_mode,
+            starting_delay=starting_delay,
+            stop_after_execution=stop_after_execution,
+            path=path,
+        )
         if input_file and input_code:
             raise AttributeError(
                 "Arguments `input_file` and `input_code` cannot be specified simultaneously."
@@ -448,7 +586,7 @@ class PythonSolverNodeSettings(GeneralNodeSettings):
 
 
 # region parametric system settings
-class GeneralParametricSystemSettings:
+class GeneralParametricSystemSettings(_BaseSettings):
     """Settings common to all parametric systems."""
 
     sensitivity_algo_settings: primitives.SensitivityAlgorithmSettings = (
@@ -477,7 +615,12 @@ class GeneralParametricSystemSettings:
         """
         self.__additional_settings = value
 
-    def __init__(self, additional_settings: Optional[dict] = None):
+    def __init__(
+        self,
+        additional_settings: Optional[dict] = None,
+        *,
+        sensitivity_algo_settings: Any = None,
+    ):
         """Initialize the GeneralParametricSystemSettings.
 
         Parameters
@@ -487,6 +630,9 @@ class GeneralParametricSystemSettings:
         """
         self.additional_settings = additional_settings if additional_settings is not None else {}
 
+        if sensitivity_algo_settings is not None:
+            self.sensitivity_algo_settings = sensitivity_algo_settings
+
     def convert_properties_to_dict(self) -> dict:
         """Convert the named tuple to a dictionary of properties.
 
@@ -495,44 +641,7 @@ class GeneralParametricSystemSettings:
         dict
             Dictionary of properties.
         """
-        serializer = TcpSerializer()
-        properties = {}
-
-        x = self._iter_settings()
-        for attr_name, prop in self._iter_settings():
-            value = getattr(self, attr_name)
-
-            if value is None:
-                continue
-            # treat models first
-            if isinstance(value, SettingModel):
-                modified = value.is_modified()
-
-                if not modified and not prop.force_all:
-                    continue
-
-                if prop.force_all:
-                    data = value.to_dict(serializer, modified_only=False)
-                else:
-                    data = value.to_dict(serializer, modified_only=True)
-
-                    if not data:
-                        continue
-
-                properties[prop.name] = data
-                continue
-
-            # standard properties
-            if not hasattr(self, prop.private_name):
-                continue
-
-            if value is None:
-                continue
-
-            properties[prop.name] = serializer.serialize(prop, value)
-
-        properties.update(self.additional_settings)
-        return properties
+        return self.convert_properties_to_dict(modified_only=True)
 
     @classmethod
     def _iter_settings(cls):
@@ -545,7 +654,7 @@ class GeneralParametricSystemSettings:
 class GeneralAlgorithmSettings(GeneralParametricSystemSettings):
     """Settings common to all algorithms."""
 
-    def __init__(self, additional_settings: Optional[dict] = {}):
+    def __init__(self, additional_settings: Optional[dict] = None):
         """Initialize the GeneralAlgorithmSettings.
 
         Parameters

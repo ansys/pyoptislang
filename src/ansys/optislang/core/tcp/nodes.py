@@ -684,6 +684,17 @@ class TcpNodeProxy(Node):
         TimeoutError
             Raised when the timeout float value expires.
         """
+        from ansys.optislang.core.settings.types import SettingInstance
+        from ansys.optislang.core.tcp.settings import TcpSerializer
+
+        if isinstance(value, SettingInstance):
+            if name != value.name:
+                raise ValueError(
+                    f"Property name mismatch: received name '{name}', but setting instance "
+                    f"is bound to '{value.name}'."
+                )
+            value = value._serialize_value(TcpSerializer())
+
         self._osl_server.set_actor_property(actor_uid=self.uid, name=name, value=value)
 
     def create_input_slot(self, slot_name: str, type_hint: Optional[SlotTypeHint] = None) -> None:

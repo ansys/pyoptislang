@@ -23,7 +23,7 @@
 """Contains definitions of the TCP settings."""
 
 from ansys.optislang.core.io import OptislangPath
-from ansys.optislang.core.settings.types import SettingsSerializer
+from ansys.optislang.core.settings.types import SerializationMode, SettingsSerializer
 
 
 class TcpSerializer(SettingsSerializer):
@@ -32,8 +32,12 @@ class TcpSerializer(SettingsSerializer):
         if value is None:
             return None
 
+        mode = getattr(prop, "serialization_mode", None)
+
         # osl path case
         if isinstance(value, OptislangPath):
+            if mode == SerializationMode.PATH_STR:
+                return str(value)
             return value.to_dict()
 
         # nested model cas
@@ -45,7 +49,7 @@ class TcpSerializer(SettingsSerializer):
                 # without serializer support
                 return value.to_dict()
 
-        if prop.serialization_style == "value-wrapper":
+        if mode == SerializationMode.VALUE_WRAPPER:
             return {"value": value}
 
         # primitives
