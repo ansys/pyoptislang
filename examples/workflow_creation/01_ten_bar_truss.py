@@ -38,6 +38,10 @@ how you can save the project to a desired location.
 # ~~~~~~~~~~~~~~~~~~~~~~~~
 # Perform the required imports.
 
+# sphinx_gallery_start_ignore
+# sphinx_gallery_thumbnail_path = "../../doc/source/_static/01_ten_bar_truss_pyOSL_workflow.png"
+# sphinx_gallery_end_ignore
+
 import os
 from pathlib import Path
 
@@ -378,7 +382,7 @@ osl.dispose()
 # ~~~~~~~~~~~~~~~~~~~~~~~
 # This image shows the generated workflow.
 #
-# .. image:: ../../_static/01_ten_bar_truss_pyOSL_workflow.png
+# .. image:: ../../../_static/01_ten_bar_truss_pyOSL_workflow.png
 #  :width: 400
 #  :alt: Result of script.
 #
