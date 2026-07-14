@@ -103,7 +103,7 @@ SENSITIVITY_ALGORITHM_SETTINGS: ModelSetting[SensitivityAlgorithmSettings] = Mod
     SensitivityAlgorithmSettings,
     doc="""Setting for sensitivity algorithm settings.""",
 )
-SOURCE: TypedSetting[str] = TypedSetting("Source", str, r"""""", doc="Python script code.")
+SOURCE: TypedSetting[str] = TypedSetting("Source", str, r"""""", doc="Code string.")
 STARTING_DELAY: TypedSetting[numbers.Number] = TypedSetting(
     "StartingDelay", numbers.Number, 0.0, doc="""Setting for starting delay."""
 )

@@ -38,6 +38,7 @@ from ansys.optislang.core.project_parametric import (
     OptimizationParameter,
     Response,
 )
+from ansys.optislang.core.settings import primitives
 from ansys.optislang.parametric.design_study import (
     ExecutableBlock,
     ManagedParametricSystem,
@@ -146,7 +147,7 @@ def test_mopsolver_settings():
     """Test `MopSolverNodeSettings` class init and properties."""
     mopsolver = MopSolverNodeSettings()
     assert mopsolver.multi_design_launch_num == 1
-    assert mopsolver.input_file is None
+    assert mopsolver.input_file == primitives.PATH.default
     assert mopsolver.additional_settings == {}
 
     input1 = "path/to/input/file"
@@ -211,8 +212,8 @@ def test_proxysolver_settings():
 def test_python_solver_settings():
     """Test `PythonSolverNodeSettings` class init and properties."""
     pythonsolver = PythonSolverNodeSettings()
-    assert pythonsolver.input_file is None
-    assert pythonsolver.input_code is None
+    assert pythonsolver.input_file is primitives.PATH.default
+    assert pythonsolver.input_code == primitives.SOURCE.default
     assert pythonsolver.additional_settings == {}
 
     input_path1 = "path/to/input/file"
@@ -229,22 +230,25 @@ def test_python_solver_settings():
     pythonsolver1 = PythonSolverNodeSettings(input_path1, None, additional_settings)
     assert pythonsolver1.additional_settings.get("Property1") == "string"
     assert pythonsolver1.additional_settings.get("Property4", {}).get("key") == "value"
-    assert pythonsolver1.input_code is None
+    assert pythonsolver1.input_code == primitives.SOURCE.default
     assert isinstance(pythonsolver1.input_file, OptislangPath)
     assert pythonsolver1.input_file.type == OptislangPathType.ABSOLUTE_PATH
 
     pythonsolver2 = PythonSolverNodeSettings(input_path2, None, additional_settings)
     assert isinstance(pythonsolver2.input_file, OptislangPath)
     assert pythonsolver2.input_file.type == OptislangPathType.ABSOLUTE_PATH
-    assert pythonsolver2.input_code is None
+    assert pythonsolver2.input_code == primitives.SOURCE.default
 
     pythonsolver3 = PythonSolverNodeSettings(input_path3, None, additional_settings)
     assert isinstance(pythonsolver3.input_file, OptislangPath)
     assert pythonsolver3.input_file.type == OptislangPathType.WORKING_DIR_RELATIVE
 
     pythonsolver4 = PythonSolverNodeSettings(None, input_code, additional_settings)
-    assert pythonsolver4.input_file is None
+    assert pythonsolver4.input_file == primitives.PATH.default
     assert isinstance(pythonsolver4.input_code, str)
+
+    empty_dict = pythonsolver.convert_properties_to_dict()
+    assert empty_dict == {}
 
     properties_dict = pythonsolver1.convert_properties_to_dict()
     assert properties_dict.get("Path", {}).get("path") is not None

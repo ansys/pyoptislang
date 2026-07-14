@@ -208,13 +208,10 @@ class _BaseSettings:
 class GeneralNodeSettings(_BaseSettings):
     """Settings specific to all nodes."""
 
-    # Property values differing from general default
-    DEFAULTS: dict[str | SettingProperty[Any], Any] = {}
-
     if TYPE_CHECKING:
-        auto_save_mode: primitives.AutoSaveMode
+        auto_save_mode: primitives.AutoSaveMode | str
         max_runtime: float
-        read_mode: primitives.ReadMode
+        read_mode: primitives.ReadMode | str
         starting_delay: float
         stop_after_execution: bool
         path: Union[str, Path, OptislangPath]
@@ -230,12 +227,12 @@ class GeneralNodeSettings(_BaseSettings):
         self,
         additional_settings: Optional[dict] = None,
         *,
-        auto_save_mode: Any = None,
-        max_runtime: Any = None,
-        read_mode: Any = None,
-        starting_delay: Any = None,
-        stop_after_execution: Any = None,
-        path: Any = None,
+        auto_save_mode: Optional[primitives.AutoSaveMode | str] = None,
+        max_runtime: Optional[float] = None,
+        read_mode: Optional[primitives.ReadMode | str] = None,
+        starting_delay: Optional[float] = None,
+        stop_after_execution: Optional[bool] = None,
+        path: Optional[Union[str, Path, OptislangPath]] = None,
     ):
         """Initialize the GeneralNodeSettings.
 
@@ -244,12 +241,6 @@ class GeneralNodeSettings(_BaseSettings):
         additional_settings : Optional[dict], optional
             Additional settings for the solver node.
         """
-        for key, value in self.DEFAULTS.items():
-            if isinstance(key, SettingProperty):
-                setattr(self, key.attr_name, value)
-            else:
-                setattr(self, key, value)
-
         self.additional_settings = additional_settings if additional_settings else {}
 
         # Apply only explicitly provided values. Descriptor validation handles type checks.
@@ -271,8 +262,8 @@ class MopSolverNodeSettings(GeneralNodeSettings):
     """Settings specific to MOP solver nodes."""
 
     if TYPE_CHECKING:
-        input_file: primitives.MDB_PATH
-        multi_design_launch_num: primitives.MULTI_DESIGN_NUM
+        input_file: Union[str, Path, OptislangPath]
+        multi_design_launch_num: int
     else:
         input_file = primitives.MDB_PATH
         multi_design_launch_num = primitives.MULTI_DESIGN_NUM
@@ -283,12 +274,12 @@ class MopSolverNodeSettings(GeneralNodeSettings):
         multi_design_launch_num: Optional[int] = None,
         additional_settings: Optional[dict] = None,
         *,
-        auto_save_mode: Any = None,
-        max_runtime: Any = None,
-        read_mode: Any = None,
-        starting_delay: Any = None,
-        stop_after_execution: Any = None,
-        path: Any = None,
+        auto_save_mode: Optional[primitives.AutoSaveMode | str] = None,
+        max_runtime: Optional[float] = None,
+        read_mode: Optional[primitives.ReadMode | str] = None,
+        starting_delay: Optional[float] = None,
+        stop_after_execution: Optional[bool] = None,
+        path: Optional[Union[str, Path, OptislangPath]] = None,
     ):
         """Initialize the MopSolverNode.
 
@@ -310,7 +301,8 @@ class MopSolverNodeSettings(GeneralNodeSettings):
             stop_after_execution=stop_after_execution,
             path=path,
         )
-        self.input_file = input_file
+        if input_file is not None:
+            self.input_file = input_file
         self.multi_design_launch_num = (
             multi_design_launch_num if multi_design_launch_num is not None else 1
         )
@@ -328,7 +320,7 @@ class ProxySolverNodeSettings(GeneralNodeSettings):
     """
 
     if TYPE_CHECKING:
-        multi_design_launch_num: primitives.MULTI_DESIGN_LAUNCH_NUM
+        multi_design_launch_num: int
     else:
         multi_design_launch_num = primitives.MULTI_DESIGN_LAUNCH_NUM
 
@@ -360,12 +352,12 @@ class ProxySolverNodeSettings(GeneralNodeSettings):
         multi_design_launch_num: Optional[int] = None,
         additional_settings: Optional[dict] = None,
         *,
-        auto_save_mode: Any = None,
-        max_runtime: Any = None,
-        read_mode: Any = None,
-        starting_delay: Any = None,
-        stop_after_execution: Any = None,
-        path: Any = None,
+        auto_save_mode: Optional[primitives.AutoSaveMode | str] = None,
+        max_runtime: Optional[float] = None,
+        read_mode: Optional[primitives.ReadMode | str] = None,
+        starting_delay: Optional[float] = None,
+        stop_after_execution: Optional[bool] = None,
+        path: Optional[Union[str, Path, OptislangPath]] = None,
     ):
         """Initialize the MopSolverNode.
 
@@ -397,8 +389,8 @@ class PythonSolverNodeSettings(GeneralNodeSettings):
     """Settings specific to Python solver nodes."""
 
     if TYPE_CHECKING:
-        input_file: primitives.PATH
-        input_code: primitives.SOURCE
+        input_file: Union[str, Path, OptislangPath]
+        input_code: str
     else:
         input_file = primitives.PATH
         input_code = primitives.SOURCE
@@ -409,12 +401,12 @@ class PythonSolverNodeSettings(GeneralNodeSettings):
         input_code: Optional[str] = None,
         additional_settings: Optional[dict] = None,
         *,
-        auto_save_mode: Any = None,
-        max_runtime: Any = None,
-        read_mode: Any = None,
-        starting_delay: Any = None,
-        stop_after_execution: Any = None,
-        path: Any = None,
+        auto_save_mode: Optional[primitives.AutoSaveMode | str] = None,
+        max_runtime: Optional[float] = None,
+        read_mode: Optional[primitives.ReadMode | str] = None,
+        starting_delay: Optional[float] = None,
+        stop_after_execution: Optional[bool] = None,
+        path: Optional[Union[str, Path, OptislangPath]] = None,
     ):
         """Initialize the PythonSolverNode.
 
@@ -442,8 +434,10 @@ class PythonSolverNodeSettings(GeneralNodeSettings):
             raise AttributeError(
                 "Arguments `input_file` and `input_code` cannot be specified simultaneously."
             )
-        self.input_file = input_file if input_file else None
-        self.input_code = input_code if input_code else None
+        if input_file is not None:
+            self.input_file = input_file
+        if input_code is not None:
+            self.input_code = input_code
 
     def convert_properties_to_dict(self, *, modified_only: bool = True) -> dict[str, Any]:
         """Get properties dictionary.
@@ -478,7 +472,7 @@ class GeneralParametricSystemSettings(_BaseSettings):
         self,
         additional_settings: Optional[dict] = None,
         *,
-        sensitivity_algo_settings: Any = None,
+        sensitivity_algo_settings: Optional[primitives.SensitivityAlgorithmSettings] = None,
     ):
         """Initialize the GeneralParametricSystemSettings.
 
