@@ -157,6 +157,7 @@ class SettingProperty(Generic[T]):
         validator: Optional[Callable[[Any], None]] = None,
         transform: Optional[Callable[[Any], Any]] = None,
         serialization_mode: SerializationMode = SerializationMode.DEFAULT,
+        doc: Optional[str] = None,
     ):
         """Initialize the setting property.
 
@@ -173,12 +174,16 @@ class SettingProperty(Generic[T]):
         serialization_mode: SerializationMode, optional
             Mode to use during serialization. ``SerializationMode.DEFAULT``
             means no special serializer treatment.
+        doc: Optional[str], optional
+            Documentation string for the setting property.
         """
         self.name = name
         self.default = default
         self.validator = validator or (lambda x: x)
         self.transform = transform or (lambda x: x)
         self.serialization_mode = _coerce_serialization_mode(serialization_mode)
+        if doc is not None:
+            self.__doc__ = doc
 
     def __call__(self: SettingProperty[T], *args: Any) -> SettingInstance[T]:
         """Create a setting instance and optionally assign an initial value.
@@ -219,6 +224,15 @@ class SettingProperty(Generic[T]):
         self.validator(value)
         value = self.transform(value)
         setattr(instance, self.private_name, value)
+
+    def clear_value(self, instance: Any) -> None:
+        """Clear the value of this setting on an instance.
+
+        Clearing deletes the backing private attribute so the setting behaves
+        as if it has not been explicitly assigned.
+        """
+        if hasattr(instance, self.private_name):
+            delattr(instance, self.private_name)
 
 
 class TypedSetting(SettingProperty[T]):
@@ -466,6 +480,38 @@ class SettingModel:
             properties[prop.name] = serializer.serialize(prop, value)
 
         return properties
+
+    def clear(self, *names: str) -> None:
+        """Clear assigned values for selected settings or for all settings.
+
+        Parameters
+        ----------
+        *names : str
+            Optional setting attribute names to clear. If omitted, all
+            descriptor-backed settings are cleared.
+
+        Raises
+        ------
+        AttruibuteError
+            If any provided name does not correspond to a setting attribute.
+        """
+        props_by_attr = {attr_name: prop for attr_name, prop in self._iter_settings()}
+
+        if names:
+            unknown = [name for name in names if name not in props_by_attr]
+            if unknown:
+                raise AttributeError(f"Unknown setting attribute(s): {', '.join(unknown)}")
+            selected = [props_by_attr[name] for name in names]
+        else:
+            selected = list(props_by_attr.values())
+        for prop in selected:
+            prop.clear_value(self)
+
+        object.__setattr__(
+            self,
+            "_modified",
+            any(hasattr(self, prop.private_name) for prop in props_by_attr.values()),
+        )
 
 
 class ModelSetting(SettingProperty[M], Generic[M]):

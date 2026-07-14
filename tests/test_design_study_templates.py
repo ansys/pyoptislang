@@ -125,6 +125,23 @@ def test_general_node_settings_with_constructor_properties():
     assert properties_dict.get("CustomProp") == 42
 
 
+def test_general_node_settings_clear_method():
+    settings = GeneralNodeSettings(additional_settings={"CustomProp": 42}, max_runtime=100)
+    settings_dict = settings.convert_properties_to_dict()
+    assert settings_dict.get("MaxRuntime") == 100
+    assert settings_dict.get("CustomProp") == 42
+
+    settings.clear(clear_additional_settings=False)
+    partially_cleared_dict = settings.convert_properties_to_dict()
+    assert "MaxRuntime" not in partially_cleared_dict
+    assert settings_dict.get("CustomProp") == 42
+
+    settings.clear()
+    cleared_dict = settings.convert_properties_to_dict()
+    assert "MaxRuntime" not in cleared_dict
+    assert "CustomProp" not in cleared_dict
+
+
 def test_mopsolver_settings():
     """Test `MopSolverNodeSettings` class init and properties."""
     mopsolver = MopSolverNodeSettings()

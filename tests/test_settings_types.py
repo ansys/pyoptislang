@@ -251,3 +251,40 @@ def test_setting_model_serialize_supports_modified_only_and_nested_models():
         "mode": {"value": "on"},
         "child": {"count": 3},
     }
+
+
+def test_setting_property_clear_value():
+    class _Model(SettingModel):
+        count = TypedSetting("count", int, 5)
+
+    model = _Model()
+    model.count = 7
+    assert model.count == 7
+    assert hasattr(model, "_count")
+
+    _Model.__dict__["count"].clear_value(model)
+    assert hasattr(model, "_count") is False
+    assert model.count == 5
+
+
+def test_setting_model_clear():
+    class _Child(SettingModel):
+        count = TypedSetting("count", int, 5)
+
+    class _Parent(SettingModel):
+        mode = ChoiceSetting("mode", ["on", "off"], default="off")
+        child = ModelSetting("child", _Child)
+
+    parent = _Parent()
+    serializer = TcpSerializer()
+
+    parent.mode = "on"
+    parent.child.count = 3
+    assert parent.is_modified() is True
+
+    parent.clear("mode")
+    assert parent.serialize(serializer=serializer, modified_only=True) == {"child": {"count": 3}}
+
+    parent.clear()
+    assert parent.is_modified() is False
+    assert parent.serialize(serializer=serializer, modified_only=True) == {}

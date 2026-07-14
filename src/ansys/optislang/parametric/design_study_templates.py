@@ -32,7 +32,6 @@ from typing import TYPE_CHECKING, Any, Callable, Iterable, List, Optional, Tuple
 import warnings
 
 from ansys.optislang.core import Optislang
-from ansys.optislang.core.io import AbsolutePath, OptislangPath
 import ansys.optislang.core.node_types as nt
 from ansys.optislang.core.nodes import (
     DesignFlow,
@@ -62,6 +61,7 @@ from ansys.optislang.parametric.design_study import (
 )
 
 if TYPE_CHECKING:
+    from ansys.optislang.core.io import OptislangPath
     from ansys.optislang.core.project_parametric import Criterion, Design, Parameter, Response
 
 
@@ -147,6 +147,42 @@ class _BaseSettings:
         properties.update(self.additional_settings)
         return properties
 
+    def clear(self, *names: str, clear_additional_settings: bool = True) -> None:
+        """Clear assigned values for selected settings or for all settings.
+
+        Parameters
+        ----------
+        *names : str
+            Optional setting attribute names to clear. If omitted,
+            all descriptor-backed settings are cleared.
+        clear_additional_settings : bool, optional
+            Whether to clear ``additional_settings``. By default ``True``.
+
+        Raises
+        ------
+        AttributeError
+            If any provided name does not correspond to a setting attribute.
+        """
+        props_by_attr = {attr_name: prop for attr_name, prop in self._iter_settings()}
+
+        if names:
+            unknown = [
+                name
+                for name in names
+                if name not in props_by_attr and name != "additional_settings"
+            ]
+            if unknown:
+                raise AttributeError(f"Unknown setting attribute(s): {', '.join(unknown)}")
+            selected = [props_by_attr[name] for name in names]
+        else:
+            selected = list(props_by_attr.values())
+
+        for prop in selected:
+            prop.clear_value(self)
+
+        if clear_additional_settings:
+            self._additional_settings.clear()
+
     def convert_properties_to_dict(self, *, modified_only: bool = True) -> dict[str, Any]:
         """Convert settings to TCP-compatible property dictionary.
 
@@ -230,69 +266,16 @@ class GeneralNodeSettings(_BaseSettings):
         if path is not None:
             self.path = path
 
-    def convert_properties_to_dict(self, *, modified_only: bool = True) -> dict[str, Any]:
-        """Convert the named tuple to a dictionary of properties.
-
-        Returns
-        -------
-        dict
-            Dictionary of properties.
-        """
-        return super().convert_properties_to_dict(modified_only=modified_only)
-
 
 class MopSolverNodeSettings(GeneralNodeSettings):
     """Settings specific to MOP solver nodes."""
 
-    @property
-    def multi_design_launch_num(self) -> int:
-        """Number of designs to be sent/received in one batch.
-
-        Returns
-        -------
-        Optional[int]
-            Number of designs to be sent/received in one batch.
-        """
-        return self.__multi_design_launch_num
-
-    @multi_design_launch_num.setter
-    def multi_design_launch_num(self, value: int):
-        """Set number of designs to be sent/received in one batch.
-
-        Parameters
-        ----------
-        value : int
-            Number of designs to be sent/received in one batch.
-        """
-        self.__multi_design_launch_num = value
-
-    @property
-    def input_file(self) -> Optional[Union[str, Path, OptislangPath]]:
-        """Path to the MOP file.
-
-        Returns
-        -------
-        Optional[Union[str, Path, OptislangPath]]
-            Path to the MOP file or ``None``, if input file is specified by the connection.
-        """
-        return self.__input_file
-
-    @input_file.setter
-    def input_file(self, value: Optional[Union[str, Path, OptislangPath]]) -> None:
-        """Set path to the MOP file.
-
-        Parameters
-        ----------
-        value : Optional[Union[str, Path, OptislangPath]]
-            Path to the MOP file.
-            If ``None``, input file is expected to be specified by the connection.
-        """
-        if value is None:
-            self.__input_file = value
-        elif isinstance(value, OptislangPath):
-            self.__input_file = value
-        else:
-            self.__input_file = AbsolutePath(value)
+    if TYPE_CHECKING:
+        input_file: primitives.MDB_PATH
+        multi_design_launch_num: primitives.MULTI_DESIGN_NUM
+    else:
+        input_file = primitives.MDB_PATH
+        multi_design_launch_num = primitives.MULTI_DESIGN_NUM
 
     def __init__(
         self,
@@ -332,22 +315,6 @@ class MopSolverNodeSettings(GeneralNodeSettings):
             multi_design_launch_num if multi_design_launch_num is not None else 1
         )
 
-    def convert_properties_to_dict(self, *, modified_only: bool = True) -> dict[str, Any]:
-        """Get properties dictionary.
-
-        Returns
-        -------
-        dict
-            Dictionary with properties.
-        """
-        properties: dict[str, Any] = {}
-        properties["MultiDesignNum"] = self.multi_design_launch_num
-        if self.input_file:
-            if isinstance(self.input_file, OptislangPath):
-                properties["MDBPath"] = self.input_file.to_dict()
-        properties.update(super().convert_properties_to_dict(modified_only=modified_only))
-        return properties
-
 
 class ProxySolverNodeSettings(GeneralNodeSettings):
     """Settings specific to Proxy solver nodes.
@@ -360,27 +327,10 @@ class ProxySolverNodeSettings(GeneralNodeSettings):
         A callback function to handle design evaluation results.
     """
 
-    @property
-    def multi_design_launch_num(self) -> int:
-        """Number of designs to be sent/received in one batch.
-
-        Returns
-        -------
-        Optional[int]
-            Number of designs to be sent/received in one batch.
-        """
-        return self.__multi_design_launch_num
-
-    @multi_design_launch_num.setter
-    def multi_design_launch_num(self, value: int):
-        """Set number of designs to be sent/received in one batch.
-
-        Parameters
-        ----------
-        value : int
-            Number of designs to be sent/received in one batch.
-        """
-        self.__multi_design_launch_num = value
+    if TYPE_CHECKING:
+        multi_design_launch_num: primitives.MULTI_DESIGN_LAUNCH_NUM
+    else:
+        multi_design_launch_num = primitives.MULTI_DESIGN_LAUNCH_NUM
 
     @property
     def callback(self) -> Callable:
@@ -442,77 +392,16 @@ class ProxySolverNodeSettings(GeneralNodeSettings):
             multi_design_launch_num if multi_design_launch_num is not None else 1
         )
 
-    def convert_properties_to_dict(self, *, modified_only: bool = True) -> dict[str, Any]:
-        """Get properties dictionary.
-
-        Returns
-        -------
-        dict
-            Dictionary with properties.
-        """
-        properties: dict[str, Any] = {}
-        properties["MultiDesignLaunchNum"] = self.multi_design_launch_num
-        properties.update(super().convert_properties_to_dict(modified_only=modified_only))
-        return properties
-
 
 class PythonSolverNodeSettings(GeneralNodeSettings):
     """Settings specific to Python solver nodes."""
 
-    @property
-    def input_code(self) -> Union[str, None]:
-        """Python script code.
-
-        Returns
-        -------
-        Union[str, None]
-            Python script code or ``None``, if input file is meant to be specified
-            by the connection or `input_file`.
-        """
-        return self.__input_code
-
-    @input_code.setter
-    def input_code(self, value: Union[str, None]) -> None:
-        """Set Python script.
-
-        Parameters
-        ----------
-        value : Union[str, None]
-            Python script.
-            If ``None``, input file is expected to be specified either
-            by the connection or `input_file`.
-        """
-        self.__input_code = value
-
-    @property
-    def input_file(self) -> Optional[Union[str, Path, OptislangPath]]:
-        """Path to the Python file.
-
-        Returns
-        -------
-        Optional[Union[str, Path, OptislangPath]]
-            Path to the Python file or ``None``, if input file is meant to be specified
-            by the connection or `input_code`.
-        """
-        return self.__input_file
-
-    @input_file.setter
-    def input_file(self, value: Optional[Union[str, Path, OptislangPath]]) -> None:
-        """Set path to the Python file.
-
-        Parameters
-        ----------
-        value : Optional[Union[str, Path, OptislangPath]]
-            Path to the Python file.
-            If ``None``, input file is expected to be specified either
-            by the connection or `input_code`.
-        """
-        if value is None:
-            self.__input_file = value
-        elif isinstance(value, OptislangPath):
-            self.__input_file = value
-        else:
-            self.__input_file = AbsolutePath(value)
+    if TYPE_CHECKING:
+        input_file: primitives.PATH
+        input_code: primitives.SOURCE
+    else:
+        input_file = primitives.PATH
+        input_code = primitives.SOURCE
 
     def __init__(
         self,
@@ -553,15 +442,8 @@ class PythonSolverNodeSettings(GeneralNodeSettings):
             raise AttributeError(
                 "Arguments `input_file` and `input_code` cannot be specified simultaneously."
             )
-        elif input_file:
-            self.input_file = input_file
-            self.input_code = None
-        elif input_code:
-            self.input_code = input_code
-            self.input_file = None
-        else:
-            self.input_file = None
-            self.input_code = None
+        self.input_file = input_file if input_file else None
+        self.input_code = input_code if input_code else None
 
     def convert_properties_to_dict(self, *, modified_only: bool = True) -> dict[str, Any]:
         """Get properties dictionary.
@@ -576,14 +458,6 @@ class PythonSolverNodeSettings(GeneralNodeSettings):
             raise AttributeError(
                 "Arguments `input_file` and `input_code` cannot be specified simultaneously."
             )
-        elif self.input_file:
-            if isinstance(self.input_file, OptislangPath):
-                properties["Path"] = self.input_file.to_dict()
-            else:
-                properties["Path"] = AbsolutePath(self.input_file).to_dict()
-            # content mode
-        elif self.input_code:
-            properties["Source"] = self.input_code
         properties.update(super().convert_properties_to_dict(modified_only=modified_only))
         return properties
 
