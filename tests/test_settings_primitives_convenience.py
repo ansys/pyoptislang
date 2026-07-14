@@ -29,11 +29,14 @@ from ansys.optislang.core.tcp.nodes import TcpNodeProxy
 
 
 class _MockedServer:
-    def __init__(self):
+    def __init__(self, fail_on_names=None):
         self.calls = []
+        self.fail_on_names = set(fail_on_names or [])
 
     def set_actor_property(self, actor_uid, name, value):
         self.calls.append({"actor_uid": actor_uid, "name": name, "value": value})
+        if name in self.fail_on_names:
+            raise RuntimeError(f"Failed to set property '{name}'.")
 
 
 def test_primitive_call_with_initial_value():
@@ -78,3 +81,48 @@ def test_tcp_node_set_property_raises_on_name_mismatch_for_setting_instance():
     prop = primitives.READ_MODE("classic_reevaluate_mode")
     with pytest.raises(ValueError, match="Property name mismatch"):
         node.set_property("WrongName", prop)
+
+
+def test_tcp_node_set_properties_sets_all_values():
+    server = _MockedServer()
+    node = TcpNodeProxy(
+        uid="test_uid",
+        osl_server=server,
+        type_=NodeType("Dummy", AddinType.BUILT_IN),
+    )
+
+    properties = {
+        "ExecutionOptions": 2,
+        "StopAfterExecution": True,
+    }
+    node.set_properties(properties)
+
+    assert len(server.calls) == 2
+    assert server.calls[0]["name"] == "ExecutionOptions"
+    assert server.calls[0]["value"] == 2
+    assert server.calls[1]["name"] == "StopAfterExecution"
+    assert server.calls[1]["value"] is True
+
+
+def test_tcp_node_set_properties_is_fail_fast():
+    server = _MockedServer(fail_on_names={"StopAfterExecution"})
+    node = TcpNodeProxy(
+        uid="test_uid",
+        osl_server=server,
+        type_=NodeType("Dummy", AddinType.BUILT_IN),
+    )
+
+    properties = {
+        "ExecutionOptions": 2,
+        "StopAfterExecution": True,
+        "ReadMode": {"value": "read_and_write_mode"},
+    }
+
+    with pytest.raises(RuntimeError, match="Failed to set property 'StopAfterExecution'"):
+        node.set_properties(properties)
+
+    # First property succeeds, second fails, third is not attempted.
+    assert [call["name"] for call in server.calls] == [
+        "ExecutionOptions",
+        "StopAfterExecution",
+    ]

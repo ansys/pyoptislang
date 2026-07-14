@@ -219,6 +219,22 @@ def test_set_property(optislang: Optislang, tmp_example_project):
     assert node.get_property("ExecutionOptions") == set_int_property
 
 
+def test_set_properties(optislang: Optislang, tmp_example_project):
+    """Test `set_properties` method."""
+    optislang.application.open(file_path=tmp_example_project("calculator_with_params"))
+    root_system = optislang.project.root_system
+    node: TcpNodeProxy = root_system.find_nodes_by_name("Calculator")[0]
+    set_properties = {
+        "ExecutionOptions": 2,
+        "StopAfterExecution": True,
+        "ReadMode": {"value": "read_and_write_mode"},
+    }
+    node.set_properties(set_properties)
+    assert node.get_property("ExecutionOptions") == 2
+    assert node.get_property("StopAfterExecution") is True
+    assert node.get_property("ReadMode") == {"value": "read_and_write_mode"}
+
+
 def test_node_execution_options(optislang: Optislang, tmp_example_project):
     """Test `set_execution_options` and `get_execution_options` methods."""
     optislang.application.open(file_path=tmp_example_project("calculator_with_params"))

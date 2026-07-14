@@ -26,7 +26,7 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from enum import Enum, Flag
-from typing import TYPE_CHECKING, Any, Optional, Tuple, Union
+from typing import TYPE_CHECKING, Any, Mapping, Optional, Tuple, Union
 
 from deprecated.sphinx import deprecated
 
@@ -701,6 +701,28 @@ class Node(ABC):
 
         Raises
         ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        pass
+
+    @abstractmethod
+    def set_properties(self, properties: Mapping[str, Any]) -> None:  # pragma: no cover
+        """Set multiple node properties.
+
+        Parameters
+        ----------
+        properties : Mapping[str, Any]
+            Mapping of property names to property values.
+
+        Raises
+        ------
+        TypeError
+            Raised when ``properties`` is not a mapping or contains non-string keys.
         OslCommunicationError
             Raised when an error occurs while communicating with the server.
         OslCommandError
