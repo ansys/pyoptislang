@@ -484,7 +484,7 @@ class ExecutableBlock:
 
         Notes
         -----
-        - This method changes only the stored execution options of the instances in the block,
+        This method changes only the stored execution options of the instances in the block,
         it does not change the actual state.
         """
         self.__instances = [(instance, ExecutionOption.ACTIVE) for instance, _ in self.__instances]
@@ -494,7 +494,7 @@ class ExecutableBlock:
 
         Notes
         -----
-        - This method changes only the stored execution options of the instances in the block,
+        This method changes only the stored execution options of the instances in the block,
         it does not change the actual state.
         """
         self.__instances = [
@@ -506,17 +506,17 @@ class ExecutableBlock:
     ) -> None:
         """Set execution options of a specific instance in the block.
 
-        Notes
-        -----
-        - This method changes only the stored execution options of the instance in the block,
-        it does not change the actual state.
-
         Parameters
         ----------
         uid : str
             Node uid.
         execution_options : ExecutionOption
             Execution options to be set.
+
+        Notes
+        -----
+        This method changes only the stored execution options of the instance in the block,
+        it does not change the actual state.
         """
         idx = self.__find_instance_idx_by_uid(uid)
         if idx >= 0:
@@ -733,11 +733,6 @@ class ParametricDesignStudy:
     def add_execution_block(self, block: ExecutableBlock, index: Optional[int] = None) -> None:
         """Add a new execution block to the design study.
 
-        Notes
-        -----
-        - If managed instances in the new block are not already part of the design study,
-        they will be added to the managed instances list.
-
         Parameters
         ----------
         block : ExecutableBlock
@@ -750,6 +745,11 @@ class ParametricDesignStudy:
         ------
         IndexError
             If the provided index is out of range.
+
+        Notes
+        -----
+        If managed instances in the new block are not already part of the design study,
+        they will be added to the managed instances list.
         """
         if index is not None:
             if 0 <= index <= len(self.__execution_blocks):
@@ -826,11 +826,6 @@ class ParametricDesignStudy:
     def find_managed_instance_by_uid(self, uid: str) -> Optional[ManagedInstance]:
         """Find a top level managed instance by its unique identifier (uid).
 
-        Notes
-        -----
-        - Solver nodes cannot accessed directly by this method, they must be accessed through
-        the associated parametric system.
-
         Parameters
         ----------
         uid : str
@@ -840,6 +835,11 @@ class ParametricDesignStudy:
         -------
         Optional[ManagedInstance]
             The managed instance with the specified uid, if found, else `None`.
+
+        Notes
+        -----
+        Solver nodes cannot accessed directly by this method, they must be accessed through
+        the associated parametric system.
         """
         for item in self.__managed_instances:
             if item.instance.uid == uid:
@@ -930,17 +930,18 @@ class ParametricDesignStudy:
     def remove_managed_instance(self, instance: ManagedInstance) -> None:
         """Remove a top level managed instance from the design study.
 
-        Notes
-        -----
-        - Managed instance is also removed from any execution block it belongs to,
-        blocks without any instances are removed from the execution order.
-        - Solver nodes cannot be removed separately, they must be removed together
-        with the associated parametric system.
-
         Parameters
         ----------
         instance : ManagedInstance
             The managed instance to be removed.
+
+        Notes
+        -----
+        - Managed instance is also removed from any execution block it belongs to,
+          blocks without any instances are removed from the execution order.
+        - Solver nodes cannot be removed separately, they must be removed together
+          with the associated parametric system.
+
         """
         indices_to_remove = []
         for idx, item in enumerate(self.__managed_instances):
@@ -957,11 +958,6 @@ class ParametricDesignStudy:
     def remove_execution_block(self, idx: int) -> None:
         """Remove an execution block by its index from the design study.
 
-        Notes
-        -----
-        - All managed instances within the removed block are also removed from the design study,
-        unless they are also present in other execution blocks.
-
         Parameters
         ----------
         idx : int
@@ -971,6 +967,11 @@ class ParametricDesignStudy:
         ------
         IndexError
             If the provided index is out of range.
+
+        Notes
+        -----
+        All managed instances within the removed block are also removed from the design study,
+        unless they are also present in other execution blocks.
         """
         if 0 <= idx < len(self.__execution_blocks):
             block = self.__execution_blocks.pop(idx)
