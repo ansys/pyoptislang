@@ -227,12 +227,12 @@ def test_set_properties(optislang: Optislang, tmp_example_project):
     set_properties = {
         "ExecutionOptions": 2,
         "StopAfterExecution": True,
-        "ReadMode": {"value": "read_and_write_mode"},
+        "ReadMode": {"value": "classic_reevaluate_mode"},
     }
     node.set_properties(set_properties)
     assert node.get_property("ExecutionOptions") == 2
     assert node.get_property("StopAfterExecution") is True
-    assert node.get_property("ReadMode") == {"value": "read_and_write_mode"}
+    assert node.get_property("ReadMode").get("value") == "classic_reevaluate_mode"
 
 
 def test_node_execution_options(optislang: Optislang, tmp_example_project):
