@@ -1,0 +1,895 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>create_input_slot &#8212; PyOptiSLang</title>
+  
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../_static/styles/theme.css?digest=0790524f97105ba85085" rel="stylesheet" />
+<link href="../../_static/styles/pydata-sphinx-theme.css?digest=0790524f97105ba85085" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../../_static/styles/ansys-sphinx-theme.css?v=5ffe81b6" />
+    <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../_static/sg_gallery.css?v=fd6457a4" />
+    <link rel="stylesheet" type="text/css" href="../../_static/sg_gallery-binder.css?v=f4aeca0c" />
+    <link rel="stylesheet" type="text/css" href="../../_static/sg_gallery-dataframe.css?v=2082cf3c" />
+    <link rel="stylesheet" type="text/css" href="../../_static/sg_gallery-rendered-html.css?v=1277b6f3" />
+    <link rel="stylesheet" type="text/css" href="../../_static/styles/ansys-sphinx-theme.css?v=5ffe81b6" />
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.23/css/jquery.dataTables.min.css" />
+    <link rel="stylesheet" type="text/css" href="https://www.nerdfonts.com/assets/css/webfont.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/sphinx-design.min.css?v=95c83b7e" />
+  
+  <!-- So that users can add custom icons -->
+  <script defer src="../../_static/scripts/fontawesome.js?digest=0790524f97105ba85085"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=0790524f97105ba85085" />
+<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=0790524f97105ba85085" />
+
+
+  <!-- Include desired assets -->
+  <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+  
+
+  
+    <link href="../../_static/css/breadcrumbs.css" rel="stylesheet" />
+  
+    <script src="../../_static/documentation_options.js?v=b49cbf1a"></script>
+    <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../_static/copybutton.js?v=f281be69"></script>
+    <script src="../../_static/sg-tags.js?v=d80f6fa4"></script>
+    <script src="https://cdn.datatables.net/1.10.23/js/jquery.dataTables.min.js"></script>
+    <script src="../../_static/design-tabs.js?v=f930bc37"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'osl_server_api/_autosummary/ansys.optislang.core.tcp.osl_server.TcpOslServer.create_input_slot';</script>
+    <script>
+        DOCUMENTATION_OPTIONS.theme_version = '0.18.0';
+        DOCUMENTATION_OPTIONS.theme_switcher_json_url = 'https://optislang.docs.pyansys.com/versions.json';
+        DOCUMENTATION_OPTIONS.theme_switcher_version_match = 'dev';
+        DOCUMENTATION_OPTIONS.show_version_warning_banner =
+            false;
+        </script>
+    <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
+    <link rel="icon" href="../../_static/ansys-favicon.png"/>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="create_node" href="ansys.optislang.core.tcp.osl_server.TcpOslServer.create_node.html" />
+    <link rel="prev" title="connect_nodes" href="ansys.optislang.core.tcp.osl_server.TcpOslServer.connect_nodes.html" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="1.5.dev0" />
+  
+    
+    <script src="../../_static/searchtools.js"></script>
+    <script src="../../_static/language_data.js"></script>
+    <script src="../../searchindex.js"></script>
+  
+  <meta property="og:site_name" content="PyAnsys" />
+  <meta name="physics" content="Connect" />
+  <link rel="canonical" href="https://optislang.docs.pyansys.com/version/stable/osl_server_api/_autosummary/ansys.optislang.core.tcp.osl_server.TcpOslServer.create_input_slot.html" />
+  </head>
+  <body data-default-mode="">
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+
+  
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+  
+  
+  
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+  
+    <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../../_static/pyansys_logo_transparent_black.png" class="logo__image only-light" alt="PyOptiSLang - Home"/>
+    <img src="../../_static/pyansys_logo_transparent_white.png" class="logo__image only-dark pst-js-only" alt="PyOptiSLang - Home"/>
+  
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../index.html" title="PyOptiSLang home">Home</a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../getting_started/index.html">
+    Getting started
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../user_guide/index.html">
+    User guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../api/index.html">
+    API reference
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="../index.html">
+    optiSLang server API reference
+  </a>
+</li>
+
+            <li class="nav-item dropdown">
+                <button class="btn dropdown-toggle nav-item" type="button"
+                data-bs-toggle="dropdown" aria-expanded="false"
+                aria-controls="pst-nav-more-links">
+                    More
+                </button>
+                <ul id="pst-nav-more-links" class="dropdown-menu">
+                    
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="../../examples/index.html">
+    Examples
+  </a>
+</li>
+
+
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="../../contributing/index.html">
+    Contribute
+  </a>
+</li>
+
+                </ul>
+            </li>
+            
+  </ul>
+</nav>
+</div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+      
+        <div class="navbar-item">
+<div class="search-bar pst-js-only" id="search-bar">
+  <form class="bd-search d-flex align-items-center" action="../../search.html" method="get">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <input type="search" class="form-control" name="q" placeholder="Search the docs ..."
+      aria-label="Search the docs ..." autocomplete="off" autocorrect="off"
+      autocapitalize="off" spellcheck="false" />
+    <span class="search-button__kbd-shortcut">
+      <kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd>
+    </span>
+  </form>
+  
+  <div id="static-search-results" class="static-search-results" style="display:none;" tabindex="0"></div>
+  
+</div></div>
+      
+        <div class="navbar-item">
+<div class="version-switcher__container dropdown pst-js-only">
+  <button id="pst-version-switcher-button-2"
+    type="button"
+    class="version-switcher__button btn btn-sm dropdown-toggle"
+    data-bs-toggle="dropdown"
+    aria-haspopup="listbox"
+    aria-controls="pst-version-switcher-list-2"
+    aria-label="Version switcher list"
+  >
+    Choose version  <!-- this text may get changed later by javascript -->
+    <span class="caret"></span>
+  </button>
+  <div id="pst-version-switcher-list-2"
+    class="version-switcher__menu dropdown-menu list-group-flush py-0"
+    role="listbox" aria-labelledby="pst-version-switcher-button-2">
+    <!-- dropdown will be populated by javascript on page load -->
+  </div>
+</div></div>
+      
+        <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/ansys/pyoptislang" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+
+  
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+  
+    
+<!--
+  Announcement Version Loader
+  Dynamically loads the announcement.html content into the announcement_msg div.
+-->
+<div id="announcement_msg" aria-live="polite"></div>
+<script>
+  // Fetch and inject the announcement HTML content
+  fetch("announcement.html")
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error(`HTTP error: ${response.status} Announcement.html file not found, Please ignore this, if you are in dev/stable documentation`);
+      }
+      return response.text();
+    })
+    .then((text) => {
+      var msgDiv = document.getElementById("announcement_msg");
+      if (msgDiv) {
+        msgDiv.innerHTML = text;
+      }
+    })
+    .catch((error) => {
+      // Log only unexpected fetch errors
+      if (!(error.message && error.message.startsWith("HTTP error: 404"))) {
+        console.error(`Fetch problem: ${error.message} Announcement.html could not be loaded.`);
+      }
+    });
+</script>
+  
+
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../index.html" title="PyOptiSLang home">Home</a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../getting_started/index.html">
+    Getting started
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../user_guide/index.html">
+    User guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../api/index.html">
+    API reference
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="../index.html">
+    optiSLang server API reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../examples/index.html">
+    Examples
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../contributing/index.html">
+    Contribute
+  </a>
+</li>
+
+  </ul>
+</nav>
+</div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+<div class="search-bar pst-js-only" id="search-bar">
+  <form class="bd-search d-flex align-items-center" action="../../search.html" method="get">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <input type="search" class="form-control" name="q" placeholder="Search the docs ..."
+      aria-label="Search the docs ..." autocomplete="off" autocorrect="off"
+      autocapitalize="off" spellcheck="false" />
+    <span class="search-button__kbd-shortcut">
+      <kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd>
+    </span>
+  </form>
+  
+  <div id="static-search-results" class="static-search-results" style="display:none;" tabindex="0"></div>
+  
+</div></div>
+        
+          <div class="navbar-item">
+<div class="version-switcher__container dropdown pst-js-only">
+  <button id="pst-version-switcher-button-3"
+    type="button"
+    class="version-switcher__button btn btn-sm dropdown-toggle"
+    data-bs-toggle="dropdown"
+    aria-haspopup="listbox"
+    aria-controls="pst-version-switcher-list-3"
+    aria-label="Version switcher list"
+  >
+    Choose version  <!-- this text may get changed later by javascript -->
+    <span class="caret"></span>
+  </button>
+  <div id="pst-version-switcher-list-3"
+    class="version-switcher__menu dropdown-menu list-group-flush py-0"
+    role="listbox" aria-labelledby="pst-version-switcher-button-3">
+    <!-- dropdown will be populated by javascript on page load -->
+  </div>
+</div></div>
+        
+          <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/ansys/pyoptislang" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item pst-sidebar-collapse"><button id="pst-collapse-sidebar-button" aria-expanded="true" aria-controls="pst-primary-sidebar"><svg class="pst-icon svg-inline--fa" role="img" aria-hidden="true" focusable="false" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+    <path fill="currentColor" d="M3 15.5C2.36232 15.5 1.74874 15.2564 1.28478 14.8189C0.820828 14.3815 0.541576 13.7832 0.504167 13.1467L0.5 13L0.5 3C0.499965 2.36232 0.743605 1.74874 1.18107 1.28478C1.61854 0.820828 2.21676 0.541576 2.85333 0.504167L3 0.5L13 0.5C13.6377 0.499965 14.2513 0.743605 14.7152 1.18107C15.1792 1.61854 15.4584 2.21676 15.4958 2.85333L15.5 3L15.5 13C15.5 13.6377 15.2564 14.2513 14.8189 14.7152C14.3815 15.1792 13.7832 15.4584 13.1467 15.4958L13 15.5L3 15.5ZM3 13.8333L10.5 13.8333L10.5 2.16667L3 2.16667C2.79589 2.16669 2.59889 2.24163 2.44636 2.37726C2.29383 2.5129 2.19638 2.69979 2.1725 2.9025L2.16667 3L2.16667 13C2.16669 13.2041 2.24163 13.4011 2.37726 13.5536C2.5129 13.7062 2.69979 13.8036 2.9025 13.8275L3 13.8333ZM6.65583 10.325L6.5775 10.2558L4.91083 8.58917C4.76735 8.44567 4.68116 8.25476 4.66843 8.05223C4.65569 7.84971 4.71729 7.6495 4.84167 7.48917L4.91083 7.41083L6.5775 5.74417C6.72747 5.59471 6.9287 5.50794 7.14032 5.50148C7.35194 5.49502 7.55809 5.56935 7.7169 5.70937C7.8757 5.8494 7.97525 6.04463 7.99533 6.25539C8.01541 6.46616 7.95451 6.67667 7.825 6.84417L7.75583 6.9225L6.67917 8L7.75583 9.0775C7.89931 9.22099 7.98551 9.41191 7.99824 9.61443C8.01097 9.81695 7.94938 10.0172 7.825 10.1775L7.75583 10.2558C7.61234 10.3993 7.42142 10.4855 7.2189 10.4982C7.01638 10.511 6.81617 10.4494 6.65583 10.325Z"/>
+  </svg>
+  <span class="pst-collapse-sidebar-label">Collapse Sidebar</span>
+  <span class="pst-expand-sidebar-label">Expand Sidebar</span>
+</button></div>
+        <div class="sidebar-primary-item">
+
+
+<nav class="bd-docs-nav bd-links"
+     aria-label="Section Navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
+  <div class="bd-toc-item navbar-nav"><ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../optislang_server.html">optiSLang server base interface</a></li>
+<li class="toctree-l1 current active has-children"><a class="reference internal" href="../optislang_tcp_server.html">optiSLang TCP server interface</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
+<li class="toctree-l2 current active has-children"><a class="reference internal" href="ansys.optislang.core.tcp.osl_server.TcpOslServer.html">TcpOslServer</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="ansys.optislang.core.tcp.osl_server.TcpOslServer.add_criterion.html">add_criterion</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ansys.optislang.core.tcp.osl_server.TcpOslServer.assign_placeholder.html">assign_placeholder</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ansys.optislang.core.tcp.osl_server.TcpOslServer.connect_nodes.html">connect_nodes</a></li>
+<li class="toctree-l3 current active"><a class="current reference internal" href="#">create_input_slot</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ansys.optislang.core.tcp.osl_server.TcpOslServer.create_node.html">create_node</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ansys.optislang.core.tcp.osl_server.TcpOslServer.create_output_slot.html">create_output_slot</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ansys.optislang.core.tcp.osl_server.TcpOslServer.create_placeholder.html">create_placeholder</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ansys.optislang.core.tcp.osl_server.TcpOslServer.create_placeholder_from_actor_property.html">create_placeholder_from_actor_property</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ansys.optislang.core.tcp.osl_server.TcpOslServer.disconnect_nodes.html">disconnect_nodes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ansys.optislang.core.tcp.osl_server.TcpOslServer.disconnect_slot.html">disconnect_slot</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ansys.optislang.core.tcp.osl_server.TcpOslServer.dispose.html">dispose</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ansys.optislang.core.tcp.osl_server.TcpOslServer.evaluate_design.html">evaluate_design</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ansys.optislang.core.tcp.osl_server.TcpOslServer.get_actor_info.html">get_actor_info</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ansys.optislang.core.tcp.osl_server.TcpOslServer.get_actor_internal_variables.html">get_actor_internal_variables</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ansys.optislang.core.tcp.osl_server.TcpOslServer.get_actor_properties.html">get_actor_properties</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ansys.optislang.core.tcp.osl_server.TcpOslServer.get_actor_registered_input_slots.html">get_actor_registered_input_slots</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ansys.optislang.core.tcp.osl_server.TcpOslServer.get_actor_registered_output_slots.html">get_actor_registered_output_slots</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ansys.optislang.core.tcp.osl_server.TcpOslServer.get_actor_registered_parameters.html">get_actor_registered_parameters</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ansys.optislang.core.tcp.osl_server.TcpOslServer.get_actor_registered_responses.html">get_actor_registered_responses</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ansys.optislang.core.tcp.osl_server.TcpOslServer.get_actor_states.html">get_actor_states</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ansys.optislang.core.tcp.osl_server.TcpOslServer.get_actor_status_info.html">get_actor_status_info</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ansys.optislang.core.tcp.osl_server.TcpOslServer.get_actor_supports.html">get_actor_supports</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ansys.optislang.core.tcp.osl_server.TcpOslServer.get_available_input_locations.html">get_available_input_locations</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ansys.optislang.core.tcp.osl_server.TcpOslServer.get_available_node_types.html">get_available_node_types</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ansys.optislang.core.tcp.osl_server.TcpOslServer.get_available_nodes.html">get_available_nodes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ansys.optislang.core.tcp.osl_server.TcpOslServer.get_available_output_locations.html">get_available_output_locations</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ansys.optislang.core.tcp.osl_server.TcpOslServer.get_basic_project_info.html">get_basic_project_info</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ansys.optislang.core.tcp.osl_server.TcpOslServer.get_criteria.html">get_criteria</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ansys.optislang.core.tcp.osl_server.TcpOslServer.get_criterion.html">get_criterion</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ansys.optislang.core.tcp.osl_server.TcpOslServer.get_designs.html">get_designs</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ansys.optislang.core.tcp.osl_server.TcpOslServer.get_doe_size.html">get_doe_size</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ansys.optislang.core.tcp.osl_server.TcpOslServer.get_full_project_status_info.html">get_full_project_status_info</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ansys.optislang.core.tcp.osl_server.TcpOslServer.get_full_project_tree.html">get_full_project_tree</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ansys.optislang.core.tcp.osl_server.TcpOslServer.get_full_project_tree_with_properties.html">get_full_project_tree_with_properties</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ansys.optislang.core.tcp.osl_server.TcpOslServer.get_full_subtree_status_info.html">get_full_subtree_status_info</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ansys.optislang.core.tcp.osl_server.TcpOslServer.get_host.html">get_host</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ansys.optislang.core.tcp.osl_server.TcpOslServer.get_hpc_licensing_forwarded_environment.html">get_hpc_licensing_forwarded_environment</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ansys.optislang.core.tcp.osl_server.TcpOslServer.get_input_slot_value.html">get_input_slot_value</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ansys.optislang.core.tcp.osl_server.TcpOslServer.get_osl_version.html">get_osl_version</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ansys.optislang.core.tcp.osl_server.TcpOslServer.get_osl_version_string.html">get_osl_version_string</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ansys.optislang.core.tcp.osl_server.TcpOslServer.get_output_slot_value.html">get_output_slot_value</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ansys.optislang.core.tcp.osl_server.TcpOslServer.get_placeholder.html">get_placeholder</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ansys.optislang.core.tcp.osl_server.TcpOslServer.get_placeholder_ids.html">get_placeholder_ids</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ansys.optislang.core.tcp.osl_server.TcpOslServer.get_port.html">get_port</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ansys.optislang.core.tcp.osl_server.TcpOslServer.get_project_description.html">get_project_description</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ansys.optislang.core.tcp.osl_server.TcpOslServer.get_project_location.html">get_project_location</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ansys.optislang.core.tcp.osl_server.TcpOslServer.get_project_name.html">get_project_name</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ansys.optislang.core.tcp.osl_server.TcpOslServer.get_project_status.html">get_project_status</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ansys.optislang.core.tcp.osl_server.TcpOslServer.get_project_tree_systems.html">get_project_tree_systems</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ansys.optislang.core.tcp.osl_server.TcpOslServer.get_project_tree_systems_with_properties.html">get_project_tree_systems_with_properties</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ansys.optislang.core.tcp.osl_server.TcpOslServer.get_project_uid.html">get_project_uid</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ansys.optislang.core.tcp.osl_server.TcpOslServer.get_result_design.html">get_result_design</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ansys.optislang.core.tcp.osl_server.TcpOslServer.get_server_info.html">get_server_info</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ansys.optislang.core.tcp.osl_server.TcpOslServer.get_server_is_alive.html">get_server_is_alive</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ansys.optislang.core.tcp.osl_server.TcpOslServer.get_systems_status_info.html">get_systems_status_info</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ansys.optislang.core.tcp.osl_server.TcpOslServer.get_timeout.html">get_timeout</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ansys.optislang.core.tcp.osl_server.TcpOslServer.get_working_dir.html">get_working_dir</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ansys.optislang.core.tcp.osl_server.TcpOslServer.load.html">load</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ansys.optislang.core.tcp.osl_server.TcpOslServer.new.html">new</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ansys.optislang.core.tcp.osl_server.TcpOslServer.open.html">open</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ansys.optislang.core.tcp.osl_server.TcpOslServer.re_register_locations_as_parameter.html">re_register_locations_as_parameter</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ansys.optislang.core.tcp.osl_server.TcpOslServer.re_register_locations_as_response.html">re_register_locations_as_response</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ansys.optislang.core.tcp.osl_server.TcpOslServer.register_location_as_input_slot.html">register_location_as_input_slot</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ansys.optislang.core.tcp.osl_server.TcpOslServer.register_location_as_internal_variable.html">register_location_as_internal_variable</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ansys.optislang.core.tcp.osl_server.TcpOslServer.register_location_as_output_slot.html">register_location_as_output_slot</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ansys.optislang.core.tcp.osl_server.TcpOslServer.register_location_as_parameter.html">register_location_as_parameter</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ansys.optislang.core.tcp.osl_server.TcpOslServer.register_location_as_response.html">register_location_as_response</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ansys.optislang.core.tcp.osl_server.TcpOslServer.register_locations_as_parameter.html">register_locations_as_parameter</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ansys.optislang.core.tcp.osl_server.TcpOslServer.register_locations_as_response.html">register_locations_as_response</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ansys.optislang.core.tcp.osl_server.TcpOslServer.remove_criteria.html">remove_criteria</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ansys.optislang.core.tcp.osl_server.TcpOslServer.remove_criterion.html">remove_criterion</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ansys.optislang.core.tcp.osl_server.TcpOslServer.remove_node.html">remove_node</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ansys.optislang.core.tcp.osl_server.TcpOslServer.remove_placeholder.html">remove_placeholder</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ansys.optislang.core.tcp.osl_server.TcpOslServer.rename_node.html">rename_node</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ansys.optislang.core.tcp.osl_server.TcpOslServer.rename_placeholder.html">rename_placeholder</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ansys.optislang.core.tcp.osl_server.TcpOslServer.rename_slot.html">rename_slot</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ansys.optislang.core.tcp.osl_server.TcpOslServer.reset.html">reset</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ansys.optislang.core.tcp.osl_server.TcpOslServer.run_python_file.html">run_python_file</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ansys.optislang.core.tcp.osl_server.TcpOslServer.run_python_script.html">run_python_script</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ansys.optislang.core.tcp.osl_server.TcpOslServer.save.html">save</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ansys.optislang.core.tcp.osl_server.TcpOslServer.save_as.html">save_as</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ansys.optislang.core.tcp.osl_server.TcpOslServer.save_copy.html">save_copy</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ansys.optislang.core.tcp.osl_server.TcpOslServer.send_command.html">send_command</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ansys.optislang.core.tcp.osl_server.TcpOslServer.set_actor_property.html">set_actor_property</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ansys.optislang.core.tcp.osl_server.TcpOslServer.set_criterion_property.html">set_criterion_property</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ansys.optislang.core.tcp.osl_server.TcpOslServer.set_designs.html">set_designs</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ansys.optislang.core.tcp.osl_server.TcpOslServer.set_placeholder_value.html">set_placeholder_value</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ansys.optislang.core.tcp.osl_server.TcpOslServer.set_start_designs.html">set_start_designs</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ansys.optislang.core.tcp.osl_server.TcpOslServer.set_timeout.html">set_timeout</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ansys.optislang.core.tcp.osl_server.TcpOslServer.shutdown.html">shutdown</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ansys.optislang.core.tcp.osl_server.TcpOslServer.start.html">start</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ansys.optislang.core.tcp.osl_server.TcpOslServer.stop.html">stop</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ansys.optislang.core.tcp.osl_server.TcpOslServer.unassign_placeholder.html">unassign_placeholder</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ansys.optislang.core.tcp.osl_server.TcpOslServer.host.html">host</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ansys.optislang.core.tcp.osl_server.TcpOslServer.is_remote.html">is_remote</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ansys.optislang.core.tcp.osl_server.TcpOslServer.local_server_id.html">local_server_id</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ansys.optislang.core.tcp.osl_server.TcpOslServer.max_request_attempts_register.html">max_request_attempts_register</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ansys.optislang.core.tcp.osl_server.TcpOslServer.osl_version.html">osl_version</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ansys.optislang.core.tcp.osl_server.TcpOslServer.osl_version_string.html">osl_version_string</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ansys.optislang.core.tcp.osl_server.TcpOslServer.port.html">port</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ansys.optislang.core.tcp.osl_server.TcpOslServer.timeout.html">timeout</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ansys.optislang.core.tcp.osl_server.TcpOslServer.timeouts_register.html">timeouts_register</a></li>
+</ul>
+</details></li>
+</ul>
+</details></li>
+<li class="toctree-l1"><a class="reference internal" href="../optislang_server_queries.html">Server queries</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../optislang_server_commands.html">Server commands</a></li>
+</ul>
+</div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+<nav aria-label="Breadcrumb">
+  <ul class="bd-breadcrumbs">
+         
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="https://docs.pyansys.com/" class="nav-link">PyAnsys</a>
+    </li>
+     
+    <li class="breadcrumb-item">
+      <a
+        href="../../index.html"
+        class="nav-link"
+        aria-label="Home"
+      >
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+     
+    <li class="breadcrumb-item">
+      <a href="../index.html" class="nav-link">optiSLang server API reference</a>
+    </li>
+     
+    <li class="breadcrumb-item">
+      <a href="../optislang_tcp_server.html" class="nav-link">optiSLang TCP server interface</a>
+    </li>
+     
+    <li class="breadcrumb-item">
+      <a href="ansys.optislang.core.tcp.osl_server.TcpOslServer.html" class="nav-link">TcpOslServer</a>
+    </li>
+      
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">create_input_slot</span></li>
+    
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="create-input-slot">
+<h1>create_input_slot<a class="headerlink" href="#create-input-slot" title="Link to this heading">#</a></h1>
+<dl class="py method">
+<dt class="sig sig-object py" id="ansys.optislang.core.tcp.osl_server.TcpOslServer.create_input_slot">
+<span class="sig-prename descclassname"><span class="pre">TcpOslServer.</span></span><span class="sig-name descname"><span class="pre">create_input_slot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">actor_uid</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">slot_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">type_hint</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../api/_autosummary/ansys.optislang.core.slot_types.SlotTypeHint.html#ansys.optislang.core.slot_types.SlotTypeHint" title="ansys.optislang.core.slot_types.SlotTypeHint"><span class="pre">SlotTypeHint</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#ansys.optislang.core.tcp.osl_server.TcpOslServer.create_input_slot" title="Link to this definition">#</a></dt>
+<dd><p>Create dynamic input slot.</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl>
+<dt><strong>actor_uid</strong><span class="classifier"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><code class="docutils literal notranslate"><span class="pre">str</span></code></a></span></dt><dd><p>Uid of the actor.</p>
+</dd>
+<dt><strong>slot_name</strong><span class="classifier"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><code class="docutils literal notranslate"><span class="pre">str</span></code></a></span></dt><dd><p>Name of the slot to be created.</p>
+</dd>
+<dt><strong>type_hint: Optional[SlotTypeHint], optional</strong></dt><dd><p>Type hint for the slot. By default <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">OslCommunicationError</span></code></dt><dd><p>Raised when an error occurs while communicating with server.</p>
+</dd>
+<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">OslCommandError</span></code></dt><dd><p>Raised when the command or query fails.</p>
+</dd>
+<dt><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#TimeoutError" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TimeoutError</span></code></a></dt><dd><p>Raised when the timeout float value expires.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+
+
+                </article>
+              
+              
+              
+              
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#ansys.optislang.core.tcp.osl_server.TcpOslServer.create_input_slot"><code class="docutils literal notranslate"><span class="pre">TcpOslServer.create_input_slot()</span></code></a></li>
+</ul>
+  </nav></div>
+
+  <div class="sidebar-secondary-item">
+
+
+  
+  <nav class="tocsection editthispage" aria-label="Edit this page">
+    <a href="None" rel="noopener noreferrer">
+      <i class="fa-solid fa-pencil" aria-hidden="true"></i>
+      
+      
+        
+          Edit on GitHub
+        
+      
+    </a>
+  </nav>
+</div>
+
+  <div class="sidebar-secondary-item">
+  <div role="note" aria-label="source link">
+    <ul class="this-page-menu">
+      <li><a href="../../_sources/osl_server_api/_autosummary/ansys.optislang.core.tcp.osl_server.TcpOslServer.create_input_slot.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../../_static/scripts/bootstrap.js?digest=0790524f97105ba85085"></script>
+<script defer src="../../_static/scripts/pydata-sphinx-theme.js?digest=0790524f97105ba85085"></script>
+
+
+  <!-- Include desired assets -->
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.7/require.min.js"></script>
+
+<script>
+// Passing the search options to the search.js file
+const SEARCH_OPTIONS = JSON.parse('{"keys": ["title", "text", "objectID"], "limit": 10, "threshold": 0.2}');
+const SEARCH_FILE = "../../_static/search.json";
+const ADVANCE_SEARCH_PATH = "../../search.html";
+const EXTRA_SOURCES = JSON.parse('""');
+</script>
+
+
+<script src="../../_static/js/search.js"></script>
+
+  
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2026 Synopsys, Inc. and ANSYS, Inc. All rights reserved.
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.0.4.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<!--
+  Theme Version Footer
+  Displays the Sphinx theme version and the last updated date.
+  Accessibility and semantic improvements included.
+-->
+<footer class="theme-version" aria-label="Theme version and last update">
+  <span>
+    
+      Built with the
+      <a href="https://sphinxdocs.ansys.com/version/stable/index.html" target="_blank" rel="noopener noreferrer">
+        Ansys Sphinx Theme
+      </a>
+      1.9.0.
+    
+  </span>
+  <br />
+  <span>Last updated on <time id="ast_build_date"></time></span>
+</footer>
+<script>
+  // Set the last updated date in a readable format
+  (function() {
+    var options = { day: "numeric", month: "long", year: "numeric" };
+    var ast_lastModifiedDate = new Date(document.lastModified);
+    var ast_build_date = ast_lastModifiedDate.toLocaleDateString("en-US", options);
+    var dateElem = document.getElementById("ast_build_date");
+    if (dateElem) {
+      dateElem.textContent = ast_build_date;
+    }
+  })();
+</script></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

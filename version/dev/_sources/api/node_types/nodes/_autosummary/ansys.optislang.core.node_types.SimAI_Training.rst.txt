@@ -1,0 +1,6 @@
+﻿SimAI\_Training
+===============
+
+.. currentmodule:: ansys.optislang.core.node_types
+
+.. autodata:: SimAI_Training

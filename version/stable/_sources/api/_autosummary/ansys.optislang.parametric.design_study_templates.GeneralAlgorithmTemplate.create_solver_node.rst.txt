@@ -1,0 +1,6 @@
+create\_solver\_node
+====================
+
+.. currentmodule:: ansys.optislang.parametric.design_study_templates
+
+.. automethod:: GeneralAlgorithmTemplate.create_solver_node

@@ -1,0 +1,6 @@
+reference\_dir\_path
+====================
+
+.. currentmodule:: ansys.optislang.core.io
+
+.. autoproperty:: ReferenceFilesDirRelativePath.reference_dir_path

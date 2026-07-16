@@ -1,0 +1,50 @@
+
+
+.. _sphx_glr_examples_gallery_examples_evaluate_design:
+
+Evaluate designs
+----------------
+
+These examples demonstrate how to evaluate designs.
+
+
+.. raw:: html
+
+  <div id='sg-tag-list' class='sphx-glr-tag-list'></div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbnails">
+
+.. thumbnail-parent-div-open
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="This example demonstrates the evaluation of designs.">
+
+.. only:: html
+
+  .. image:: /examples/gallery_examples/evaluate_design/images/thumb/sphx_glr_01_ten_bar_truss_thumb.png
+    :alt:
+
+  :doc:`/examples/gallery_examples/evaluate_design/01_ten_bar_truss`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Ten bar truss</div>
+    </div>
+
+
+.. thumbnail-parent-div-close
+
+.. raw:: html
+
+    </div>
+
+
+.. toctree::
+   :hidden:
+
+   /examples/gallery_examples/evaluate_design/01_ten_bar_truss
+

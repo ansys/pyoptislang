@@ -1,0 +1,6 @@
+from\_dict
+==========
+
+.. currentmodule:: ansys.optislang.core.io
+
+.. automethod:: RegisteredFilePath.from_dict

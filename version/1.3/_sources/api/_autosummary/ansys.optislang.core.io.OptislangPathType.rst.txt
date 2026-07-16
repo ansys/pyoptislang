@@ -1,0 +1,36 @@
+﻿OptislangPathType
+=================
+
+.. currentmodule:: ansys.optislang.core.io
+
+.. autoclass:: OptislangPathType
+
+   
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :toctree:
+   
+      
+      OptislangPathType.from_str
+      
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+      :toctree:
+   
+      OptislangPathType.ABSOLUTE_PATH
+      OptislangPathType.WORKING_DIR_RELATIVE
+      OptislangPathType.PROJECT_RELATIVE
+      OptislangPathType.PROJECT_WORKING_DIR_RELATIVE
+      OptislangPathType.REFERENCE_FILES_DIR_RELATIVE
+      OptislangPathType.REGISTERED_FILE
+   
+   

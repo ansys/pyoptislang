@@ -1,0 +1,6 @@
+execution\_order
+================
+
+.. currentmodule:: ansys.optislang.parametric.design_study
+
+.. autoproperty:: ParametricDesignStudy.execution_order

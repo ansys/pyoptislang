@@ -1,0 +1,6 @@
+optislang\_path
+===============
+
+.. currentmodule:: ansys.optislang.core.io
+
+.. autoproperty:: RegisteredFile.optislang_path
