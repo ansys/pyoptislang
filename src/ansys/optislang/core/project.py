@@ -29,6 +29,8 @@ from typing import TYPE_CHECKING, Any, List, Optional, Sequence, Tuple, Union
 
 if TYPE_CHECKING:
     from ansys.optislang.core.io import RegisteredFile
+    from ansys.optislang.core.managers import CriteriaManager, ParameterManager, ResponseManager
+    from ansys.optislang.core.node_types import NodeType
     from ansys.optislang.core.nodes import RootSystem
     from ansys.optislang.core.placeholder_types import PlaceholderInfo, PlaceholderType, UserLevel
     from ansys.optislang.core.project_parametric import Design
@@ -40,6 +42,42 @@ class Project(ABC):
     @abstractmethod
     def __init__(self):  # pragma: no cover
         """``Project`` class is an abstract base class and cannot be instantiated."""
+        pass
+
+    @property
+    @abstractmethod
+    def criteria_manager(self) -> CriteriaManager:
+        """Instance of the ``CriteriaManager`` class at the root system.
+
+        Returns
+        -------
+        CriteriaManager
+            Criteria manager at the root system.
+        """
+        pass
+
+    @property
+    @abstractmethod
+    def parameter_manager(self) -> ParameterManager:
+        """Instance of the ``ParameterManager`` class at the root system.
+
+        Returns
+        -------
+        ParameterManager
+            Parameter manager at the root system.
+        """
+        pass
+
+    @property
+    @abstractmethod
+    def response_manager(self) -> ResponseManager:
+        """Instance of the ``ResponseManager`` class at the root system.
+
+        Returns
+        -------
+        ResponseManager
+            Response manager at the root system.
+        """
         pass
 
     @property
@@ -597,6 +635,26 @@ class Project(ABC):
             Raised when an error occurs while communicating with server.
         OslCommandError
             Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        pass
+
+    @abstractmethod
+    def get_available_node_types(self) -> List[NodeType]:
+        """Get list of available node types.
+
+        Returns
+        -------
+        List[NodeType]
+            Available nodes types.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
         TimeoutError
             Raised when the timeout float value expires.
         """
