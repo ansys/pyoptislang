@@ -53,11 +53,17 @@ from ansys.optislang.core.slot_types import SlotTypeHint
 from ansys.optislang.core.tcp.settings import TcpSerializer
 from ansys.optislang.parametric.design_study import (
     ExecutableBlock,
+    FixedParametricDesignStudy,
+    GeneralAlgorithmDesignStudy,
+    OptimizationOnMOPDesignStudy,
+    ParametricDesignStudyBase,
+    ParametricSystemIntegrationDesignStudy,
     ManagedInstance,
     ManagedParametricSystem,
     OMDBFilesProvider,
     ParametricDesignStudyManager,
     ProxySolverManagedParametricSystem,
+    _register_solver_node_locations,
 )
 
 if TYPE_CHECKING:
@@ -173,7 +179,11 @@ class _BaseSettings:
             ]
             if unknown:
                 raise AttributeError(f"Unknown setting attribute(s): {', '.join(unknown)}")
-            selected = [props_by_attr[name] for name in names]
+            selected = [
+                props_by_attr[name] for name in names if name in props_by_attr
+            ]
+            if "additional_settings" in names:
+                clear_additional_settings = True
         else:
             selected = list(props_by_attr.values())
 
@@ -359,7 +369,7 @@ class ProxySolverNodeSettings(GeneralNodeSettings):
         stop_after_execution: Optional[bool] = None,
         path: Optional[Union[str, Path, OptislangPath]] = None,
     ):
-        """Initialize the MopSolverNode.
+        """Initialize the ProxySolverNode.
 
         Parameters
         ----------
@@ -547,6 +557,32 @@ class DesignStudyTemplate:
         """
         pass
 
+    def create_design_study_instance(
+        self,
+        osl_instance: Optislang,
+        parent: ParametricSystem,
+    ) -> FixedParametricDesignStudy:
+        """Create a fixed design-study instance from this template.
+
+        Parameters
+        ----------
+        osl_instance : Optislang
+            optiSLang instance used by the created design study.
+        parent : ParametricSystem
+            Parent system where the template is created.
+
+        Returns
+        -------
+        FixedParametricDesignStudy
+            Concrete fixed design-study instance.
+        """
+        managed_instances, execution_blocks = self.create_design_study(parent)
+        return FixedParametricDesignStudy(
+            osl_instance=osl_instance,
+            managed_instances=managed_instances,
+            execution_blocks=execution_blocks,
+        )
+
     def create_algorithm(
         self,
         parent_system: ParametricSystem,
@@ -699,147 +735,8 @@ class DesignStudyTemplate:
         # use custom method to register parameters and responses
         # TODO: Reimplement registration of locations, when convenience module for registration
         # of locations is introduced. For now, only ProxySolver and Mopsolver is implemented.
-        if solver_node.type == nt.ProxySolver:
-            if not isinstance(solver_node, ProxySolverNode):
-                raise TypeError("Unexpected solver node type: `{}`".format(type(solver_node)))
-            self.__register_proxy_solver_locations(solver_node, parameters, responses)
-        elif solver_node.type == nt.Mopsolver:
-            self.__register_mop_solver_locations(solver_node, parameters, responses)
-        elif solver_node.type == nt.Python2:
-            self.__register_python2_locations(solver_node, parameters, responses)
-        else:
-            self.__register_integration_node_locations(solver_node)
+        _register_solver_node_locations(solver_node, parameters, responses)
         return solver_node
-
-    def __register_proxy_solver_locations(
-        self,
-        solver_node: ProxySolverNode,
-        parameters: Iterable[Parameter],
-        responses: Iterable[Response],
-    ) -> None:  # pragma: no cover
-        """Register proxy solver node locations.
-
-        Parameters
-        ----------
-        solver_node : ProxySolverNode
-            Instance of the proxy solver node.
-        parameters : Iterable[Parameter]
-            Parameter to be registered.
-        responses: Iterable[Response]
-            Responses to be registered.
-        """
-        load_json: dict[str, Any] = {}
-        load_json["parameters"] = []
-        load_json["responses"] = []
-        for parameter in parameters:
-            load_json["parameters"].append(
-                {
-                    "dir": {"value": "input"},
-                    "name": parameter.name,
-                    "value": parameter.reference_value,
-                }
-            )
-        for response in responses:
-            load_json["responses"].append(
-                {
-                    "dir": {"value": "output"},
-                    "name": response.name,
-                    "value": response.reference_value,
-                }
-            )
-
-        solver_node.load(args=load_json)
-        solver_node.register_locations_as_parameter()
-        solver_node.register_locations_as_response()
-
-    def __register_mop_solver_locations(
-        self,
-        solver_node: IntegrationNode,
-        parameters: Iterable[Parameter],
-        responses: Iterable[Response],
-    ) -> None:  # pragma: no cover
-        """Register mop solver node locations.
-
-        Parameters
-        ----------
-        solver_node : IntegrationNode
-            Instance of the mop solver node.
-        parameters : Iterable[Parameter]
-            Parameter to be registered.
-        responses: Iterable[Response]
-            Responses to be registered.
-        """
-        base = next(iter(parameters))
-        for parameter in parameters:
-            location = {
-                "base": base.name,
-                "dir": {"enum": ["input", "output"], "value": "input"},
-                "id": parameter.name,
-                "suffix": "",
-                "value_type": {
-                    "enum": ["value", "cop", "rmse", "error", "abs_error", "density"],
-                    "value": "value",
-                },
-            }
-            solver_node.register_location_as_parameter(
-                location, parameter.name, parameter.reference_value
-            )
-        for response in responses:
-            location = {
-                "base": response.name,
-                "dir": {"value": "output"},
-                "id": response.name,
-                "suffix": "",
-                "value_type": {"value": "value"},
-            }
-            solver_node.register_location_as_response(
-                location, reference_value=response.reference_value
-            )
-
-    def __register_python2_locations(
-        self,
-        solver_node: IntegrationNode,
-        parameters: Iterable[Parameter],
-        responses: Iterable[Response],
-    ) -> None:  # pragma: no cover
-        """Register python2 node locations.
-
-        Parameters
-        ----------
-        solver_node : IntegrationNode
-            Instance of the python solver node.
-        parameters : Iterable[Parameter]
-            Parameter to be registered.
-        responses: Iterable[Response]
-            Responses to be registered.
-        """
-        solver_node.load()
-        for parameter in parameters:
-            solver_node.register_location_as_parameter(
-                location=parameter.name,
-                name=parameter.name,
-                reference_value=parameter.reference_value,
-            )
-        for response in responses:
-            solver_node.register_location_as_response(
-                location=response.name,
-                name=response.name,
-                reference_value=response.reference_value,
-            )
-
-    def __register_integration_node_locations(
-        self, solver_node: IntegrationNode
-    ) -> None:  # pragma: no cover
-        """Register integration node locations using `load` method.
-
-        Parameters
-        ----------
-        solver_node : IntegrationNode
-            Instance of the integration_node.
-        """
-        solver_node.load()
-        solver_node.register_locations_as_parameter()
-        solver_node.register_locations_as_response()
 
 
 class ParametricSystemIntegrationTemplate(DesignStudyTemplate):
@@ -941,6 +838,19 @@ class ParametricSystemIntegrationTemplate(DesignStudyTemplate):
             )
         )
         return ((instance,), (executable_block,))
+
+    def create_design_study_instance(
+        self,
+        osl_instance: Optislang,
+        parent: ParametricSystem,
+    ) -> ParametricSystemIntegrationDesignStudy:
+        """Create a ``ParametricSystemIntegrationDesignStudy`` instance."""
+        managed_instances, executable_blocks = self.create_design_study(parent)
+        return ParametricSystemIntegrationDesignStudy(
+            osl_instance,
+            managed_instances,
+            executable_blocks,
+        )
 
 
 class GeneralAlgorithmTemplate(DesignStudyTemplate):
@@ -1066,6 +976,19 @@ class GeneralAlgorithmTemplate(DesignStudyTemplate):
             )
         )
         return ((instance,), (executable_block,))
+
+    def create_design_study_instance(
+        self,
+        osl_instance: Optislang,
+        parent: ParametricSystem,
+    ) -> GeneralAlgorithmDesignStudy:
+        """Create a ``GeneralAlgorithmDesignStudy`` instance."""
+        managed_instances, executable_blocks = self.create_design_study(parent)
+        return GeneralAlgorithmDesignStudy(
+            osl_instance,
+            managed_instances,
+            executable_blocks,
+        )
 
 
 class OptimizationOnMOPTemplate(DesignStudyTemplate):
@@ -1221,7 +1144,7 @@ class OptimizationOnMOPTemplate(DesignStudyTemplate):
         # filter
         filter_node = parent.create_node(type_=nt.DataMining, name="VALIDATOR_FILTER_NODE")
         if not isinstance(filter_node, IntegrationNode):
-            raise TypeError("Unexpected filter node type: `{}`".format(type(validator_solver_node)))
+            raise TypeError("Unexpected filter node type: `{}`".format(type(filter_node)))
         filter_node.create_input_slot("IBestDesigns", SlotTypeHint.DESIGN_CONTAINER)
         filter_node_managed_instance = ManagedInstance(filter_node)
         optimizer_algorithm.get_output_slots("OBestDesigns")[0].connect_to(
@@ -1353,6 +1276,19 @@ class OptimizationOnMOPTemplate(DesignStudyTemplate):
             ),
         )
         return (managed_instances, tuple(executable_blocks))
+
+    def create_design_study_instance(
+        self,
+        osl_instance: Optislang,
+        parent: ParametricSystem,
+    ) -> OptimizationOnMOPDesignStudy:
+        """Create a ``OptimizationOnMOPDesignStudy`` instance."""
+        managed_instances, executable_blocks = self.create_design_study(parent)
+        return OptimizationOnMOPDesignStudy(
+            osl_instance,
+            managed_instances,
+            executable_blocks,
+        )
 
     @staticmethod
     def _empty_callback(designs: List[dict]) -> List[dict]:

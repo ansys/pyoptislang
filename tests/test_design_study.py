@@ -42,16 +42,23 @@ from ansys.optislang.core.tcp.nodes import (
 )
 from ansys.optislang.parametric.design_study import (
     ExecutableBlock,
+    FixedParametricDesignStudy,
+    GeneralAlgorithmDesignStudy,
     ManagedInstance,
     ManagedParametricSystem,
     OMDBFilesProvider,
     OMDBFilesSpecificationEnum,
+    OptimizationOnMOPDesignStudy,
     ParametricDesignStudy,
+    ParametricDesignStudyBase,
     ParametricDesignStudyManager,
+    ParametricSystemIntegrationDesignStudy,
     ProxySolverManagedParametricSystem,
 )
 from ansys.optislang.parametric.design_study_templates import (
     GeneralAlgorithmTemplate,
+    OptimizationOnMOPTemplate,
+    ParametricSystemIntegrationTemplate,
     ProxySolverNodeSettings,
 )
 
@@ -67,6 +74,28 @@ class _MockedNode:
 
     def delete(self):
         self.deleted = True
+
+
+class _MockedProject:
+    root_system = object()
+
+
+class _MockedApplication:
+    project = _MockedProject()
+
+
+class _MockedOptislang:
+    application = _MockedApplication()
+
+
+class _MockedTemplate:
+    def __init__(self):
+        self.called = False
+
+    def create_design_study(self, parent):
+        self.called = True
+        assert parent is _MockedProject.root_system
+        return (), ()
 
 
 # region OMDB files
@@ -311,6 +340,79 @@ def test_parametric_design_study_remove_managed_instance_cleans_empty_blocks_moc
 
     assert len(study.execution_order) == 1
     assert study.execution_order[0].get_instance_by_uid("b") is not None
+
+
+def test_parametric_system_integration_design_study_apply_settings_mocked():
+    """Settings kwargs should be accepted for fixed study when valid."""
+    managed_instance = ManagedInstance(_MockedNode("n1"))
+    study = ParametricSystemIntegrationDesignStudy(
+        object(),
+        [managed_instance],
+        [ExecutableBlock()],
+    )
+
+    study.apply_settings(solver_name="Connector", criteria=[])
+
+    with pytest.raises(TypeError, match="Unknown setting"):
+        study.apply_settings(unknown_setting=1)
+
+
+def test_general_algorithm_design_study_apply_settings_mocked():
+    """General algorithm design-study class should validate supported kwargs."""
+    managed_instance = ManagedInstance(_MockedNode("n1"))
+    study = GeneralAlgorithmDesignStudy(
+        object(),
+        [managed_instance],
+        [ExecutableBlock()],
+    )
+
+    study.apply_settings(algorithm_name="UpdatedName", start_designs=[])
+
+    with pytest.raises(TypeError, match="Unknown setting"):
+        study.apply_settings(unknown_setting=1)
+
+
+def test_optimization_on_mop_design_study_apply_settings_mocked():
+    """Optimization-on-MOP fixed study should validate supported kwargs."""
+
+    def callback_out(designs):
+        return designs
+
+    managed_instance = ManagedInstance(_MockedNode("n1"))
+    study = OptimizationOnMOPDesignStudy(
+        object(),
+        [managed_instance],
+        [ExecutableBlock()],
+    )
+
+    study.apply_settings(callback=callback_out, number_of_best_designs_to_validate=5)
+
+    with pytest.raises(TypeError, match="Unknown setting"):
+        study.apply_settings(unknown_setting=1)
+
+
+def test_parametric_design_study_manager_uses_template_instance_factory_mocked():
+    """Manager should build studies through the backward-compatible template path."""
+
+    manager = ParametricDesignStudyManager(optislang_instance=_MockedOptislang())
+    template = _MockedTemplate()
+
+    study = manager.create_design_study(template)
+
+    assert template.called is True
+    assert isinstance(study, ParametricDesignStudy)
+
+
+def test_parametric_design_study_manager_append_fixed_study_mocked():
+    """Manager should accept fixed design-study instances via append_design_study."""
+
+    manager = ParametricDesignStudyManager(optislang_instance=_MockedOptislang())
+    fixed_study = FixedParametricDesignStudy(object(), [], [])
+
+    manager.append_design_study(fixed_study)
+
+    assert len(manager.design_studies) == 1
+    assert manager.design_studies[0] is fixed_study
 
 
 @pytest.mark.local_osl

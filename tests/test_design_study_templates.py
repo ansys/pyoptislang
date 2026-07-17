@@ -41,9 +41,11 @@ from ansys.optislang.core.project_parametric import (
 from ansys.optislang.core.settings import primitives
 from ansys.optislang.parametric.design_study import (
     ExecutableBlock,
+    FixedParametricDesignStudy,
     ManagedParametricSystem,
 )
 from ansys.optislang.parametric.design_study_templates import (
+    DesignStudyTemplate,
     GeneralAlgorithmSettings,
     GeneralAlgorithmTemplate,
     GeneralNodeSettings,
@@ -141,6 +143,16 @@ def test_general_node_settings_clear_method():
     cleared_dict = settings.convert_properties_to_dict()
     assert "MaxRuntime" not in cleared_dict
     assert "CustomProp" not in cleared_dict
+
+
+def test_general_node_settings_clear_additional_settings_by_name_only():
+    settings = GeneralNodeSettings(additional_settings={"CustomProp": 42}, max_runtime=100)
+
+    settings.clear("additional_settings", clear_additional_settings=False)
+    result = settings.convert_properties_to_dict()
+
+    assert "CustomProp" not in result
+    assert result.get("MaxRuntime") == 100
 
 
 def test_mopsolver_settings():
@@ -305,6 +317,21 @@ def test_general_algorithm_settings():
 
     properties_dict = general_algo_settings.convert_properties_to_dict()
     assert properties_dict.items() >= additional_settings.items()
+
+
+def test_design_study_template_default_instance_factory_returns_fixed_study():
+    class _UserTemplate(DesignStudyTemplate):
+        def create_design_study(self, parent):
+            return ((), ())
+
+    template = _UserTemplate()
+    study = template.create_design_study_instance(osl_instance=object(), parent=object())
+
+    assert isinstance(study, FixedParametricDesignStudy)
+    with pytest.raises(TypeError, match="Settings are not implemented"):
+        study.apply_settings()
+    with pytest.raises(TypeError, match="Settings are not implemented"):
+        study.apply_settings(any_setting=123)
 
 
 # endregion
