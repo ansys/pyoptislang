@@ -95,6 +95,36 @@ class _MockedTemplate:
         return (), ()
 
 
+_PARAMETERS = [
+    OptimizationParameter("X1"),
+    OptimizationParameter("X2"),
+    OptimizationParameter("X3"),
+]
+_CRITERIA = [ObjectiveCriterion("Y1", "Y")]
+_RESPONSES = [Response("Y", 0.0)]
+_PYTHON_SOURCE_CODE = r"""
+try:
+    Y = X1 + X2 + X3
+except:
+    Y= 0.0
+"""
+
+
+@pytest.fixture()
+def optislang(scope="function", autouse=False) -> Optislang:
+    """Create Optislang class.
+
+    Returns
+    -------
+    Optislang:
+        Connects to the optiSLang application and provides an API to control it.
+    """
+    osl = Optislang(ini_timeout=90)
+    osl.timeout = 60
+    yield osl
+    osl.dispose()
+
+
 # region OMDB files
 
 
@@ -339,53 +369,91 @@ def test_parametric_design_study_remove_managed_instance_cleans_empty_blocks_moc
     assert study.execution_order[0].get_instance_by_uid("b") is not None
 
 
-def test_parametric_system_integration_design_study_apply_settings_mocked():
+@pytest.mark.local_osl
+def test_parametric_system_integration_design_study_apply_settings(tmp_example_project):
     """Settings kwargs should be accepted for fixed study when valid."""
-    managed_instance = ManagedInstance(_MockedNode("n1"))
-    study = ParametricSystemIntegrationDesignStudy(
-        object(),
-        [managed_instance],
-        [ExecutableBlock()],
-    )
+    project_path = tmp_example_project("omdb_files")
+    with Optislang(project_path=project_path) as osl:
+        sensitivity: ParametricSystem = osl.application.project.root_system.find_nodes_by_name(
+            "Sensitivity"
+        )[0]
+        solver = sensitivity.get_nodes()[0]
+        managed_instance = ManagedParametricSystem(sensitivity, solver)
 
-    study.apply_settings(solver_name="Connector", criteria=[])
+        study = ParametricSystemIntegrationDesignStudy(osl, [managed_instance], [])
 
-    with pytest.raises(TypeError, match="Unknown setting"):
-        study.apply_settings(unknown_setting=1)
+        updated_name = "UpdatedName"
+        study.apply_settings(solver_name=updated_name)
+        assert solver.get_name() == updated_name
+        # TODO: extend for all settings
 
 
-def test_general_algorithm_design_study_apply_settings_mocked():
+@pytest.mark.local_osl
+def test_general_algorithm_design_study_apply_settings(tmp_example_project):
     """General algorithm design-study class should validate supported kwargs."""
-    managed_instance = ManagedInstance(_MockedNode("n1"))
-    study = GeneralAlgorithmDesignStudy(
-        object(),
-        [managed_instance],
-        [ExecutableBlock()],
-    )
+    project_path = tmp_example_project("omdb_files")
+    with Optislang(project_path=project_path) as osl:
+        sensitivity: ParametricSystem = osl.application.project.root_system.find_nodes_by_name(
+            "Sensitivity"
+        )[0]
+        solver = sensitivity.get_nodes()[0]
+        managed_instance = ManagedParametricSystem(sensitivity, solver)
 
-    study.apply_settings(algorithm_name="UpdatedName", start_designs=[])
+        study = GeneralAlgorithmDesignStudy(osl, [managed_instance], [])
 
-    with pytest.raises(TypeError, match="Unknown setting"):
-        study.apply_settings(unknown_setting=1)
+        updated_name = "UpdatedName"
+        study.apply_settings(algorithm_name=updated_name)
+        assert sensitivity.get_name() == updated_name
+        # TODO: extend for all settings
 
 
-def test_optimization_on_mop_design_study_apply_settings_mocked():
+@pytest.mark.local_osl
+def test_optimization_on_mop_design_study_apply_settings_mocked(optislang: Optislang):
     """Optimization-on-MOP fixed study should validate supported kwargs."""
-
-    def callback_out(designs):
-        return designs
-
-    managed_instance = ManagedInstance(_MockedNode("n1"))
-    study = OptimizationOnMOPDesignStudy(
-        object(),
-        [managed_instance],
-        [ExecutableBlock()],
+    from ansys.optislang.parametric.design_study_templates import (
+        OptimizationOnMOPTemplate,
+        PythonSolverNodeSettings,
     )
 
-    study.apply_settings(callback=callback_out, number_of_best_designs_to_validate=5)
+    major, minor, *_ = optislang.osl_version
+    if (major, minor) <= (25, 1):
+        pytest.skip("Test fails on optiSLang versions <= 25.1.0")
 
-    with pytest.raises(TypeError, match="Unknown setting"):
-        study.apply_settings(unknown_setting=1)
+    python_code = _PYTHON_SOURCE_CODE
+    mop_template = GeneralAlgorithmTemplate(
+        parameters=_PARAMETERS,
+        criteria=_CRITERIA,
+        responses=_RESPONSES,
+        algorithm_type=nt.AMOP,
+        solver_type=nt.Python2,
+        solver_settings=PythonSolverNodeSettings(None, python_code),
+    )
+
+    instances, executable_blocks = mop_template.create_design_study(
+        optislang.application.project.root_system
+    )
+    assert len(instances) == 1
+    mop_predecessor = instances[0].instance
+
+    template = OptimizationOnMOPTemplate(
+        _PARAMETERS,
+        _CRITERIA,
+        _RESPONSES,
+        mop_predecessor,
+        callback=lambda x: x**2,
+    )
+    instances, executable_blocks = template.create_design_study(
+        optislang.application.project.root_system
+    )
+    study = OptimizationOnMOPDesignStudy(optislang, instances, executable_blocks)
+
+    def new_callback():
+        pass
+
+    study.apply_settings(callback=new_callback)
+    proxy_solver_managed_instance: ProxySolverManagedParametricSystem = study.managed_instances[2]
+    assert proxy_solver_managed_instance.callback == new_callback
+    # TODO: extend for all settings
 
 
 def test_parametric_design_study_manager_uses_template_instance_factory_mocked():

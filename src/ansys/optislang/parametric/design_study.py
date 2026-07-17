@@ -1726,21 +1726,22 @@ class OptimizationOnMOPDesignStudy(FixedParametricDesignStudy):
             if callback is not None:
                 validator_managed_instance.callback = callback
 
-            self.__class__._apply_pre_registration_settings_to_managed_parametric_system(
-                optislang=self.optislang,
-                parametric_system=validator_algorithm,
-                parameters=parameters,
-            )
-            self.__class__._apply_settings_to_solver_node(
-                optislang=self.optislang,
-                solver_node=validator_node,
-                parameters=parameters,
-                responses=responses,
-            )
-            self.__class__._apply_post_registration_settings(
-                parametric_system=validator_algorithm,
-                criteria=criteria,
-            )
+            if any([parameters, responses, criteria]):
+                self.__class__._apply_pre_registration_settings_to_managed_parametric_system(
+                    optislang=self.optislang,
+                    parametric_system=validator_algorithm,
+                    parameters=parameters,
+                )
+                self.__class__._apply_settings_to_solver_node(
+                    optislang=self.optislang,
+                    solver_node=validator_node,
+                    parameters=parameters,
+                    responses=responses,
+                )
+                self.__class__._apply_post_registration_settings(
+                    parametric_system=validator_algorithm,
+                    criteria=criteria,
+                )
 
         # filter block
         if number_of_best_designs_to_validate is not None:
