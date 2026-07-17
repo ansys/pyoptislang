@@ -30,6 +30,7 @@ from pathlib import Path
 import threading
 import time
 from typing import (
+    Any,
     TYPE_CHECKING,
     Callable,
     cast,
@@ -223,10 +224,13 @@ def _register_solver_node_locations(
     responses: Iterable[Response]
         Responses to be registered.
     """
-    registration_function = _REGISTRATION_FUNCTION_MAPPING.get(
-        solver_node.type.id, _register_integration_node_locations
+    registration_function: Optional[Callable[..., None]] = _REGISTRATION_FUNCTION_MAPPING.get(
+        solver_node.type.id, None
     )
-    registration_function(solver_node, parameters, responses)
+    if registration_function is not None:
+        registration_function(solver_node, parameters, responses)
+    else:
+        _register_integration_node_locations(solver_node)
 
 
 def _register_proxy_solver_locations(
@@ -245,9 +249,7 @@ def _register_proxy_solver_locations(
     responses: Iterable[Response]
         Responses to be registered.
     """
-    load_json: dict[str, dict] = {}
-    load_json["parameters"] = []
-    load_json["responses"] = []
+    load_json: dict[str, list[dict[str, object]]] = {"parameters": [], "responses": []}
     for parameter in parameters:
         load_json["parameters"].append(
             {
@@ -1411,7 +1413,7 @@ class FixedParametricDesignStudy(ParametricDesignStudyBase, ABC):
     ):
         super().__init__(osl_instance, managed_instances, execution_blocks)
 
-    def apply_settings(self, **kwargs) -> None:
+    def apply_settings(self) -> None:
         """Apply template-specific settings to this fixed study.
 
         Notes
@@ -1419,12 +1421,6 @@ class FixedParametricDesignStudy(ParametricDesignStudyBase, ABC):
         This fallback implementation intentionally raises because generic fixed studies
         do not know template-specific settings semantics.
         """
-        if kwargs:
-            unknown = ", ".join(sorted(kwargs.keys()))
-            raise TypeError(
-                "Settings are not implemented for this fixed design study. "
-                f"Unknown setting(s): {unknown}."
-            )
         raise TypeError("Settings are not implemented for this fixed design study.")
 
     def convert_to_modifiable(self) -> ParametricDesignStudy:
@@ -1484,8 +1480,8 @@ class FixedParametricDesignStudy(ParametricDesignStudyBase, ABC):
     def _apply_settings_to_solver_node(
         optislang: Optislang,
         solver_node: IntegrationNode,
-        parameters: Iterable[Parameter],
-        responses: Iterable[Response],
+        parameters: Optional[Iterable[Parameter]],
+        responses: Optional[Iterable[Response]],
         solver_name: Optional[str] = None,
         solver_settings: Optional[GeneralNodeSettings] = None,
     ) -> None:
@@ -1497,9 +1493,9 @@ class FixedParametricDesignStudy(ParametricDesignStudyBase, ABC):
             The optiSLang instance.
         solver_node : IntegrationNode
             The solver node to which settings will be applied.
-        parameters : Iterable[Parameter]
+        parameters : Optional[Iterable[Parameter]], optional
             Parameters to be set on the solver node.
-        responses : Iterable[Response]
+        responses : Optional[Iterable[Response]], optional
             Responses to be set on the solver node.
         solver_name : Optional[str], optional
             Name to be set for the solver node. If not provided, the name will not be changed.
@@ -1515,6 +1511,14 @@ class FixedParametricDesignStudy(ParametricDesignStudyBase, ABC):
         if solver_settings is not None:
             property_dict = solver_settings.convert_properties_to_dict()
             solver_node.set_properties(property_dict)
+        register_parameters = parameters if parameters is not None else ()
+        register_responses = responses if responses is not None else ()
+        if parameters is not None or responses is not None:
+            _register_solver_node_locations(
+                solver_node=solver_node,
+                parameters=register_parameters,
+                responses=register_responses,
+            )
 
     @staticmethod
     def _apply_post_registration_settings(
@@ -1583,9 +1587,9 @@ class GeneralAlgorithmDesignStudy(FixedParametricDesignStudy):
 
     def apply_settings(
         self,
-        parameters: Iterable[Parameter] = None,
-        criteria: Iterable[Criterion] = None,
-        responses: Iterable[Response] = None,
+        parameters: Optional[Iterable[Parameter]] = None,
+        criteria: Optional[Iterable[Criterion]] = None,
+        responses: Optional[Iterable[Response]] = None,
         algorithm_name: Optional[str] = None,
         algorithm_settings: Optional[GeneralAlgorithmSettings] = None,
         solver_name: Optional[str] = None,
@@ -1624,19 +1628,18 @@ class OptimizationOnMOPDesignStudy(FixedParametricDesignStudy):
 
     def apply_settings(
         self,
-        parameters: Iterable[Parameter] = None,
-        criteria: Iterable[Criterion] = None,
-        responses: Iterable[Response] = None,
-        mop_predecessor: Node = None,
+        parameters: Optional[Iterable[Parameter]] = None,
+        criteria: Optional[Iterable[Criterion]] = None,
+        responses: Optional[Iterable[Response]] = None,
+        mop_predecessor: Optional[Node] = None,
         optimizer_name: Optional[str] = None,
         optimizer_settings: Optional[GeneralAlgorithmSettings] = None,
         optimizer_start_designs: Optional[Iterable[Design]] = None,
         callback: Optional[Callable] = None,
         extrapolate: Optional[str] = None,
-        number_of_best_designs_to_validate: int = None,
+        number_of_best_designs_to_validate: Optional[int] = None,
     ) -> None:
         """Apply template-specific settings to this fixed study."""
-
         # optimizer block
         if any(
             (
