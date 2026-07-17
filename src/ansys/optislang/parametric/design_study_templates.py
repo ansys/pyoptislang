@@ -21,6 +21,7 @@
 # SOFTWARE.
 
 """Contains classes creating a design study from template."""
+
 from __future__ import annotations
 
 from abc import abstractmethod
@@ -31,7 +32,6 @@ from typing import TYPE_CHECKING, Any, Callable, Iterable, List, Optional, Tuple
 import warnings
 
 from ansys.optislang.core import Optislang
-from ansys.optislang.core.io import AbsolutePath, OptislangPath
 import ansys.optislang.core.node_types as nt
 from ansys.optislang.core.nodes import (
     DesignFlow,
@@ -42,47 +42,205 @@ from ansys.optislang.core.nodes import (
     ParametricSystem,
     ProxySolverNode,
 )
+import ansys.optislang.core.settings.primitives as primitives
+from ansys.optislang.core.settings.types import (
+    ModelSetting,
+    SettingModel,
+    SettingProperty,
+    SettingsSerializer,
+)
 from ansys.optislang.core.slot_types import SlotTypeHint
+from ansys.optislang.core.tcp.settings import TcpSerializer
 from ansys.optislang.parametric.design_study import (
     ExecutableBlock,
+    FixedParametricDesignStudy,
+    GeneralAlgorithmDesignStudy,
     ManagedInstance,
     ManagedParametricSystem,
     OMDBFilesProvider,
+    OptimizationOnMOPDesignStudy,
     ParametricDesignStudyManager,
+    ParametricSystemIntegrationDesignStudy,
     ProxySolverManagedParametricSystem,
+    _register_solver_node_locations,
 )
 
 if TYPE_CHECKING:
+    from ansys.optislang.core.io import OptislangPath
     from ansys.optislang.core.project_parametric import Criterion, Design, Parameter, Response
 
 
 # region node settings
-class GeneralNodeSettings:
-    """Settings specific to all nodes."""
+class _BaseSettings:
+    """Base class for design-study settings classes."""
 
     @property
-    def additional_settings(self) -> dict:
-        """Additional settings for the solver node.
-
-        Returns
-        -------
-        dict
-            Additional settings for the solver node.
-        """
-        return self.__additional_settings
+    def additional_settings(self) -> dict[str, Any]:
+        """Additional free-form settings serialized verbatim."""
+        return getattr(self, "_additional_settings", {})
 
     @additional_settings.setter
-    def additional_settings(self, value: dict):
-        """Set additional settings for the solver node.
+    def additional_settings(self, value: dict[str, Any]) -> None:
+        """Set additional free-form settings serialized verbatim."""
+        self._additional_settings = value
+
+    @classmethod
+    def _iter_settings(cls) -> Iterable[tuple[str, SettingProperty[Any]]]:
+        """Iterate over all setting descriptors defined in class hierarchy."""
+        for base in reversed(cls.__mro__):
+            for name, attr in base.__dict__.items():
+                if isinstance(attr, SettingProperty):
+                    yield name, attr
+
+    def _convert_to_transport(
+        self, serializer: SettingsSerializer, *, modified_only: bool = True
+    ) -> dict[str, Any]:
+        """Convert known properties and raw additions to transport format.
 
         Parameters
         ----------
-        value : dict
-            Additional settings for the solver node.
-        """
-        self.__additional_settings = value
+        serializer : SettingsSerializer
+            Serializer to use for converting property values.
+        modified_only : bool, optional
+            If ``True``, only include properties that have been modified from their defaults.
+            If ``False``, include all properties, by default ``True``.
 
-    def __init__(self, additional_settings: Optional[dict] = None):
+        Returns
+        -------
+        dict[str, Any]
+            Dictionary of properties in transport format.
+
+        Raises
+        ------
+        TypeError
+            If a model setting does not contain a SettingModel value.
+
+        """
+        properties = {}
+        for attr_name, prop in self._iter_settings():
+            value = getattr(self, attr_name)
+
+            if isinstance(prop, ModelSetting):
+                if value is None:
+                    continue
+                if not isinstance(value, SettingModel):
+                    raise TypeError(
+                        f"Model setting '{attr_name}' does not contain SettingModel value."
+                    )
+
+                modified = value.is_modified()
+                if modified_only and not modified and not prop.force_all:
+                    continue
+
+                nested_modified_only = modified_only and not prop.force_all
+                data = value.serialize(serializer=serializer, modified_only=nested_modified_only)
+
+                if modified_only and not prop.force_all and not data:
+                    continue
+
+                properties[prop.name] = data
+                continue
+
+            if modified_only and not hasattr(self, prop.private_name):
+                continue
+
+            if value is None:
+                continue
+
+            properties[prop.name] = serializer.serialize(prop, value)
+
+        properties.update(self.additional_settings)
+        return properties
+
+    def clear(self, *names: str, clear_additional_settings: bool = True) -> None:
+        """Clear assigned values for selected settings or for all settings.
+
+        Parameters
+        ----------
+        *names : str
+            Optional setting attribute names to clear. If omitted,
+            all descriptor-backed settings are cleared.
+        clear_additional_settings : bool, optional
+            Whether to clear ``additional_settings``. By default ``True``.
+
+        Raises
+        ------
+        AttributeError
+            If any provided name does not correspond to a setting attribute.
+        """
+        props_by_attr = {attr_name: prop for attr_name, prop in self._iter_settings()}
+
+        if names:
+            unknown = [
+                name
+                for name in names
+                if name not in props_by_attr and name != "additional_settings"
+            ]
+            if unknown:
+                raise AttributeError(f"Unknown setting attribute(s): {', '.join(unknown)}")
+            selected = [props_by_attr[name] for name in names if name in props_by_attr]
+            if "additional_settings" in names:
+                clear_additional_settings = True
+        else:
+            selected = list(props_by_attr.values())
+
+        for prop in selected:
+            prop.clear_value(self)
+
+        if clear_additional_settings:
+            self._additional_settings.clear()
+
+    def convert_properties_to_dict(self, *, modified_only: bool = True) -> dict[str, Any]:
+        """Convert settings to TCP-compatible property dictionary.
+
+        Parameters
+        ----------
+        modified_only : bool, optional
+            If ``True``, only include properties that have been modified from their defaults.
+            If ``False``, include all properties, by default ``True``.
+
+        Returns
+        -------
+        dict[str, Any]
+            Dictionary of properties.
+
+        Raises
+        ------
+        TypeError
+            If a model setting does not contain a SettingModel value.
+        """
+        return self._convert_to_transport(TcpSerializer(), modified_only=modified_only)
+
+
+class GeneralNodeSettings(_BaseSettings):
+    """Settings specific to all nodes."""
+
+    if TYPE_CHECKING:
+        auto_save_mode: primitives.AutoSaveMode | str
+        max_runtime: float
+        read_mode: primitives.ReadMode | str
+        starting_delay: float
+        stop_after_execution: bool
+        path: Union[str, Path, OptislangPath]
+    else:
+        auto_save_mode = primitives.AUTO_SAVE_MODE
+        max_runtime = primitives.MAX_RUNTIME
+        read_mode = primitives.READ_MODE
+        starting_delay = primitives.STARTING_DELAY
+        stop_after_execution = primitives.STOP_AFTER_EXECUTION
+        path = primitives.PATH
+
+    def __init__(
+        self,
+        additional_settings: Optional[dict] = None,
+        *,
+        auto_save_mode: Optional[primitives.AutoSaveMode | str] = None,
+        max_runtime: Optional[float] = None,
+        read_mode: Optional[primitives.ReadMode | str] = None,
+        starting_delay: Optional[float] = None,
+        stop_after_execution: Optional[bool] = None,
+        path: Optional[Union[str, Path, OptislangPath]] = None,
+    ):
         """Initialize the GeneralNodeSettings.
 
         Parameters
@@ -92,76 +250,43 @@ class GeneralNodeSettings:
         """
         self.additional_settings = additional_settings if additional_settings else {}
 
-    def convert_properties_to_dict(self) -> dict:
-        """Convert the named tuple to a dictionary of properties.
-
-        Returns
-        -------
-        dict
-            Dictionary of properties.
-        """
-        properties = self.additional_settings
-        return properties
+        # Apply only explicitly provided values. Descriptor validation handles type checks.
+        if auto_save_mode is not None:
+            self.auto_save_mode = auto_save_mode
+        if max_runtime is not None:
+            self.max_runtime = max_runtime
+        if read_mode is not None:
+            self.read_mode = read_mode
+        if starting_delay is not None:
+            self.starting_delay = starting_delay
+        if stop_after_execution is not None:
+            self.stop_after_execution = stop_after_execution
+        if path is not None:
+            self.path = path
 
 
 class MopSolverNodeSettings(GeneralNodeSettings):
     """Settings specific to MOP solver nodes."""
 
-    @property
-    def multi_design_launch_num(self) -> int:
-        """Number of designs to be sent/received in one batch.
-
-        Returns
-        -------
-        Optional[int]
-            Number of designs to be sent/received in one batch.
-        """
-        return self.__multi_design_launch_num
-
-    @multi_design_launch_num.setter
-    def multi_design_launch_num(self, value: int):
-        """Set number of designs to be sent/received in one batch.
-
-        Parameters
-        ----------
-        value : int
-            Number of designs to be sent/received in one batch.
-        """
-        self.__multi_design_launch_num = value
-
-    @property
-    def input_file(self) -> Optional[Union[str, Path, OptislangPath]]:
-        """Path to the MOP file.
-
-        Returns
-        -------
-        Optional[Union[str, Path, OptislangPath]]
-            Path to the MOP file or ``None``, if input file is specified by the connection.
-        """
-        return self.__input_file
-
-    @input_file.setter
-    def input_file(self, value: Optional[Union[str, Path, OptislangPath]]) -> None:
-        """Set path to the MOP file.
-
-        Parameters
-        ----------
-        value : Optional[Union[str, Path, OptislangPath]]
-            Path to the MOP file.
-            If ``None``, input file is expected to be specified by the connection.
-        """
-        if value is None:
-            self.__input_file = value
-        elif isinstance(value, OptislangPath):
-            self.__input_file = value
-        else:
-            self.__input_file = AbsolutePath(value)
+    if TYPE_CHECKING:
+        input_file: Union[str, Path, OptislangPath]
+        multi_design_launch_num: int
+    else:
+        input_file = primitives.MDB_PATH
+        multi_design_launch_num = primitives.MULTI_DESIGN_NUM
 
     def __init__(
         self,
         input_file: Optional[Union[str, Path, OptislangPath]] = None,
         multi_design_launch_num: Optional[int] = None,
-        additional_settings: Optional[dict] = {},
+        additional_settings: Optional[dict] = None,
+        *,
+        auto_save_mode: Optional[primitives.AutoSaveMode | str] = None,
+        max_runtime: Optional[float] = None,
+        read_mode: Optional[primitives.ReadMode | str] = None,
+        starting_delay: Optional[float] = None,
+        stop_after_execution: Optional[bool] = None,
+        path: Optional[Union[str, Path, OptislangPath]] = None,
     ):
         """Initialize the MopSolverNode.
 
@@ -174,27 +299,20 @@ class MopSolverNodeSettings(GeneralNodeSettings):
         additional_settings : Optional[dict], optional
             Additional settings for the solver node.
         """
-        super().__init__(additional_settings=additional_settings)
-        self.input_file = input_file
+        super().__init__(
+            additional_settings=additional_settings,
+            auto_save_mode=auto_save_mode,
+            max_runtime=max_runtime,
+            read_mode=read_mode,
+            starting_delay=starting_delay,
+            stop_after_execution=stop_after_execution,
+            path=path,
+        )
+        if input_file is not None:
+            self.input_file = input_file
         self.multi_design_launch_num = (
             multi_design_launch_num if multi_design_launch_num is not None else 1
         )
-
-    def convert_properties_to_dict(self):
-        """Get properties dictionary.
-
-        Returns
-        -------
-        dict
-            Dictionary with properties.
-        """
-        properties = {}
-        properties["MultiDesignNum"] = self.multi_design_launch_num
-        if self.input_file:
-            if isinstance(self.input_file, OptislangPath):
-                properties["MDBPath"] = self.input_file.to_dict()
-        properties.update(super().convert_properties_to_dict())
-        return properties
 
 
 class ProxySolverNodeSettings(GeneralNodeSettings):
@@ -208,27 +326,10 @@ class ProxySolverNodeSettings(GeneralNodeSettings):
         A callback function to handle design evaluation results.
     """
 
-    @property
-    def multi_design_launch_num(self) -> int:
-        """Number of designs to be sent/received in one batch.
-
-        Returns
-        -------
-        Optional[int]
-            Number of designs to be sent/received in one batch.
-        """
-        return self.__multi_design_launch_num
-
-    @multi_design_launch_num.setter
-    def multi_design_launch_num(self, value: int):
-        """Set number of designs to be sent/received in one batch.
-
-        Parameters
-        ----------
-        value : int
-            Number of designs to be sent/received in one batch.
-        """
-        self.__multi_design_launch_num = value
+    if TYPE_CHECKING:
+        multi_design_launch_num: int
+    else:
+        multi_design_launch_num = primitives.MULTI_DESIGN_LAUNCH_NUM
 
     @property
     def callback(self) -> Callable:
@@ -256,9 +357,16 @@ class ProxySolverNodeSettings(GeneralNodeSettings):
         self,
         callback: Callable,
         multi_design_launch_num: Optional[int] = None,
-        additional_settings: Optional[dict] = {},
+        additional_settings: Optional[dict] = None,
+        *,
+        auto_save_mode: Optional[primitives.AutoSaveMode | str] = None,
+        max_runtime: Optional[float] = None,
+        read_mode: Optional[primitives.ReadMode | str] = None,
+        starting_delay: Optional[float] = None,
+        stop_after_execution: Optional[bool] = None,
+        path: Optional[Union[str, Path, OptislangPath]] = None,
     ):
-        """Initialize the MopSolverNode.
+        """Initialize the ProxySolverNode.
 
         Parameters
         ----------
@@ -269,89 +377,43 @@ class ProxySolverNodeSettings(GeneralNodeSettings):
         additional_settings : Optional[dict], optional
             Additional settings for the solver node.
         """
-        super().__init__(additional_settings=additional_settings)
+        super().__init__(
+            additional_settings=additional_settings,
+            auto_save_mode=auto_save_mode,
+            max_runtime=max_runtime,
+            read_mode=read_mode,
+            starting_delay=starting_delay,
+            stop_after_execution=stop_after_execution,
+            path=path,
+        )
         self.callback = callback
         self.multi_design_launch_num = (
             multi_design_launch_num if multi_design_launch_num is not None else 1
         )
 
-    def convert_properties_to_dict(self) -> dict:
-        """Get properties dictionary.
-
-        Returns
-        -------
-        dict
-            Dictionary with properties.
-        """
-        properties = {}
-        properties["MultiDesignLaunchNum"] = self.multi_design_launch_num
-        properties.update(super().convert_properties_to_dict())
-        return properties
-
 
 class PythonSolverNodeSettings(GeneralNodeSettings):
     """Settings specific to Python solver nodes."""
 
-    @property
-    def input_code(self) -> Union[str, None]:
-        """Python script code.
-
-        Returns
-        -------
-        Union[str, None]
-            Python script code or ``None``, if input file is meant to be specified
-            by the connection or `input_file`.
-        """
-        return self.__input_code
-
-    @input_code.setter
-    def input_code(self, value: Union[str, None]) -> None:
-        """Set Python script.
-
-        Parameters
-        ----------
-        value : Union[str, None]
-            Python script.
-            If ``None``, input file is expected to be specified either
-            by the connection or `input_file`.
-        """
-        self.__input_code = value
-
-    @property
-    def input_file(self) -> Optional[Union[str, Path, OptislangPath]]:
-        """Path to the Python file.
-
-        Returns
-        -------
-        Optional[Union[str, Path, OptislangPath]]
-            Path to the Python file or ``None``, if input file is meant to be specified
-            by the connection or `input_code`.
-        """
-        return self.__input_file
-
-    @input_file.setter
-    def input_file(self, value: Optional[Union[str, Path, OptislangPath]]) -> None:
-        """Set path to the Python file.
-
-        Parameters
-        ----------
-        value : Optional[Union[str, Path, OptislangPath]]
-            Path to the Python file.
-            If ``None``, input file is expected to be specified either
-            by the connection or `input_code`.
-        """
-        if value is None:
-            self.__input_file = value
-        elif isinstance(value, OptislangPath):
-            self.__input_file = value
-        else:
-            self.__input_file = AbsolutePath(value)
+    if TYPE_CHECKING:
+        input_file: Union[str, Path, OptislangPath]
+        input_code: str
+    else:
+        input_file = primitives.PATH
+        input_code = primitives.SOURCE
 
     def __init__(
         self,
         input_file: Optional[Union[str, Path, OptislangPath]] = None,
         input_code: Optional[str] = None,
-        additional_settings: Optional[dict] = {},
+        additional_settings: Optional[dict] = None,
+        *,
+        auto_save_mode: Optional[primitives.AutoSaveMode | str] = None,
+        max_runtime: Optional[float] = None,
+        read_mode: Optional[primitives.ReadMode | str] = None,
+        starting_delay: Optional[float] = None,
+        stop_after_execution: Optional[bool] = None,
+        path: Optional[Union[str, Path, OptislangPath]] = None,
     ):
         """Initialize the PythonSolverNode.
 
@@ -366,22 +428,25 @@ class PythonSolverNodeSettings(GeneralNodeSettings):
         additional_settings : Optional[dict], optional
             Additional settings for the solver node.
         """
-        super().__init__(additional_settings=additional_settings)
+        super().__init__(
+            additional_settings=additional_settings,
+            auto_save_mode=auto_save_mode,
+            max_runtime=max_runtime,
+            read_mode=read_mode,
+            starting_delay=starting_delay,
+            stop_after_execution=stop_after_execution,
+            path=path,
+        )
         if input_file and input_code:
             raise AttributeError(
                 "Arguments `input_file` and `input_code` cannot be specified simultaneously."
             )
-        elif input_file:
+        if input_file is not None:
             self.input_file = input_file
-            self.input_code = None
-        elif input_code:
+        if input_code is not None:
             self.input_code = input_code
-            self.input_file = None
-        else:
-            self.input_file = None
-            self.input_code = None
 
-    def convert_properties_to_dict(self):
+    def convert_properties_to_dict(self, *, modified_only: bool = True) -> dict[str, Any]:
         """Get properties dictionary.
 
         Returns
@@ -389,17 +454,12 @@ class PythonSolverNodeSettings(GeneralNodeSettings):
         dict
             Dictionary with properties.
         """
-        properties = {}
+        properties: dict[str, Any] = {}
         if self.input_file and self.input_code:
             raise AttributeError(
                 "Arguments `input_file` and `input_code` cannot be specified simultaneously."
             )
-        elif self.input_file:
-            properties["Path"] = self.input_file.to_dict()
-            # content mode
-        elif self.input_code:
-            properties["Source"] = self.input_code
-        properties.update(super().convert_properties_to_dict())
+        properties.update(super().convert_properties_to_dict(modified_only=modified_only))
         return properties
 
 
@@ -407,32 +467,20 @@ class PythonSolverNodeSettings(GeneralNodeSettings):
 
 
 # region parametric system settings
-class GeneralParametricSystemSettings:
+class GeneralParametricSystemSettings(_BaseSettings):
     """Settings common to all parametric systems."""
 
-    @property
-    def additional_settings(self) -> dict:
-        """Additional settings for the parametric system.
+    if TYPE_CHECKING:
+        sensitivity_algo_settings: primitives.SensitivityAlgorithmSettings
+    else:
+        sensitivity_algo_settings = primitives.SENSITIVITY_ALGORITHM_SETTINGS
 
-        Returns
-        -------
-        dict
-            Additional settings for the parametric system.
-        """
-        return self.__additional_settings
-
-    @additional_settings.setter
-    def additional_settings(self, value: dict):
-        """Set additional settings for the parametric system.
-
-        Parameters
-        ----------
-        value : dict
-            Additional settings for the parametric system.
-        """
-        self.__additional_settings = value
-
-    def __init__(self, additional_settings: Optional[dict] = None):
+    def __init__(
+        self,
+        additional_settings: Optional[dict] = None,
+        *,
+        sensitivity_algo_settings: Optional[primitives.SensitivityAlgorithmSettings] = None,
+    ):
         """Initialize the GeneralParametricSystemSettings.
 
         Parameters
@@ -442,7 +490,10 @@ class GeneralParametricSystemSettings:
         """
         self.additional_settings = additional_settings if additional_settings is not None else {}
 
-    def convert_properties_to_dict(self) -> dict:
+        if sensitivity_algo_settings is not None:
+            self.sensitivity_algo_settings = sensitivity_algo_settings
+
+    def convert_properties_to_dict(self, *, modified_only: bool = True) -> dict[str, Any]:
         """Convert the named tuple to a dictionary of properties.
 
         Returns
@@ -450,14 +501,13 @@ class GeneralParametricSystemSettings:
         dict
             Dictionary of properties.
         """
-        properties = self.additional_settings
-        return properties
+        return super().convert_properties_to_dict(modified_only=modified_only)
 
 
 class GeneralAlgorithmSettings(GeneralParametricSystemSettings):
     """Settings common to all algorithms."""
 
-    def __init__(self, additional_settings: Optional[dict] = {}):
+    def __init__(self, additional_settings: Optional[dict] = None):
         """Initialize the GeneralAlgorithmSettings.
 
         Parameters
@@ -467,7 +517,7 @@ class GeneralAlgorithmSettings(GeneralParametricSystemSettings):
         """
         super().__init__(additional_settings=additional_settings)
 
-    def convert_properties_to_dict(self) -> dict:
+    def convert_properties_to_dict(self, *, modified_only: bool = True) -> dict[str, Any]:
         """Convert the named tuple to a dictionary of properties.
 
         Returns
@@ -475,8 +525,7 @@ class GeneralAlgorithmSettings(GeneralParametricSystemSettings):
         dict
             Dictionary of properties.
         """
-        properties = self.additional_settings
-        return properties
+        return dict(self.additional_settings)
 
 
 # endregion
@@ -504,6 +553,32 @@ class DesignStudyTemplate:
 
         """
         pass
+
+    def create_design_study_instance(
+        self,
+        osl_instance: Optislang,
+        parent: ParametricSystem,
+    ) -> FixedParametricDesignStudy:
+        """Create a fixed design-study instance from this template.
+
+        Parameters
+        ----------
+        osl_instance : Optislang
+            optiSLang instance used by the created design study.
+        parent : ParametricSystem
+            Parent system where the template is created.
+
+        Returns
+        -------
+        FixedParametricDesignStudy
+            Concrete fixed design-study instance.
+        """
+        managed_instances, execution_blocks = self.create_design_study(parent)
+        return FixedParametricDesignStudy(
+            osl_instance=osl_instance,
+            managed_instances=managed_instances,
+            execution_blocks=execution_blocks,
+        )
 
     def create_algorithm(
         self,
@@ -657,147 +732,8 @@ class DesignStudyTemplate:
         # use custom method to register parameters and responses
         # TODO: Reimplement registration of locations, when convenience module for registration
         # of locations is introduced. For now, only ProxySolver and Mopsolver is implemented.
-        if solver_node.type == nt.ProxySolver:
-            if not isinstance(solver_node, ProxySolverNode):
-                raise TypeError("Unexpected solver node type: `{}`".format(type(solver_node)))
-            self.__register_proxy_solver_locations(solver_node, parameters, responses)
-        elif solver_node.type == nt.Mopsolver:
-            self.__register_mop_solver_locations(solver_node, parameters, responses)
-        elif solver_node.type == nt.Python2:
-            self.__register_python2_locations(solver_node, parameters, responses)
-        else:
-            self.__register_integration_node_locations(solver_node)
+        _register_solver_node_locations(solver_node, parameters, responses)
         return solver_node
-
-    def __register_proxy_solver_locations(
-        self,
-        solver_node: ProxySolverNode,
-        parameters: Iterable[Parameter],
-        responses: Iterable[Response],
-    ) -> None:  # pragma: no cover
-        """Register proxy solver node locations.
-
-        Parameters
-        ----------
-        solver_node : ProxySolverNode
-            Instance of the proxy solver node.
-        parameters : Iterable[Parameter]
-            Parameter to be registered.
-        responses: Iterable[Response]
-            Responses to be registered.
-        """
-        load_json: dict[str, Any] = {}
-        load_json["parameters"] = []
-        load_json["responses"] = []
-        for parameter in parameters:
-            load_json["parameters"].append(
-                {
-                    "dir": {"value": "input"},
-                    "name": parameter.name,
-                    "value": parameter.reference_value,
-                }
-            )
-        for response in responses:
-            load_json["responses"].append(
-                {
-                    "dir": {"value": "output"},
-                    "name": response.name,
-                    "value": response.reference_value,
-                }
-            )
-
-        solver_node.load(args=load_json)
-        solver_node.register_locations_as_parameter()
-        solver_node.register_locations_as_response()
-
-    def __register_mop_solver_locations(
-        self,
-        solver_node: IntegrationNode,
-        parameters: Iterable[Parameter],
-        responses: Iterable[Response],
-    ) -> None:  # pragma: no cover
-        """Register mop solver node locations.
-
-        Parameters
-        ----------
-        solver_node : IntegrationNode
-            Instance of the mop solver node.
-        parameters : Iterable[Parameter]
-            Parameter to be registered.
-        responses: Iterable[Response]
-            Responses to be registered.
-        """
-        base = next(iter(parameters))
-        for parameter in parameters:
-            location = {
-                "base": base.name,
-                "dir": {"enum": ["input", "output"], "value": "input"},
-                "id": parameter.name,
-                "suffix": "",
-                "value_type": {
-                    "enum": ["value", "cop", "rmse", "error", "abs_error", "density"],
-                    "value": "value",
-                },
-            }
-            solver_node.register_location_as_parameter(
-                location, parameter.name, parameter.reference_value
-            )
-        for response in responses:
-            location = {
-                "base": response.name,
-                "dir": {"value": "output"},
-                "id": response.name,
-                "suffix": "",
-                "value_type": {"value": "value"},
-            }
-            solver_node.register_location_as_response(
-                location, reference_value=response.reference_value
-            )
-
-    def __register_python2_locations(
-        self,
-        solver_node: IntegrationNode,
-        parameters: Iterable[Parameter],
-        responses: Iterable[Response],
-    ) -> None:  # pragma: no cover
-        """Register python2 node locations.
-
-        Parameters
-        ----------
-        solver_node : IntegrationNode
-            Instance of the python solver node.
-        parameters : Iterable[Parameter]
-            Parameter to be registered.
-        responses: Iterable[Response]
-            Responses to be registered.
-        """
-        solver_node.load()
-        for parameter in parameters:
-            solver_node.register_location_as_parameter(
-                location=parameter.name,
-                name=parameter.name,
-                reference_value=parameter.reference_value,
-            )
-        for response in responses:
-            solver_node.register_location_as_response(
-                location=response.name,
-                name=response.name,
-                reference_value=response.reference_value,
-            )
-
-    def __register_integration_node_locations(
-        self, solver_node: IntegrationNode
-    ) -> None:  # pragma: no cover
-        """Register integration node locations using `load` method.
-
-        Parameters
-        ----------
-        solver_node : IntegrationNode
-            Instance of the integration_node.
-        """
-        solver_node.load()
-        solver_node.register_locations_as_parameter()
-        solver_node.register_locations_as_response()
 
 
 class ParametricSystemIntegrationTemplate(DesignStudyTemplate):
@@ -899,6 +835,19 @@ class ParametricSystemIntegrationTemplate(DesignStudyTemplate):
             )
         )
         return ((instance,), (executable_block,))
+
+    def create_design_study_instance(
+        self,
+        osl_instance: Optislang,
+        parent: ParametricSystem,
+    ) -> ParametricSystemIntegrationDesignStudy:
+        """Create a ``ParametricSystemIntegrationDesignStudy`` instance."""
+        managed_instances, executable_blocks = self.create_design_study(parent)
+        return ParametricSystemIntegrationDesignStudy(
+            osl_instance,
+            managed_instances,
+            executable_blocks,
+        )
 
 
 class GeneralAlgorithmTemplate(DesignStudyTemplate):
@@ -1025,6 +974,19 @@ class GeneralAlgorithmTemplate(DesignStudyTemplate):
         )
         return ((instance,), (executable_block,))
 
+    def create_design_study_instance(
+        self,
+        osl_instance: Optislang,
+        parent: ParametricSystem,
+    ) -> GeneralAlgorithmDesignStudy:
+        """Create a ``GeneralAlgorithmDesignStudy`` instance."""
+        managed_instances, executable_blocks = self.create_design_study(parent)
+        return GeneralAlgorithmDesignStudy(
+            osl_instance,
+            managed_instances,
+            executable_blocks,
+        )
+
 
 class OptimizationOnMOPTemplate(DesignStudyTemplate):
     """Template creating optimization on MOP and validation with proxy solver.
@@ -1051,6 +1013,8 @@ class OptimizationOnMOPTemplate(DesignStudyTemplate):
         optimizer_settings: Optional[GeneralAlgorithmSettings] = None,
         optimizer_start_designs: Optional[Iterable[Design]] = None,
         callback: Optional[Callable] = None,
+        extrapolate: Optional[str] = None,
+        number_of_best_designs_to_validate: int = 2,
     ):
         """Initialize the OptimizationOnMOPTemplate.
 
@@ -1078,6 +1042,15 @@ class OptimizationOnMOPTemplate(DesignStudyTemplate):
             execution of the proxy solver must be performed by the user.
             Input into callback function is a list of `Design` instances, iterable
             of resulting `Design` instances is expected as output.
+        extrapolate: Optional[str]
+            Mop solver extrapolation type, options are:
+                - "extrapolate"
+                - "inside_defined_bounds" (initial sampling bounds, default)
+                - "inside_sampling_bounds" (reduced sampling bounds)
+        number_of_best_designs_to_validate: int
+            Number of the best designs to be validated, by default `2`. This setting
+            takes effect only for multi-objective design studies, a single design
+            is validated otherwise irrespective of this setting.
         """
         self.parameters = parameters
         self.criteria = criteria
@@ -1087,6 +1060,8 @@ class OptimizationOnMOPTemplate(DesignStudyTemplate):
         self.optimizer_type = optimizer_type
         self.optimizer_settings = optimizer_settings
         self.optimizer_start_designs = optimizer_start_designs
+        self.extrapolate = extrapolate
+        self.number_of_best_designs_to_validate = number_of_best_designs_to_validate
         if not callback:
             self.validator_solver_settings = ProxySolverNodeSettings(self.__class__._empty_callback)
             warnings.warn("Callback was not provided, automatic execution won't be possible.")
@@ -1109,6 +1084,10 @@ class OptimizationOnMOPTemplate(DesignStudyTemplate):
             Tuple of managed instances and executable blocks.
         """
         # optimizer
+        if self.extrapolate:
+            mop_solver_settings = GeneralNodeSettings(
+                additional_settings={"ExtrapolationType": {"value": self.extrapolate}}
+            )
         optimizer_algorithm, optimizer_solver_node = self.create_algorithm(
             parent_system=parent,
             parameters=self.parameters,
@@ -1118,6 +1097,7 @@ class OptimizationOnMOPTemplate(DesignStudyTemplate):
             solver_type=nt.Mopsolver,
             algorithm_name=self.optimizer_name,
             algorithm_settings=self.optimizer_settings,
+            solver_settings=mop_solver_settings if self.extrapolate else None,
             start_designs=self.optimizer_start_designs,
             connections_algorithm=[
                 (self.mop_predecessor.get_output_slots("OParameterManager")[0], "IParameterManager")
@@ -1161,7 +1141,7 @@ class OptimizationOnMOPTemplate(DesignStudyTemplate):
         # filter
         filter_node = parent.create_node(type_=nt.DataMining, name="VALIDATOR_FILTER_NODE")
         if not isinstance(filter_node, IntegrationNode):
-            raise TypeError("Unexpected filter node type: `{}`".format(type(validator_solver_node)))
+            raise TypeError("Unexpected filter node type: `{}`".format(type(filter_node)))
         filter_node.create_input_slot("IBestDesigns", SlotTypeHint.DESIGN_CONTAINER)
         filter_node_managed_instance = ManagedInstance(filter_node)
         optimizer_algorithm.get_output_slots("OBestDesigns")[0].connect_to(
@@ -1186,7 +1166,10 @@ class OptimizationOnMOPTemplate(DesignStudyTemplate):
 
         getbestdesigns = {
             "First": {"name": "GetBestDesigns"},
-            "Second": [{"design_container": []}, {"design_entry": 1}],
+            "Second": [
+                {"design_container": []},
+                {"design_entry": self.number_of_best_designs_to_validate},
+            ],
         }
 
         dmm = filter_node.get_property("DataMiningManager")
@@ -1290,6 +1273,19 @@ class OptimizationOnMOPTemplate(DesignStudyTemplate):
             ),
         )
         return (managed_instances, tuple(executable_blocks))
+
+    def create_design_study_instance(
+        self,
+        osl_instance: Optislang,
+        parent: ParametricSystem,
+    ) -> OptimizationOnMOPDesignStudy:
+        """Create a ``OptimizationOnMOPDesignStudy`` instance."""
+        managed_instances, executable_blocks = self.create_design_study(parent)
+        return OptimizationOnMOPDesignStudy(
+            osl_instance,
+            managed_instances,
+            executable_blocks,
+        )
 
     @staticmethod
     def _empty_callback(designs: List[dict]) -> List[dict]:
