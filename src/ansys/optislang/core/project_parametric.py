@@ -20,7 +20,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-"""Contains ``Parameter``, ``Criterion``, ``Response``, it's child classes and enumerations."""
+"""Contains ``Parameter``, ``Criterion``, and ``Response``, their subclasses, and related enums."""
 from __future__ import annotations
 
 import ast
@@ -410,20 +410,20 @@ class Criterion:
         ----------
         name: str, optional
             Criterion name, by default ``""``.
-        type_: Union[CriterionKind, str], optional
-            Type of criterion, e. g. 'objective', by default ``CriterionType.VARIABLE``.
+        type_: Union[CriterionType, str], optional
+            Criterion category, for example ``"objective"``, by default ``CriterionType.VARIABLE``.
         expression: str, optional
-            Criterion expression, by default ``"0"``.
+            Left-hand expression used for evaluation, by default ``"0"``.
         expression_value: Optional[Union[tuple, bool, float, complex, list, dict]], optional
-            Expression value, by default ``None``.
+            Evaluated value of the expression, by default ``None``.
         expression_value_type: Optional[CriterionValueType], optional
-            Expression value type, by default ``None``.
-        criterion: Union[CriterionType, str], optional
-            Type of comparison symbol, e. g. 'min', by default ``ComparisonType.IGNORE``.
+            Type of the evaluated expression value, by default ``None``.
+        criterion: Union[ComparisonType, str], optional
+            Comparison operator, for example ``"min"``, by default ``ComparisonType.IGNORE``.
         value: Optional[
             Union[Tuple[CriterionValueType, str], bool, float, complex, list, dict]
         ], optional
-            Value of the criterion, by default ``None``.
+            Value of the criterion, depending on criterion type, by default ``None``.
         value_type: Optional[CriterionValueType], optional
             Type of the criterion value, by default ``None``.
         """
@@ -693,12 +693,12 @@ class Criterion:
 
     @staticmethod
     def _extract_criterion_properties_from_dict(criterion_dict: dict) -> Dict[str, Any]:
-        """Get type of criterion from optiSLang output.
+        """Extract normalized criterion properties from a dictionary returned by the server.
 
         Parameters
         ----------
         criterion_dict : dict
-            Output from `get_actor_properties` query.
+            Criterion payload from ``get_actor_properties`` query.
 
         Returns
         -------
@@ -908,7 +908,7 @@ class Criterion:
         Parameters
         ----------
         string: str
-            Expression describing matrix.
+            Expression describing vector.
         """
         # split by square bracket end
         splitted_str = string.split("]")
