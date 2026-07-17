@@ -50,15 +50,12 @@ from ansys.optislang.parametric.design_study import (
     OMDBFilesSpecificationEnum,
     OptimizationOnMOPDesignStudy,
     ParametricDesignStudy,
-    ParametricDesignStudyBase,
     ParametricDesignStudyManager,
     ParametricSystemIntegrationDesignStudy,
     ProxySolverManagedParametricSystem,
 )
 from ansys.optislang.parametric.design_study_templates import (
     GeneralAlgorithmTemplate,
-    OptimizationOnMOPTemplate,
-    ParametricSystemIntegrationTemplate,
     ProxySolverNodeSettings,
 )
 

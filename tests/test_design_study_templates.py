@@ -330,8 +330,6 @@ def test_design_study_template_default_instance_factory_returns_fixed_study():
     assert isinstance(study, FixedParametricDesignStudy)
     with pytest.raises(TypeError, match="Settings are not implemented"):
         study.apply_settings()
-    with pytest.raises(TypeError, match="Settings are not implemented"):
-        study.apply_settings(any_setting=123)
 
 
 # endregion

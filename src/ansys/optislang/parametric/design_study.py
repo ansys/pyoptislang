@@ -30,36 +30,33 @@ from pathlib import Path
 import threading
 import time
 from typing import (
-    Any,
     TYPE_CHECKING,
     Callable,
-    cast,
     Iterable,
     List,
     Optional,
     Sequence,
     Tuple,
     Union,
+    cast,
 )
 
 from ansys.optislang.core import Optislang
+import ansys.optislang.core.node_types as nt
 from ansys.optislang.core.nodes import (
     ExecutionOption,
     IntegrationNode,
     Node,
     ParametricSystem,
     ProxySolverNode,
-    OutputSlot,
 )
 from ansys.optislang.core.project_parametric import (
+    Criterion,
     Design,
     DesignVariable,
     Parameter,
     Response,
-    Criterion,
 )
-
-import ansys.optislang.core.node_types as nt
 
 if TYPE_CHECKING:
     from ansys.optislang.core.project_parametric import (
@@ -1411,6 +1408,20 @@ class FixedParametricDesignStudy(ParametricDesignStudyBase, ABC):
         managed_instances: Iterable[ManagedInstance],
         execution_blocks: Iterable[ExecutableBlock],
     ):
+        """Initialize the FixedParametricDesignStudy.
+
+        Parameters
+        ----------
+        osl_instance: Optislang
+            The optiSLang instance.
+        managed_instances : Iterable[ManagedInstance]
+            Elementary components of this ParametricStudy. If `execution_blocks`
+            argument is not used, execution blocks are created automatically
+            internally from provided order of instances.
+            .. note:: Each study is meant to contain a single algorithm system.
+        execution_blocks: Optional[Iterable[ExecutableBlock]], optional
+            Iterable of executable blocks. Blocks must be provided in execution order.
+        """
         super().__init__(osl_instance, managed_instances, execution_blocks)
 
     def apply_settings(self) -> None:
@@ -1456,7 +1467,6 @@ class FixedParametricDesignStudy(ParametricDesignStudyBase, ABC):
         parametric_system_settings: Optional[GeneralAlgorithmSettings] = None,
     ) -> None:
         """Apply settings to the parametric system prior to registration of locations."""
-
         if parametric_system_name is not None:
             if not (optislang.osl_version.major, optislang.osl_version.minor) >= (25, 2):
                 raise EnvironmentError(
@@ -1500,7 +1510,8 @@ class FixedParametricDesignStudy(ParametricDesignStudyBase, ABC):
         solver_name : Optional[str], optional
             Name to be set for the solver node. If not provided, the name will not be changed.
         solver_settings : Optional[GeneralNodeSettings], optional
-            Settings to be applied to the solver node. If not provided, settings will not be changed.
+            Settings to be applied to the solver node. If not provided,
+            settings will not be changed.
         """
         if solver_name is not None:
             if not (optislang.osl_version.major, optislang.osl_version.minor) >= (25, 2):

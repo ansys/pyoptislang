@@ -55,13 +55,12 @@ from ansys.optislang.parametric.design_study import (
     ExecutableBlock,
     FixedParametricDesignStudy,
     GeneralAlgorithmDesignStudy,
-    OptimizationOnMOPDesignStudy,
-    ParametricDesignStudyBase,
-    ParametricSystemIntegrationDesignStudy,
     ManagedInstance,
     ManagedParametricSystem,
     OMDBFilesProvider,
+    OptimizationOnMOPDesignStudy,
     ParametricDesignStudyManager,
+    ParametricSystemIntegrationDesignStudy,
     ProxySolverManagedParametricSystem,
     _register_solver_node_locations,
 )
@@ -179,9 +178,7 @@ class _BaseSettings:
             ]
             if unknown:
                 raise AttributeError(f"Unknown setting attribute(s): {', '.join(unknown)}")
-            selected = [
-                props_by_attr[name] for name in names if name in props_by_attr
-            ]
+            selected = [props_by_attr[name] for name in names if name in props_by_attr]
             if "additional_settings" in names:
                 clear_additional_settings = True
         else:
