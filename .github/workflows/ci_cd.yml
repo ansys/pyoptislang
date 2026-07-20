@@ -25,7 +25,7 @@ jobs:
     name: "Code style"
     runs-on: ubuntu-latest
     steps:
-      - uses: ansys/actions/code-style@v10.3.3
+      - uses: ansys/actions/code-style@v10.3.4
         with:
           python-version: ${{ env.MAIN_PYTHON_VERSION }}
 
@@ -55,7 +55,7 @@ jobs:
     name: "Doc style check"
     runs-on: ubuntu-latest
     steps:
-      - uses: ansys/actions/doc-style@v10.3.3
+      - uses: ansys/actions/doc-style@v10.3.4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           vale-version: "3.4.1"
@@ -70,7 +70,7 @@ jobs:
         os: [ubuntu-latest, windows-latest]
         python-version: ["3.10", "3.11", "3.12", "3.13", "3.14"]
     steps:
-      - uses: ansys/actions/build-wheelhouse@v10.3.3
+      - uses: ansys/actions/build-wheelhouse@v10.3.4
         with:
           library-name: ${{ env.PACKAGE_NAME }}
           operating-system: ${{ matrix.os }}
@@ -93,7 +93,7 @@ jobs:
         shell: bash
 
       - name: "Run pytest with desired markers and extra arguments"
-        uses: ansys/actions/tests-pytest@v10.3.3
+        uses: ansys/actions/tests-pytest@v10.3.4
         with:
           python-version: ${{ matrix.python-version }}
           pytest-extra-args: --cov=ansys.optislang --cov-report=term --cov-report=xml:.cov/coverage.xml --cov-report=html:.cov/html
@@ -116,7 +116,7 @@ jobs:
     name: "Security checks"
     runs-on: ubuntu-latest
     steps:
-      - uses: ansys/actions/check-actions-security@v10.3.3
+      - uses: ansys/actions/check-actions-security@v10.3.4
         with:
           generate-summary: true
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -127,7 +127,7 @@ jobs:
     name: "Vulnerability check"
     runs-on: ubuntu-latest
     steps:
-      - uses: ansys/actions/check-vulnerabilities@v10.3.3
+      - uses: ansys/actions/check-vulnerabilities@v10.3.4
         with:
           python-version: ${{ env.MAIN_PYTHON_VERSION }}
           token: ${{ secrets.PYANSYS_CI_BOT_TOKEN }}
@@ -150,7 +150,7 @@ jobs:
       #run: |
       #quarto install tinytex --no-prompt --update-path
       - name: Build Documentation
-        uses: ansys/actions/doc-build@v10.3.3
+        uses: ansys/actions/doc-build@v10.3.4
         with:
           python-version: ${{ env.MAIN_PYTHON_VERSION }}
           dependencies: "pandoc jupyter"
@@ -161,7 +161,7 @@ jobs:
     needs: [doc, tests]
     runs-on: ubuntu-latest
     steps:
-      - uses: ansys/actions/build-library@v10.3.3
+      - uses: ansys/actions/build-library@v10.3.4
         with:
           library-name: ${{ env.PACKAGE_NAME }}
           python-version: ${{ env.MAIN_PYTHON_VERSION }}
@@ -191,7 +191,7 @@ jobs:
           skip-existing: false
 
       - name: "Release to GitHub"
-        uses: ansys/actions/release-github@v10.3.3
+        uses: ansys/actions/release-github@v10.3.4
         with:
           library-name: ${{ env.PACKAGE_NAME }}
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -204,7 +204,7 @@ jobs:
     permissions:
       contents: write # To deploy docs
     steps:
-      - uses: ansys/actions/doc-deploy-dev@v10.3.3
+      - uses: ansys/actions/doc-deploy-dev@v10.3.4
         with:
           cname: ${{ env.DOCUMENTATION_CNAME }}
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -219,7 +219,7 @@ jobs:
     permissions:
       contents: write # To deploy docs
     steps:
-      - uses: ansys/actions/doc-deploy-stable@v10.3.3
+      - uses: ansys/actions/doc-deploy-stable@v10.3.4
         with:
           cname: ${{ env.DOCUMENTATION_CNAME }}
           token: ${{ secrets.GITHUB_TOKEN }}
