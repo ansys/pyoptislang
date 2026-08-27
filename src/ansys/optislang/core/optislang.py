@@ -21,6 +21,7 @@
 # SOFTWARE.
 
 """Contains Optislang class, which provides the Python API for the optiSLang app."""
+
 from __future__ import annotations
 
 from importlib.metadata import version
@@ -80,20 +81,23 @@ class Optislang:
     batch : bool, optional
         Determines whether to start optiSLang server in batch mode. Defaults to ``True``.
 
-        ..note:: Cannot be used in combination with service mode.
+        .. note:: Cannot be used in combination with service mode.
+
+        .. note:: Parameters marked as "Only supported in batch mode"
+        are ignored when ``batch=False``.
 
     service: bool, optional
         Determines whether to start optiSLang server in service mode. If ``True``,
         ``batch`` argument is set to ``False``. Defaults to ``False``.
 
-        ..note:: Cannot be used in combination with batch mode.
+        .. note:: Cannot be used in combination with batch mode.
 
     communication_channel : CommunicationChannel, optional
         Defines the communication channel to be used for the optiSLang server.
         If not specified, local domain communication channel is used.
         Defaults to ``CommunicationChannel.LOCAL_DOMAIN``.
 
-        ..warning:: If set to ``CommunicationChannel.TCP``, insecure communication mode without TLS
+        .. warning:: If set to ``CommunicationChannel.TCP``, insecure communication mode without TLS
         is used. This mode allows remote communication but is not recommended.
         For more details on the implications and usage of insecure mode,
         refer to the optiSLang documentation.

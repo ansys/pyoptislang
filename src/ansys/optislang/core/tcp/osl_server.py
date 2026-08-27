@@ -21,6 +21,7 @@
 # SOFTWARE.
 
 """Contains classes for plain TCP/IP communication with server."""
+
 from __future__ import annotations
 
 import atexit
@@ -1265,20 +1266,23 @@ class TcpOslServer(OslServer):
     batch : bool, optional
         Determines whether to start optiSLang server in batch mode. Defaults to ``True``.
 
-        ..note:: Cannot be used in combination with service mode.
+        .. note:: Cannot be used in combination with service mode.
+
+        .. note:: Parameters marked as "Only supported in batch mode"
+        are ignored when ``batch=False``.
 
     service: bool, optional
         Determines whether to start optiSLang server in service mode. If ``True``,
         ``batch`` argument is set to ``False``. Defaults to ``False``.
 
-        ..note:: Cannot be used in combination with batch mode.
+        .. note:: Cannot be used in combination with batch mode.
 
     communication_channel : CommunicationChannel, optional
         Defines the communication channel to be used for the optiSLang server.
         If not specified, local domain communication channel is used.
         Defaults to ``CommunicationChannel.LOCAL_DOMAIN``.
 
-        ..warning:: If set to ``CommunicationChannel.TCP``, insecure communication mode without
+        .. warning:: If set to ``CommunicationChannel.TCP``, insecure communication mode without
         TLS is used. This mode allows remote communication but is not recommended.
         For more details on the implications and usage of insecure mode,
         refer to the optiSLang documentation.
@@ -1535,7 +1539,7 @@ class TcpOslServer(OslServer):
                 self.__communication_channel = CommunicationChannel.TCP
 
             listener = self.__create_listener(
-                timeout=None,  # type:ignore[arg-type]
+                timeout=None,  # type: ignore[arg-type]
                 register_timeout=self.__listeners_default_timeout,
                 name="Main",
                 communication_channel=self.__communication_channel,
