@@ -89,7 +89,7 @@ class OslServerProcess:
         .. note:: Cannot be used in combination with service mode.
 
         .. note:: Parameters marked as "Only supported in batch mode"
-        are ignored when ``batch=False``.
+            are ignored when ``batch=False``.
 
     service: bool, optional
         Determines whether to start optiSLang server in service mode. If ``True``,

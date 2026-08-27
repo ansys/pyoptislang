@@ -1269,7 +1269,7 @@ class TcpOslServer(OslServer):
         .. note:: Cannot be used in combination with service mode.
 
         .. note:: Parameters marked as "Only supported in batch mode"
-        are ignored when ``batch=False``.
+            are ignored when ``batch=False``.
 
     service: bool, optional
         Determines whether to start optiSLang server in service mode. If ``True``,
@@ -1283,9 +1283,9 @@ class TcpOslServer(OslServer):
         Defaults to ``CommunicationChannel.LOCAL_DOMAIN``.
 
         .. warning:: If set to ``CommunicationChannel.TCP``, insecure communication mode without
-        TLS is used. This mode allows remote communication but is not recommended.
-        For more details on the implications and usage of insecure mode,
-        refer to the optiSLang documentation.
+            TLS is used. This mode allows remote communication but is not recommended.
+            For more details on the implications and usage of insecure mode,
+            refer to the optiSLang documentation.
 
     server_address : Optional[str], optional
         In case an optiSLang server is to be started, this defines the address
