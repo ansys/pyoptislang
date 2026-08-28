@@ -3538,6 +3538,32 @@ class TcpOslServer(OslServer):
             max_request_attempts=self.max_request_attempts_register.get_value(current_func_name),
         )
 
+    def set_project_setting(self, name: str, value: Any) -> None:
+        """Set value of a project setting.
+
+        Parameters
+        ----------
+        name : str
+            Name of the project setting.
+        value : Any
+            Value to set for the project setting.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        current_func_name = self.set_project_setting.__name__
+        self.send_command(
+            commands.set_project_setting(name=name, value=value, password=self.__password),
+            timeout=self.timeouts_register.get_value(current_func_name),
+            max_request_attempts=self.max_request_attempts_register.get_value(current_func_name),
+        )
+
     @deprecated(
         version="0.6.0",
         reason=(

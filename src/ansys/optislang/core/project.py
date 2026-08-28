@@ -641,6 +641,28 @@ class Project(ABC):
         pass
 
     @abstractmethod
+    def set_project_setting(self, name: str, value: Any) -> None:  # pragma: no cover
+        """Set the value of a project setting.
+
+        Parameters
+        ----------
+        name : str
+            Name of the project setting.
+        value : Any
+            New value for the project setting.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        pass
+
+    @abstractmethod
     def get_available_node_types(self) -> List[NodeType]:
         """Get list of available node types.
 

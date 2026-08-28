@@ -730,6 +730,27 @@ class TcpProjectProxy(Project):
         """
         self.__osl_server.set_placeholder_value(placeholder_id=placeholder_id, value=value)
 
+    def set_project_setting(self, name: str, value: Any) -> None:
+        """Set the value of a project setting.
+
+        Parameters
+        ----------
+        name : str
+            Name of the project setting.
+        value : Any
+            New value for the project setting.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        self.__osl_server.set_project_setting(name=name, value=value)
+
     def _get_project_tree(self) -> list:
         """Return the project tree in a list format.
 

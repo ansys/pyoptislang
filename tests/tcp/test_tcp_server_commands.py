@@ -1367,6 +1367,15 @@ def test_set_project_setting():
     )
     dictionary = json.loads(json_string)
     dictionary["Password"] == example_password
+    # test with different value types
+    json_string = sc.set_project_setting(name="number_of_message_queue_threads", value=64)
+    dictionary = json.loads(json_string)
+    assert dictionary["projects"][0]["commands"][0]["args"]["value"] == 64
+    json_string = sc.set_project_setting(
+        name="hide_number_of_message_queue_threads_warning", value=True
+    )
+    dictionary = json.loads(json_string)
+    assert dictionary["projects"][0]["commands"][0]["args"]["value"] is True
     with pytest.raises(TypeError):
         sc.set_project_setting(name="number_of_message_queue_threads")
     with pytest.raises(TypeError):
