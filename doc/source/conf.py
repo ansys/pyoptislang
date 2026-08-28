@@ -28,6 +28,7 @@ extensions = [
     "sphinx.ext.doctest",
     "sphinx.ext.extlinks",
     "sphinx.ext.intersphinx",
+    "sphinx_design",
     "sphinx_copybutton",
     "sphinx_gallery.gen_gallery",
     "ansys_sphinx_theme.extension.linkcode",
@@ -118,7 +119,7 @@ sphinx_gallery_conf = {
     # path to your examples scripts
     "examples_dirs": ["../../examples/"],
     # path where to save gallery generated examples
-    "gallery_dirs": ["examples"],
+    "gallery_dirs": ["examples/gallery_examples"],
     # Pattern to search for example files
     "filename_pattern": r"\.py",
     # Remove the "Download all examples" button from the top level gallery

@@ -45,6 +45,10 @@ how you can optionally save the project to a desired location.
 # ~~~~~~~~~~~~~~~~~~~~~~~~
 # Perform the required imports.
 
+# sphinx_gallery_start_ignore
+# sphinx_gallery_thumbnail_path = "../../doc/source/_static/04_python_node_and_help.png"
+# sphinx_gallery_end_ignore
+
 from ansys.optislang.core import Optislang
 import ansys.optislang.core.examples as examples
 
@@ -91,7 +95,7 @@ osl.dispose()
 # ~~~~~~~~~~~~~~~~~~~~~~~
 # This image shows the generated workflow.
 #
-# .. image:: ../../_static/04_python_node_and_help.png
+# .. image:: ../../../_static/04_python_node_and_help.png
 #  :width: 300
 #  :alt: Result of script.
 #

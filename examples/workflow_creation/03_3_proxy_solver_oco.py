@@ -77,6 +77,11 @@ This is a unified approach for "optiSLang inside" solutions.
 # ``node_types`` for algorithm and solver type constants,
 # ``DesignFlow``/``ParametricSystem``/``ProxySolverNode`` for workflow construction,
 # and parametric classes for defining parameters, criteria, and bounds.
+
+# sphinx_gallery_start_ignore
+# sphinx_gallery_thumbnail_path = "../../doc/source/_static/03_3_ProxySolverOCO.png"
+# sphinx_gallery_end_ignore
+
 import time
 
 from ansys.optislang.core import Optislang
@@ -314,7 +319,7 @@ osl.dispose()
 # This image shows the generated workflow.
 # However, it is important to note, that this workflow is only usable through pyoptislang and cannot be used interactively!
 #
-# .. image:: ../../_static/03_3_ProxySolverOCO.png
+# .. image:: ../../../_static/03_3_ProxySolverOCO.png
 #  :width: 400
 #  :alt: Result of script.
 #

@@ -21,6 +21,7 @@
 # SOFTWARE.
 
 """Contains classes managing algorithms with solver nodes and helper functions."""
+
 from __future__ import annotations
 
 from enum import Enum

@@ -36,6 +36,10 @@ It creates multiple parametric systems using `Python` node as a solver and then 
 # ------------------------
 # Perform the required imports.
 
+# sphinx_gallery_start_ignore
+# sphinx_gallery_thumbnail_path = "../../doc/source/_static/04_1_RDO_w_python.png"
+# sphinx_gallery_end_ignore
+
 from typing import Union
 
 from ansys.optislang.core import Optislang
@@ -441,6 +445,6 @@ osl.dispose()
 # -----------------------
 # This image shows the generated workflow.
 #
-# .. image:: ../../_static/04_1_RDO_w_python.png
+# .. image:: ../../../_static/04_1_RDO_w_python.png
 #  :width: 1200
 #  :alt: Result of script.

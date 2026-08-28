@@ -36,6 +36,9 @@ It creates multiple parametric systems using ``ProxySolver`` and ``Mopsolver`` n
 # ------------------------
 # Perform the required imports.
 
+# sphinx_gallery_start_ignore
+# sphinx_gallery_thumbnail_path = "../../doc/source/_static/02_optimization_on_mop.png"
+# sphinx_gallery_end_ignore
 
 from math import sin
 from pathlib import Path
@@ -154,6 +157,6 @@ design_study_manager.optislang.dispose()
 # -----------------------
 # This image shows the generated workflow.
 #
-# .. image:: ../../_static/02_optimization_on_mop.png
+# .. image:: ../../../_static/02_optimization_on_mop.png
 #  :width: 1200
 #  :alt: Result of script.
