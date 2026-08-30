@@ -1,0 +1,24 @@
+{
+    "$id": "https://ldl-laki.docs.ansys.com/schema/rev00/properties",
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "title": "Laki Definition Language properties schema",
+    "description": "Defines an object of arbitrary properties that can be attached to nodes on the workflow tree.",
+    "$defs": {
+        "labeledType": {
+            "type": "object",
+            "minProperties": 1,
+            "maxProperties": 1
+        }
+    },
+    "type": "object",
+    "$comment": "TODO: Do we want array types?",
+    "$comment": "TODO: Do we want to put restrictions on the property names like we did for tree elements?",
+    "additionalProperties": {
+        "oneOf": [
+            { "$ref": "#/$defs/labeledType" },
+            { "type": "boolean" }, 
+            { "type": "string" },
+            { "type": "number"}
+        ]
+    }
+}

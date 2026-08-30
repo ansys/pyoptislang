@@ -1,0 +1,755 @@
+{
+    "$id": "https://ldl-laki.docs.ansys.com/schema/rev00/workflow",
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "title": "Ansys Automated Engineering Workflow",
+    "description": "This schema represents the description of an automated engineering workflow which can be instantiated by a workflow engine.",
+    "$defs": {
+        "_duration": {
+            "$comment": "reference ISO 8601, duration section",
+            "type": "string",
+            "pattern": "^P(?:(\\d+)Y)?(?:(\\d+)M)?(?:(\\d+)D)?T(?:(\\d+)H)?(?:(\\d+)M)?(?:(\\d+)S)?$"
+        },
+        "_element": {
+            "$comment": "Describes the abstract base class that all elements of the workflow tree hierarchy must extend.",
+            "type": "object",
+            "properties": {
+                "properties": {
+                    "$ref": "properties"
+                },
+                "timeout": {
+                    "$comment": "the time a component is allowed to run before being forcefully closed. a zero value timeout is the same as no timeout value.",
+                    "$ref": "#/$defs/_duration"
+                },
+                "connections": {
+                    "$ref": "connections"
+                },
+                "datapins": {
+                    "$comment": "Datapins define the interface of this component with the outside world.",
+                    "$ref": "datapin_metadata#/$defs/children"
+                },
+                "maximumRetries": {
+                    "description": "The maximum number of times this element will be retried if it fails during execution. By default no retries are performed.",
+                    "type": "integer",
+                    "default": 0,
+                    "minimum": 0
+                },
+                "backoffTime": {
+                    "description": "the time to wait between a fail event and a retry.",
+                    "$ref": "#/$defs/_duration"
+                },
+                "id": {
+                    "$comment": "An optional user provided id that uniquely identifies this element. Can be used in references using `#id`. Engines are discouraged from globally adding this property on all nodes because it reduces file readability. It is intended as a human generated mnemonic for finding elements without using the usual JSON-Pointer references.",
+                    "type": "string"
+                }
+            }
+        },
+        "_childrenType": {
+            "description": "Describes a set of named sub-workflows. Names must follow a strict naming scheme so that dotted notation can be used to locate an element in an instantiated workflow.",
+            "type": "object",
+            "$comment": "What rules do we want for name validation? Note that a simpler regex that is not universally supported would be:  ^[_\\p{L}][_\\p{L}\\d]*$ ",
+            "patternProperties": {
+                "^(\\\\[. ()]|[^~!@#$%^&*()+=\\-0-9\\`\\\"\\';:?/.,><\\s\\\\])(\\\\[. ()]|[^~!@#$%^&*()+=\\-\\`\\\"\\';:?/.,><\\s\\\\])*$": {
+                    "$ref": "#/$defs/element"
+                }
+            },
+            "additionalProperties": false
+        },
+        "_controlStatement": {
+            "$comment": "Describes the abstract base class for all control statements.",
+            "type": "object",
+            "$ref": "#/$defs/_element",
+            "properties": {
+                "children": {
+                    "$ref": "#/$defs/_childrenType"
+                },
+                "inner_datapins": {
+                    "$comment": "Datapins that are only visible to the inside components used to pass values to the inner workflow.",
+                    "$ref": "datapin_metadata#/$defs/children"
+                }
+            }
+        },
+        "_feedForward": {
+            "$comment": "A set of datapin names used to pass a value between subsequent runs in a feed-forward loop control statement. Each datapin referenced is expected to be previously defined in the parent control statement.",
+            "type": "object",
+            "properties": {
+                "startingDatapinName": {
+                    "$comment": "The name of a defined input datapin used to set the starting value of the feed-forward value.",
+                    "type": "string"
+                },
+                "writeToInnerDatapinName": {
+                    "$comment": "The name of a defined control_statement_to_component inner_datapin used to store the value at the end of a loop.",
+                    "type": "string"
+                },
+                "readFromInnerDatapinName": {
+                    "$comment": "The name of a defined control_statement_from_component inner_datapin used to read the value at the beginning of a loop.",
+                    "type": "string"
+                }
+            },
+            "required": [
+                "startingDatapinName",
+                "writeToInnerDatapinName",
+                "readFromInnerDatapinName"
+            ]
+        },
+        "_aggregator": {
+            "$comment": "",
+            "type": "object",
+            "properties": {
+                "sourceInnerDatapinName": {
+                    "$comment": "The name of a defined control_statement_from_component inner_datapin used to store the value of a linked component_result datapin from a single run of a loop.",
+                    "type": "string"
+                },
+                "resultOuterArrayDatapinName": {
+                    "$comment": "The name of a defined array component_result outer datapin where aggregate datapin values from 'sourceInnerDatapinName' will be stored.",
+                    "type": "string"
+                }
+            },
+            "required": [
+                "sourceInnerDatapinName",
+                "resultOuterArrayDatapinName"
+            ]
+        },
+        "_loopingControlStatement": {
+            "$comment": "Describes the abstract base class for all looping control statements that allow passing values between runs.",
+            "type": "object",
+            "$ref": "#/$defs/_controlStatement",
+            "properties": {
+                "feedForwards": {
+                    "$comment": "An optional collection of feed-forwards used to pass values between subsequent feed-forward loop control statement child runs.",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/$defs/_feedForward"
+                    }
+                },
+                "aggregators": {
+                    "$comment": "An optional collection of aggregator items used to store the value of a datapin from each run of a loop.",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/$defs/_aggregator"
+                    }
+                }
+            }
+        },
+        "_conditionalLink": {
+            "$comment": "A link that connects an output datapin of an if-else control statement to one or more datapins from its branches. The value from the branch that was executed will be used for the output datapin value.",
+            "type": "object",
+            "properties": {
+                "outputDatapinName": {
+                    "$comment": "The name relative to the parent of a defined component_result output datapin from the if-else control statement.",
+                    "$ref": "connections#/$defs/RelativeDataPinReference"
+                },
+                "branchDatapinNames": {
+                    "$comment": "The names relative to the parent of datapins from each if-else branch that can be linked to the output datapin, depending on which branch is executed. Only one datapin from each branch may be linked to the output, and linking is optional for each branch. To omit linking for a branch, simply do not include a datapin name from that branch in this array.",
+                    "type": "array",
+                    "minItems": 1,
+                    "items": {
+                        "$ref": "connections#/$defs/RelativeDataPinReference"
+                    }
+                }
+            },
+            "required": [
+                "outputDatapinName",
+                "branchDatapinNames"
+            ]
+        },
+        "_ifElse_id": {
+            "$comment": "Identifies an if-else control without validating it",
+            "properties": {
+                "type": {
+                    "enum": [
+                        "IfElse"
+                    ]
+                }
+            }
+        },
+        "ifElse": {
+            "description": "An if-else control, checks conditions until one evaluates to true, then runs the corresponding child.  If no conditions evaluates to true, a specified child may be run.",
+            "$comment": "TODO: for now only first condition evaluated before running elseChild.",
+            "type": "object",
+            "$ref": "#/$defs/_controlStatement",
+            "properties": {
+                "conditions": {
+                    "description": "A set of child branch names as keys and their corresponding execution conditional values.",
+                    "type": "object",
+                    "minItems": 1,
+                    "additionalProperties": {
+                        "type": "string"
+                    }
+                },
+                "branchOrder": {
+                    "description": "The order the child branches must be evaluated in",
+                    "type": "array",
+                    "minItems": 1,
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "defaultBranch": {
+                    "description": "If no conditions are true, then this child is run.  May be empty.",
+                    "type": "string"
+                },
+                "conditionalLinks": {
+                    "description": "An array of conditional links. Each link connects an output datapin of the if-else control statement to one or more datapins from its branches. The value from the branch that was executed will be used for the output datapin value. If inclusive, the value from the first branch in 'branchOrder' that meets the conditions will be used.",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/$defs/_conditionalLink"
+                    }
+                },
+                "inclusive": {
+                    "description": "If true, all branches that evaluate to true will be executed. By default, only the first branch that evaluates to true is executed.",
+                    "type": "boolean"
+                }
+            },
+            "required": [
+                "conditions",
+                "branchOrder"
+            ]
+        },
+        "_sequence_id": {
+            "$comment": "Identifies a Sequence without validating it",
+            "properties": {
+                "type": {
+                    "enum": [
+                        "Sequence"
+                    ]
+                }
+            }
+        },
+        "sequence": {
+            "description": "A sequence statement that runs children in a specified serial order.",
+            "type": "object",
+            "$ref": "#/$defs/_controlStatement",
+            "properties": {
+                "order": {
+                    "description": "The order the children must be evaluated in",
+                    "type": "array",
+                    "$comment": "TODO: Is order guaranteed or do we need another keyword here?",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            },
+            "required": [
+                "order"
+            ]
+        },
+        "_parallel_id": {
+            "$comment": "Identifies a Parallel without validating it",
+            "properties": {
+                "type": {
+                    "enum": [
+                        "Parallel"
+                    ]
+                }
+            }
+        },
+        "parallel": {
+            "description": "A parallel statement that runs all children in parallel.",
+            "type": "object",
+            "$ref": "#/$defs/_controlStatement",
+            "properties": {
+                "type": {
+                    "enum": [
+                        "Parallel"
+                    ]
+                }
+            },
+            "required": [
+                "type"
+            ]
+        },
+        "_dataDependency_id": {
+            "$comment": "Identifies a DataDependency without validating it",
+            "properties": {
+                "type": {
+                    "enum": [
+                        "DataDependency"
+                    ]
+                }
+            }
+        },
+        "dataDependency": {
+            "description": "A data dependency statement that will run children based on the data dependencies between them.",
+            "type": "object",
+            "$ref": "#/$defs/_controlStatement"
+        },
+        "_controlStatementPlugIn_id": {
+            "$comment": "Identifies a ControlStatementPlugIn without validating it",
+            "properties": {
+                "type": {
+                    "enum": [
+                        "ControlStatementPlugIn"
+                    ]
+                }
+            }
+        },
+        "controlStatementPlugIn": {
+            "description": "A control statement that is implemented using a plug-in.",
+            "type": "object",
+            "$ref": "#/$defs/_controlStatement",
+            "properties": {
+                "plugInId": {
+                    "type": "string",
+                    "$comment": "A URI used as a unique name to identify the control statement plug-in. May be a urn:uuid: style identifier, or a traditional URL. The URI is typically not referenced and merely the exact bytes of the URI used as an identifier.",
+                    "format": "uri"
+                },
+                "children": {
+                    "maxProperties": 1
+                }
+            },
+            "required": [
+                "plugInId"
+            ]
+        },
+        "_component_id": {
+            "$comment": "Identifies a Component without validating it",
+            "properties": {
+                "type": {
+                    "enum": [
+                        "Component"
+                    ]
+                }
+            }
+        },
+        "_softwareRequirement": {
+            "description": "A software requirement for a component.",
+            "type": "object",
+            "properties": {
+                "name": {
+                    "description": "The name of the software requirement.",
+                    "type": "string"
+                },
+                "minVersion": {
+                    "description": "Optional minimum version of the software required.",
+                    "type": "string"
+                },
+                "maxVersion": {
+                    "description": "Optional maximum version of the software required.",
+                    "type": "string"
+                },
+                "features": {
+                    "description": "Optional features of the software required.",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/$defs/_softwareRequirement"
+                    }
+                }
+            },
+            "required": [
+                "name"
+            ]
+        },
+        "component": {
+            "description": "A reference to a black box component definition.",
+            "type": "object",
+            "$ref": "#/$defs/_element",
+            "properties": {
+                "source": {
+                    "description": "A URI Reference to the component definition.",
+                    "type": "string",
+                    "format": "uri-reference"
+                },
+                "softwareRequirements": {
+                    "description": "A collection of software requirements for this component.",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/$defs/_softwareRequirement"
+                    },
+                    "additionalProperties": false
+                }
+            },
+            "required": [
+                "source"
+            ]
+        },
+        "workflowReference": {
+            "description": "A reference to a sub-workflow defined elsewhere. Recursive definitions are forbidden.",
+            "type": "object",
+            "properties": {
+                "$ref": {
+                    "description": "A URI Reference to the sub-workflow to be included here. May use JSON Pointer semantics in the fragment part to reference sub-workflows in the definitions element.",
+                    "type": "string",
+                    "format": "uri-reference"
+                }
+            },
+            "additionalProperties": false,
+            "required": [
+                "$ref"
+            ]
+        },
+        "_forLoop_id": {
+            "$comment": "Identifies a ForLoop without validating it",
+            "properties": {
+                "type": {
+                    "enum": [
+                        "ForLoop"
+                    ]
+                }
+            }
+        },
+        "_forLoopDefinitionDatapinProperties": {
+            "required": [
+                "type",
+                "direction"
+            ],
+            "properties": {
+                "type": {
+                    "anyOf": [
+                        {
+                                "enum": [
+                                    "integer"
+                                ]
+                        },
+                        {
+                                "enum": [
+                                    "real"
+                                ]
+                        }
+                    ]
+                },
+                "direction": {
+                    "enum": [
+                        "component_input"
+                    ]
+                }
+            }
+        },
+        "forLoop": {
+            "description": "A for-loop statement that runs its child multiple times based on the for-loop parameters.",
+            "type": "object",
+            "allOf": [
+                {
+                    "$ref": "#/$defs/_loopingControlStatement"
+                },
+                {
+                    "required": [
+                        "datapins"
+                    ],
+                    "properties": {
+                        "datapins": {
+                            "required": [
+                                "startingValue",
+                                "endingValue",
+                                "increment"
+                            ],
+                            "properties": {
+                                "startingValue": {
+                                    "$ref": "#/$defs/_forLoopDefinitionDatapinProperties"
+                                },
+                                "endingValue": {
+                                    "$ref": "#/$defs/_forLoopDefinitionDatapinProperties"
+                                },
+                                "increment": {
+                                    "$ref": "#/$defs/_forLoopDefinitionDatapinProperties"
+                                }
+                            }
+                        }
+                    }
+                }
+            ],
+            "properties": {
+                "type": {
+                    "enum": [
+                        "ForLoop"
+                    ]
+                },
+                "indexType": {
+                    "type": "string",
+                    "enum": [
+                        "real",
+                        "integer"
+                    ],
+                    "description": "The type of the for-loop index."
+                },
+                "children": {
+                    "maxProperties": 1
+                }
+            },
+            "required": [
+                "type",
+                "indexType",
+                "children"
+            ]
+        },
+        "_forEachLoop_id": {
+            "$comment": "Identifies a ForEachLoop without validating it",
+            "properties": {
+                "type": {
+                    "enum": [
+                        "ForEachLoop"
+                    ]
+                }
+            }
+        },
+        "forEachLoop": {
+            "description": "A for-each-loop statement that runs over all elements of an array.",
+            "type": "object",
+            "allOf": [
+                {
+                    "$ref": "#/$defs/_loopingControlStatement"
+                },
+                {
+                    "properties": {
+                        "datapins": {
+                            "required": [
+                                "inputs"
+                            ],
+                            "properties": {
+                                "inputs": {
+                                    "$comment": "The array of input values to iterate over.",
+                                    "direction": "component_input"
+                                }
+                            }
+                        },
+                        "inner_datapins": {
+                            "required": [
+                                "current_input"
+                            ],
+                            "properties": {
+                                "current_input": {
+                                    "$comment": "The value or slice from the input array for the current loop iteration.",
+                                    "direction": "control_statement_to_component"
+                                }
+                            }
+                        }
+                    }
+                }
+            ],
+            "properties": {
+                "type": {
+                    "enum": [
+                        "ForEachLoop"
+                    ]
+                },
+                "slicingMethod": {
+                    "type": "string",
+                    "description": "Which method to use when slicing multi-dimensional arrays."
+                },
+                "children": {
+                    "maxProperties": 1
+                }
+            },
+            "required": [
+                "type",
+                "slicingMethod",
+                "children"
+            ]
+        },
+        "_doWhileLoop_id": {
+            "$comment": "Identifies a DoWhileLoop without validating it",
+            "properties": {
+                "type": {
+                    "enum": [
+                        "DoWhileLoop"
+                    ]
+                }
+            }
+        },
+        "_maxIterations_datapins": {
+            "description": "The maximum number of iterations for the loop. If set, the loop will exit when this number is reached.",
+            "if": {
+                "type": "object",
+                "required": [
+                    "datapins"
+                ],
+                "properties": {
+                    "datapins": {
+                        "type": "object",
+                        "required": [
+                            "maxIterations"
+                        ]
+                    }
+                }
+            },
+            "then": {
+                "properties": {
+                    "datapins": {
+                        "properties": {
+                            "maxIterations": {
+                                "required": [
+                                    "type",
+                                    "direction"
+                                ],
+                                "properties": {
+                                    "type": {
+                                        "enum": [
+                                            "integer"
+                                        ]
+                                    },
+                                    "direction": {
+                                        "enum": [
+                                            "component_input"
+                                        ]
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "doWhileLoop": {
+            "description": "A do-while statement that runs its child one or more times based on the loop condition.",
+            "type": "object",
+            "allOf": [
+                {
+                    "$ref": "#/$defs/_loopingControlStatement"
+                },
+                {
+                    "$ref": "#/$defs/_maxIterations_datapins"
+                }
+            ],
+            "properties": {
+                "type": {
+                    "enum": [
+                        "DoWhileLoop"
+                    ]
+                },
+                "children": {
+                    "maxProperties": 1
+                },
+                "loopCondition": {
+                    "type": "string",
+                    "description": "An equation, possibly including datapin names, that evaluates to a boolean; determines if the loop is run again."
+                }
+            },
+            "required": [
+                "type",
+                "children"
+            ]
+        },
+        "element": {
+            "$comment": "A disambiguator that allows any tree element type.",
+            "type": "object",
+            "if": {
+                "$comment": "We cannot test for $ref at the same time as the object types because it looks different. Use an if block to go down the right validation path. Put the more common non-ref objects in the then block because it is less noisy in the output.",
+                "not": {
+                    "required": [
+                        "$ref"
+                    ]
+                }
+            },
+            "then": {
+                "$comment": "first prove that it is one of the types",
+                "type": "object",
+                "properties": {
+                    "type": {
+                        "enum": [
+                            "Component",
+                            "IfElse",
+                            "Sequence",
+                            "DataDependency",
+                            "Parallel",
+                            "ControlStatementPlugIn",
+                            "ForLoop",
+                            "ForEachLoop",
+                            "DoWhileLoop"
+                        ]
+                    }
+                },
+                "required": [
+                    "type"
+                ],
+                "$comment": "Then use the weird allOf/if solution that validates with less noise in the output",
+                "allOf": [
+                    {
+                        "if": {
+                            "$ref": "#/$defs/_component_id"
+                        },
+                        "then": {
+                            "$ref": "#/$defs/component"
+                        }
+                    },
+                    {
+                        "if": {
+                            "$ref": "#/$defs/_sequence_id"
+                        },
+                        "then": {
+                            "$ref": "#/$defs/sequence"
+                        }
+                    },
+                    {
+                        "if": {
+                            "$ref": "#/$defs/_dataDependency_id"
+                        },
+                        "then": {
+                            "$ref": "#/$defs/dataDependency"
+                        }
+                    },
+                    {
+                        "if": {
+                            "$ref": "#/$defs/_parallel_id"
+                        },
+                        "then": {
+                            "$ref": "#/$defs/parallel"
+                        }
+                    },
+                    {
+                        "if": {
+                            "$ref": "#/$defs/_ifElse_id"
+                        },
+                        "then": {
+                            "$ref": "#/$defs/ifElse"
+                        }
+                    },
+                    {
+                        "if": {
+                            "$ref": "#/$defs/_controlStatementPlugIn_id"
+                        },
+                        "then": {
+                            "$ref": "#/$defs/controlStatementPlugIn"
+                        }
+                    },
+                    {
+                        "if": {
+                            "$ref": "#/$defs/_forLoop_id"
+                        },
+                        "then": {
+                            "$ref": "#/$defs/forLoop"
+                        }
+                    },
+                    {
+                        "if": {
+                            "$ref": "#/$defs/_forEachLoop_id"
+                        },
+                        "then": {
+                            "$ref": "#/$defs/forEachLoop"
+                        }
+                    },
+                    {
+                        "if": {
+                            "$ref": "#/$defs/_doWhileLoop_id"
+                        },
+                        "then": {
+                            "$ref": "#/$defs/doWhileLoop"
+                        }
+                    }
+                ]
+            },
+            "else": {
+                "$ref": "#/$defs/workflowReference"
+            }
+        }
+    },
+    "type": "object",
+    "properties": {
+        "metadata": {
+            "$ref": "metadata"
+        },
+        "definitions": {
+            "description": "An optional collection of sub-workflows that can be referenced from the main root workflow, or other workflow definition files.",
+            "$ref": "#/$defs/_childrenType"
+        },
+        "structs": {
+            "description": "An optional collection of struct definitions that can be referenced from the workflow.",
+            "$ref": "datapin_metadata#/$defs/children"
+        },
+        "root": {
+            "description": "The main entry point for workflow execution. Can be a full tree, or merely a reference to a sub-workflow defined in definitions. Optional so that a library of sub-workflows can be generated without itself being executable.",
+            "$ref": "#/$defs/element"
+        }
+    },
+    "required": [
+        "metadata"
+    ]
+}
