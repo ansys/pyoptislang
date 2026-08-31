@@ -21,6 +21,7 @@
 # SOFTWARE.
 
 """Contains classes creating a design study from template."""
+
 from __future__ import annotations
 
 from abc import abstractmethod
@@ -567,14 +568,6 @@ class DesignStudyTemplate:
             for output_slot, input_slot_str in connections_algorithm:
                 output_slot.connect_to(algorithm.get_input_slots(name=input_slot_str)[0])
 
-        settings_dict = (
-            algorithm_settings.convert_properties_to_dict()
-            if isinstance(algorithm_settings, GeneralAlgorithmSettings)
-            else {}
-        )
-        for name, value in settings_dict.items():
-            algorithm.set_property(name, value)
-
         for parameter in parameters:
             algorithm.parameter_manager.add_parameter(parameter)
 
@@ -593,6 +586,15 @@ class DesignStudyTemplate:
 
         if start_designs:
             algorithm.design_manager.set_start_designs(start_designs=start_designs)
+
+        settings_dict = (
+            algorithm_settings.convert_properties_to_dict()
+            if isinstance(algorithm_settings, GeneralAlgorithmSettings)
+            else {}
+        )
+
+        for name, value in settings_dict.items():
+            algorithm.set_property(name, value)
 
         return algorithm, solver_node
 
