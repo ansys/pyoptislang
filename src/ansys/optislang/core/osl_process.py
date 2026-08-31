@@ -21,6 +21,7 @@
 # SOFTWARE.
 
 """Contains class which starts and controls local opstiSLang server process."""
+
 from enum import Enum
 import logging
 import os
@@ -85,13 +86,16 @@ class OslServerProcess:
     batch : bool, optional
         Determines whether to start optiSLang server in batch mode. Defaults to ``True``.
 
-        ..note:: Cannot be used in combination with service mode.
+        .. note:: Cannot be used in combination with service mode.
+
+        .. note:: Parameters marked as "Only supported in batch mode"
+            are ignored when ``batch=False``.
 
     service: bool, optional
         Determines whether to start optiSLang server in service mode. If ``True``,
         ``batch`` argument is set to ``False``. Defaults to ``False``.
 
-        ..note:: Cannot be used in combination with batch mode.
+        .. note:: Cannot be used in combination with batch mode.
 
     local_server_id : Optional[str], optional
         This defines the unique ID of the optiSLang local server if ``enable_local_domain_server``
@@ -686,9 +690,9 @@ class OslServerProcess:
             if utils.is_iron_python():  # pragma: no cover
                 # System.Diagnostics.Process uses ExitCode property
                 # ExitCode is only valid after the process has exited
-                if self.__process.HasExited:  # type:ignore[attr-defined]
+                if self.__process.HasExited:  # type: ignore[attr-defined]
                     # Ensure the exit code is treated as a signed 32-bit integer
-                    exit_code = self.__process.ExitCode  # type:ignore[attr-defined]
+                    exit_code = self.__process.ExitCode  # type: ignore[attr-defined]
                     # Convert to signed int32 if needed (handle potential unsigned interpretation)
                     if exit_code > INT32_MAX:
                         exit_code = exit_code - UINT32_RANGE
@@ -1089,7 +1093,7 @@ class OslServerProcess:
             )
 
         creation_flags = (
-            subprocess.CREATE_NO_WINDOW  #  type: ignore[attr-defined]
+            subprocess.CREATE_NO_WINDOW  # type: ignore[attr-defined]
             if sys.platform == "win32"
             else 0
         )
@@ -1172,7 +1176,7 @@ class OslServerProcess:
 
         if utils.is_iron_python():  # pragma: no cover
             # System.Diagnostics.Process uses HasExited property
-            return not self.__process.HasExited  # type:ignore[attr-defined]
+            return not self.__process.HasExited  # type: ignore[attr-defined]
         else:
             return self.__process.poll() is None  # pragma: no cover
 
@@ -1197,9 +1201,9 @@ class OslServerProcess:
                         # System.Diagnostics.Process uses WaitForExit(milliseconds)
                         if timeout is not None:
                             timeout_ms = int(timeout * 1000)
-                            self.__process.WaitForExit(timeout_ms)  # type:ignore[attr-defined]
+                            self.__process.WaitForExit(timeout_ms)  # type: ignore[attr-defined]
                         else:
-                            self.__process.WaitForExit()  # type:ignore[attr-defined]
+                            self.__process.WaitForExit()  # type: ignore[attr-defined]
                     else:
                         self.__process.wait(timeout)  # pragma: no cover
                 except Exception as ex:
