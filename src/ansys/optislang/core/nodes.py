@@ -355,12 +355,12 @@ class Node(ABC):
 
     @abstractmethod
     def get_ancestors(self) -> Tuple[Node, ...]:  # pragma: no cover
-        """Get tuple of ordered ancestors starting from root system at position 0.
+        """Get ordered ancestors of this node, starting with the root system.
 
         Returns
         -------
         Tuple[Node, ...]
-            Tuple of ordered ancestors, starting from root system at position.
+            Ancestor nodes ordered from root system at index 0 to the direct parent.
 
         Raises
         ------

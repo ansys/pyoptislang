@@ -1,5 +1,5 @@
 [build-system]
-requires = ["flit_core >=3.2,<4"]
+requires = ["flit_core >=3.2,<5"]
 build-backend = "flit_core.buildapi"
 
 [project]
@@ -59,7 +59,7 @@ build = [
     "twine>=4.0.1"
 ]
 typing = [
-    "mypy==2.1.0",
+    "mypy==2.3.1",
     "types-Deprecated",
     "types-psutil"
 ]
