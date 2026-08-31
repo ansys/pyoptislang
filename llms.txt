@@ -1,0 +1,63 @@
+
+schema_version: 1
+
+metadata:
+  project: PyOptiSLang
+  language: python
+  description: Python API for interacting with OptiSLang instances and executing parametric studies.
+
+documentation:
+  docstring_style: numpy
+  docstring_validation: enforced via documentation tooling
+
+api_model:
+  entry_points:
+    - Optislang
+    - Application
+    - Project
+  core_hierarchy: Optislang -> Application -> Project -> RootSystem -> Nodes
+  node_types:
+    - Node
+    - System
+    - ParametricSystem
+    - RootSystem
+    - IntegrationNode
+workflow:
+  pattern:
+    - connect/create Optislang instance
+    - open/create Project
+    - modify workflow (systems, nodes)
+    - configure parameters/criteria/responses
+    - execute project
+    - retrieve results
+
+object_management:
+  access:
+    - objects accessed via parent structures
+    - avoid direct instantiation of internal classes
+  routing:
+    execution_and_status: use Project APIs
+    topology_changes: perform via project.root_system (or descendant systems)
+
+parametric_layer:
+  module: parametric
+  components:
+    - ParametricDesignStudyManager
+    - ParametricDesignStudy
+    - DesignStudyTemplate
+  constraints:
+    - parametric module is a convenience layer for workflow creation
+    - design study templates and settings can be prepared before server connection/project availability
+    - creating, resetting, or executing a design study requires an active loaded project
+    - not strictly proxy-based
+
+llm_guidance:
+  prefer:
+    - documented/exported user-facing APIs
+    - Application/Project APIs over deprecated Optislang passthrough methods
+    - explicit behavior and naming
+    - API stability
+  avoid:
+    - transport-specific modules (e.g. core.tcp)
+  allowed_when_explicitly_requested:
+    - transport-specific/internal proxy classes
