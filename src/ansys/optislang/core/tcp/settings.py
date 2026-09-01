@@ -1,0 +1,77 @@
+# Copyright (C) 2022 - 2026 ANSYS, Inc. and/or its affiliates.
+# SPDX-License-Identifier: MIT
+#
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+
+"""Contains definitions of the TCP settings."""
+
+from ansys.optislang.core.io import OptislangPath
+from ansys.optislang.core.settings.types import SerializationMode, SettingsSerializer
+
+
+class TcpSerializer(SettingsSerializer):
+    """Serializer for TCP settings."""
+
+    def serialize(self, prop, value):
+        """Serialize the setting value based on its type and serialization mode.
+
+        Parameters
+        ----------
+        prop : SettingProperty
+            The setting property to serialize.
+        value : Any
+            The value of the setting to serialize.
+
+        Returns
+        -------
+        dict or str or None
+            The serialized representation of the setting value.
+
+        Raises
+        ------
+        TypeError
+            If the value type is not supported for serialization.
+        """
+        if value is None:
+            return None
+
+        mode = getattr(prop, "serialization_mode", None)
+
+        # osl path case
+        if isinstance(value, OptislangPath):
+            if mode == SerializationMode.PATH_STR:
+                return str(value)
+            return value.to_dict()
+
+        # nested model case
+        if hasattr(value, "serialize"):
+            try:
+                # with serializer
+                return value.serialize(self)
+            except TypeError:
+                raise TypeError(
+                    f"Cannot serialize value of type {type(value)} for property {prop.name}"
+                )
+
+        if mode == SerializationMode.VALUE_WRAPPER:
+            return {"value": value}
+
+        # primitives
+        return value
