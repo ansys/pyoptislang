@@ -156,6 +156,35 @@ class TcpCriteriaManagerProxy(CriteriaManager):
         )
         return tuple([criterion_dict["First"] for criterion_dict in container])
 
+    def get_criterion(self, name: str) -> Criterion:
+        """Get criterion of the system by name.
+
+        Parameters
+        ----------
+        name : str
+            Name of the criterion.
+
+        Returns
+        -------
+        Criterion
+            Criterion of the given name.
+
+        Raises
+        ------
+        ValueError
+            Raised when no criterion of the given name exists.
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        for criterion in self.get_criteria():
+            if criterion.name == name:
+                return criterion
+        raise ValueError(f"Criterion `{name}` doesn't exist in the system.")
+
     def modify_criterion(self, criterion: Criterion) -> None:
         """Modify criterion in the system.
 
