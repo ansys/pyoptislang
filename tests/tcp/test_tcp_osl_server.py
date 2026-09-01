@@ -1248,6 +1248,18 @@ def test_set_placeholder_value(osl_server_process: OslServerProcess):
     tcp_osl_server.dispose()
 
 
+def test_set_project_setting(osl_server_process: OslServerProcess):
+    """Test set_project_setting method."""
+    tcp_osl_server = create_tcp_osl_server(osl_server_process)
+
+    # Set different types of values
+    tcp_osl_server.set_project_setting("number_of_message_queue_threads", 2)
+    tcp_osl_server.set_project_setting("hide_number_of_message_queue_threads_warning", True)
+
+    tcp_osl_server.shutdown()
+    tcp_osl_server.dispose()
+
+
 def test_rename_placeholder(osl_server_process: OslServerProcess):
     """Test rename_placeholder method."""
     tcp_osl_server = create_tcp_osl_server(osl_server_process)
