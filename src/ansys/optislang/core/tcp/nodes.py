@@ -30,7 +30,19 @@ import json
 import logging
 from pathlib import Path
 import time
-from typing import TYPE_CHECKING, Any, Dict, Iterable, List, Optional, Tuple, Type, Union, cast
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Dict,
+    Iterable,
+    List,
+    Mapping,
+    Optional,
+    Tuple,
+    Type,
+    Union,
+    cast,
+)
 
 from deprecated.sphinx import deprecated
 
@@ -684,7 +696,50 @@ class TcpNodeProxy(Node):
         TimeoutError
             Raised when the timeout float value expires.
         """
+        from ansys.optislang.core.settings.types import SettingInstance
+        from ansys.optislang.core.tcp.settings import TcpSerializer
+
+        if isinstance(value, SettingInstance):
+            if name != value.name:
+                raise ValueError(
+                    f"Property name mismatch: received name '{name}', but setting instance "
+                    f"is bound to '{value.name}'."
+                )
+            value = value._serialize_value(TcpSerializer())
+
         self._osl_server.set_actor_property(actor_uid=self.uid, name=name, value=value)
+
+    def set_properties(self, properties: Mapping[str, Any]) -> None:
+        """Set multiple node properties.
+
+        Parameters
+        ----------
+        properties : Mapping[str, Any]
+            Mapping of property names to property values.
+
+        Raises
+        ------
+        TypeError
+            Raised when ``properties`` is not a mapping or contains non-string keys.
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+
+        Notes
+        -----
+        Properties are applied in iteration order. If setting one property fails,
+        the exception is raised immediately and remaining properties are not applied.
+        """
+        if not isinstance(properties, Mapping):
+            raise TypeError(f"Unsupported type of properties: ``{type(properties)}``.")
+
+        for name, value in properties.items():
+            if not isinstance(name, str):
+                raise TypeError(f"Unsupported type of property name: ``{type(name)}``.")
+            self.set_property(name=name, value=value)
 
     def create_input_slot(self, slot_name: str, type_hint: Optional[SlotTypeHint] = None) -> None:
         """Create dynamic input slot.
