@@ -638,6 +638,119 @@ class Node(ABC):
         pass
 
     @abstractmethod
+    def get_hpc_licensing_forwarded_environment(self) -> dict:  # pragma: no cover
+        """Get HPC licensing forwarded environment for the node.
+
+        Returns
+        -------
+        dict
+            Dictionary with HPC licensing forwarded environment for the node.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        pass
+
+    @abstractmethod
+    def get_input_slot_value(
+        self, hid: str, slot_name: str, legacy_design_format: bool = False
+    ) -> dict:  # pragma: no cover
+        """Get input slot value of the node.
+
+        Parameters
+        ----------
+        hid : str
+            State/Design hierarchical id.
+        slot_name : str
+            Slot name.
+        legacy_design_format : bool, optional
+            Whether to use legacy format for designs and design container type slots.
+            Defaults to ``False``.
+
+            .. note:: Argument has effect for Ansys optiSLang version >= 25.2 only.
+
+        Returns
+        -------
+        dict
+            Input slot value of the node.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        pass
+
+    @abstractmethod
+    def get_output_slot_value(
+        self, hid: str, slot_name: str, legacy_design_format: bool = False
+    ) -> dict:  # pragma: no cover
+        """Get output slot value of the node.
+
+        Parameters
+        ----------
+        hid : str
+            State/Design hierarchical id.
+        slot_name : str
+            Slot name.
+        legacy_design_format : bool, optional
+            Whether to use legacy format for designs and design container type slots.
+            Defaults to ``False``.
+
+            .. note:: Argument has effect for Ansys optiSLang version >= 25.2 only.
+
+        Returns
+        -------
+        dict
+            Output slot value of the node.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        pass
+
+    @abstractmethod
+    def supports(self, feature_name: str) -> bool:  # pragma: no cover
+        """Get whether a given feature is supported by the node.
+
+        Parameters
+        ----------
+        feature_name : str
+            Name of the feature.
+
+        Returns
+        -------
+        bool
+            Whether the given feature is supported.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        pass
+
+    @abstractmethod
     def set_execution_options(self, value: ExecutionOption) -> None:  # pragma: no cover
         """Set execution options.
 
