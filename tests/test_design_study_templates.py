@@ -38,11 +38,14 @@ from ansys.optislang.core.project_parametric import (
     OptimizationParameter,
     Response,
 )
+from ansys.optislang.core.settings import primitives
 from ansys.optislang.parametric.design_study import (
     ExecutableBlock,
+    FixedParametricDesignStudy,
     ManagedParametricSystem,
 )
 from ansys.optislang.parametric.design_study_templates import (
+    DesignStudyTemplate,
     GeneralAlgorithmSettings,
     GeneralAlgorithmTemplate,
     GeneralNodeSettings,
@@ -106,11 +109,57 @@ def test_general_node_settings():
     assert properties_dict == additional_settings
 
 
+def test_general_node_settings_with_constructor_properties():
+    """Test constructor-based setting values and metadata hints."""
+    settings = GeneralNodeSettings(
+        additional_settings={"CustomProp": 42},
+        max_runtime=100,
+        read_mode="read_and_write_mode",
+        stop_after_execution=True,
+    )
+
+    assert settings.max_runtime == 100
+    assert settings.stop_after_execution is True
+
+    properties_dict = settings.convert_properties_to_dict()
+    assert properties_dict.get("MaxRuntime") == 100
+    assert properties_dict.get("ReadMode") == {"value": "read_and_write_mode"}
+    assert properties_dict.get("StopAfterExecution") is True
+    assert properties_dict.get("CustomProp") == 42
+
+
+def test_general_node_settings_clear_method():
+    settings = GeneralNodeSettings(additional_settings={"CustomProp": 42}, max_runtime=100)
+    settings_dict = settings.convert_properties_to_dict()
+    assert settings_dict.get("MaxRuntime") == 100
+    assert settings_dict.get("CustomProp") == 42
+
+    settings.clear(clear_additional_settings=False)
+    partially_cleared_dict = settings.convert_properties_to_dict()
+    assert "MaxRuntime" not in partially_cleared_dict
+    assert settings_dict.get("CustomProp") == 42
+
+    settings.clear()
+    cleared_dict = settings.convert_properties_to_dict()
+    assert "MaxRuntime" not in cleared_dict
+    assert "CustomProp" not in cleared_dict
+
+
+def test_general_node_settings_clear_additional_settings_by_name_only():
+    settings = GeneralNodeSettings(additional_settings={"CustomProp": 42}, max_runtime=100)
+
+    settings.clear("additional_settings", clear_additional_settings=False)
+    result = settings.convert_properties_to_dict()
+
+    assert "CustomProp" not in result
+    assert result.get("MaxRuntime") == 100
+
+
 def test_mopsolver_settings():
     """Test `MopSolverNodeSettings` class init and properties."""
     mopsolver = MopSolverNodeSettings()
     assert mopsolver.multi_design_launch_num == 1
-    assert mopsolver.input_file is None
+    assert mopsolver.input_file == primitives.PATH.default
     assert mopsolver.additional_settings == {}
 
     input1 = "path/to/input/file"
@@ -175,8 +224,8 @@ def test_proxysolver_settings():
 def test_python_solver_settings():
     """Test `PythonSolverNodeSettings` class init and properties."""
     pythonsolver = PythonSolverNodeSettings()
-    assert pythonsolver.input_file is None
-    assert pythonsolver.input_code is None
+    assert pythonsolver.input_file is primitives.PATH.default
+    assert pythonsolver.input_code == primitives.SOURCE.default
     assert pythonsolver.additional_settings == {}
 
     input_path1 = "path/to/input/file"
@@ -193,22 +242,25 @@ def test_python_solver_settings():
     pythonsolver1 = PythonSolverNodeSettings(input_path1, None, additional_settings)
     assert pythonsolver1.additional_settings.get("Property1") == "string"
     assert pythonsolver1.additional_settings.get("Property4", {}).get("key") == "value"
-    assert pythonsolver1.input_code is None
+    assert pythonsolver1.input_code == primitives.SOURCE.default
     assert isinstance(pythonsolver1.input_file, OptislangPath)
     assert pythonsolver1.input_file.type == OptislangPathType.ABSOLUTE_PATH
 
     pythonsolver2 = PythonSolverNodeSettings(input_path2, None, additional_settings)
     assert isinstance(pythonsolver2.input_file, OptislangPath)
     assert pythonsolver2.input_file.type == OptislangPathType.ABSOLUTE_PATH
-    assert pythonsolver2.input_code is None
+    assert pythonsolver2.input_code == primitives.SOURCE.default
 
     pythonsolver3 = PythonSolverNodeSettings(input_path3, None, additional_settings)
     assert isinstance(pythonsolver3.input_file, OptislangPath)
     assert pythonsolver3.input_file.type == OptislangPathType.WORKING_DIR_RELATIVE
 
     pythonsolver4 = PythonSolverNodeSettings(None, input_code, additional_settings)
-    assert pythonsolver4.input_file is None
+    assert pythonsolver4.input_file == primitives.PATH.default
     assert isinstance(pythonsolver4.input_code, str)
+
+    empty_dict = pythonsolver.convert_properties_to_dict()
+    assert empty_dict == {}
 
     properties_dict = pythonsolver1.convert_properties_to_dict()
     assert properties_dict.get("Path", {}).get("path") is not None
@@ -235,7 +287,19 @@ def test_general_parametric_system_settings():
     )
 
     properties_dict = general_parametric_settings.convert_properties_to_dict()
-    assert properties_dict == additional_settings
+    assert properties_dict.get("Property1") == "string"
+    assert properties_dict.get("Property4", {}).get("key") == "value"
+    assert properties_dict.items() >= additional_settings.items()
+
+
+def test_general_parametric_system_settings_constructor_model():
+    """Test constructor-based nested model settings for parametric systems."""
+    settings = GeneralParametricSystemSettings()
+    settings.sensitivity_algo_settings.num_dimensions = 7
+
+    properties_dict = settings.convert_properties_to_dict()
+    assert "AlgorithmSettings" in properties_dict
+    assert properties_dict["AlgorithmSettings"].get("num_dimensions") == 7
 
 
 def test_general_algorithm_settings():
@@ -252,7 +316,20 @@ def test_general_algorithm_settings():
     assert general_algo_settings.additional_settings.get("Property4", {}).get("key") == "value"
 
     properties_dict = general_algo_settings.convert_properties_to_dict()
-    assert properties_dict == additional_settings
+    assert properties_dict.items() >= additional_settings.items()
+
+
+def test_design_study_template_default_instance_factory_returns_fixed_study():
+    class _UserTemplate(DesignStudyTemplate):
+        def create_design_study(self, parent):
+            return ((), ())
+
+    template = _UserTemplate()
+    study = template.create_design_study_instance(osl_instance=object(), parent=object())
+
+    assert isinstance(study, FixedParametricDesignStudy)
+    with pytest.raises(TypeError, match="Settings are not implemented"):
+        study.apply_settings()
 
 
 # endregion

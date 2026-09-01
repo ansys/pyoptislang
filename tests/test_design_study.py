@@ -42,12 +42,16 @@ from ansys.optislang.core.tcp.nodes import (
 )
 from ansys.optislang.parametric.design_study import (
     ExecutableBlock,
+    FixedParametricDesignStudy,
+    GeneralAlgorithmDesignStudy,
     ManagedInstance,
     ManagedParametricSystem,
     OMDBFilesProvider,
     OMDBFilesSpecificationEnum,
+    OptimizationOnMOPDesignStudy,
     ParametricDesignStudy,
     ParametricDesignStudyManager,
+    ParametricSystemIntegrationDesignStudy,
     ProxySolverManagedParametricSystem,
 )
 from ansys.optislang.parametric.design_study_templates import (
@@ -55,12 +59,76 @@ from ansys.optislang.parametric.design_study_templates import (
     ProxySolverNodeSettings,
 )
 
-pytestmark = pytest.mark.local_osl
+
+class _MockedNode:
+    def __init__(self, uid: str):
+        self.uid = uid
+        self.exec_options = []
+        self.deleted = False
+
+    def set_execution_options(self, execution_option):
+        self.exec_options.append(execution_option)
+
+    def delete(self):
+        self.deleted = True
+
+
+class _MockedProject:
+    root_system = object()
+
+
+class _MockedApplication:
+    project = _MockedProject()
+
+
+class _MockedOptislang:
+    application = _MockedApplication()
+
+
+class _MockedTemplate:
+    def __init__(self):
+        self.called = False
+
+    def create_design_study(self, parent):
+        self.called = True
+        assert parent is _MockedProject.root_system
+        return (), ()
+
+
+_PARAMETERS = [
+    OptimizationParameter("X1"),
+    OptimizationParameter("X2"),
+    OptimizationParameter("X3"),
+]
+_CRITERIA = [ObjectiveCriterion("Y1", "Y")]
+_RESPONSES = [Response("Y", 0.0)]
+_PYTHON_SOURCE_CODE = r"""
+try:
+    Y = X1 + X2 + X3
+except:
+    Y= 0.0
+"""
+
+
+@pytest.fixture()
+def optislang(scope="function", autouse=False) -> Optislang:
+    """Create Optislang class.
+
+    Returns
+    -------
+    Optislang:
+        Connects to the optiSLang application and provides an API to control it.
+    """
+    osl = Optislang(ini_timeout=90)
+    osl.timeout = 60
+    yield osl
+    osl.dispose()
 
 
 # region OMDB files
 
 
+@pytest.mark.local_osl
 def test_omdb_files_provider(tmp_example_project):
     """Test `OMDBFilesProvider` class."""
     project_path = tmp_example_project("omdb_files")
@@ -100,6 +168,7 @@ def test_omdb_files_provider(tmp_example_project):
 
 
 # region managed instances
+@pytest.mark.local_osl
 def test_managed_instances(tmp_example_project):
     """Test `ManagedInstance` classes."""
     project_path = tmp_example_project("omdb_files")
@@ -134,6 +203,69 @@ def test_managed_instances(tmp_example_project):
 
 
 # region executable block
+def test_executable_block_mocked():
+    """Test `ExecutableBlock` class using mocked nodes only."""
+    node_1 = _MockedNode("node-1")
+    node_2 = _MockedNode("node-2")
+
+    managed_instance_1 = ManagedInstance(node_1)
+    managed_instance_2 = ManagedInstance(node_2)
+    block = ExecutableBlock(
+        [
+            (
+                managed_instance_1,
+                ExecutionOption.STARTING_POINT | ExecutionOption.END_POINT | ExecutionOption.ACTIVE,
+            ),
+            (
+                managed_instance_2,
+                ExecutionOption.ACTIVE,
+            ),
+        ]
+    )
+    assert len(block.instances) == 2
+    assert isinstance(block.instances[0], ManagedInstance)
+    assert isinstance(block.instances_with_execution_options[0][0], ManagedInstance)
+    assert isinstance(block.instances_with_execution_options[0][1], ExecutionOption)
+
+    block.apply_execution_options()
+    assert len(node_1.exec_options) == 1
+    assert len(node_2.exec_options) == 1
+
+    block.deactivate()
+    assert node_1.exec_options[-1] == ExecutionOption.INACTIVE
+    assert node_2.exec_options[-1] == ExecutionOption.INACTIVE
+
+    from_empty = ExecutableBlock()
+    from_empty.add_instance(
+        managed_instance_1,
+        ExecutionOption.STARTING_POINT | ExecutionOption.END_POINT | ExecutionOption.ACTIVE,
+    )
+    assert len(from_empty.instances) == 1
+    assert isinstance(from_empty.instances[0], ManagedInstance)
+    assert isinstance(from_empty.instances_with_execution_options[0][0], ManagedInstance)
+    assert isinstance(from_empty.instances_with_execution_options[0][1], ExecutionOption)
+
+    from_empty.remove_instance_by_uid(node_1.uid)
+    assert len(from_empty.instances) == 0
+
+
+def test_executable_block_rejects_duplicate_uids_on_init_mocked():
+    """Ensure duplicate uid validation works for tuple-based initialization."""
+    node_1 = _MockedNode("duplicate")
+    node_2 = _MockedNode("duplicate")
+    managed_instance_1 = ManagedInstance(node_1)
+    managed_instance_2 = ManagedInstance(node_2)
+
+    with pytest.raises(ValueError, match="Duplicate uid"):
+        ExecutableBlock(
+            [
+                (managed_instance_1, ExecutionOption.ACTIVE),
+                (managed_instance_2, ExecutionOption.INACTIVE),
+            ]
+        )
+
+
+@pytest.mark.local_osl
 def test_executable_block(tmp_example_project):
     """Test `ExecutableBlock` class."""
     project_path = tmp_example_project("omdb_files")
@@ -179,6 +311,176 @@ def test_executable_block(tmp_example_project):
 # region parametric design study
 
 
+def test_parametric_design_study_add_managed_instance_is_transactional_mocked():
+    """Ensure failed add does not mutate managed instances."""
+    managed_instance_1 = ManagedInstance(_MockedNode("n1"))
+    block = ExecutableBlock([(managed_instance_1, ExecutionOption.ACTIVE)])
+    study = ParametricDesignStudy(object(), [managed_instance_1], [block])
+
+    managed_instance_2 = ManagedInstance(_MockedNode("n2"))
+
+    with pytest.raises(IndexError, match="Execution block index out of range"):
+        study.add_managed_instance(managed_instance_2, execution_block_idx=99)
+
+    assert study.find_managed_instance_by_uid("n2") is None
+    assert len(study.managed_instances) == 1
+
+
+def test_parametric_design_study_remove_execution_block_removes_unique_instances_mocked():
+    """Ensure block removal checks overlap per instance, not per block."""
+    managed_a = ManagedInstance(_MockedNode("a"))
+    managed_b = ManagedInstance(_MockedNode("b"))
+    managed_c = ManagedInstance(_MockedNode("c"))
+
+    block_0 = ExecutableBlock(
+        [
+            (managed_a, ExecutionOption.ACTIVE),
+            (managed_b, ExecutionOption.ACTIVE),
+        ]
+    )
+    block_1 = ExecutableBlock([(managed_a, ExecutionOption.ACTIVE)])
+    block_2 = ExecutableBlock([(managed_c, ExecutionOption.ACTIVE)])
+
+    study = ParametricDesignStudy(
+        object(),
+        [managed_a, managed_b, managed_c],
+        [block_0, block_1, block_2],
+    )
+
+    study.remove_execution_block(0)
+
+    assert study.find_managed_instance_by_uid("a") is not None
+    assert study.find_managed_instance_by_uid("b") is None
+    assert study.find_managed_instance_by_uid("c") is not None
+
+
+def test_parametric_design_study_remove_managed_instance_cleans_empty_blocks_mocked():
+    """Ensure empty execution blocks are removed after instance removal."""
+    managed_a = ManagedInstance(_MockedNode("a"))
+    managed_b = ManagedInstance(_MockedNode("b"))
+
+    block_a = ExecutableBlock([(managed_a, ExecutionOption.ACTIVE)])
+    block_b = ExecutableBlock([(managed_b, ExecutionOption.ACTIVE)])
+    study = ParametricDesignStudy(object(), [managed_a, managed_b], [block_a, block_b])
+
+    study.remove_managed_instance(managed_a)
+
+    assert len(study.execution_order) == 1
+    assert study.execution_order[0].get_instance_by_uid("b") is not None
+
+
+@pytest.mark.local_osl
+def test_parametric_system_integration_design_study_apply_settings(tmp_example_project):
+    """Settings kwargs should be accepted for fixed study when valid."""
+    project_path = tmp_example_project("omdb_files")
+    with Optislang(project_path=project_path) as osl:
+        sensitivity: ParametricSystem = osl.application.project.root_system.find_nodes_by_name(
+            "Sensitivity"
+        )[0]
+        solver = sensitivity.get_nodes()[0]
+        managed_instance = ManagedParametricSystem(sensitivity, solver)
+
+        study = ParametricSystemIntegrationDesignStudy(osl, [managed_instance], [])
+
+        updated_name = "UpdatedName"
+        study.apply_settings(solver_name=updated_name)
+        assert solver.get_name() == updated_name
+        # TODO: extend for all settings
+
+
+@pytest.mark.local_osl
+def test_general_algorithm_design_study_apply_settings(tmp_example_project):
+    """General algorithm design-study class should validate supported kwargs."""
+    project_path = tmp_example_project("omdb_files")
+    with Optislang(project_path=project_path) as osl:
+        sensitivity: ParametricSystem = osl.application.project.root_system.find_nodes_by_name(
+            "Sensitivity"
+        )[0]
+        solver = sensitivity.get_nodes()[0]
+        managed_instance = ManagedParametricSystem(sensitivity, solver)
+
+        study = GeneralAlgorithmDesignStudy(osl, [managed_instance], [])
+
+        updated_name = "UpdatedName"
+        study.apply_settings(algorithm_name=updated_name)
+        assert sensitivity.get_name() == updated_name
+        # TODO: extend for all settings
+
+
+@pytest.mark.local_osl
+def test_optimization_on_mop_design_study_apply_settings_mocked(optislang: Optislang):
+    """Optimization-on-MOP fixed study should validate supported kwargs."""
+    from ansys.optislang.parametric.design_study_templates import (
+        OptimizationOnMOPTemplate,
+        PythonSolverNodeSettings,
+    )
+
+    major, minor, *_ = optislang.osl_version
+    if (major, minor) <= (25, 1):
+        pytest.skip("Test fails on optiSLang versions <= 25.1.0")
+
+    python_code = _PYTHON_SOURCE_CODE
+    mop_template = GeneralAlgorithmTemplate(
+        parameters=_PARAMETERS,
+        criteria=_CRITERIA,
+        responses=_RESPONSES,
+        algorithm_type=nt.AMOP,
+        solver_type=nt.Python2,
+        solver_settings=PythonSolverNodeSettings(None, python_code),
+    )
+
+    instances, executable_blocks = mop_template.create_design_study(
+        optislang.application.project.root_system
+    )
+    assert len(instances) == 1
+    mop_predecessor = instances[0].instance
+
+    template = OptimizationOnMOPTemplate(
+        _PARAMETERS,
+        _CRITERIA,
+        _RESPONSES,
+        mop_predecessor,
+        callback=lambda x: x**2,
+    )
+    instances, executable_blocks = template.create_design_study(
+        optislang.application.project.root_system
+    )
+    study = OptimizationOnMOPDesignStudy(optislang, instances, executable_blocks)
+
+    def new_callback():
+        pass
+
+    study.apply_settings(callback=new_callback)
+    proxy_solver_managed_instance: ProxySolverManagedParametricSystem = study.managed_instances[2]
+    assert proxy_solver_managed_instance.callback == new_callback
+    # TODO: extend for all settings
+
+
+def test_parametric_design_study_manager_uses_template_instance_factory_mocked():
+    """Manager should build studies through the backward-compatible template path."""
+
+    manager = ParametricDesignStudyManager(optislang_instance=_MockedOptislang())
+    template = _MockedTemplate()
+
+    study = manager.create_design_study(template)
+
+    assert template.called is True
+    assert isinstance(study, ParametricDesignStudy)
+
+
+def test_parametric_design_study_manager_append_fixed_study_mocked():
+    """Manager should accept fixed design-study instances via append_design_study."""
+
+    manager = ParametricDesignStudyManager(optislang_instance=_MockedOptislang())
+    fixed_study = FixedParametricDesignStudy(object(), [], [])
+
+    manager.append_design_study(fixed_study)
+
+    assert len(manager.design_studies) == 1
+    assert manager.design_studies[0] is fixed_study
+
+
+@pytest.mark.local_osl
 def test_parametric_design_study(tmp_example_project):
     """Test `ParametricDesignStudy` class init and properties."""
     project_path = tmp_example_project("omdb_files")
@@ -244,6 +546,7 @@ def test_parametric_design_study(tmp_example_project):
         # TODO: start_in_thread
 
 
+@pytest.mark.local_osl
 def test_parametric_desings_study_thread_exec(tmp_path):
     """Test `ParametricDesignStudy` class execution in non-blocking mode."""
     project = tmp_path / "Thread_exec.opf"
@@ -334,6 +637,7 @@ def test_parametric_desings_study_thread_exec(tmp_path):
         assert len(study.get_result_designs()) > 0
 
 
+@pytest.mark.local_osl
 def test_paramatric_design_study_auto_detect_executable_blocks(tmp_example_project):
     """Test `ParametricDesignStudy` class auto-detection of executable-blocks."""
     project_path = tmp_example_project("omdb_files")
@@ -375,6 +679,7 @@ def test_paramatric_design_study_auto_detect_executable_blocks(tmp_example_proje
 # region parametric study manager
 
 
+@pytest.mark.local_osl
 def test_parametric_design_study_manager_initialized_osl(tmp_example_project):
     """Test `ParametricDesignStudyManaged` class initialization with provided optiSLang instance."""
     project_path = tmp_example_project("omdb_files")
@@ -422,6 +727,7 @@ def test_parametric_design_study_manager_initialized_osl(tmp_example_project):
         assert len(osl.application.project.root_system.get_nodes()) == 0
 
 
+@pytest.mark.local_osl
 def test_parametric_design_study_manager_initialize_osl(tmp_path):
     """Test `ParametricDesignStudyManaged` class init without provided optiSLang instance."""
 
