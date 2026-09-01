@@ -1886,14 +1886,14 @@ def set_placeholder_value(placeholder_id: str, value: Any, password: Optional[st
     )
 
 
-def set_project_setting(name: str, value: str, password: Optional[str] = None) -> str:
+def set_project_setting(name: str, value: Any, password: Optional[str] = None) -> str:
     """Generate JSON string of ``set project settings`` command.
 
     Parameters
     ----------
     name: str
         Property name.
-    value: str
+    value: Any
         Value.
     password : Optional[str], optional
         Password, by default ``None``.
