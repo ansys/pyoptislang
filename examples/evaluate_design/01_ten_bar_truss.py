@@ -130,7 +130,6 @@ while True in try_decrease_param:
     for j in range(parameters_count):
         if not try_decrease_param[j]:
             continue
-        design_count += 1
         design = successful_designs[-1].copy_unevaluated_design()
         parameters = design.parameters
         parameter_value = parameters[j].value
@@ -139,6 +138,7 @@ while True in try_decrease_param:
         else:
             try_decrease_param[j] = False
             continue
+        design_count += 1
         evaluated_design = root_system.evaluate_design(design)
         if evaluated_design.feasibility:
             successful_designs.append(evaluated_design)
