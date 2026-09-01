@@ -387,7 +387,9 @@ class ProxySolverNodeSettings(GeneralNodeSettings):
             path=path,
         )
         self.callback = callback
-        self.multi_design_launch_num = multi_design_launch_num
+        self.multi_design_launch_num = (
+            multi_design_launch_num if multi_design_launch_num is not None else 1
+        )
 
 
 class PythonSolverNodeSettings(GeneralNodeSettings):
