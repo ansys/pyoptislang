@@ -964,7 +964,9 @@ rocky2 = NodeType(
 """Class :py:class:`~ansys.optislang.core.nodes.IntegrationNode` is created from this node type."""
 # endregion
 # region Python based MOP node plugins
-MOP = NodeType(id="MOP", subtype=AddinType.PYTHON_BASED_MOP_NODE_PLUGIN)
+MOP = NodeType(
+    id="MOP", subtype=AddinType.PYTHON_BASED_MOP_NODE_PLUGIN, osl_class_type=NodeClassType.NODE
+)
 """Class :py:class:`~ansys.optislang.core.nodes.Node` is created from this node type."""
 # endregion
 # endregion
