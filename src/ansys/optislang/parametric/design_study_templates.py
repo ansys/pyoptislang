@@ -288,11 +288,11 @@ class MopSolverNodeSettings(GeneralNodeSettings):
         stop_after_execution: Optional[bool] = None,
         path: Optional[Union[str, Path, OptislangPath]] = None,
     ):
-        """Initialize the MopSolverNode.
+        """Initialize the MopSolverNodeSettings.
 
         Parameters
         ----------
-        input_file : Union[str, Path, OptislangPath]
+        input_file : Optional[Union[str, Path, OptislangPath]]
             Path to the MOP file.
         multi_design_launch_num : Optional[int], optional
             Number of designs to be sent/received in one batch, by default 1.
@@ -371,8 +371,8 @@ class ProxySolverNodeSettings(GeneralNodeSettings):
         Parameters
         ----------
         callback: Callable
-            A callback function to handle design evaluation results.
-        multi_design_launch_num : Optional[int], optional
+            A callback function used by the proxy solver to evaluate designs.
+        multi_design_launch_num : int, optional
             Number of designs to be sent/received in one batch, by default 1.
         additional_settings : Optional[dict], optional
             Additional settings for the solver node.
@@ -387,9 +387,7 @@ class ProxySolverNodeSettings(GeneralNodeSettings):
             path=path,
         )
         self.callback = callback
-        self.multi_design_launch_num = (
-            multi_design_launch_num if multi_design_launch_num is not None else 1
-        )
+        self.multi_design_launch_num = multi_design_launch_num
 
 
 class PythonSolverNodeSettings(GeneralNodeSettings):
@@ -415,7 +413,7 @@ class PythonSolverNodeSettings(GeneralNodeSettings):
         stop_after_execution: Optional[bool] = None,
         path: Optional[Union[str, Path, OptislangPath]] = None,
     ):
-        """Initialize the PythonSolverNode.
+        """Initialize the PythonSolverNodeSettings.
 
         Parameters
         ----------
@@ -644,14 +642,6 @@ class DesignStudyTemplate:
             for output_slot, input_slot_str in connections_algorithm:
                 output_slot.connect_to(algorithm.get_input_slots(name=input_slot_str)[0])
 
-        settings_dict = (
-            algorithm_settings.convert_properties_to_dict()
-            if isinstance(algorithm_settings, GeneralAlgorithmSettings)
-            else {}
-        )
-        for name, value in settings_dict.items():
-            algorithm.set_property(name, value)
-
         for parameter in parameters:
             algorithm.parameter_manager.add_parameter(parameter)
 
@@ -670,6 +660,15 @@ class DesignStudyTemplate:
 
         if start_designs:
             algorithm.design_manager.set_start_designs(start_designs=start_designs)
+
+        settings_dict = (
+            algorithm_settings.convert_properties_to_dict()
+            if isinstance(algorithm_settings, GeneralAlgorithmSettings)
+            else {}
+        )
+
+        for name, value in settings_dict.items():
+            algorithm.set_property(name, value)
 
         return algorithm, solver_node
 
@@ -699,7 +698,7 @@ class DesignStudyTemplate:
             all available locations as parameters/responses.
         solver_name : Optional[str], optional
             Solver node name.
-        solver_settings : Optional[GeneralSolverNodeSettings], optional
+        solver_settings : Optional[GeneralNodeSettings], optional
             Solver node settings.
         solver_connections: Optional[Iterable[Tuple[OutputSlot, str]]]
             Iterable of tuples specifying the connection from each predecessor node to the
@@ -769,7 +768,7 @@ class ParametricSystemIntegrationTemplate(DesignStudyTemplate):
             Settings for the parametric system.
         solver_name : Optional[str], optional
             Name for the solver node.
-        solver_settings : Optional[GeneralSolverNodeSettings], optional
+        solver_settings : Optional[GeneralNodeSettings], optional
             Settings for the solver node.
         start_designs : Iterable[Design], optional
             Designs to be used as start designs for the parametric system.
@@ -890,7 +889,7 @@ class GeneralAlgorithmTemplate(DesignStudyTemplate):
             the selected algorithm type.
         solver_name : Optional[str], optional
             Name for the solver node.
-        solver_settings : Optional[GeneralSolverNodeSettings], optional
+        solver_settings : Optional[GeneralNodeSettings], optional
             Settings for the solver node. Settings must be compatible with
             the selected solver type.
         start_designs : Optional[Iterable[Design]], optional
@@ -1319,14 +1318,14 @@ def go_to_optislang(
     ----------
     project_path: Union[str,Path]
         Path to save the generated optiSLang project file.
-    connector_type : str
+    connector_type : NodeType
         The type of connector actor.
     omdb_files : Union[Union[str, Path], List[Union[str, Path]], ParametricDesignStudyManager]
         OMDB files to include in the project. Can be a path to a folder,
         a list of paths, or an instance of ``ParametricDesignStudyManager``.
     parameters: Optional[Iterable[Parameter]], optional
         Parameters to be included in the parametric system, by default `None`.
-    response: Optional[Iterable[Response]], optional
+    responses: Optional[Iterable[Response]], optional
         Responses to be included in the parametric system, by default `None`.
     connector_settings : Optional[GeneralNodeSettings], optional
         Settings for the connector actor, by default `None`.
@@ -1336,8 +1335,9 @@ def go_to_optislang(
 
     Returns
     -------
-    Path
-        The path to the generated optiSLang project file.
+    Optislang
+        The instance of ``Optislang`` with the project containing parametric system
+        and the specified connector.
     """
     kwargs.pop("project_path", None)
     kwargs.pop("batch", None)
@@ -1378,9 +1378,9 @@ def create_optislang_project_with_solver_node(
         a list of paths, or an instance of `ParametricDesignStudyManager`.
     parameters: Optional[Iterable[Parameter]], optional
         Parameters to be included in the parametric system, by default `None`.
-    responses: Optional[Iterable[Parameter]], optional
-        Response to be included in the parametric system, by default `None`.
-    connector_settings : Optional[GeneralSolverNodeSettings], optional
+    responses: Optional[Iterable[Response]], optional
+        Responses to be included in the parametric system, by default `None`.
+    connector_settings : Optional[GeneralNodeSettings], optional
         Settings for the connector actor, by default `None`.
     **kwargs
         Additional keyword arguments, used to initialize the optislang instance.
