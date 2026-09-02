@@ -154,6 +154,9 @@ def test_node_queries(optislang: Optislang, tmp_example_project):
     status = node.get_status()
     assert isinstance(status, str)
 
+    hpc_licensing_forwarded_environment = node.get_hpc_licensing_forwarded_environment()
+    assert isinstance(hpc_licensing_forwarded_environment, dict)
+
     print(node)
 
 
@@ -167,6 +170,31 @@ def test_control(optislang: Optislang, tmp_example_project):
     for command in ["start", "restart", "stop_gently", "stop", "reset"]:
         output = node.control(command)
         assert output
+
+
+def test_supports(optislang: Optislang, tmp_example_project):
+    """Test `supports` method of the instance of `Node` class."""
+    optislang.application.open(file_path=tmp_example_project("calculator_with_params"))
+    root_system = optislang.project.root_system
+    node: TcpNodeProxy = root_system.find_nodes_by_name("Calculator")[0]
+    assert isinstance(node.supports("can_finalize"), bool)
+
+
+def test_get_slot_value(optislang: Optislang, tmp_example_project):
+    """Test `get_input_slot_value` and `get_output_slot_value` methods."""
+    optislang.application.open(file_path=tmp_example_project("calculator_with_params"))
+    root_system: TcpRootSystemProxy = optislang.project.root_system
+    node = root_system.find_node_by_uid("3577cb69-15b9-4ad1-a53c-ac8af8aaea82", search_depth=-1)
+    assert node is not None
+    hid = "0"
+
+    input_slot_value = node.get_input_slot_value(hid=hid, slot_name="OVar")
+    assert isinstance(input_slot_value, dict)
+    assert bool(input_slot_value)
+
+    output_slot_value = node.get_output_slot_value(hid=hid, slot_name="var")
+    assert isinstance(output_slot_value, dict)
+    assert bool(output_slot_value)
 
 
 def test_get_ancestors(optislang: Optislang, tmp_example_project):

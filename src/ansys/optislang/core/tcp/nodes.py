@@ -623,6 +623,125 @@ class TcpNodeProxy(Node):
         )
         return actor_info["status"]
 
+    def get_hpc_licensing_forwarded_environment(self) -> dict:
+        """Get HPC licensing forwarded environment for the node.
+
+        Returns
+        -------
+        dict
+            Dictionary with HPC licensing forwarded environment for the node.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        return self._osl_server.get_hpc_licensing_forwarded_environment(uid=self.uid)
+
+    def get_input_slot_value(
+        self, hid: str, slot_name: str, legacy_design_format: bool = False
+    ) -> dict:
+        """Get input slot value of the node.
+
+        Parameters
+        ----------
+        hid : str
+            State/Design hierarchical id.
+        slot_name : str
+            Slot name.
+        legacy_design_format : bool, optional
+            Whether to use legacy format for designs and design container type slots.
+            Defaults to ``False``.
+
+            .. note:: Argument has effect for Ansys optiSLang version >= 25.2 only.
+
+        Returns
+        -------
+        dict
+            Input slot value of the node.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        return self._osl_server.get_input_slot_value(
+            uid=self.uid,
+            hid=hid,
+            slot_name=slot_name,
+            legacy_design_format=legacy_design_format,
+        )
+
+    def get_output_slot_value(
+        self, hid: str, slot_name: str, legacy_design_format: bool = False
+    ) -> dict:
+        """Get output slot value of the node.
+
+        Parameters
+        ----------
+        hid : str
+            State/Design hierarchical id.
+        slot_name : str
+            Slot name.
+        legacy_design_format : bool, optional
+            Whether to use legacy format for designs and design container type slots.
+            Defaults to ``False``.
+
+            .. note:: Argument has effect for Ansys optiSLang version >= 25.2 only.
+
+        Returns
+        -------
+        dict
+            Output slot value of the node.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        return self._osl_server.get_output_slot_value(
+            uid=self.uid,
+            hid=hid,
+            slot_name=slot_name,
+            legacy_design_format=legacy_design_format,
+        )
+
+    def supports(self, feature_name: str) -> bool:
+        """Get whether a given feature is supported by the node.
+
+        Parameters
+        ----------
+        feature_name : str
+            Name of the feature.
+
+        Returns
+        -------
+        bool
+            Whether the given feature is supported.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        return self._osl_server.get_actor_supports(uid=self.uid, feature_name=feature_name)
+
     @deprecated(version="0.6.0", reason="Use :py:attr:`TcpNodeProxy.type` instead.")
     def get_type(self) -> NodeType:
         """Get the type of the node.

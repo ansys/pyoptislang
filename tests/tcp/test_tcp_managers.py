@@ -139,6 +139,16 @@ def test_get_criteria_names(optislang: Optislang):
     assert criteria_names[0] == "obj_c"
 
 
+def test_get_criterion(optislang: Optislang):
+    """Test ``get_criterion``."""
+    criteria_manager = optislang.project.root_system.criteria_manager
+    criterion = criteria_manager.get_criterion("obj_c")
+    assert isinstance(criterion, ObjectiveCriterion)
+    assert criterion.name == "obj_c"
+    with pytest.raises(ValueError):
+        criteria_manager.get_criterion("non_existing_criterion")
+
+
 def test_modify_criterion(optislang: Optislang):
     """Test ``modify_criterion``."""
     criteria_manager = optislang.project.root_system.criteria_manager

@@ -109,6 +109,33 @@ class CriteriaManager:
         pass
 
     @abstractmethod
+    def get_criterion(self, name: str) -> Criterion:  # pragma: no cover
+        """Get criterion of the system by name.
+
+        Parameters
+        ----------
+        name : str
+            Name of the criterion.
+
+        Returns
+        -------
+        Criterion
+            Criterion of the given name.
+
+        Raises
+        ------
+        ValueError
+            Raised when no criterion of the given name exists.
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        pass
+
+    @abstractmethod
     def modify_criterion(self, criterion: Criterion) -> None:  # pragma: no cover
         """Modify criterion in the system.
 
