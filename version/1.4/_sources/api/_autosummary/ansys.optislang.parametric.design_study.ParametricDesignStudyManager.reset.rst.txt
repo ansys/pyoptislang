@@ -1,0 +1,6 @@
+reset
+=====
+
+.. currentmodule:: ansys.optislang.parametric.design_study
+
+.. automethod:: ParametricDesignStudyManager.reset

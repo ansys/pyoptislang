@@ -1,0 +1,6 @@
+set\_project\_setting
+=====================
+
+.. currentmodule:: ansys.optislang.core.project
+
+.. automethod:: Project.set_project_setting

@@ -1,0 +1,57 @@
+﻿ParametricDesignStudyManager
+============================
+
+.. currentmodule:: ansys.optislang.parametric.design_study
+
+.. autoclass:: ParametricDesignStudyManager
+
+   
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :toctree:
+   
+      
+      
+      ParametricDesignStudyManager.append_design_study
+      
+      
+      ParametricDesignStudyManager.clear_design_studies
+      
+      
+      ParametricDesignStudyManager.create_design_study
+      
+      
+      ParametricDesignStudyManager.dispose
+      
+      
+      ParametricDesignStudyManager.get_finished_design_studies
+      
+      
+      ParametricDesignStudyManager.get_unfinished_design_studies
+      
+      
+      ParametricDesignStudyManager.reset
+      
+      
+      ParametricDesignStudyManager.save
+      
+      
+      ParametricDesignStudyManager.save_as
+      
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+      :toctree:
+   
+      ParametricDesignStudyManager.design_studies
+      ParametricDesignStudyManager.optislang
+   
+   

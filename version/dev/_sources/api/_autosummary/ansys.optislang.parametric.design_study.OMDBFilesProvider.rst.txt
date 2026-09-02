@@ -1,0 +1,36 @@
+﻿OMDBFilesProvider
+=================
+
+.. currentmodule:: ansys.optislang.parametric.design_study
+
+.. autoclass:: OMDBFilesProvider
+
+   
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :toctree:
+   
+      
+      
+      OMDBFilesProvider.get_ombd_files_specification_from_input
+      
+      
+      OMDBFilesProvider.get_omdb_files
+      
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+      :toctree:
+   
+      OMDBFilesProvider.input
+      OMDBFilesProvider.omdb_files_specification
+   
+   

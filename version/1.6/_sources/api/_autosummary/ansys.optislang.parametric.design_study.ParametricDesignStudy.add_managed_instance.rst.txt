@@ -1,0 +1,6 @@
+add\_managed\_instance
+======================
+
+.. currentmodule:: ansys.optislang.parametric.design_study
+
+.. automethod:: ParametricDesignStudy.add_managed_instance

@@ -1,0 +1,61 @@
+﻿ParametricDesignStudy
+=====================
+
+.. currentmodule:: ansys.optislang.parametric.design_study
+
+.. autoclass:: ParametricDesignStudy
+
+   
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :toctree:
+   
+      
+      
+      ParametricDesignStudy.contains_proxy_solver
+      
+      
+      ParametricDesignStudy.delete
+      
+      
+      ParametricDesignStudy.execute
+      
+      
+      ParametricDesignStudy.get_designs
+      
+      
+      ParametricDesignStudy.get_last_parametric_system
+      
+      
+      ParametricDesignStudy.get_result_designs
+      
+      
+      ParametricDesignStudy.get_status
+      
+      
+      ParametricDesignStudy.reset
+      
+      
+      ParametricDesignStudy.set_designs
+      
+      
+      ParametricDesignStudy.start_in_thread
+      
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+      :toctree:
+   
+      ParametricDesignStudy.execution_order
+      ParametricDesignStudy.is_complete
+      ParametricDesignStudy.managed_instances
+   
+   

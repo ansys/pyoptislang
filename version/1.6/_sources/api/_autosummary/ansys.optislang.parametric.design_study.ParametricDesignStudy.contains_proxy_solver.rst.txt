@@ -1,0 +1,6 @@
+contains\_proxy\_solver
+=======================
+
+.. currentmodule:: ansys.optislang.parametric.design_study
+
+.. automethod:: ParametricDesignStudy.contains_proxy_solver

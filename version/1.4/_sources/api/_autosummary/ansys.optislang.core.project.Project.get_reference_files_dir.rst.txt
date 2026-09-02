@@ -1,0 +1,6 @@
+get\_reference\_files\_dir
+==========================
+
+.. currentmodule:: ansys.optislang.core.project
+
+.. automethod:: Project.get_reference_files_dir

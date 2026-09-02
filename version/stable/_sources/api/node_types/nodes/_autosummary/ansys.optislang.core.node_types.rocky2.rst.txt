@@ -1,0 +1,6 @@
+﻿rocky2
+======
+
+.. currentmodule:: ansys.optislang.core.node_types
+
+.. autodata:: rocky2

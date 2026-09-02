@@ -1,0 +1,6 @@
+from\_file\_and\_reference\_dir\_paths
+======================================
+
+.. currentmodule:: ansys.optislang.core.io
+
+.. automethod:: ReferenceFilesDirRelativePath.from_file_and_reference_dir_paths

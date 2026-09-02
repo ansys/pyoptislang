@@ -1,0 +1,6 @@
+starting\_delay
+===============
+
+.. currentmodule:: ansys.optislang.parametric.design_study_templates
+
+.. autoattribute:: MopSolverNodeSettings.starting_delay

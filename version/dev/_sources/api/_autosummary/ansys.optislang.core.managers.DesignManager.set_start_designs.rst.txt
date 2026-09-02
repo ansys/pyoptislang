@@ -1,0 +1,6 @@
+set\_start\_designs
+===================
+
+.. currentmodule:: ansys.optislang.core.managers
+
+.. automethod:: DesignManager.set_start_designs

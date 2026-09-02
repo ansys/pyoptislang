@@ -1,0 +1,6 @@
+apply\_execution\_options
+=========================
+
+.. currentmodule:: ansys.optislang.parametric.design_study
+
+.. automethod:: ExecutableBlock.apply_execution_options

@@ -1,0 +1,6 @@
+multi\_design\_launch\_num
+==========================
+
+.. currentmodule:: ansys.optislang.parametric.design_study_templates
+
+.. autoproperty:: ProxySolverNodeSettings.multi_design_launch_num

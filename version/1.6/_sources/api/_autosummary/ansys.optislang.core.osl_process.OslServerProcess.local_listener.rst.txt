@@ -1,0 +1,6 @@
+local\_listener
+===============
+
+.. currentmodule:: ansys.optislang.core.osl_process
+
+.. autoproperty:: OslServerProcess.local_listener

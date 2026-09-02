@@ -1,0 +1,63 @@
+﻿ExecutableBlock
+===============
+
+.. currentmodule:: ansys.optislang.parametric.design_study
+
+.. autoclass:: ExecutableBlock
+
+   
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :toctree:
+   
+      
+      
+      ExecutableBlock.activate
+      
+      
+      ExecutableBlock.add_instance
+      
+      
+      ExecutableBlock.apply_execution_options
+      
+      
+      ExecutableBlock.deactivate
+      
+      
+      ExecutableBlock.get_instance_by_uid
+      
+      
+      ExecutableBlock.get_instance_execution_option_by_uid
+      
+      
+      ExecutableBlock.get_managed_parametric_system
+      
+      
+      ExecutableBlock.remove_instance_by_uid
+      
+      
+      ExecutableBlock.set_execution_options_to_active
+      
+      
+      ExecutableBlock.set_execution_options_to_inactive
+      
+      
+      ExecutableBlock.set_instance_execution_option_by_uid
+      
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+      :toctree:
+   
+      ExecutableBlock.instances
+      ExecutableBlock.instances_with_execution_options
+   
+   

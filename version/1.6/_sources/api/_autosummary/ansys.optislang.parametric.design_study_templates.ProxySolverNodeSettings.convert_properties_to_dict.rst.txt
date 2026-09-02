@@ -1,0 +1,6 @@
+convert\_properties\_to\_dict
+=============================
+
+.. currentmodule:: ansys.optislang.parametric.design_study_templates
+
+.. automethod:: ProxySolverNodeSettings.convert_properties_to_dict

@@ -1,0 +1,6 @@
+rename\_placeholder
+===================
+
+.. currentmodule:: ansys.optislang.core.project
+
+.. automethod:: Project.rename_placeholder

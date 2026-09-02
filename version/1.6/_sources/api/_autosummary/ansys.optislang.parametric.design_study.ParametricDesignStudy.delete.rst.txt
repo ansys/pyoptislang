@@ -1,0 +1,6 @@
+delete
+======
+
+.. currentmodule:: ansys.optislang.parametric.design_study
+
+.. automethod:: ParametricDesignStudy.delete

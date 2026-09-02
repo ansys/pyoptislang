@@ -1,0 +1,6 @@
+supports
+========
+
+.. currentmodule:: ansys.optislang.core.nodes
+
+.. automethod:: Node.supports

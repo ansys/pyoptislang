@@ -1,0 +1,6 @@
+input\_code
+===========
+
+.. currentmodule:: ansys.optislang.parametric.design_study_templates
+
+.. autoproperty:: PythonSolverNodeSettings.input_code

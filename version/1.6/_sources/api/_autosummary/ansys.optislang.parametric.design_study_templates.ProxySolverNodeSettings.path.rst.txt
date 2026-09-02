@@ -1,0 +1,6 @@
+path
+====
+
+.. currentmodule:: ansys.optislang.parametric.design_study_templates
+
+.. autoattribute:: ProxySolverNodeSettings.path

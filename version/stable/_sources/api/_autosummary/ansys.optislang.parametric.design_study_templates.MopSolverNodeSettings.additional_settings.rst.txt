@@ -1,0 +1,6 @@
+additional\_settings
+====================
+
+.. currentmodule:: ansys.optislang.parametric.design_study_templates
+
+.. autoproperty:: MopSolverNodeSettings.additional_settings

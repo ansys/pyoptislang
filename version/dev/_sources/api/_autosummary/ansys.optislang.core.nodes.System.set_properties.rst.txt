@@ -1,0 +1,6 @@
+set\_properties
+===============
+
+.. currentmodule:: ansys.optislang.core.nodes
+
+.. automethod:: System.set_properties

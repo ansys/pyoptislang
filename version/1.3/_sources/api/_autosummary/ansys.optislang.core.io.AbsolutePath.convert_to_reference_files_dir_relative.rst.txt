@@ -1,0 +1,6 @@
+convert\_to\_reference\_files\_dir\_relative
+============================================
+
+.. currentmodule:: ansys.optislang.core.io
+
+.. automethod:: AbsolutePath.convert_to_reference_files_dir_relative

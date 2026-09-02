@@ -1,0 +1,6 @@
+find\_managed\_instance\_by\_uid
+================================
+
+.. currentmodule:: ansys.optislang.parametric.design_study
+
+.. automethod:: ParametricDesignStudy.find_managed_instance_by_uid

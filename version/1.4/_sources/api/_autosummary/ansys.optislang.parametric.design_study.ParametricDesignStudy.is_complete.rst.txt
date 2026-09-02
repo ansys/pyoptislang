@@ -1,0 +1,6 @@
+is\_complete
+============
+
+.. currentmodule:: ansys.optislang.parametric.design_study
+
+.. autoproperty:: ParametricDesignStudy.is_complete

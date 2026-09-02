@@ -1,0 +1,6 @@
+instances\_with\_execution\_options
+===================================
+
+.. currentmodule:: ansys.optislang.parametric.design_study
+
+.. autoproperty:: ExecutableBlock.instances_with_execution_options
