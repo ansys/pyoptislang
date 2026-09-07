@@ -4383,9 +4383,7 @@ class TcpOslServer(OslServer):
         """
         current_func_name = self.remove_all_internal_variables.__name__
         self.send_command(
-            command=commands.remove_all_internal_variables(
-                actor_uid=uid, password=self.__password
-            ),
+            command=commands.remove_all_internal_variables(actor_uid=uid, password=self.__password),
             timeout=self.timeouts_register.get_value(current_func_name),
             max_request_attempts=self.max_request_attempts_register.get_value(current_func_name),
         )
@@ -4537,9 +4535,7 @@ class TcpOslServer(OslServer):
         """
         current_func_name = self.remove_output_slot.__name__
         self.send_command(
-            command=commands.remove_output_slot(
-                actor_uid=uid, name=name, password=self.__password
-            ),
+            command=commands.remove_output_slot(actor_uid=uid, name=name, password=self.__password),
             timeout=self.timeouts_register.get_value(current_func_name),
             max_request_attempts=self.max_request_attempts_register.get_value(current_func_name),
         )

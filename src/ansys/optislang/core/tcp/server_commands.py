@@ -1300,9 +1300,7 @@ def remove_all_input_slots(actor_uid: str, password: Optional[str] = None) -> st
         JSON string of ``remove_all_input_slots`` command.
     """
     return _to_json(
-        _gen_server_command(
-            command=_REMOVE_ALL_INPUT_SLOTS, actor_uid=actor_uid, password=password
-        )
+        _gen_server_command(command=_REMOVE_ALL_INPUT_SLOTS, actor_uid=actor_uid, password=password)
     )
 
 
@@ -1366,9 +1364,7 @@ def remove_all_parameters(actor_uid: str, password: Optional[str] = None) -> str
         JSON string of ``remove_all_parameters`` command.
     """
     return _to_json(
-        _gen_server_command(
-            command=_REMOVE_ALL_PARAMETERS, actor_uid=actor_uid, password=password
-        )
+        _gen_server_command(command=_REMOVE_ALL_PARAMETERS, actor_uid=actor_uid, password=password)
     )
 
 
@@ -1388,9 +1384,7 @@ def remove_all_responses(actor_uid: str, password: Optional[str] = None) -> str:
         JSON string of ``remove_all_responses`` command.
     """
     return _to_json(
-        _gen_server_command(
-            command=_REMOVE_ALL_RESPONSES, actor_uid=actor_uid, password=password
-        )
+        _gen_server_command(command=_REMOVE_ALL_RESPONSES, actor_uid=actor_uid, password=password)
     )
 
 
