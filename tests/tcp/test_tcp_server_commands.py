@@ -899,6 +899,217 @@ def test_register_locations_as_response():
         sc.register_locations_as_response()
 
 
+def test_remove_all_input_slots():
+    "Test remove_all_input_slots."
+    # basic
+    json_string = sc.remove_all_input_slots(actor_uid=actor_uid)
+    dictionary = json.loads(json_string)
+    requiered_string = json.loads(
+        '{"projects": [{"commands": [{"actor_uid": "5cdfb20b-bef6-4412-9985-89f5ded5ee95", \
+        "command": "REMOVE_ALL_INPUT_SLOTS", "type": "builtin"}]}]}'
+    )
+    assert type(json_string) == str
+    assert sorted(dictionary.items()) == sorted(requiered_string.items())
+    # with password
+    json_string = sc.remove_all_input_slots(actor_uid=actor_uid, password=example_password)
+    dictionary = json.loads(json_string)
+    dictionary["Password"] == example_password
+    with pytest.raises(TypeError):
+        sc.remove_all_input_slots()
+
+
+def test_remove_all_internal_variables():
+    "Test remove_all_internal_variables."
+    # basic
+    json_string = sc.remove_all_internal_variables(actor_uid=actor_uid)
+    dictionary = json.loads(json_string)
+    requiered_string = json.loads(
+        '{"projects": [{"commands": [{"actor_uid": "5cdfb20b-bef6-4412-9985-89f5ded5ee95", \
+        "command": "REMOVE_ALL_INTERNAL_LOCATIONS", "type": "builtin"}]}]}'
+    )
+    assert type(json_string) == str
+    assert sorted(dictionary.items()) == sorted(requiered_string.items())
+    # with password
+    json_string = sc.remove_all_internal_variables(actor_uid=actor_uid, password=example_password)
+    dictionary = json.loads(json_string)
+    dictionary["Password"] == example_password
+    with pytest.raises(TypeError):
+        sc.remove_all_internal_variables()
+
+
+def test_remove_all_output_slots():
+    "Test remove_all_output_slots."
+    # basic
+    json_string = sc.remove_all_output_slots(actor_uid=actor_uid)
+    dictionary = json.loads(json_string)
+    requiered_string = json.loads(
+        '{"projects": [{"commands": [{"actor_uid": "5cdfb20b-bef6-4412-9985-89f5ded5ee95", \
+        "command": "REMOVE_ALL_OUTPUT_SLOTS", "type": "builtin"}]}]}'
+    )
+    assert type(json_string) == str
+    assert sorted(dictionary.items()) == sorted(requiered_string.items())
+    # with password
+    json_string = sc.remove_all_output_slots(actor_uid=actor_uid, password=example_password)
+    dictionary = json.loads(json_string)
+    dictionary["Password"] == example_password
+    with pytest.raises(TypeError):
+        sc.remove_all_output_slots()
+
+
+def test_remove_all_parameters():
+    "Test remove_all_parameters."
+    # basic
+    json_string = sc.remove_all_parameters(actor_uid=actor_uid)
+    dictionary = json.loads(json_string)
+    requiered_string = json.loads(
+        '{"projects": [{"commands": [{"actor_uid": "5cdfb20b-bef6-4412-9985-89f5ded5ee95", \
+        "command": "REMOVE_ALL_PARAMETERS", "type": "builtin"}]}]}'
+    )
+    assert type(json_string) == str
+    assert sorted(dictionary.items()) == sorted(requiered_string.items())
+    # with password
+    json_string = sc.remove_all_parameters(actor_uid=actor_uid, password=example_password)
+    dictionary = json.loads(json_string)
+    dictionary["Password"] == example_password
+    with pytest.raises(TypeError):
+        sc.remove_all_parameters()
+
+
+def test_remove_all_responses():
+    "Test remove_all_responses."
+    # basic
+    json_string = sc.remove_all_responses(actor_uid=actor_uid)
+    dictionary = json.loads(json_string)
+    requiered_string = json.loads(
+        '{"projects": [{"commands": [{"actor_uid": "5cdfb20b-bef6-4412-9985-89f5ded5ee95", \
+        "command": "REMOVE_ALL_RESPONSES", "type": "builtin"}]}]}'
+    )
+    assert type(json_string) == str
+    assert sorted(dictionary.items()) == sorted(requiered_string.items())
+    # with password
+    json_string = sc.remove_all_responses(actor_uid=actor_uid, password=example_password)
+    dictionary = json.loads(json_string)
+    dictionary["Password"] == example_password
+    with pytest.raises(TypeError):
+        sc.remove_all_responses()
+
+
+def test_remove_input_slot():
+    "Test remove_input_slot."
+    # basic
+    json_string = sc.remove_input_slot(actor_uid=actor_uid, name="MyInputSlot")
+    dictionary = json.loads(json_string)
+    requiered_string = json.loads(
+        '{"projects": [{"commands": [{"actor_uid": "5cdfb20b-bef6-4412-9985-89f5ded5ee95", \
+        "args": {"name": "MyInputSlot"}, "command": "REMOVE_INPUT_SLOT", "type": "builtin"}]}]}'
+    )
+    assert type(json_string) == str
+    assert sorted(dictionary.items()) == sorted(requiered_string.items())
+    # with password
+    json_string = sc.remove_input_slot(
+        actor_uid=actor_uid, name="MyInputSlot", password=example_password
+    )
+    dictionary = json.loads(json_string)
+    dictionary["Password"] == example_password
+    with pytest.raises(TypeError):
+        sc.remove_input_slot(actor_uid=actor_uid)
+    with pytest.raises(TypeError):
+        sc.remove_input_slot()
+
+
+def test_remove_internal_variable():
+    "Test remove_internal_variable."
+    # basic
+    json_string = sc.remove_internal_variable(actor_uid=actor_uid, name="variable_1")
+    dictionary = json.loads(json_string)
+    requiered_string = json.loads(
+        '{"projects": [{"commands": [{"actor_uid": "5cdfb20b-bef6-4412-9985-89f5ded5ee95", \
+        "args": {"name": "variable_1"}, "command": "REMOVE_INTERNAL_LOCATION", \
+        "type": "builtin"}]}]}'
+    )
+    assert type(json_string) == str
+    assert sorted(dictionary.items()) == sorted(requiered_string.items())
+    # with password
+    json_string = sc.remove_internal_variable(
+        actor_uid=actor_uid, name="variable_1", password=example_password
+    )
+    dictionary = json.loads(json_string)
+    dictionary["Password"] == example_password
+    with pytest.raises(TypeError):
+        sc.remove_internal_variable(actor_uid=actor_uid)
+    with pytest.raises(TypeError):
+        sc.remove_internal_variable()
+
+
+def test_remove_output_slot():
+    "Test remove_output_slot."
+    # basic
+    json_string = sc.remove_output_slot(actor_uid=actor_uid, name="MyOutputSlot")
+    dictionary = json.loads(json_string)
+    requiered_string = json.loads(
+        '{"projects": [{"commands": [{"actor_uid": "5cdfb20b-bef6-4412-9985-89f5ded5ee95", \
+        "args": {"name": "MyOutputSlot"}, "command": "REMOVE_OUTPUT_SLOT", "type": "builtin"}]}]}'
+    )
+    assert type(json_string) == str
+    assert sorted(dictionary.items()) == sorted(requiered_string.items())
+    # with password
+    json_string = sc.remove_output_slot(
+        actor_uid=actor_uid, name="MyOutputSlot", password=example_password
+    )
+    dictionary = json.loads(json_string)
+    dictionary["Password"] == example_password
+    with pytest.raises(TypeError):
+        sc.remove_output_slot(actor_uid=actor_uid)
+    with pytest.raises(TypeError):
+        sc.remove_output_slot()
+
+
+def test_remove_parameter():
+    "Test remove_parameter."
+    # basic
+    json_string = sc.remove_parameter(actor_uid=actor_uid, name="parameter1")
+    dictionary = json.loads(json_string)
+    requiered_string = json.loads(
+        '{"projects": [{"commands": [{"actor_uid": "5cdfb20b-bef6-4412-9985-89f5ded5ee95", \
+        "args": {"name": "parameter1"}, "command": "REMOVE_PARAMETER", "type": "builtin"}]}]}'
+    )
+    assert type(json_string) == str
+    assert sorted(dictionary.items()) == sorted(requiered_string.items())
+    # with password
+    json_string = sc.remove_parameter(
+        actor_uid=actor_uid, name="parameter1", password=example_password
+    )
+    dictionary = json.loads(json_string)
+    dictionary["Password"] == example_password
+    with pytest.raises(TypeError):
+        sc.remove_parameter(actor_uid=actor_uid)
+    with pytest.raises(TypeError):
+        sc.remove_parameter()
+
+
+def test_remove_response():
+    "Test remove_response."
+    # basic
+    json_string = sc.remove_response(actor_uid=actor_uid, name="response_1")
+    dictionary = json.loads(json_string)
+    requiered_string = json.loads(
+        '{"projects": [{"commands": [{"actor_uid": "5cdfb20b-bef6-4412-9985-89f5ded5ee95", \
+        "args": {"name": "response_1"}, "command": "REMOVE_RESPONSE", "type": "builtin"}]}]}'
+    )
+    assert type(json_string) == str
+    assert sorted(dictionary.items()) == sorted(requiered_string.items())
+    # with password
+    json_string = sc.remove_response(
+        actor_uid=actor_uid, name="response_1", password=example_password
+    )
+    dictionary = json.loads(json_string)
+    dictionary["Password"] == example_password
+    with pytest.raises(TypeError):
+        sc.remove_response(actor_uid=actor_uid)
+    with pytest.raises(TypeError):
+        sc.remove_response()
+
+
 def test_remove_criteria():
     "Test remove_criteria."
     # basic

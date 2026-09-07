@@ -1439,6 +1439,201 @@ class IntegrationNode(Node):
         """
         pass
 
+    @abstractmethod
+    def remove_all_input_slots(self) -> None:  # pragma: no cover
+        """Remove all registered input slots.
+
+        .. note:: Method is supported for Ansys optiSLang version >= 27.1 only.
+
+        Raises
+        ------
+        NotImplementedError
+            Raised when unsupported optiSLang server is used.
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        pass
+
+    @abstractmethod
+    def remove_all_internal_variables(self) -> None:  # pragma: no cover
+        """Remove all registered internal variables.
+
+        .. note:: Method is supported for Ansys optiSLang version >= 27.1 only.
+
+        Raises
+        ------
+        NotImplementedError
+            Raised when unsupported optiSLang server is used.
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        pass
+
+    @abstractmethod
+    def remove_all_output_slots(self) -> None:  # pragma: no cover
+        """Remove all registered output slots.
+
+        .. note:: Method is supported for Ansys optiSLang version >= 27.1 only.
+
+        Raises
+        ------
+        NotImplementedError
+            Raised when unsupported optiSLang server is used.
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        pass
+
+    @abstractmethod
+    def remove_all_parameters(self) -> None:  # pragma: no cover
+        """Remove all registered parameters.
+
+        .. note:: Method is supported for Ansys optiSLang version >= 27.1 only.
+
+        Raises
+        ------
+        NotImplementedError
+            Raised when unsupported optiSLang server is used.
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        pass
+
+    @abstractmethod
+    def remove_all_responses(self) -> None:  # pragma: no cover
+        """Remove all registered responses.
+
+        .. note:: Method is supported for Ansys optiSLang version >= 27.1 only.
+
+        Raises
+        ------
+        NotImplementedError
+            Raised when unsupported optiSLang server is used.
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        pass
+
+    @abstractmethod
+    def remove_input_slot(self, name: str) -> None:  # pragma: no cover
+        """Remove the given registered input slot.
+
+        Parameters
+        ----------
+        name : str
+            Name of the registered input slot.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        pass
+
+    @abstractmethod
+    def remove_internal_variable(self, name: str) -> None:  # pragma: no cover
+        """Remove the given registered internal variable.
+
+        Parameters
+        ----------
+        name : str
+            Name of the registered internal variable.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        pass
+
+    @abstractmethod
+    def remove_output_slot(self, name: str) -> None:  # pragma: no cover
+        """Remove the given registered output slot.
+
+        Parameters
+        ----------
+        name : str
+            Name of the registered output slot.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        pass
+
+    @abstractmethod
+    def remove_parameter(self, name: str) -> None:  # pragma: no cover
+        """Remove the given registered parameter.
+
+        Parameters
+        ----------
+        name : str
+            Name of the registered parameter.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        pass
+
+    @abstractmethod
+    def remove_response(self, name: str) -> None:  # pragma: no cover
+        """Remove the given registered response.
+
+        Parameters
+        ----------
+        name : str
+            Name of the registered response.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        pass
+
 
 class ProxySolverNode(IntegrationNode):
     """Base class for classes which provide for creating and operating on an proxy solver node."""

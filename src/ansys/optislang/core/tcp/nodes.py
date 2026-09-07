@@ -1949,6 +1949,216 @@ class TcpIntegrationNodeProxy(TcpNodeProxy, IntegrationNode):
         # TODO: test
         self._osl_server.re_register_locations_as_response(uid=self.uid)
 
+    def remove_all_input_slots(self) -> None:
+        """Remove all registered input slots.
+
+        .. note:: Method is supported for Ansys optiSLang version >= 27.1 only.
+
+        Raises
+        ------
+        NotImplementedError
+            Raised when unsupported optiSLang server is used.
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        if (
+            self._osl_server.osl_version.major == 27 and self._osl_server.osl_version.minor >= 1
+        ) or self._osl_server.osl_version.major > 27:
+            self._osl_server.remove_all_input_slots(uid=self.uid)
+        else:
+            raise NotImplementedError("Method is supported for Ansys optiSLang version >= 27.1.")
+
+    def remove_all_internal_variables(self) -> None:
+        """Remove all registered internal variables.
+
+        .. note:: Method is supported for Ansys optiSLang version >= 27.1 only.
+
+        Raises
+        ------
+        NotImplementedError
+            Raised when unsupported optiSLang server is used.
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        if (
+            self._osl_server.osl_version.major == 27 and self._osl_server.osl_version.minor >= 1
+        ) or self._osl_server.osl_version.major > 27:
+            self._osl_server.remove_all_internal_variables(uid=self.uid)
+        else:
+            raise NotImplementedError("Method is supported for Ansys optiSLang version >= 27.1.")
+
+    def remove_all_output_slots(self) -> None:
+        """Remove all registered output slots.
+
+        .. note:: Method is supported for Ansys optiSLang version >= 27.1 only.
+
+        Raises
+        ------
+        NotImplementedError
+            Raised when unsupported optiSLang server is used.
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        if (
+            self._osl_server.osl_version.major == 27 and self._osl_server.osl_version.minor >= 1
+        ) or self._osl_server.osl_version.major > 27:
+            self._osl_server.remove_all_output_slots(uid=self.uid)
+        else:
+            raise NotImplementedError("Method is supported for Ansys optiSLang version >= 27.1.")
+
+    def remove_all_parameters(self) -> None:
+        """Remove all registered parameters.
+
+        .. note:: Method is supported for Ansys optiSLang version >= 27.1 only.
+
+        Raises
+        ------
+        NotImplementedError
+            Raised when unsupported optiSLang server is used.
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        if (
+            self._osl_server.osl_version.major == 27 and self._osl_server.osl_version.minor >= 1
+        ) or self._osl_server.osl_version.major > 27:
+            self._osl_server.remove_all_parameters(uid=self.uid)
+        else:
+            raise NotImplementedError("Method is supported for Ansys optiSLang version >= 27.1.")
+
+    def remove_all_responses(self) -> None:
+        """Remove all registered responses.
+
+        .. note:: Method is supported for Ansys optiSLang version >= 27.1 only.
+
+        Raises
+        ------
+        NotImplementedError
+            Raised when unsupported optiSLang server is used.
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        if (
+            self._osl_server.osl_version.major == 27 and self._osl_server.osl_version.minor >= 1
+        ) or self._osl_server.osl_version.major > 27:
+            self._osl_server.remove_all_responses(uid=self.uid)
+        else:
+            raise NotImplementedError("Method is supported for Ansys optiSLang version >= 27.1.")
+
+    def remove_input_slot(self, name: str) -> None:
+        """Remove the given registered input slot.
+
+        Parameters
+        ----------
+        name : str
+            Name of the registered input slot.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        self._osl_server.remove_input_slot(uid=self.uid, name=name)
+
+    def remove_internal_variable(self, name: str) -> None:
+        """Remove the given registered internal variable.
+
+        Parameters
+        ----------
+        name : str
+            Name of the registered internal variable.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        self._osl_server.remove_internal_variable(uid=self.uid, name=name)
+
+    def remove_output_slot(self, name: str) -> None:
+        """Remove the given registered output slot.
+
+        Parameters
+        ----------
+        name : str
+            Name of the registered output slot.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        self._osl_server.remove_output_slot(uid=self.uid, name=name)
+
+    def remove_parameter(self, name: str) -> None:
+        """Remove the given registered parameter.
+
+        Parameters
+        ----------
+        name : str
+            Name of the registered parameter.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        self._osl_server.remove_parameter(uid=self.uid, name=name)
+
+    def remove_response(self, name: str) -> None:
+        """Remove the given registered response.
+
+        Parameters
+        ----------
+        name : str
+            Name of the registered response.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        self._osl_server.remove_response(uid=self.uid, name=name)
+
 
 class TcpProxySolverNodeProxy(TcpIntegrationNodeProxy, ProxySolverNode):
     """Provides for creating and operating on integration nodes."""

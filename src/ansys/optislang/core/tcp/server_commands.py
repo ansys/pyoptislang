@@ -63,10 +63,20 @@ _REGISTER_LOCATION_AS_PARAMETER = "REGISTER_LOCATION_AS_PARAMETER"
 _REGISTER_LOCATIONS_AS_PARAMETER = "REGISTER_LOCATIONS_AS_PARAMETER"
 _REGISTER_LOCATION_AS_RESPONSE = "REGISTER_LOCATION_AS_RESPONSE"
 _REGISTER_LOCATIONS_AS_RESPONSE = "REGISTER_LOCATIONS_AS_RESPONSE"
+_REMOVE_ALL_INPUT_SLOTS = "REMOVE_ALL_INPUT_SLOTS"
+_REMOVE_ALL_INTERNAL_LOCATIONS = "REMOVE_ALL_INTERNAL_LOCATIONS"
+_REMOVE_ALL_OUTPUT_SLOTS = "REMOVE_ALL_OUTPUT_SLOTS"
+_REMOVE_ALL_PARAMETERS = "REMOVE_ALL_PARAMETERS"
+_REMOVE_ALL_RESPONSES = "REMOVE_ALL_RESPONSES"
 _REMOVE_CRITERIA = "REMOVE_CRITERIA"
 _REMOVE_CRITERION = "REMOVE_CRITERION"
+_REMOVE_INPUT_SLOT = "REMOVE_INPUT_SLOT"
+_REMOVE_INTERNAL_LOCATION = "REMOVE_INTERNAL_LOCATION"
 _REMOVE_NODE = "REMOVE_NODE"
+_REMOVE_OUTPUT_SLOT = "REMOVE_OUTPUT_SLOT"
+_REMOVE_PARAMETER = "REMOVE_PARAMETER"
 _REMOVE_PLACEHOLDER = "REMOVE_PLACEHOLDER"
+_REMOVE_RESPONSE = "REMOVE_RESPONSE"
 _RENAME_NODE = "RENAME_NODE"
 _RENAME_PLACEHOLDER = "RENAME_PLACEHOLDER"
 _RENAME_SLOT = "RENAME_SLOT"
@@ -1270,6 +1280,242 @@ def register_locations_as_response(actor_uid: str, password: Optional[str] = Non
     return _to_json(
         _gen_server_command(
             command=_REGISTER_LOCATIONS_AS_RESPONSE, actor_uid=actor_uid, password=password
+        )
+    )
+
+
+def remove_all_input_slots(actor_uid: str, password: Optional[str] = None) -> str:
+    """Generate JSON string of ``remove_all_input_slots`` command.
+
+    Parameters
+    ----------
+    actor_uid: str
+        Actor uid entry.
+    password : Optional[str], optional
+        Password, by default ``None``.
+
+    Returns
+    -------
+    str
+        JSON string of ``remove_all_input_slots`` command.
+    """
+    return _to_json(
+        _gen_server_command(
+            command=_REMOVE_ALL_INPUT_SLOTS, actor_uid=actor_uid, password=password
+        )
+    )
+
+
+def remove_all_internal_variables(actor_uid: str, password: Optional[str] = None) -> str:
+    """Generate JSON string of ``remove_all_internal_variables`` command.
+
+    Parameters
+    ----------
+    actor_uid: str
+        Actor uid entry.
+    password : Optional[str], optional
+        Password, by default ``None``.
+
+    Returns
+    -------
+    str
+        JSON string of ``remove_all_internal_variables`` command.
+    """
+    return _to_json(
+        _gen_server_command(
+            command=_REMOVE_ALL_INTERNAL_LOCATIONS, actor_uid=actor_uid, password=password
+        )
+    )
+
+
+def remove_all_output_slots(actor_uid: str, password: Optional[str] = None) -> str:
+    """Generate JSON string of ``remove_all_output_slots`` command.
+
+    Parameters
+    ----------
+    actor_uid: str
+        Actor uid entry.
+    password : Optional[str], optional
+        Password, by default ``None``.
+
+    Returns
+    -------
+    str
+        JSON string of ``remove_all_output_slots`` command.
+    """
+    return _to_json(
+        _gen_server_command(
+            command=_REMOVE_ALL_OUTPUT_SLOTS, actor_uid=actor_uid, password=password
+        )
+    )
+
+
+def remove_all_parameters(actor_uid: str, password: Optional[str] = None) -> str:
+    """Generate JSON string of ``remove_all_parameters`` command.
+
+    Parameters
+    ----------
+    actor_uid: str
+        Actor uid entry.
+    password : Optional[str], optional
+        Password, by default ``None``.
+
+    Returns
+    -------
+    str
+        JSON string of ``remove_all_parameters`` command.
+    """
+    return _to_json(
+        _gen_server_command(
+            command=_REMOVE_ALL_PARAMETERS, actor_uid=actor_uid, password=password
+        )
+    )
+
+
+def remove_all_responses(actor_uid: str, password: Optional[str] = None) -> str:
+    """Generate JSON string of ``remove_all_responses`` command.
+
+    Parameters
+    ----------
+    actor_uid: str
+        Actor uid entry.
+    password : Optional[str], optional
+        Password, by default ``None``.
+
+    Returns
+    -------
+    str
+        JSON string of ``remove_all_responses`` command.
+    """
+    return _to_json(
+        _gen_server_command(
+            command=_REMOVE_ALL_RESPONSES, actor_uid=actor_uid, password=password
+        )
+    )
+
+
+def remove_input_slot(actor_uid: str, name: str, password: Optional[str] = None) -> str:
+    """Generate JSON string of ``remove_input_slot`` command.
+
+    Parameters
+    ----------
+    actor_uid: str
+        Actor uid entry.
+    name: str
+        Input slot name.
+    password : Optional[str], optional
+        Password, by default ``None``.
+
+    Returns
+    -------
+    str
+        JSON string of ``remove_input_slot`` command.
+    """
+    return _to_json(
+        _gen_server_command(
+            command=_REMOVE_INPUT_SLOT, args={"name": name}, actor_uid=actor_uid, password=password
+        )
+    )
+
+
+def remove_internal_variable(actor_uid: str, name: str, password: Optional[str] = None) -> str:
+    """Generate JSON string of ``remove_internal_variable`` command.
+
+    Parameters
+    ----------
+    actor_uid: str
+        Actor uid entry.
+    name: str
+        Internal variable name.
+    password : Optional[str], optional
+        Password, by default ``None``.
+
+    Returns
+    -------
+    str
+        JSON string of ``remove_internal_variable`` command.
+    """
+    return _to_json(
+        _gen_server_command(
+            command=_REMOVE_INTERNAL_LOCATION,
+            args={"name": name},
+            actor_uid=actor_uid,
+            password=password,
+        )
+    )
+
+
+def remove_output_slot(actor_uid: str, name: str, password: Optional[str] = None) -> str:
+    """Generate JSON string of ``remove_output_slot`` command.
+
+    Parameters
+    ----------
+    actor_uid: str
+        Actor uid entry.
+    name: str
+        Output slot name.
+    password : Optional[str], optional
+        Password, by default ``None``.
+
+    Returns
+    -------
+    str
+        JSON string of ``remove_output_slot`` command.
+    """
+    return _to_json(
+        _gen_server_command(
+            command=_REMOVE_OUTPUT_SLOT,
+            args={"name": name},
+            actor_uid=actor_uid,
+            password=password,
+        )
+    )
+
+
+def remove_parameter(actor_uid: str, name: str, password: Optional[str] = None) -> str:
+    """Generate JSON string of ``remove_parameter`` command.
+
+    Parameters
+    ----------
+    actor_uid: str
+        Actor uid entry.
+    name: str
+        Parameter name.
+    password : Optional[str], optional
+        Password, by default ``None``.
+
+    Returns
+    -------
+    str
+        JSON string of ``remove_parameter`` command.
+    """
+    return _to_json(
+        _gen_server_command(
+            command=_REMOVE_PARAMETER, args={"name": name}, actor_uid=actor_uid, password=password
+        )
+    )
+
+
+def remove_response(actor_uid: str, name: str, password: Optional[str] = None) -> str:
+    """Generate JSON string of ``remove_response`` command.
+
+    Parameters
+    ----------
+    actor_uid: str
+        Actor uid entry.
+    name: str
+        Response name.
+    password : Optional[str], optional
+        Password, by default ``None``.
+
+    Returns
+    -------
+    str
+        JSON string of ``remove_response`` command.
+    """
+    return _to_json(
+        _gen_server_command(
+            command=_REMOVE_RESPONSE, args={"name": name}, actor_uid=actor_uid, password=password
         )
     )
 
