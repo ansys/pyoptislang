@@ -482,6 +482,34 @@ def test_get_design_s(optislang: Optislang, tmp_example_project):
             __test_design_values(designs_no_values, False)
 
 
+def test_get_best_designs(optislang: Optislang, tmp_example_project):
+    """Test ``get_best_designs`` method."""
+    with Optislang(project_path=tmp_example_project("omdb_files")) as osl:
+        project = osl.project
+        root_system = project.root_system
+        sensitivity_outer: ParametricSystem = root_system.find_nodes_by_name("Sensitivity")[0]
+        sensitivity_inner: ParametricSystem = root_system.find_nodes_by_name(
+            "MostInnerSensitivity", 3
+        )[0]
+        design_manager_outer = sensitivity_outer.design_manager
+        design_manager_inner = sensitivity_inner.design_manager
+        hids_outer = sensitivity_outer.get_states_ids()
+        hids_inner = sensitivity_inner.get_states_ids()
+
+        for design_manager, hids in [
+            (design_manager_outer, hids_outer),
+            (design_manager_inner, hids_inner),
+        ]:
+            designs = design_manager.get_designs(hids[0])
+            best_designs = design_manager.get_best_designs(hids[0])
+            assert isinstance(best_designs, tuple)
+            assert all(isinstance(d, Design) for d in best_designs)
+            assert all(d.pareto_design for d in best_designs)
+
+            expected_best_designs = design_manager.filter_designs_by(designs, pareto_design=True)
+            assert {d.id for d in best_designs} == {d.id for d in expected_best_designs}
+
+
 def test_save_designs_as(tmp_path: Path, tmp_example_project):
     """Test `save_designs_as_json` and `save_designs_as_csv` methods."""
     with Optislang(project_path=tmp_example_project("omdb_files")) as osl:
