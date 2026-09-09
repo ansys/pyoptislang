@@ -949,6 +949,105 @@ def test_register_location(osl_server_process: OslServerProcess):
     tcp_osl_server.dispose()
 
 
+def test_remove_location(osl_server_process: OslServerProcess):
+    """Test ``remove_[parameter/response/input_slot/output_slot/internal_variable]``."""
+    tcp_osl_server = create_tcp_osl_server(osl_server_process)
+    sensitivity_uid = tcp_osl_server.create_node(type_="Sensitivity")
+    integration_uid = tcp_osl_server.create_node(
+        type_="optislang_node",
+        integration_type="integration_plugin",
+        parent_uid=sensitivity_uid,
+        design_flow="RECEIVE_SEND",
+    )
+    tcp_osl_server.register_location_as_input_slot(
+        uid=integration_uid, location="input_slot_1", name="input_slot_1", reference_value=10
+    )
+    tcp_osl_server.register_location_as_internal_variable(
+        uid=integration_uid,
+        location={"expression": "10", "id": "variable_1"},
+        name="variable_1",
+        reference_value=10,
+    )
+    tcp_osl_server.register_location_as_output_slot(
+        uid=integration_uid, location="output_slot_1", name="output_slot_1", reference_value=10
+    )
+    tcp_osl_server.register_location_as_parameter(
+        uid=integration_uid, location="parameter_1", name="parameter1", reference_value=10
+    )
+    tcp_osl_server.register_location_as_response(
+        uid=integration_uid, location="response_1", name="response_1", reference_value=10
+    )
+
+    tcp_osl_server.remove_parameter(uid=integration_uid, name="parameter1")
+    assert len(tcp_osl_server.get_actor_registered_parameters(uid=integration_uid)) == 0
+
+    tcp_osl_server.remove_response(uid=integration_uid, name="response_1")
+    assert len(tcp_osl_server.get_actor_registered_responses(uid=integration_uid)) == 0
+
+    tcp_osl_server.remove_input_slot(uid=integration_uid, name="input_slot_1")
+    assert len(tcp_osl_server.get_actor_registered_input_slots(uid=integration_uid)) == 0
+
+    tcp_osl_server.remove_output_slot(uid=integration_uid, name="output_slot_1")
+    assert len(tcp_osl_server.get_actor_registered_output_slots(uid=integration_uid)) == 0
+
+    tcp_osl_server.remove_internal_variable(uid=integration_uid, name="variable_1")
+    assert len(tcp_osl_server.get_actor_internal_variables(uid=integration_uid)) == 0
+
+    tcp_osl_server.shutdown()
+    tcp_osl_server.dispose()
+
+
+def test_remove_all_locations(osl_server_process: OslServerProcess):
+    """Test ``remove_all_[parameters/responses/input_slots/output_slots/internal_variables]``."""
+    tcp_osl_server = create_tcp_osl_server(osl_server_process)
+    if tcp_osl_server.osl_version < OslVersion(27, 1, 0, 0):
+        pytest.skip(f"Not compatible with {tcp_osl_server.osl_version_string}")
+
+    sensitivity_uid = tcp_osl_server.create_node(type_="Sensitivity")
+    integration_uid = tcp_osl_server.create_node(
+        type_="optislang_node",
+        integration_type="integration_plugin",
+        parent_uid=sensitivity_uid,
+        design_flow="RECEIVE_SEND",
+    )
+    tcp_osl_server.register_location_as_input_slot(
+        uid=integration_uid, location="input_slot_1", name="input_slot_1", reference_value=10
+    )
+    tcp_osl_server.register_location_as_internal_variable(
+        uid=integration_uid,
+        location={"expression": "10", "id": "variable_1"},
+        name="variable_1",
+        reference_value=10,
+    )
+    tcp_osl_server.register_location_as_output_slot(
+        uid=integration_uid, location="output_slot_1", name="output_slot_1", reference_value=10
+    )
+    tcp_osl_server.register_location_as_parameter(
+        uid=integration_uid, location="parameter_1", name="parameter1", reference_value=10
+    )
+    tcp_osl_server.register_location_as_response(
+        uid=integration_uid, location="response_1", name="response_1", reference_value=10
+    )
+
+    tcp_osl_server.remove_all_parameters(uid=integration_uid)
+    assert len(tcp_osl_server.get_actor_registered_parameters(uid=integration_uid)) == 0
+
+    tcp_osl_server.remove_all_responses(uid=integration_uid)
+    assert len(tcp_osl_server.get_actor_registered_responses(uid=integration_uid)) == 0
+
+    tcp_osl_server.remove_all_input_slots(uid=integration_uid)
+    assert len(tcp_osl_server.get_actor_registered_input_slots(uid=integration_uid)) == 0
+
+    tcp_osl_server.remove_all_output_slots(uid=integration_uid)
+    assert len(tcp_osl_server.get_actor_registered_output_slots(uid=integration_uid)) == 0
+
+    tcp_osl_server.remove_all_internal_variables(uid=integration_uid)
+    assert len(tcp_osl_server.get_actor_internal_variables(uid=integration_uid)) == 0
+
+    tcp_osl_server.shutdown()
+    tcp_osl_server.dispose()
+
+
 def test_reset(osl_server_process: OslServerProcess):
     """Test ``reset``."""
     tcp_osl_server = create_tcp_osl_server(osl_server_process)
