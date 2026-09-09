@@ -4340,6 +4340,258 @@ class TcpOslServer(OslServer):
             max_request_attempts=self.max_request_attempts_register.get_value(current_func_name),
         )
 
+    def remove_all_input_slots(self, uid: str) -> None:
+        """Remove all registered input slots from the actor.
+
+        Parameters
+        ----------
+        uid : str
+            Actor uid.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        current_func_name = self.remove_all_input_slots.__name__
+        self.send_command(
+            command=commands.remove_all_input_slots(actor_uid=uid, password=self.__password),
+            timeout=self.timeouts_register.get_value(current_func_name),
+            max_request_attempts=self.max_request_attempts_register.get_value(current_func_name),
+        )
+
+    def remove_all_internal_variables(self, uid: str) -> None:
+        """Remove all registered internal variables from the actor.
+
+        Parameters
+        ----------
+        uid : str
+            Actor uid.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        current_func_name = self.remove_all_internal_variables.__name__
+        self.send_command(
+            command=commands.remove_all_internal_variables(actor_uid=uid, password=self.__password),
+            timeout=self.timeouts_register.get_value(current_func_name),
+            max_request_attempts=self.max_request_attempts_register.get_value(current_func_name),
+        )
+
+    def remove_all_output_slots(self, uid: str) -> None:
+        """Remove all registered output slots from the actor.
+
+        Parameters
+        ----------
+        uid : str
+            Actor uid.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        current_func_name = self.remove_all_output_slots.__name__
+        self.send_command(
+            command=commands.remove_all_output_slots(actor_uid=uid, password=self.__password),
+            timeout=self.timeouts_register.get_value(current_func_name),
+            max_request_attempts=self.max_request_attempts_register.get_value(current_func_name),
+        )
+
+    def remove_all_parameters(self, uid: str) -> None:
+        """Remove all registered parameters from the actor.
+
+        Parameters
+        ----------
+        uid : str
+            Actor uid.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        current_func_name = self.remove_all_parameters.__name__
+        self.send_command(
+            command=commands.remove_all_parameters(actor_uid=uid, password=self.__password),
+            timeout=self.timeouts_register.get_value(current_func_name),
+            max_request_attempts=self.max_request_attempts_register.get_value(current_func_name),
+        )
+
+    def remove_all_responses(self, uid: str) -> None:
+        """Remove all registered responses from the actor.
+
+        Parameters
+        ----------
+        uid : str
+            Actor uid.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        current_func_name = self.remove_all_responses.__name__
+        self.send_command(
+            command=commands.remove_all_responses(actor_uid=uid, password=self.__password),
+            timeout=self.timeouts_register.get_value(current_func_name),
+            max_request_attempts=self.max_request_attempts_register.get_value(current_func_name),
+        )
+
+    def remove_input_slot(self, uid: str, name: str) -> None:
+        """Remove a registered input slot from the actor.
+
+        Parameters
+        ----------
+        uid : str
+            Actor uid.
+        name: str
+            Name of the input slot.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        current_func_name = self.remove_input_slot.__name__
+        self.send_command(
+            command=commands.remove_input_slot(actor_uid=uid, name=name, password=self.__password),
+            timeout=self.timeouts_register.get_value(current_func_name),
+            max_request_attempts=self.max_request_attempts_register.get_value(current_func_name),
+        )
+
+    def remove_internal_variable(self, uid: str, name: str) -> None:
+        """Remove a registered internal variable from the actor.
+
+        Parameters
+        ----------
+        uid : str
+            Actor uid.
+        name: str
+            Name of the internal variable.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        current_func_name = self.remove_internal_variable.__name__
+        self.send_command(
+            command=commands.remove_internal_variable(
+                actor_uid=uid, name=name, password=self.__password
+            ),
+            timeout=self.timeouts_register.get_value(current_func_name),
+            max_request_attempts=self.max_request_attempts_register.get_value(current_func_name),
+        )
+
+    def remove_output_slot(self, uid: str, name: str) -> None:
+        """Remove a registered output slot from the actor.
+
+        Parameters
+        ----------
+        uid : str
+            Actor uid.
+        name: str
+            Name of the output slot.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        current_func_name = self.remove_output_slot.__name__
+        self.send_command(
+            command=commands.remove_output_slot(actor_uid=uid, name=name, password=self.__password),
+            timeout=self.timeouts_register.get_value(current_func_name),
+            max_request_attempts=self.max_request_attempts_register.get_value(current_func_name),
+        )
+
+    def remove_parameter(self, uid: str, name: str) -> None:
+        """Remove a registered parameter from the actor.
+
+        Parameters
+        ----------
+        uid : str
+            Actor uid.
+        name: str
+            Name of the parameter.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        current_func_name = self.remove_parameter.__name__
+        self.send_command(
+            command=commands.remove_parameter(actor_uid=uid, name=name, password=self.__password),
+            timeout=self.timeouts_register.get_value(current_func_name),
+            max_request_attempts=self.max_request_attempts_register.get_value(current_func_name),
+        )
+
+    def remove_response(self, uid: str, name: str) -> None:
+        """Remove a registered response from the actor.
+
+        Parameters
+        ----------
+        uid : str
+            Actor uid.
+        name: str
+            Name of the response.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        current_func_name = self.remove_response.__name__
+        self.send_command(
+            command=commands.remove_response(actor_uid=uid, name=name, password=self.__password),
+            timeout=self.timeouts_register.get_value(current_func_name),
+            max_request_attempts=self.max_request_attempts_register.get_value(current_func_name),
+        )
+
     def remove_criteria(self, uid: str) -> None:
         """Remove all criteria from the system.
 
