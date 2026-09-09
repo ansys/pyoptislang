@@ -2407,7 +2407,6 @@ class TcpSystemProxy(TcpNodeProxy, System):
         )
 
         if len(properties_dicts_list) == 0:
-            self._logger.error(f"Node `{uid}` was not found in the current system.")
             return None
 
         return create_nodes_from_properties_dicts(
@@ -2469,7 +2468,6 @@ class TcpSystemProxy(TcpNodeProxy, System):
         )
 
         if len(properties_dicts_list) == 0:
-            self._logger.error(f"Node `{name}` not found in the current system.")
             return tuple()
 
         return create_nodes_from_properties_dicts(
