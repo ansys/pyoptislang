@@ -279,6 +279,32 @@ class DesignManager:
         pass
 
     @abstractmethod
+    def get_best_designs(self, hid: str = "0") -> Tuple[Design, ...]:  # pragma: no cover
+        """Get the best (pareto) designs for a given state.
+
+        Parameters
+        ----------
+        hid : str, optional
+            State/Design hierarchical id. Defaults to the "root" id ("0").
+
+        Returns
+        -------
+        Tuple[Design, ...]
+            Tuple of the best designs for a given state, determined by the
+            ``Design.pareto_design`` flag.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        pass
+
+    @abstractmethod
     def save_designs_as_json(
         self, file_path: Union[Path, str], hid: str = "0"
     ) -> File:  # pragma: no cover

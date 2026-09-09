@@ -550,6 +550,23 @@ class TcpDesignManagerProxy(DesignManager):
         """
         return self.__save_designs_as(file_path=file_path, format=FileOutputFormat.CSV, hid=hid)
 
+    def get_best_designs(self, hid: str = "0") -> Tuple[Design, ...]:
+        """Get the best (pareto) designs for a given state.
+
+        Parameters
+        ----------
+        hid : str, optional
+            State/Design hierarchical id. Defaults to the "root" id ("0").
+
+        Returns
+        -------
+        Tuple[Design, ...]
+            Tuple of the best designs for a given state, determined by the
+            ``Design.pareto_design`` flag.
+        """
+        designs = self.get_designs(hid=hid)
+        return self.filter_designs_by(designs, pareto_design=True)
+
     def __save_designs_as(
         self, file_path: Union[Path, str], format: FileOutputFormat, hid: str = "0"
     ) -> File:
