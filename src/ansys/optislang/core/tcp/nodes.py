@@ -204,9 +204,7 @@ class TcpNodeProxy(Node):
 
         return True
 
-    def copy(
-        self, target_system: Optional[System] = None, deep_copy: bool = False
-    ) -> TcpNodeProxy:
+    def copy(self, target_system: Optional[System] = None, deep_copy: bool = False) -> TcpNodeProxy:
         """Copy current node into a target system.
 
         .. note:: Method is supported for Ansys optiSLang version >= 27.1 only.

@@ -239,7 +239,7 @@ def test_copy_node():
         '{ "projects": [ { "commands": [ { "type": "builtin", "command": "COPY_NODE", '
         '"actor_uid": "5cdfb20b-bef6-4412-9985-89f5ded5ee95", "args": '
         '{ "target_system_uid": "fa743edb-4e0b-4302-b962-f2a32119a110", "deep_copy": true '
-        '} } ] } ] }'
+        "} } ] } ] }"
     )
     assert type(json_string) == str
     assert sorted(dictionary.items()) == sorted(requiered_string.items())
