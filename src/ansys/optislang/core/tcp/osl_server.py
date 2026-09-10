@@ -1825,6 +1825,53 @@ class TcpOslServer(OslServer):
             max_request_attempts=self.max_request_attempts_register.get_value(current_func_name),
         )
 
+    def copy_node(
+        self,
+        actor_uid: str,
+        target_system_uid: Optional[str] = None,
+        deep_copy: bool = False,
+    ) -> str:
+        """Copy a node specified by uid.
+
+        Parameters
+        ----------
+        actor_uid : str
+            Uid of the node to copy.
+        target_system_uid : Optional[str], optional
+            Uid of the system the node is copied into, by default ``None``.
+            If not specified, the node is copied into the root system.
+        deep_copy : bool, optional
+            Whether children of the node are copied as well, by default ``False``.
+
+        Returns
+        -------
+        str
+            Uid of the copied node.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        current_func_name = self.copy_node.__name__
+        output = self.send_command(
+            commands.copy_node(
+                actor_uid=actor_uid,
+                target_system_uid=target_system_uid,
+                deep_copy=deep_copy,
+                password=self.__password,
+            ),
+            timeout=self.timeouts_register.get_value(current_func_name),
+            max_request_attempts=self.max_request_attempts_register.get_value(current_func_name),
+        )
+        if len(output) > 1:
+            self._logger.error(f"``len(output) == {len(output)}``, but only 1 item was expected.")
+        return output[0].get("result_data", {}).get("actor_uid")
+
     def create_node(
         self,
         type_: str,
