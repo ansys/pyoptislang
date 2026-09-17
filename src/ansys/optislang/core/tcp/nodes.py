@@ -934,6 +934,34 @@ class TcpNodeProxy(Node):
         else:
             raise NotImplementedError("Method is supported for Ansys optiSLang version >= 25.2.")
 
+    def move_to(self, to_system: System) -> None:
+        """Move node into another system.
+
+        .. note:: Method is supported for Ansys optiSLang version >= 27.1 only.
+
+        Parameters
+        ----------
+        to_system: System
+            System to move the node into.
+
+        Raises
+        ------
+        NotImplementedError
+            Raised when unsupported optiSLang server is used.
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        if (
+            self._osl_server.osl_version.major == 27 and self._osl_server.osl_version.minor >= 1
+        ) or self._osl_server.osl_version.major > 27:
+            self._osl_server.move_node(actor_uid=self.uid, target_system_uid=to_system.uid)
+        else:
+            raise NotImplementedError("Method is supported for Ansys optiSLang version >= 27.1.")
+
     def create_placeholder_from_property(
         self,
         property_name: str,
@@ -2352,6 +2380,36 @@ class TcpSystemProxy(TcpNodeProxy, System):
         nodes = self.get_nodes()
         for node in nodes:
             node.delete()
+
+    def move_nodes_here(self, nodes: Iterable[Node]) -> None:
+        """Move existing nodes into this system.
+
+        .. note:: Method is supported for Ansys optiSLang version >= 27.1 only.
+
+        Parameters
+        ----------
+        nodes: Iterable[Node]
+            Nodes to move into this system.
+
+        Raises
+        ------
+        NotImplementedError
+            Raised when unsupported optiSLang server is used.
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        if (
+            self._osl_server.osl_version.major == 27 and self._osl_server.osl_version.minor >= 1
+        ) or self._osl_server.osl_version.major > 27:
+            self._osl_server.move_nodes(
+                actor_uids=[node.uid for node in nodes], target_system_uid=self.uid
+            )
+        else:
+            raise NotImplementedError("Method is supported for Ansys optiSLang version >= 27.1.")
 
     def find_node_by_uid(self, uid: str, search_depth: int = 1) -> Optional[TcpNodeProxy]:
         """Find a node in the system with a specified unique ID.

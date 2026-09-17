@@ -1144,6 +1144,56 @@ def test_remove_criterion():
     dictionary["Password"] == example_password
 
 
+def test_move_node():
+    "Test move_node."
+    # basic
+    json_string = sc.move_node(actor_uid=actor_uid, target_system_uid=parent_uid)
+    dictionary = json.loads(json_string)
+    requiered_string = json.loads(
+        '{"projects": [{"commands": [{"actor_uid": "5cdfb20b-bef6-4412-9985-89f5ded5ee95", \
+        "args": {"target_system_uid": "fa743edb-4e0b-4302-b962-f2a32119a110"}, \
+        "command": "MOVE_NODE", "type": "builtin"}]}]}'
+    )
+    assert type(json_string) == str
+    assert sorted(dictionary.items()) == sorted(requiered_string.items())
+    # with password
+    json_string = sc.move_node(
+        actor_uid=actor_uid, target_system_uid=parent_uid, password=example_password
+    )
+    dictionary = json.loads(json_string)
+    dictionary["Password"] == example_password
+    with pytest.raises(TypeError):
+        sc.move_node(actor_uid=actor_uid)
+    with pytest.raises(TypeError):
+        sc.move_node()
+
+
+def test_move_nodes():
+    "Test move_nodes."
+    # basic
+    json_string = sc.move_nodes(actor_uids=[actor_uid, uid], target_system_uid=parent_uid)
+    dictionary = json.loads(json_string)
+    requiered_string = json.loads(
+        '{"projects": [{"commands": [{'
+        '"args": {"actor_uids": ["5cdfb20b-bef6-4412-9985-89f5ded5ee95", '
+        '"d2ab72dd-0d46-488a-aa05-0ddc19794c60"], '
+        '"target_system_uid": "fa743edb-4e0b-4302-b962-f2a32119a110"}, '
+        '"command": "MOVE_NODES", "type": "builtin"}]}]}'
+    )
+    assert type(json_string) == str
+    assert sorted(dictionary.items()) == sorted(requiered_string.items())
+    # with password
+    json_string = sc.move_nodes(
+        actor_uids=[actor_uid, uid], target_system_uid=parent_uid, password=example_password
+    )
+    dictionary = json.loads(json_string)
+    dictionary["Password"] == example_password
+    with pytest.raises(TypeError):
+        sc.move_nodes(actor_uids=[actor_uid])
+    with pytest.raises(TypeError):
+        sc.move_nodes()
+
+
 def test_remove_node():
     "Test remove_node."
     # basic

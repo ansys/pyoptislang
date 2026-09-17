@@ -26,7 +26,7 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from enum import Enum, Flag
-from typing import TYPE_CHECKING, Any, Mapping, Optional, Tuple, Union
+from typing import TYPE_CHECKING, Any, Iterable, Mapping, Optional, Tuple, Union
 
 from deprecated.sphinx import deprecated
 
@@ -322,6 +322,26 @@ class Node(ABC):
     @abstractmethod
     def delete(self) -> None:  # pragma: no cover
         """Delete current node and it's children from active project.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        pass
+
+    @abstractmethod
+    def move_to(self, to_system: System) -> None:  # pragma: no cover
+        """Move node into another system.
+
+        Parameters
+        ----------
+        to_system: System
+            System to move the node into.
 
         Raises
         ------
@@ -1733,6 +1753,26 @@ class System(Node):
     @abstractmethod
     def delete_children_nodes(self) -> None:  # pragma: no cover
         """Delete all children nodes from the active project.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        pass
+
+    @abstractmethod
+    def move_nodes_here(self, nodes: Iterable[Node]) -> None:  # pragma: no cover
+        """Move existing nodes into this system.
+
+        Parameters
+        ----------
+        nodes: Iterable[Node]
+            Nodes to move into this system.
 
         Raises
         ------
