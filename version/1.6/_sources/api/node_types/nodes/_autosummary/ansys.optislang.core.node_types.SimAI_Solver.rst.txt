@@ -1,0 +1,6 @@
+﻿SimAI\_Solver
+=============
+
+.. currentmodule:: ansys.optislang.core.node_types
+
+.. autodata:: SimAI_Solver

@@ -1,0 +1,6 @@
+max\_runtime
+============
+
+.. currentmodule:: ansys.optislang.parametric.design_study_templates
+
+.. autoattribute:: ProxySolverNodeSettings.max_runtime

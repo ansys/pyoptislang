@@ -1,0 +1,6 @@
+dispose
+=======
+
+.. currentmodule:: ansys.optislang.parametric.design_study
+
+.. automethod:: ParametricDesignStudyManager.dispose

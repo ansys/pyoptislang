@@ -1,0 +1,6 @@
+DESIGN\_CONTAINER
+=================
+
+.. currentmodule:: ansys.optislang.core.slot_types
+
+.. autoattribute:: SlotTypeHint.DESIGN_CONTAINER

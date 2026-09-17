@@ -1,0 +1,6 @@
+STRING\_LIST
+============
+
+.. currentmodule:: ansys.optislang.core.slot_types
+
+.. autoattribute:: SlotTypeHint.STRING_LIST

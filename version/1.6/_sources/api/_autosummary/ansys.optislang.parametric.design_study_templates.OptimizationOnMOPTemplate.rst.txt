@@ -1,0 +1,34 @@
+﻿OptimizationOnMOPTemplate
+=========================
+
+.. currentmodule:: ansys.optislang.parametric.design_study_templates
+
+.. autoclass:: OptimizationOnMOPTemplate
+
+   
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :toctree:
+   
+      
+      
+      OptimizationOnMOPTemplate.create_algorithm
+      
+      
+      OptimizationOnMOPTemplate.create_design_study
+      
+      
+      OptimizationOnMOPTemplate.create_design_study_instance
+      
+      
+      OptimizationOnMOPTemplate.create_solver_node
+      
+   
+   
+
+   
+   
+   

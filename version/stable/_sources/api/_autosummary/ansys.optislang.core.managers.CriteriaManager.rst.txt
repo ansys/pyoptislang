@@ -1,0 +1,46 @@
+﻿CriteriaManager
+===============
+
+.. currentmodule:: ansys.optislang.core.managers
+
+.. autoclass:: CriteriaManager
+
+   
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :toctree:
+   
+      
+      
+      CriteriaManager.add_criterion
+      
+      
+      CriteriaManager.get_criteria
+      
+      
+      CriteriaManager.get_criteria_names
+      
+      
+      CriteriaManager.get_criterion
+      
+      
+      CriteriaManager.modify_criterion
+      
+      
+      CriteriaManager.modify_criterion_property
+      
+      
+      CriteriaManager.remove_all_criteria
+      
+      
+      CriteriaManager.remove_criterion
+      
+   
+   
+
+   
+   
+   

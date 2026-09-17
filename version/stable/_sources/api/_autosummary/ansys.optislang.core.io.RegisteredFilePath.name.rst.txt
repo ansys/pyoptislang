@@ -1,0 +1,6 @@
+name
+====
+
+.. currentmodule:: ansys.optislang.core.io
+
+.. autoproperty:: RegisteredFilePath.name

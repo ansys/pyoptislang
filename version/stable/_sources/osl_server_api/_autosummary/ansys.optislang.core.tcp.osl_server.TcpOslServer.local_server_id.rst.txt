@@ -1,0 +1,6 @@
+local\_server\_id
+=================
+
+.. currentmodule:: ansys.optislang.core.tcp.osl_server
+
+.. autoproperty:: TcpOslServer.local_server_id

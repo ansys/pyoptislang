@@ -1,0 +1,6 @@
+RUN\_INFO\_META
+===============
+
+.. currentmodule:: ansys.optislang.core.slot_types
+
+.. autoattribute:: SlotTypeHint.RUN_INFO_META
