@@ -25,7 +25,7 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import TYPE_CHECKING, Optional, Union
+from typing import TYPE_CHECKING, Any, Dict, Optional, Union
 
 if TYPE_CHECKING:
     from ansys.optislang.core.osl_server import OslVersion
@@ -199,6 +199,107 @@ class Application(ABC):
             Raised when an error occurs while communicating with the server.
         OslCommandError
             Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        pass
+
+    @abstractmethod
+    def get_long_running_operation_status(
+        self, operation_id: str
+    ) -> Dict[str, Any]:  # pragma: no cover
+        """Get the status (and, once finished, the result) of a long running operation.
+
+        .. note:: This is a non-destructive, repeatable status poll: the operation is *not*
+            removed from the server-side registry, even once finished. Use
+            :py:meth:`wait_for_long_running_operation` to also consume/discard it.
+
+        .. note:: Method is supported for Ansys optiSLang version >= 27.1 only.
+
+        Parameters
+        ----------
+        operation_id: str
+            ID of the long running operation, as returned e.g. by a node's ``load`` method
+            when called with ``run_async=True``.
+
+        Returns
+        -------
+        Dict[str, Any]
+            Dictionary with keys ``operation_id``, ``is_finished`` and, once finished,
+            ``result``.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails, e.g. because no such operation is
+            registered.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        pass
+
+    @abstractmethod
+    def wait_for_long_running_operation(
+        self, operation_id: str
+    ) -> Dict[str, Any]:  # pragma: no cover
+        """Wait for a long running operation to finish, then return its status.
+
+        .. note:: This method blocks until the operation completes. Unlike
+            :py:meth:`get_long_running_operation_status`, it consumes the operation: once this
+            call returns, the operation is removed from the server-side registry and a
+            subsequent call with the same ``operation_id`` fails.
+
+        .. note:: Method is supported for Ansys optiSLang version >= 27.1 only.
+
+        Parameters
+        ----------
+        operation_id: str
+            ID of the long running operation, as returned e.g. by a node's ``load`` method
+            when called with ``run_async=True``.
+
+        Returns
+        -------
+        Dict[str, Any]
+            Dictionary with keys ``operation_id``, ``is_finished`` and, once finished,
+            ``result``.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails, e.g. because no such operation is
+            registered.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        pass
+
+    @abstractmethod
+    def discard_long_running_operation(self, operation_id: str) -> None:  # pragma: no cover
+        """Discard a previously registered long running operation.
+
+        .. note:: Method is supported for Ansys optiSLang version >= 27.1 only.
+
+        Unlike :py:meth:`wait_for_long_running_operation`, this does not wait for the
+        operation to finish; it removes it from the server-side registry regardless of
+        whether it has completed yet.
+
+        Parameters
+        ----------
+        operation_id: str
+            ID of the long running operation, as returned e.g. by a node's ``load`` method
+            when called with ``run_async=True``.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails, e.g. because no such operation is
+            registered.
         TimeoutError
             Raised when the timeout float value expires.
         """

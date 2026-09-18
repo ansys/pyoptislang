@@ -1719,7 +1719,7 @@ class TcpIntegrationNodeProxy(TcpNodeProxy, IntegrationNode):
             )
         )
 
-    def load(self, args: Optional[Dict[str, Any]] = None) -> None:
+    def load(self, args: Optional[Dict[str, Any]] = None, run_async: bool = False) -> Optional[str]:
         """Explicitly load the node.
 
         Some optiSLang nodes support/need an explicit LOAD prior to being able to register
@@ -1729,6 +1729,20 @@ class TcpIntegrationNodeProxy(TcpNodeProxy, IntegrationNode):
         ----------
         args: Optional[Dict[str, any]], optional
             Additional arguments, by default ``None``.
+        run_async: bool, optional
+            Whether to perform the load as an asynchronous, non-blocking long running
+            operation. If ``True``, this method returns immediately with the ID of the long
+            running operation instead of waiting for the load to complete. Use
+            :py:meth:`TcpOslServer.get_long_running_operation_status` or
+            :py:meth:`TcpOslServer.wait_for_long_running_operation` to poll for or await its
+            completion. By default ``False``.
+
+            .. note:: Argument is supported for Ansys optiSLang version >= 27.1 only.
+
+        Returns
+        -------
+        Optional[str]
+            ID of the long running operation if ``run_async`` is ``True``, ``None`` otherwise.
 
         Raises
         ------
@@ -1740,7 +1754,7 @@ class TcpIntegrationNodeProxy(TcpNodeProxy, IntegrationNode):
             Raised when the timeout float value expires.
         """
         # TODO: test
-        self._osl_server.load(uid=self.uid, args=args)
+        return self._osl_server.load(uid=self.uid, args=args, run_async=run_async)
 
     def register_location_as_input_slot(
         self,

@@ -676,6 +676,100 @@ def test_get_available_locations(tmp_example_project):
     tcp_osl_server.dispose()
 
 
+def test_load_async_and_long_running_operation_status(tmp_example_project):
+    """Test asynchronous ``load`` together with the long running operation queries."""
+    osl_server_process = create_osl_server_process(
+        shutdown_on_finished=True, project_path=tmp_example_project("omdb_files")
+    )
+    tcp_osl_server = create_tcp_osl_server(osl_server_process)
+    tcp_osl_server.reset()
+    tcp_osl_server.start()
+    properties = tcp_osl_server.get_full_project_tree_with_properties()
+    omdb_uid = tcp_osl_server.create_node(
+        type_="optislang_omdb", integration_type="python_based_integration_plugin"
+    )
+    omdb_path = Path(properties["projects"][0]["working_dir"]) / r"Sensitivity/Sensitivity.omdb"
+    path_value = {
+        "path": {
+            "base_path_mode": {"value": "ABSOLUTE_PATH"},
+            "split_path": {
+                "head": "",
+                "tail": str(omdb_path),
+            },
+        }
+    }
+    tcp_osl_server.set_actor_property(omdb_uid, "Path", path_value)
+
+    # asynchronous load returns immediately with an operation ID
+    operation_id = tcp_osl_server.load(omdb_uid, run_async=True)
+    assert isinstance(operation_id, str)
+
+    # get_long_running_operation_status is non-destructive and repeatable, even once finished
+    for _ in range(3):
+        status = tcp_osl_server.get_long_running_operation_status(operation_id)
+        assert status["operation_id"] == operation_id
+        if status["is_finished"]:
+            assert "result" in status
+
+    # wait for the operation to complete and check its final status
+    status = tcp_osl_server.wait_for_long_running_operation(operation_id)
+    assert status["operation_id"] == operation_id
+    assert status["is_finished"] is True
+    assert "result" in status
+
+    # wait_for_long_running_operation consumes the operation: it is now gone
+    with pytest.raises(errors.OslCommandError):
+        tcp_osl_server.get_long_running_operation_status(operation_id)
+
+    with pytest.raises(errors.OslCommandError):
+        tcp_osl_server.get_long_running_operation_status(str(uuid.uuid4()))
+
+    tcp_osl_server.shutdown()
+    tcp_osl_server.dispose()
+
+
+def test_discard_long_running_operation(tmp_example_project):
+    """Test ``discard_long_running_operation``."""
+    osl_server_process = create_osl_server_process(
+        shutdown_on_finished=True, project_path=tmp_example_project("omdb_files")
+    )
+    tcp_osl_server = create_tcp_osl_server(osl_server_process)
+    tcp_osl_server.reset()
+    tcp_osl_server.start()
+    properties = tcp_osl_server.get_full_project_tree_with_properties()
+    omdb_uid = tcp_osl_server.create_node(
+        type_="optislang_omdb", integration_type="python_based_integration_plugin"
+    )
+    omdb_path = Path(properties["projects"][0]["working_dir"]) / r"Sensitivity/Sensitivity.omdb"
+    path_value = {
+        "path": {
+            "base_path_mode": {"value": "ABSOLUTE_PATH"},
+            "split_path": {
+                "head": "",
+                "tail": str(omdb_path),
+            },
+        }
+    }
+    tcp_osl_server.set_actor_property(omdb_uid, "Path", path_value)
+
+    operation_id = tcp_osl_server.load(omdb_uid, run_async=True)
+    assert isinstance(operation_id, str)
+
+    # explicitly discarding an operation removes it, regardless of whether it has finished
+    tcp_osl_server.discard_long_running_operation(operation_id)
+    with pytest.raises(errors.OslCommandError):
+        tcp_osl_server.get_long_running_operation_status(operation_id)
+
+    # discarding an unknown/already discarded operation fails
+    with pytest.raises(errors.OslCommandError):
+        tcp_osl_server.discard_long_running_operation(operation_id)
+    with pytest.raises(errors.OslCommandError):
+        tcp_osl_server.discard_long_running_operation(str(uuid.uuid4()))
+
+    tcp_osl_server.shutdown()
+    tcp_osl_server.dispose()
+
+
 def test_get_available_nodes(osl_server_process: OslServerProcess):
     """Test ``get_available_nodes`` query."""
     tcp_osl_server = create_tcp_osl_server(osl_server_process)

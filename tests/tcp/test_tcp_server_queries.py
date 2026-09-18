@@ -34,6 +34,8 @@ example_slot = "MySlot"
 example_password = "otislang.-*123"
 # Placeholder test constants
 placeholder_id = "test_placeholder"
+# Long running operation test constants
+operation_id = "5cdfb20b-bef6-4412-9985-89f5ded5ee95"
 
 
 def test_actor_info():
@@ -611,3 +613,56 @@ def test_get_placeholder():
     # test required parameters
     with pytest.raises(TypeError):
         sq.get_placeholder()
+
+
+# =============================================================================
+# Long running operation query tests
+# =============================================================================
+
+
+def test_get_long_running_operation_status():
+    """Test get_long_running_operation_status."""
+    # basic
+    json_string = sq.get_long_running_operation_status(operation_id=operation_id)
+    dictionary = json.loads(json_string)
+    required_string = json.loads(
+        '{ "What": "GET_LONG_RUNNING_OPERATION_STATUS", '
+        '"args": { "operation_id": "5cdfb20b-bef6-4412-9985-89f5ded5ee95" } }'
+    )
+    assert type(json_string) == str
+    assert sorted(dictionary.items()) == sorted(required_string.items())
+
+    # with password
+    json_string = sq.get_long_running_operation_status(
+        operation_id=operation_id, password=example_password
+    )
+    dictionary = json.loads(json_string)
+    assert dictionary["Password"] == example_password
+
+    # test required parameters
+    with pytest.raises(TypeError):
+        sq.get_long_running_operation_status()
+
+
+def test_wait_for_long_running_operation():
+    """Test wait_for_long_running_operation."""
+    # basic
+    json_string = sq.wait_for_long_running_operation(operation_id=operation_id)
+    dictionary = json.loads(json_string)
+    required_string = json.loads(
+        '{ "What": "WAIT_FOR_LONG_RUNNING_OPERATION", '
+        '"args": { "operation_id": "5cdfb20b-bef6-4412-9985-89f5ded5ee95" } }'
+    )
+    assert type(json_string) == str
+    assert sorted(dictionary.items()) == sorted(required_string.items())
+
+    # with password
+    json_string = sq.wait_for_long_running_operation(
+        operation_id=operation_id, password=example_password
+    )
+    dictionary = json.loads(json_string)
+    assert dictionary["Password"] == example_password
+
+    # test required parameters
+    with pytest.raises(TypeError):
+        sq.wait_for_long_running_operation()
