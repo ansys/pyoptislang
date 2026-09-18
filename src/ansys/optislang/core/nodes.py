@@ -1207,7 +1207,9 @@ class IntegrationNode(Node):
         pass
 
     @abstractmethod
-    def load(self, args: Optional[dict] = None) -> None:  # pragma: no cover
+    def load(
+        self, args: Optional[dict] = None, run_async: bool = False
+    ) -> Optional[str]:  # pragma: no cover
         """Explicitly load the node.
 
         Some optiSLang nodes support/need an explicit load prior to being able to register
@@ -1217,6 +1219,17 @@ class IntegrationNode(Node):
         ----------
         args: Optional[dict], optional
             Additional arguments, by default ``None``.
+        run_async: bool, optional
+            Whether to perform the load as an asynchronous, non-blocking long running
+            operation, returning immediately with the ID of the long running operation instead
+            of waiting for the load to complete. By default ``False``.
+
+            .. note:: Argument is supported for Ansys optiSLang version >= 27.1 only.
+
+        Returns
+        -------
+        Optional[str]
+            ID of the long running operation if ``run_async`` is ``True``, ``None`` otherwise.
 
         Raises
         ------

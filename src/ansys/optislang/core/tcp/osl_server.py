@@ -3867,7 +3867,12 @@ class TcpOslServer(OslServer):
             return None
         return Path(project_info.get("projects", [{}])[0].get("working_dir", None))
 
-    def load(self, uid: str, args: Optional[Dict[str, Any]] = None) -> None:
+    def load(
+        self,
+        uid: str,
+        args: Optional[Dict[str, Any]] = None,
+        run_async: bool = False,
+    ) -> Optional[str]:
         """Explicit load of node.
 
         Parameters
@@ -3876,6 +3881,20 @@ class TcpOslServer(OslServer):
             Actor uid.
         args: Optional[Dict[str, any]], optional
             Additional arguments, by default ``None``.
+        run_async: bool, optional
+            Whether to perform the load as an asynchronous, non-blocking long running
+            operation. If ``True``, this method returns immediately with the ID of the long
+            running operation instead of waiting for the load to complete. Use
+            :py:meth:`get_long_running_operation_status` or
+            :py:meth:`wait_for_long_running_operation` to poll for or await its completion.
+            By default ``False``.
+
+            .. note:: Argument is supported for Ansys optiSLang version >= 27.1 only.
+
+        Returns
+        -------
+        Optional[str]
+            ID of the long running operation if ``run_async`` is ``True``, ``None`` otherwise.
 
         Raises
         ------
@@ -3888,11 +3907,129 @@ class TcpOslServer(OslServer):
         """
         # TODO: create unit test
         current_func_name = self.load.__name__
-        self.send_command(
+        response = self.send_command(
             command=commands.load(
                 actor_uid=uid,
                 args=args,
+                run_async=run_async,
                 password=self.__password,
+            ),
+            timeout=self.timeouts_register.get_value(current_func_name),
+            max_request_attempts=self.max_request_attempts_register.get_value(current_func_name),
+        )
+        return response[0]["operation_id"] if run_async and "operation_id" in response[0] else None
+
+    def get_long_running_operation_status(self, operation_id: str) -> Dict[str, Any]:
+        """Get the status (and, once finished, the result) of a long running operation.
+
+        .. note:: This is a non-destructive, repeatable status poll: the operation is *not*
+            removed from the server-side registry, even once finished. Use
+            :py:meth:`wait_for_long_running_operation` to also consume/discard it.
+
+        .. note:: Method is supported for Ansys optiSLang version >= 27.1 only.
+
+        Parameters
+        ----------
+        operation_id: str
+            ID of the long running operation, as returned e.g. by :py:meth:`load` when called
+            with ``run_async=True``.
+
+        Returns
+        -------
+        Dict[str, Any]
+            Dictionary with keys ``operation_id``, ``is_finished`` and, once finished,
+            ``result``.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails, e.g. because no such operation is
+            registered.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        current_func_name = self.get_long_running_operation_status.__name__
+        return self.send_command(
+            command=queries.get_long_running_operation_status(
+                operation_id=operation_id, password=self.__password
+            ),
+            timeout=self.timeouts_register.get_value(current_func_name),
+            max_request_attempts=self.max_request_attempts_register.get_value(current_func_name),
+        )
+
+    def wait_for_long_running_operation(self, operation_id: str) -> Dict[str, Any]:
+        """Wait for a long running operation to finish, then return its status.
+
+        .. note:: This method blocks on the server side until the operation completes; no
+            client-side timeout is applied by default (see ``timeouts_register``). Unlike
+            :py:meth:`get_long_running_operation_status`, it consumes the operation: once this
+            call returns, the operation is removed from the server-side registry and a
+            subsequent call with the same ``operation_id`` fails.
+
+        .. note:: Method is supported for Ansys optiSLang version >= 27.1 only.
+
+        Parameters
+        ----------
+        operation_id: str
+            ID of the long running operation, as returned e.g. by :py:meth:`load` when called
+            with ``run_async=True``.
+
+        Returns
+        -------
+        Dict[str, Any]
+            Dictionary with keys ``operation_id``, ``is_finished`` and, once finished,
+            ``result``.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails, e.g. because no such operation is
+            registered.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        current_func_name = self.wait_for_long_running_operation.__name__
+        return self.send_command(
+            command=queries.wait_for_long_running_operation(
+                operation_id=operation_id, password=self.__password
+            ),
+            timeout=self.timeouts_register.get_value(current_func_name),
+            max_request_attempts=self.max_request_attempts_register.get_value(current_func_name),
+        )
+
+    def discard_long_running_operation(self, operation_id: str) -> None:
+        """Discard a previously registered long running operation.
+
+        .. note:: Method is supported for Ansys optiSLang version >= 27.1 only.
+
+        Unlike :py:meth:`wait_for_long_running_operation`, this does not wait for the
+        operation to finish; it removes it from the server-side registry regardless of
+        whether it has completed yet.
+
+        Parameters
+        ----------
+        operation_id: str
+            ID of the long running operation, as returned e.g. by :py:meth:`load` when called
+            with ``run_async=True``.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails, e.g. because no such operation is
+            registered.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        current_func_name = self.discard_long_running_operation.__name__
+        self.send_command(
+            command=commands.discard_long_running_operation(
+                operation_id=operation_id, password=self.__password
             ),
             timeout=self.timeouts_register.get_value(current_func_name),
             max_request_attempts=self.max_request_attempts_register.get_value(current_func_name),
@@ -6353,7 +6490,9 @@ class TcpOslServer(OslServer):
             default_value=2, validator=self.__class__.__validate_max_request_attempts_value
         )
         max_requests_register.register(self.__class__.evaluate_design, 1)
+        max_requests_register.register(self.__class__.discard_long_running_operation, 1)
         max_requests_register.register(self.__class__.get_full_project_status_info, 1)
+        max_requests_register.register(self.__class__.get_long_running_operation_status, 1)
         max_requests_register.register(self.__class__.load, 1)
         max_requests_register.register(self.__class__.open, 1)
         max_requests_register.register(self.__class__.reset, 1)
@@ -6363,6 +6502,7 @@ class TcpOslServer(OslServer):
         max_requests_register.register(self.__class__.save_copy, 1)
         max_requests_register.register(self.__class__.start, 1)
         max_requests_register.register(self.__class__.stop, 1)
+        max_requests_register.register(self.__class__.wait_for_long_running_operation, 1)
         return max_requests_register
 
     def __get_default_timeouts_register(self) -> FunctionsAttributeRegister:
@@ -6380,6 +6520,7 @@ class TcpOslServer(OslServer):
         timeout_register.register(self.__class__.save_copy, None)
         timeout_register.register(self.__class__.start, None)
         timeout_register.register(self.__class__.stop, None)
+        timeout_register.register(self.__class__.wait_for_long_running_operation, None)
         return timeout_register
 
     @staticmethod

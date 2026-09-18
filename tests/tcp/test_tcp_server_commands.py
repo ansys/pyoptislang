@@ -43,6 +43,7 @@ result = "C:/samples_path/result.csv"
 args_ = ["Sensi", "True"]
 from_actor_uid = "3751b23c-3efb-459e-9b73-49cb4ae77e67"
 to_actor_uid = "e849f1e9-75b0-4472-8447-d076b33c47bf"
+operation_id = "5cdfb20b-bef6-4412-9985-89f5ded5ee95"
 parent_uid = "fa743edb-4e0b-4302-b962-f2a32119a110"
 parameters = {"X1": 1.0, "X2": 1.0, "X3": 1.0}
 local_location = {
@@ -186,6 +187,28 @@ def test_connect_nodes():
     dictionary["Password"] == example_password
     with pytest.raises(TypeError):
         sc.connect_nodes()
+
+
+def test_discard_long_running_operation():
+    "Test discard_long_running_operation."
+    # basic
+    json_string = sc.discard_long_running_operation(operation_id=operation_id)
+    dictionary = json.loads(json_string)
+    requiered_string = json.loads(
+        '{ "projects": [ { "commands": [ { "type": "builtin", "command": '
+        '"DISCARD_LONG_RUNNING_OPERATION", "args": '
+        '{ "operation_id": "5cdfb20b-bef6-4412-9985-89f5ded5ee95" } } ] } ] }'
+    )
+    assert type(json_string) == str
+    assert sorted(dictionary.items()) == sorted(requiered_string.items())
+    # with password
+    json_string = sc.discard_long_running_operation(
+        operation_id=operation_id, password=example_password
+    )
+    dictionary = json.loads(json_string)
+    dictionary["Password"] == example_password
+    with pytest.raises(TypeError):
+        sc.discard_long_running_operation()
 
 
 def test_disconnect_nodes():
@@ -547,6 +570,14 @@ def test_load():
     json_string = sc.load(actor_uid=actor_uid, password=example_password)
     dictionary = json.loads(json_string)
     dictionary["Password"] == example_password
+    # with run_async
+    json_string = sc.load(actor_uid=actor_uid, run_async=True)
+    dictionary = json.loads(json_string)
+    requiered_string = json.loads(
+        '{ "projects": [ { "commands": [ { "type": "builtin", "command": "LOAD", "actor_uid": '
+        '"5cdfb20b-bef6-4412-9985-89f5ded5ee95", "async": true } ] } ] }'
+    )
+    assert sorted(dictionary.items()) == sorted(requiered_string.items())
     with pytest.raises(TypeError):
         sc.load()
 

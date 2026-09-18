@@ -42,6 +42,7 @@ _CREATE_OUTPUT_SLOT = "CREATE_OUTPUT_SLOT"
 _CREATE_PLACEHOLDER = "CREATE_PLACEHOLDER"
 _CREATE_PLACEHOLDER_FROM_ACTOR_PROPERTY = "CREATE_PLACEHOLDER_FROM_ACTOR_PROPERTY"
 _CREATE_START_DESIGNS = "CREATE_START_DESIGNS"
+_DISCARD_LONG_RUNNING_OPERATION = "DISCARD_LONG_RUNNING_OPERATION"
 _DISCONNECT_NODES = "DISCONNECT_NODES"
 _DISCONNECT_SLOT = "DISCONNECT_SLOT"
 _EVALUATE_DESIGN = "EVALUATE_DESIGN"
@@ -316,6 +317,33 @@ def connect_nodes(
     args["skip_rename_slot"] = skip_rename_slot
 
     return _to_json(_gen_server_command(command=_CONNECT_NODES, args=args, password=password))
+
+
+def discard_long_running_operation(operation_id: str, password: Optional[str] = None) -> str:
+    """Generate JSON string of discard_long_running_operation command.
+
+    .. note:: Command is supported for Ansys optiSLang version >= 27.1 only.
+
+    Parameters
+    ----------
+    operation_id: str
+        ID of the long running operation, as returned e.g. by the ``load`` command when
+        executed with ``run_async=True``.
+    password : Optional[str], optional
+        Password, by default ``None``.
+
+    Returns
+    -------
+    str
+        JSON string of discard_long_running_operation command.
+    """
+    return _to_json(
+        _gen_server_command(
+            command=_DISCARD_LONG_RUNNING_OPERATION,
+            args={"operation_id": operation_id},
+            password=password,
+        )
+    )
 
 
 def disconnect_nodes(
@@ -776,7 +804,12 @@ def link_registered_file(actor_uid: str, uid: str, password: Optional[str] = Non
     )
 
 
-def load(actor_uid: str, args: Optional[CommandArgs] = None, password: Optional[str] = None) -> str:
+def load(
+    actor_uid: str,
+    args: Optional[CommandArgs] = None,
+    run_async: bool = False,
+    password: Optional[str] = None,
+) -> str:
     """Generate JSON string of ``load`` command.
 
     Parameters
@@ -785,6 +818,14 @@ def load(actor_uid: str, args: Optional[CommandArgs] = None, password: Optional[
         Actor uid entry.
     args: Optional[CommandArgs], optional
         Dictionary with additional arguments, by default ``None``.
+    run_async: bool, optional
+        Whether to perform the load as an asynchronous, non-blocking long running operation.
+        If ``True``, the server responds immediately with an operation ID that can be polled
+        or waited on via the ``get_long_running_operation_status``/
+        ``wait_for_long_running_operation`` queries. By default ``False``.
+
+        .. note:: Argument is supported for Ansys optiSLang version >= 27.1 only.
+
     password : Optional[str], optional
         Password, by default ``None``.
 
@@ -794,7 +835,9 @@ def load(actor_uid: str, args: Optional[CommandArgs] = None, password: Optional[
         JSON string of ``load`` command.
     """
     return _to_json(
-        _gen_server_command(command=_LOAD, args=args, actor_uid=actor_uid, password=password)
+        _gen_server_command(
+            command=_LOAD, args=args, actor_uid=actor_uid, password=password, run_async=run_async
+        )
     )
 
 
@@ -2743,6 +2786,7 @@ def _gen_server_command(
     args: Optional[CommandArgs] = None,
     actor_uid: Optional[str] = None,
     hid: Optional[str] = None,
+    run_async: Optional[bool] = None,
 ) -> Dict:
     """Generate server command.
 
@@ -2758,6 +2802,8 @@ def _gen_server_command(
         Actor uid, by default ``None``.
     hid: Optional[str], optional
         Hid, by default ``None``.
+    run_async: Optional[bool], optional
+        Run asynchronously, by default ``None``.
 
     Returns
     -------
@@ -2767,7 +2813,17 @@ def _gen_server_command(
     """
     server_command: Dict[str, Any] = {
         "projects": [
-            {"commands": [_gen_command(command=command, args=args, actor_uid=actor_uid, hid=hid)]}
+            {
+                "commands": [
+                    _gen_command(
+                        command=command,
+                        args=args,
+                        actor_uid=actor_uid,
+                        hid=hid,
+                        run_async=run_async,
+                    )
+                ]
+            }
         ]
     }
 
@@ -2781,6 +2837,7 @@ def _gen_command(
     args: Optional[CommandArgs] = None,
     actor_uid: Optional[str] = None,
     hid: Optional[str] = None,
+    run_async: Optional[bool] = None,
 ) -> Dict:
     """Generate "commands" for method server command.
 
@@ -2794,6 +2851,8 @@ def _gen_command(
         Actor uid, by default ``None``.
     hid: Optional[str], optional
         Actor hid, by default ``None``.
+    run_async: Optional[bool], optional
+        Run asynchronously, by default ``None``.
 
     Returns
     -------
@@ -2809,6 +2868,8 @@ def _gen_command(
         cmd["actor_uid"] = actor_uid
     if hid:
         cmd["hid"] = hid
+    if run_async:
+        cmd["async"] = run_async
     return cmd
 
 
