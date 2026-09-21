@@ -24,7 +24,12 @@ import pytest
 
 from ansys.optislang.core import Optislang, node_types
 from ansys.optislang.core.io import File, RegisteredFile
-from ansys.optislang.core.node_types import AddinType, NodeType, Sensitivity, optislang_node
+from ansys.optislang.core.node_types import (
+    AddinType,
+    NodeType,
+    Sensitivity,
+    optislang_node,
+)
 from ansys.optislang.core.osl_server import OslVersion
 from ansys.optislang.core.placeholder_types import PlaceholderType
 from ansys.optislang.core.tcp.managers import (
@@ -170,6 +175,56 @@ def test_control(optislang: Optislang, tmp_example_project):
     for command in ["start", "restart", "stop_gently", "stop", "reset"]:
         output = node.control(command)
         assert output
+
+
+def test_control_run_async(optislang: Optislang, tmp_example_project):
+    """Test asynchronous control commands returning long running operation IDs."""
+    if optislang.osl_version < OslVersion(27, 1, 0, 0):
+        pytest.skip(f"Not compatible with {optislang.osl_version_string}")
+
+    optislang.application.open(file_path=tmp_example_project("calculator_with_params"))
+    application = optislang.application
+    project = application.project
+    root_system = project.root_system
+
+    # root system control returns a single operation ID when run asynchronously
+    operation_id = root_system.control("reset", run_async=True)
+    assert isinstance(operation_id, str)
+    status = application.wait_for_long_running_operation(operation_id)
+    assert status["operation_id"] == operation_id
+    assert status["is_finished"] is True
+
+    # control run_async is only supported for the "reset" command
+    for command in ["start", "restart", "stop_gently", "stop"]:
+        with pytest.raises(ValueError):
+            root_system.control(command, run_async=True)
+
+
+def test_finalize(optislang: Optislang, tmp_example_project):
+    """Test synchronous ``finalize`` on a parametric system."""
+    optislang.application.open(file_path=tmp_example_project("calculator_with_params"))
+    application = optislang.application
+    root_system = application.project.root_system
+
+    # synchronous finalize returns None
+    assert root_system.finalize() is None
+
+
+def test_finalize_async(optislang: Optislang, tmp_example_project):
+    """Test asynchronous ``finalize`` on a parametric system."""
+    if optislang.osl_version < OslVersion(27, 1, 0, 0):
+        pytest.skip(f"Not compatible with {optislang.osl_version_string}")
+        
+    optislang.application.open(file_path=tmp_example_project("calculator_with_params"))
+    application = optislang.application
+    root_system = application.project.root_system
+
+    # asynchronous finalize returns a long running operation ID
+    operation_id = root_system.finalize(run_async=True)
+    assert isinstance(operation_id, str)
+    status = application.wait_for_long_running_operation(operation_id)
+    assert status["operation_id"] == operation_id
+    assert status["is_finished"] is True
 
 
 def test_supports(optislang: Optislang, tmp_example_project):
@@ -371,7 +426,9 @@ def test_remove_location(optislang: Optislang):
         location="input_slot_1", name="input_slot_1", reference_value=10
     )
     integration_node.register_location_as_internal_variable(
-        location={"expression": "10", "id": "variable_1"}, name="variable_1", reference_value=10
+        location={"expression": "10", "id": "variable_1"},
+        name="variable_1",
+        reference_value=10,
     )
     integration_node.register_location_as_output_slot(
         location="output_slot_1", name="output_slot_1", reference_value=10
@@ -414,7 +471,9 @@ def test_remove_all_locations(optislang: Optislang):
         location="input_slot_1", name="input_slot_1", reference_value=10
     )
     integration_node.register_location_as_internal_variable(
-        location={"expression": "10", "id": "variable_1"}, name="variable_1", reference_value=10
+        location={"expression": "10", "id": "variable_1"},
+        name="variable_1",
+        reference_value=10,
     )
     integration_node.register_location_as_output_slot(
         location="output_slot_1", name="output_slot_1", reference_value=10

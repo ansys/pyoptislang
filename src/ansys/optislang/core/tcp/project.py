@@ -21,6 +21,7 @@
 # SOFTWARE.
 
 """Contains class TcpProjectProxy."""
+
 from __future__ import annotations
 
 import logging
@@ -31,7 +32,11 @@ from deprecated.sphinx import deprecated
 
 from ansys.optislang.core.io import RegisteredFile, RegisteredFileUsage
 from ansys.optislang.core.node_types import NodeType
-from ansys.optislang.core.placeholder_types import PlaceholderInfo, PlaceholderType, UserLevel
+from ansys.optislang.core.placeholder_types import (
+    PlaceholderInfo,
+    PlaceholderType,
+    UserLevel,
+)
 from ansys.optislang.core.project import Project
 from ansys.optislang.core.tcp.nodes import TcpRootSystemProxy
 
@@ -147,18 +152,25 @@ class TcpProjectProxy(Project):
         """
         return self.__uid
 
-    def evaluate_design(self, design: Design) -> Design:
+    def evaluate_design(self, design: Design, run_async: bool = False) -> Union[Design, str]:
         """Evaluate a design.
 
         Parameters
         ----------
         design: Design
             Instance of a ``Design`` class with defined parameters.
+        run_async: bool, optional
+            Whether to perform the evaluation as an asynchronous, non-blocking long running
+            operation. If ``True``, this method returns immediately with the ID of the long
+            running operation instead of the evaluated design. By default ``False``.
+
+            .. note:: Argument is supported for Ansys optiSLang version >= 27.1 only.
 
         Returns
         -------
-        Design
-            Evaluated design.
+        Union[Design, str]
+            Evaluated design, or the ID of the long running operation if ``run_async`` is
+            ``True``.
 
         Raises
         ------
@@ -169,10 +181,11 @@ class TcpProjectProxy(Project):
         TimeoutError
             Raised when the timeout float value expires.
         """
-        return self.root_system.evaluate_design(design=design)
+        return self.root_system.evaluate_design(design=design, run_async=run_async)
 
     @deprecated(
-        version="1.1.0", reason="Use :py:attr:`TcpProjectProxy.get_available_node_types` instead."
+        version="1.1.0",
+        reason="Use :py:attr:`TcpProjectProxy.get_available_node_types` instead.",
     )
     def get_available_nodes(self) -> Dict[str, List[str]]:
         """Get raw dictionary of available nodes sorted by subtypes.
@@ -419,8 +432,23 @@ class TcpProjectProxy(Project):
             return None
         return Path(project_info.get("projects", [{}])[0].get("working_dir", None))
 
-    def reset(self) -> None:
+    def reset(self, run_async: bool = False) -> Optional[str]:
         """Reset complete project.
+
+        Parameters
+        ----------
+        run_async: bool, optional
+            Whether to perform the reset as an asynchronous, non-blocking long running
+            operation. If ``True``, this method returns immediately with the ID of the long
+            running operation instead of waiting for the reset to complete. By default
+            ``False``.
+
+            .. note:: Argument is supported for Ansys optiSLang version >= 27.1 only.
+
+        Returns
+        -------
+        Optional[str]
+            ID of the long running operation if ``run_async`` is ``True``, ``None`` otherwise.
 
         Raises
         ------
@@ -431,7 +459,7 @@ class TcpProjectProxy(Project):
         TimeoutError
             Raised when the timeout float value expires.
         """
-        self.__osl_server.reset()
+        return self.__osl_server.reset(run_async=run_async)
 
     def run_python_file(
         self,
@@ -469,7 +497,8 @@ class TcpProjectProxy(Project):
         self,
         script: str,
         args: Union[Sequence[object], None] = None,
-    ) -> Tuple[str, str]:
+        run_async: bool = False,
+    ) -> Union[Tuple[str, str], str]:
         """Load a Python script in a project context and run it.
 
         Parameters
@@ -479,11 +508,18 @@ class TcpProjectProxy(Project):
         args : Sequence[object], None, optional
             Sequence of arguments used in the Python script. The default
             is ``None``.
+        run_async: bool, optional
+            Whether to run the python script as an asynchronous, non-blocking long running
+            operation. If ``True``, this method returns immediately with the ID of the long
+            running operation instead of the script output. By default ``False``.
+
+            .. note:: Argument is supported for Ansys optiSLang version >= 27.1 only.
 
         Returns
         -------
-        Tuple[str, str]
-            STDOUT and STDERR from the executed Python script.
+        Union[Tuple[str, str], str]
+            STDOUT and STDERR from the executed Python script, or the ID of the long running
+            operation if ``run_async`` is ``True``.
 
         Raises
         ------
@@ -494,7 +530,7 @@ class TcpProjectProxy(Project):
         TimeoutError
             Raised when the timeout float value expires.
         """
-        return self.__osl_server.run_python_script(script, args)
+        return self.__osl_server.run_python_script(script, args, run_async=run_async)
 
     def start(self, wait_for_started: bool = True, wait_for_finished: bool = True) -> None:
         """Start project execution.

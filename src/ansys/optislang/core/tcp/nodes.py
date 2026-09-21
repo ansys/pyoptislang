@@ -21,6 +21,7 @@
 # SOFTWARE.
 
 """Contains base classes for a nodes and slots."""
+
 from __future__ import annotations
 
 from collections import OrderedDict
@@ -47,7 +48,12 @@ from typing import (
 from deprecated.sphinx import deprecated
 
 from ansys.optislang.core.errors import OslCommandError
-from ansys.optislang.core.io import File, FileOutputFormat, RegisteredFile, RegisteredFileUsage
+from ansys.optislang.core.io import (
+    File,
+    FileOutputFormat,
+    RegisteredFile,
+    RegisteredFileUsage,
+)
 from ansys.optislang.core.node_types import AddinType, NodeType, get_node_type_from_str
 from ansys.optislang.core.nodes import (
     PROJECT_COMMANDS_RETURN_STATES,
@@ -156,7 +162,8 @@ class TcpNodeProxy(Node):
         hid: Optional[str] = None,
         wait_for_completion: bool = False,
         timeout: Union[float, int] = 100,
-    ) -> bool:
+        run_async: bool = False,
+    ) -> Union[bool, List[str]]:
         """Control the node state.
 
         Parameters
@@ -180,11 +187,26 @@ class TcpNodeProxy(Node):
                 This argument is ignored and will be removed in future versions.
                 Waiting for command completion is currently not supported.
 
+        run_async: bool, optional
+            Whether to execute the command as an asynchronous, non-blocking long running
+            operation. If ``True``, this method returns immediately with the IDs of the long
+            running operations (one per hid) instead of waiting for completion. Use
+            :py:meth:`TcpOslServer.get_long_running_operation_status` or
+            :py:meth:`TcpOslServer.wait_for_long_running_operation` to poll for or await their
+            completion. Only supported for the ``"reset"`` command. By default ``False``.
+
+            .. note:: Argument is supported for Ansys optiSLang version >= 27.1 only.
+
         Returns
         -------
-        bool
-            ``True`` when successful, ``False`` when failed.
+        Union[bool, List[str]]
+            ``True`` when successful, ``False`` when failed. If ``run_async`` is ``True``, the
+            list of long running operation IDs (one per hid) is returned instead.
         """
+        if run_async and command != "reset":
+            raise ValueError(
+                f"The '{command}' command does not support asynchronous (run_async) execution."
+            )
         if hid is None:  # Run command against all designs
             hids = self.get_states_ids()
             if len(hids) == 0:
@@ -195,12 +217,23 @@ class TcpNodeProxy(Node):
         else:  # Run command against the given design
             hids = (hid,)
 
+        operation_ids: List[str] = []
         for hid in hids:
-            response = self._osl_server.send_command(
-                getattr(commands, command)(actor_uid=self.uid, hid=hid)
-            )
+            if run_async:
+                response = self._osl_server.send_command(
+                    getattr(commands, command)(actor_uid=self.uid, hid=hid, run_async=True)
+                )
+            else:
+                response = self._osl_server.send_command(
+                    getattr(commands, command)(actor_uid=self.uid, hid=hid)
+                )
             if response[0]["status"] != "success":
                 raise Exception(f"{command} command execution failed.")
+            if run_async:
+                operation_ids.append(response[0]["operation_id"])
+
+        if run_async:
+            return operation_ids
 
         return True
 
@@ -382,7 +415,10 @@ class TcpNodeProxy(Node):
         TimeoutError
             Raised when the timeout float value expires.
         """
-        return cast(Tuple[TcpInputSlotProxy, ...], self._get_slots(type_=SlotType.INPUT, name=name))
+        return cast(
+            Tuple[TcpInputSlotProxy, ...],
+            self._get_slots(type_=SlotType.INPUT, name=name),
+        )
 
     def get_name(self) -> str:
         """Get the name of the node.
@@ -431,7 +467,8 @@ class TcpNodeProxy(Node):
             Raised when the timeout float value expires.
         """
         return cast(
-            Tuple[TcpOutputSlotProxy, ...], self._get_slots(type_=SlotType.OUTPUT, name=name)
+            Tuple[TcpOutputSlotProxy, ...],
+            self._get_slots(type_=SlotType.OUTPUT, name=name),
         )
 
     def get_parent(self) -> TcpNodeProxy:
@@ -1007,7 +1044,9 @@ class TcpNodeProxy(Node):
             )
             if expression is not None:
                 self._osl_server.create_placeholder(
-                    placeholder_id=created_placeholder_id, expression=expression, overwrite=True
+                    placeholder_id=created_placeholder_id,
+                    expression=expression,
+                    overwrite=True,
                 )
             return created_placeholder_id
         else:
@@ -1108,7 +1147,10 @@ class TcpNodeProxy(Node):
             uid_keys = [direction + "_uuid"]
             slot_name_keys = [direction + "_slot"]
             slot_type_key = [direction + "_slot_is_inner"]
-            slot_type_is_inner = slot_type in [SlotType.INNER_INPUT, SlotType.INNER_OUTPUT]
+            slot_type_is_inner = slot_type in [
+                SlotType.INNER_INPUT,
+                SlotType.INNER_OUTPUT,
+            ]
         else:
             uid_keys = ["receiving_uuid", "sending_uuid"]
             slot_name_keys = ["receiving_slot", "sending_slot"]
@@ -2372,11 +2414,15 @@ class TcpSystemProxy(TcpNodeProxy, System):
             design_flow=design_flow.name.lower(),
         )
         info = self._osl_server.get_actor_info(
-            uid=uid, include_log_messages=False, include_integrations_registered_locations=False
+            uid=uid,
+            include_log_messages=False,
+            include_integrations_registered_locations=False,
         )
         info["is_parametric_system"] = "estimated_designs" in info.keys()
         return create_nodes_from_properties_dicts(
-            osl_server=self._osl_server, properties_dicts_list=[info], logger=self._logger
+            osl_server=self._osl_server,
+            properties_dicts_list=[info],
+            logger=self._logger,
         )[0]
 
     def delete_children_nodes(self) -> None:
@@ -2663,7 +2709,12 @@ class TcpSystemProxy(TcpNodeProxy, System):
         if not isinstance(addin_type, AddinType):
             raise TypeError(f"Unsupported value of addin_type: ``{type(addin_type)}``.")
 
-        algorithm_type, integration_type, mop_node_type, node_type = None, None, None, None
+        algorithm_type, integration_type, mop_node_type, node_type = (
+            None,
+            None,
+            None,
+            None,
+        )
         if addin_type == AddinType.BUILT_IN:
             pass
         elif addin_type == AddinType.INTEGRATION_PLUGIN:
@@ -2765,6 +2816,37 @@ class TcpParametricSystemProxy(TcpSystemProxy, ParametricSystem):
             Instance of the ``TcpResponseManagerProxy`` class.
         """
         return self.__response_manager
+
+    def finalize(self, run_async: bool = False) -> Optional[str]:
+        """Finalize the parametric system.
+
+        Parameters
+        ----------
+        run_async: bool, optional
+            Whether to perform the finalize as an asynchronous, non-blocking long running
+            operation. If ``True``, this method returns immediately with the ID of the long
+            running operation instead of waiting for the finalize to complete. Use
+            :py:meth:`TcpOslServer.get_long_running_operation_status` or
+            :py:meth:`TcpOslServer.wait_for_long_running_operation` to poll for or await its
+            completion. By default ``False``.
+
+            .. note:: Argument is supported for Ansys optiSLang version >= 27.1 only.
+
+        Returns
+        -------
+        Optional[str]
+            ID of the long running operation if ``run_async`` is ``True``, ``None`` otherwise.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        return self._osl_server.finalize(uid=self.uid, run_async=run_async)
 
     def get_inner_input_slots(
         self, name: Optional[str] = None
@@ -3102,7 +3184,11 @@ class TcpParametricSystemProxy(TcpSystemProxy, ParametricSystem):
                 self.__append_status_info_to_design(design, status_info["design_status"][idx])
         for i in range(2, len(statuses_info[0]["designs"]["values"][0]["hid"].split("."))):
             designs = self.__sort_dict_by_key_hid(
-                designs, max(1, len(statuses_info[0]["designs"]["values"][0]["hid"].split(".")) - i)
+                designs,
+                max(
+                    1,
+                    len(statuses_info[0]["designs"]["values"][0]["hid"].split(".")) - i,
+                ),
             )
         for hid, design in designs.items():
             # sort by design number, stripped from hid prefix
@@ -3115,7 +3201,7 @@ class TcpParametricSystemProxy(TcpSystemProxy, ParametricSystem):
     @staticmethod
     def __append_status_info_to_design(design: dict, status_info: dict) -> None:
         if design["hid"] != status_info["id"]:
-            raise ValueError(f'{design["hid"]} != {status_info["id"]}')
+            raise ValueError(f"{design['hid']} != {status_info['id']}")
         to_append = {
             key: status_info[key] for key in ("feasible", "status", "pareto_design", "directory")
         }
@@ -3200,7 +3286,8 @@ class TcpRootSystemProxy(TcpParametricSystemProxy, RootSystem):
         hid: Optional[str] = None,
         wait_for_completion: bool = True,
         timeout: Union[float, int] = 100,
-    ) -> bool:
+        run_async: bool = False,
+    ) -> Union[bool, str]:
         """Control the root system state.
 
         Parameters
@@ -3214,15 +3301,35 @@ class TcpRootSystemProxy(TcpParametricSystemProxy, RootSystem):
             Whether to wait for completion. The default is ``True``.
         timeout: Union[float, int], optional
             Time limit for monitoring the status of the command. The default is ``100 s``.
+        run_async: bool, optional
+            Whether to execute the command as an asynchronous, non-blocking long running
+            operation. If ``True``, this method returns immediately with the ID of the long
+            running operation instead of waiting for completion (``wait_for_completion`` is
+            ignored). Use :py:meth:`TcpOslServer.get_long_running_operation_status` or
+            :py:meth:`TcpOslServer.wait_for_long_running_operation` to poll for or await its
+            completion. Only supported for the ``"reset"`` command. By default ``False``.
+
+            .. note:: Argument is supported for Ansys optiSLang version >= 27.1 only.
 
         Returns
         -------
-        bool
-            ``True`` when successful, ``False`` when failed.
+        Union[bool, str]
+            ``True`` when successful, ``False`` when failed. If ``run_async`` is ``True``, the
+            ID of the long running operation is returned instead.
         """
-        response = self._osl_server.send_command(getattr(commands, command)())
+        if run_async and command != "reset":
+            raise ValueError(
+                f"The '{command}' command does not support asynchronous (run_async) execution."
+            )
+        if run_async:
+            response = self._osl_server.send_command(getattr(commands, command)(run_async=True))
+        else:
+            response = self._osl_server.send_command(getattr(commands, command)())
         if response[0]["status"] != "success":
             raise Exception(f"{command} command execution failed.")
+
+        if run_async:
+            return response[0]["operation_id"]
 
         if wait_for_completion:
             time_stamp = time.time()
@@ -3255,18 +3362,28 @@ class TcpRootSystemProxy(TcpParametricSystemProxy, RootSystem):
         """
         raise NotImplementedError("``RootSystem`` cannot be deleted.")
 
-    def evaluate_design(self, design: Design) -> Design:
+    def evaluate_design(self, design: Design, run_async: bool = False) -> Union[Design, str]:
         """Evaluate a design.
 
         Parameters
         ----------
         design: Design
             Instance of a ``Design`` class with defined parameters.
+        run_async: bool, optional
+            Whether to perform the evaluation as an asynchronous, non-blocking long running
+            operation. If ``True``, this method returns immediately with the ID of the long
+            running operation instead of the evaluated design. Use
+            :py:meth:`TcpOslServer.get_long_running_operation_status` or
+            :py:meth:`TcpOslServer.wait_for_long_running_operation` to poll for or await its
+            completion. By default ``False``.
+
+            .. note:: Argument is supported for Ansys optiSLang version >= 27.1 only.
 
         Returns
         -------
-        Design
-            Evaluated design.
+        Union[Design, str]
+            Evaluated design, or the ID of the long running operation if ``run_async`` is
+            ``True``.
 
         Raises
         ------
@@ -3281,11 +3398,14 @@ class TcpRootSystemProxy(TcpParametricSystemProxy, RootSystem):
         for parameter in design.parameters:
             evaluate_dict[parameter.name] = parameter.value
 
-        output_dict = self._osl_server.evaluate_design(
-            evaluate_dict=evaluate_dict  # type: ignore[arg-type]
+        output = self._osl_server.evaluate_design(
+            evaluate_dict=evaluate_dict,
+            run_async=run_async,  # type: ignore[arg-type]
         )
+        if run_async:
+            return output  # type: ignore[return-value]
         return self.__create_evaluated_design(
-            input_design=design, evaluate_dict=evaluate_dict, results=output_dict[0]
+            input_design=design, evaluate_dict=evaluate_dict, results=output[0]
         )
 
     def get_missing_parameters_names(self, design: Design) -> Tuple[str, ...]:
@@ -3495,7 +3615,9 @@ class TcpRootSystemProxy(TcpParametricSystemProxy, RootSystem):
         return output_design
 
     @staticmethod
-    def __categorize_criteria(criteria: Tuple[Criterion, ...]) -> Dict[str, List[Criterion]]:
+    def __categorize_criteria(
+        criteria: Tuple[Criterion, ...],
+    ) -> Dict[str, List[Criterion]]:
         """Get criteria sorted by its kinds.
 
         Parameters
@@ -3779,19 +3901,35 @@ class TcpSlotProxy(Slot):
         """
         if type_ == SlotType.INPUT:
             return TcpInputSlotProxy(
-                osl_server=osl_server, node=node, name=name, type_=type_, type_hint=type_hint
+                osl_server=osl_server,
+                node=node,
+                name=name,
+                type_=type_,
+                type_hint=type_hint,
             )
         elif type_ == SlotType.INNER_INPUT:
             return TcpInnerInputSlotProxy(
-                osl_server=osl_server, node=node, name=name, type_=type_, type_hint=type_hint
+                osl_server=osl_server,
+                node=node,
+                name=name,
+                type_=type_,
+                type_hint=type_hint,
             )
         elif type_ == SlotType.OUTPUT:
             return TcpOutputSlotProxy(
-                osl_server=osl_server, node=node, name=name, type_=type_, type_hint=type_hint
+                osl_server=osl_server,
+                node=node,
+                name=name,
+                type_=type_,
+                type_hint=type_hint,
             )
         elif type_ == SlotType.INNER_OUTPUT:
             return TcpInnerOutputSlotProxy(
-                osl_server=osl_server, node=node, name=name, type_=type_, type_hint=type_hint
+                osl_server=osl_server,
+                node=node,
+                name=name,
+                type_=type_,
+                type_hint=type_hint,
             )
         else:
             raise TypeError(
@@ -3861,8 +3999,8 @@ class TcpSlotProxy(Slot):
             for idx in range(len(actor_ancestors_uids[0:-1])):
                 actor_script += f"for child in {name}_children_{idx}:\n"
                 actor_script += (
-                    f"   if str(child.uuid)=='{actor_ancestors_uids[idx+1]}':\n"
-                    f"      {name}_children_{idx+1} = child.get_children()\n"
+                    f"   if str(child.uuid)=='{actor_ancestors_uids[idx + 1]}':\n"
+                    f"      {name}_children_{idx + 1} = child.get_children()\n"
                 )
             idx += 1
         actor_script += f"for child in {name}_children_{idx}:\n"
@@ -3905,7 +4043,9 @@ class TcpInputSlotProxy(TcpSlotProxy, InputSlot):
         )
 
     def connect_from(
-        self, from_slot: TcpSlotProxy, skip_rename_slot: bool = False  # type: ignore[override]
+        self,
+        from_slot: TcpSlotProxy,
+        skip_rename_slot: bool = False,  # type: ignore[override]
     ) -> Edge:
         """Connect slot from another slot.
 
@@ -3947,7 +4087,8 @@ class TcpInputSlotProxy(TcpSlotProxy, InputSlot):
         return Edge(from_slot=from_slot, to_slot=self)
 
     def disconnect(
-        self, sending_slot: Optional[TcpSlotProxy] = None  # type: ignore[override]
+        self,
+        sending_slot: Optional[TcpSlotProxy] = None,  # type: ignore[override]
     ) -> None:
         """Remove a specific or all connections for the current slot.
 
@@ -4021,7 +4162,9 @@ class TcpOutputSlotProxy(TcpSlotProxy, OutputSlot):
         )
 
     def connect_to(
-        self, to_slot: TcpSlotProxy, skip_rename_slot: bool = False  # type: ignore[override]
+        self,
+        to_slot: TcpSlotProxy,
+        skip_rename_slot: bool = False,  # type: ignore[override]
     ) -> Edge:
         """Connect slot to another slot.
 
@@ -4063,7 +4206,8 @@ class TcpOutputSlotProxy(TcpSlotProxy, OutputSlot):
         return Edge(from_slot=self, to_slot=to_slot)
 
     def disconnect(
-        self, receiving_slot: Optional[TcpSlotProxy] = None  # type: ignore[override]
+        self,
+        receiving_slot: Optional[TcpSlotProxy] = None,  # type: ignore[override]
     ) -> None:
         """Remove a specific or all connections for the current slot.
 
@@ -4137,7 +4281,9 @@ class TcpInnerInputSlotProxy(TcpSlotProxy, InnerInputSlot):
         )
 
     def connect_from(
-        self, from_slot: TcpSlotProxy, skip_rename_slot: bool = False  # type: ignore[override]
+        self,
+        from_slot: TcpSlotProxy,
+        skip_rename_slot: bool = False,  # type: ignore[override]
     ) -> Edge:
         """Connect slot from another slot.
 
@@ -4179,7 +4325,8 @@ class TcpInnerInputSlotProxy(TcpSlotProxy, InnerInputSlot):
         return Edge(from_slot=from_slot, to_slot=self)
 
     def disconnect(
-        self, sending_slot: Optional[TcpSlotProxy] = None  # type: ignore[override]
+        self,
+        sending_slot: Optional[TcpSlotProxy] = None,  # type: ignore[override]
     ) -> None:
         """Remove a specific or all connections for the current slot.
 
@@ -4253,7 +4400,9 @@ class TcpInnerOutputSlotProxy(TcpSlotProxy, InnerOutputSlot):
         )
 
     def connect_to(
-        self, to_slot: TcpSlotProxy, skip_rename_slot: bool = False  # type: ignore[override]
+        self,
+        to_slot: TcpSlotProxy,
+        skip_rename_slot: bool = False,  # type: ignore[override]
     ) -> Edge:
         """Connect slot to another slot.
 
@@ -4295,7 +4444,8 @@ class TcpInnerOutputSlotProxy(TcpSlotProxy, InnerOutputSlot):
         return Edge(from_slot=self, to_slot=to_slot)
 
     def disconnect(
-        self, receiving_slot: Optional[TcpSlotProxy] = None  # type: ignore[override]
+        self,
+        receiving_slot: Optional[TcpSlotProxy] = None,  # type: ignore[override]
     ) -> None:
         """Remove a specific or all connections for the current slot.
 

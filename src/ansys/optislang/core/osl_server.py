@@ -136,7 +136,7 @@ class OslServer(ABC):
 
     @timeout.setter
     @abstractmethod
-    def timeout(self, timeout: Optional[float] = 30) -> None:  # pragma: no cover
+    def timeout(self, timeout: Optional[float] = 60) -> None:  # pragma: no cover
         """Set default timeout value for execution of commands.
 
         Parameters
@@ -146,7 +146,7 @@ class OslServer(ABC):
             Certain functions will raise a timeout exception if the timeout period value has
             elapsed before the operation has completed.
             If ``None`` is given, functions will wait until they're finished (no timeout
-            exception is raised). Defaults to ``30``.
+            exception is raised). Defaults to ``60``.
         """
         pass
 

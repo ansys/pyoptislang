@@ -21,6 +21,7 @@
 # SOFTWARE.
 
 "Module for testing server_command.py"
+
 import json
 
 import pytest
@@ -68,7 +69,10 @@ start_designs = [
         "run_state": "done",
         "parameters": {
             "header": 0,
-            "sequence": [{"First": "X1", "Second": "3.14"}, {"First": "X2", "Second": "-3.14"}],
+            "sequence": [
+                {"First": "X1", "Second": "3.14"},
+                {"First": "X2", "Second": "-3.14"},
+            ],
         },
         "responses": {"header": 0, "sequence": [{"First": "Y", "Second": "-11.60"}]},
         "criteria": {
@@ -294,7 +298,10 @@ def test_create_node():
     assert sorted(dictionary.items()) == sorted(requiered_string.items())
     # with optional values
     json_string = sc.create_node(
-        type_="Calculator", name="Calc-Actor", parent_uid=parent_uid, design_flow="RECEIVE_SEND"
+        type_="Calculator",
+        name="Calc-Actor",
+        parent_uid=parent_uid,
+        design_flow="RECEIVE_SEND",
     )
     dictionary = json.loads(json_string)
     requiered_string = json.loads(
@@ -471,6 +478,14 @@ def test_evaluate_design():
     json_string = sc.evaluate_design(parameters=parameters, password=example_password)
     dictionary = json.loads(json_string)
     dictionary["Password"] == example_password
+    # with run_async
+    json_string = sc.evaluate_design(parameters=parameters, run_async=True)
+    dictionary = json.loads(json_string)
+    requiered_string = json.loads(
+        '{ "projects": [ { "commands": [ { "type": "builtin", "command": "EVALUATE_DESIGN", '
+        '"args": { "parameters": { "X1": 1.0, "X2": 1.0, "X3": 1.0 } }, "async": true } ] } ] }'
+    )
+    assert sorted(dictionary.items()) == sorted(requiered_string.items())
     with pytest.raises(TypeError):
         sc.evaluate_design()
 
@@ -527,6 +542,14 @@ def test_finalize():
     json_string = sc.finalize(actor_uid=actor_uid, password=example_password)
     dictionary = json.loads(json_string)
     dictionary["Password"] == example_password
+    # with run_async
+    json_string = sc.finalize(actor_uid=actor_uid, run_async=True)
+    dictionary = json.loads(json_string)
+    requiered_string = json.loads(
+        '{ "projects": [ { "commands": [ { "type": "builtin", "command": "FINALIZE", "actor_uid": '
+        '"5cdfb20b-bef6-4412-9985-89f5ded5ee95", "async": true } ] } ] }'
+    )
+    assert sorted(dictionary.items()) == sorted(requiered_string.items())
     with pytest.raises(TypeError):
         sc.finalize()
 
@@ -614,7 +637,11 @@ def test_open():
     assert sorted(dictionary.items()) == sorted(requiered_string.items())
     # with password
     json_string = sc.open(
-        path=path, do_force=True, do_restore=False, do_reset=False, password=example_password
+        path=path,
+        do_force=True,
+        do_restore=False,
+        do_reset=False,
+        password=example_password,
     )
     dictionary = json.loads(json_string)
     dictionary["Password"] == example_password
@@ -703,7 +730,10 @@ def test_register_file():
     assert sorted(dictionary.items()) == sorted(requiered_string.items())
     # with password
     json_string = sc.register_file(
-        ident="File42", action="Send", local_location=local_location, password=example_password
+        ident="File42",
+        action="Send",
+        local_location=local_location,
+        password=example_password,
     )
     dictionary = json.loads(json_string)
     dictionary["Password"] == example_password
@@ -1215,7 +1245,9 @@ def test_move_nodes():
     assert sorted(dictionary.items()) == sorted(requiered_string.items())
     # with password
     json_string = sc.move_nodes(
-        actor_uids=[actor_uid, uid], target_system_uid=parent_uid, password=example_password
+        actor_uids=[actor_uid, uid],
+        target_system_uid=parent_uid,
+        password=example_password,
     )
     dictionary = json.loads(json_string)
     dictionary["Password"] == example_password
@@ -1311,6 +1343,14 @@ def test_reset():
     json_string = sc.reset(password=example_password)
     dictionary = json.loads(json_string)
     dictionary["Password"] == example_password
+    # with run_async
+    json_string = sc.reset(run_async=True)
+    dictionary = json.loads(json_string)
+    requiered_string = json.loads(
+        '{ "projects": [ { "commands": [ { "type": "builtin", "command": "RESET", '
+        '"async": true } ] } ] }'
+    )
+    assert sorted(dictionary.items()) == sorted(requiered_string.items())
 
 
 def test_restart():
@@ -1369,6 +1409,14 @@ def test_run_python_script():
     json_string = sc.run_python_script(script=script, password=example_password)
     dictionary = json.loads(json_string)
     dictionary["Password"] == example_password
+    # with run_async
+    json_string = sc.run_python_script(script=script, run_async=True)
+    dictionary = json.loads(json_string)
+    requiered_string = json.loads(
+        '{ "projects": [ { "commands": [ { "type": "builtin", "command": "RUN_PYTHON_SCRIPT",'
+        '"args": { "script": "C:/samples_path/script.py" }, "async": true } ] } ] }'
+    )
+    assert sorted(dictionary.items()) == sorted(requiered_string.items())
     with pytest.raises(TypeError):
         sc.run_python_script()
 
@@ -1432,7 +1480,11 @@ def test_save_as():
     assert sorted(dictionary.items()) == sorted(requiered_string.items())
     # with password
     json_string = sc.save_as(
-        path=path, do_force=True, do_restore=False, do_reset=False, password=example_password
+        path=path,
+        do_force=True,
+        do_restore=False,
+        do_reset=False,
+        password=example_password,
     )
     dictionary = json.loads(json_string)
     dictionary["Password"] == example_password
@@ -1536,7 +1588,10 @@ def test_set_actor_state_property():
     assert sorted(dictionary.items()) == sorted(requiered_string.items())
     # with password
     json_string = sc.set_actor_state_property(
-        actor_uid=actor_uid, name="stop_after_execution", value="true", password=example_password
+        actor_uid=actor_uid,
+        name="stop_after_execution",
+        value="true",
+        password=example_password,
     )
     dictionary = json.loads(json_string)
     dictionary["Password"] == example_password
@@ -1822,7 +1877,11 @@ def test_show_node_dialog():
     assert sorted(dictionary.items()) == sorted(requiered_string.items())
     # optional
     json_string = sc.show_node_dialog(
-        actor_uid=actor_uid, blocking="true", type_="help", usage_mode="EXPERT", parent_hwnd="XXX"
+        actor_uid=actor_uid,
+        blocking="true",
+        type_="help",
+        usage_mode="EXPERT",
+        parent_hwnd="XXX",
     )
     dictionary = json.loads(json_string)
     dictionary["blocking"] = "true"

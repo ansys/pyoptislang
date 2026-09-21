@@ -21,6 +21,7 @@
 # SOFTWARE.
 
 """Contains abstract ``Project`` class."""
+
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
@@ -29,10 +30,18 @@ from typing import TYPE_CHECKING, Any, List, Optional, Sequence, Tuple, Union
 
 if TYPE_CHECKING:
     from ansys.optislang.core.io import RegisteredFile
-    from ansys.optislang.core.managers import CriteriaManager, ParameterManager, ResponseManager
+    from ansys.optislang.core.managers import (
+        CriteriaManager,
+        ParameterManager,
+        ResponseManager,
+    )
     from ansys.optislang.core.node_types import NodeType
     from ansys.optislang.core.nodes import RootSystem
-    from ansys.optislang.core.placeholder_types import PlaceholderInfo, PlaceholderType, UserLevel
+    from ansys.optislang.core.placeholder_types import (
+        PlaceholderInfo,
+        PlaceholderType,
+        UserLevel,
+    )
     from ansys.optislang.core.project_parametric import Design
 
 
@@ -117,18 +126,26 @@ class Project(ABC):
     def evaluate_design(
         self,
         design: Design,
-    ) -> Design:  # pragma: no cover
+        run_async: bool = False,
+    ) -> Union[Design, str]:  # pragma: no cover
         """Evaluate a design.
 
         Parameters
         ----------
         design: Design
             Instance of a ``Design`` class with defined parameters.
+        run_async: bool, optional
+            Whether to perform the evaluation as an asynchronous, non-blocking long running
+            operation. If ``True``, this method returns immediately with the ID of the long
+            running operation instead of the evaluated design. By default ``False``.
+
+            .. note:: Argument is supported for Ansys optiSLang version >= 27.1 only.
 
         Returns
         -------
-        Design
-            Evaluated design.
+        Union[Design, str]
+            Evaluated design, or the ID of the long running operation if ``run_async`` is
+            ``True``.
 
         Raises
         ------
@@ -328,8 +345,23 @@ class Project(ABC):
         pass
 
     @abstractmethod
-    def reset(self) -> None:  # pragma: no cover
+    def reset(self, run_async: bool = False) -> Optional[str]:  # pragma: no cover
         """Reset the project.
+
+        Parameters
+        ----------
+        run_async: bool, optional
+            Whether to perform the reset as an asynchronous, non-blocking long running
+            operation. If ``True``, this method returns immediately with the ID of the long
+            running operation instead of waiting for the reset to complete. By default
+            ``False``.
+
+            .. note:: Argument is supported for Ansys optiSLang version >= 27.1 only.
+
+        Returns
+        -------
+        Optional[str]
+            ID of the long running operation if ``run_async`` is ``True``, ``None`` otherwise.
 
         Raises
         ------
@@ -380,7 +412,8 @@ class Project(ABC):
         self,
         script: str,
         args: Union[Sequence[object], None] = None,
-    ) -> Tuple[str, str]:  # pragma: no cover
+        run_async: bool = False,
+    ) -> Union[Tuple[str, str], str]:  # pragma: no cover
         """Load a Python script in a project context and run it.
 
         Parameters
@@ -390,11 +423,18 @@ class Project(ABC):
         args : Sequence[object], None, optional
             Sequence of arguments used in the Python script. The default
             is ``None``.
+        run_async: bool, optional
+            Whether to run the python script as an asynchronous, non-blocking long running
+            operation. If ``True``, this method returns immediately with the ID of the long
+            running operation instead of the script output. By default ``False``.
+
+            .. note:: Argument is supported for Ansys optiSLang version >= 27.1 only.
 
         Returns
         -------
-        Tuple[str, str]
-            STDOUT and STDERR from the executed Python script.
+        Union[Tuple[str, str], str]
+            STDOUT and STDERR from the executed Python script, or the ID of the long running
+            operation if ``run_async`` is ``True``.
 
         Raises
         ------

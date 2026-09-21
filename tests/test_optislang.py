@@ -84,8 +84,8 @@ def test_optislang_properties(optislang: Optislang):
 
     assert optislang.timeout == 60
     assert isinstance(optislang.timeout, (int, float))
-    optislang.timeout = 30
-    assert optislang.timeout == 30
+    optislang.timeout = 60
+    assert optislang.timeout == 60
     with pytest.raises(ValueError):
         optislang.timeout = "20"
 

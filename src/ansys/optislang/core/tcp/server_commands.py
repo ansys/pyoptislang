@@ -21,6 +21,7 @@
 # SOFTWARE.
 
 """Module for generation of all server commands."""
+
 import json
 from typing import Any, Dict, Iterable, List, Optional, Sequence, Union
 
@@ -196,7 +197,13 @@ def apply_wizard(
         JSON string of apply_wizzard command.
     """
     args: CommandArgs = {}
-    supported_values = ["solver", "sensitivity", "optimization", "robustness", "reevaluation"]
+    supported_values = [
+        "solver",
+        "sensitivity",
+        "optimization",
+        "robustness",
+        "reevaluation",
+    ]
     if type_ in supported_values:
         args["type"] = type_
     else:
@@ -413,7 +420,10 @@ def create_input_slot(
 
     return _to_json(
         _gen_server_command(
-            command=_CREATE_INPUT_SLOT, actor_uid=actor_uid, args=args, password=password
+            command=_CREATE_INPUT_SLOT,
+            actor_uid=actor_uid,
+            args=args,
+            password=password,
         )
     )
 
@@ -507,7 +517,10 @@ def create_output_slot(
         args["type_hint"] = SlotTypeHintTCP[type_hint.name].value
     return _to_json(
         _gen_server_command(
-            command=_CREATE_OUTPUT_SLOT, actor_uid=actor_uid, args=args, password=password
+            command=_CREATE_OUTPUT_SLOT,
+            actor_uid=actor_uid,
+            args=args,
+            password=password,
         )
     )
 
@@ -663,7 +676,10 @@ def create_start_designs(
 
     return _to_json(
         _gen_server_command(
-            command=_CREATE_START_DESIGNS, actor_uid=actor_uid, args=args, password=password
+            command=_CREATE_START_DESIGNS,
+            actor_uid=actor_uid,
+            args=args,
+            password=password,
         )
     )
 
@@ -699,13 +715,23 @@ def disconnect_slot(
     )
 
 
-def evaluate_design(parameters: Dict, password: Optional[str] = None) -> str:
+def evaluate_design(
+    parameters: Dict, run_async: bool = False, password: Optional[str] = None
+) -> str:
     """Generate JSON string of evaluate_design command.
 
     Parameters
     ----------
     parameters: Dict
         Dictionary of parameters.
+    run_async: bool, optional
+        Whether to perform the evaluation as an asynchronous, non-blocking long running
+        operation. If ``True``, the server responds immediately with an operation ID that can
+        be polled or waited on via the ``get_long_running_operation_status``/
+        ``wait_for_long_running_operation`` queries. By default ``False``.
+
+        .. note:: Argument is supported for Ansys optiSLang version >= 27.1 only.
+
     password : Optional[str], optional
         Password, by default ``None``.
 
@@ -716,7 +742,11 @@ def evaluate_design(parameters: Dict, password: Optional[str] = None) -> str:
     """
     args: CommandArgs = {}
     args["parameters"] = parameters
-    return _to_json(_gen_server_command(command=_EVALUATE_DESIGN, args=args, password=password))
+    return _to_json(
+        _gen_server_command(
+            command=_EVALUATE_DESIGN, args=args, password=password, run_async=run_async
+        )
+    )
 
 
 def export_designs(
@@ -760,13 +790,21 @@ def export_designs(
     )
 
 
-def finalize(actor_uid: str, password: Optional[str] = None) -> str:
+def finalize(actor_uid: str, run_async: bool = False, password: Optional[str] = None) -> str:
     """Generate JSON string of finalize command.
 
     Parameters
     ----------
     actor_uid: str
         Actor uid entry.
+    run_async: bool, optional
+        Whether to perform the finalize as an asynchronous, non-blocking long running operation.
+        If ``True``, the server responds immediately with an operation ID that can be polled
+        or waited on via the ``get_long_running_operation_status``/
+        ``wait_for_long_running_operation`` queries. By default ``False``.
+
+        .. note:: Argument is supported for Ansys optiSLang version >= 27.1 only.
+
     password : Optional[str], optional
         Password, by default ``None``.
 
@@ -775,7 +813,14 @@ def finalize(actor_uid: str, password: Optional[str] = None) -> str:
     str
         JSON string of finalize command.
     """
-    return _to_json(_gen_server_command(command=_FINALIZE, actor_uid=actor_uid, password=password))
+    return _to_json(
+        _gen_server_command(
+            command=_FINALIZE,
+            actor_uid=actor_uid,
+            password=password,
+            run_async=run_async,
+        )
+    )
 
 
 def link_registered_file(actor_uid: str, uid: str, password: Optional[str] = None) -> str:
@@ -799,7 +844,10 @@ def link_registered_file(actor_uid: str, uid: str, password: Optional[str] = Non
     args["uid"] = uid
     return _to_json(
         _gen_server_command(
-            command=_LINK_REGISTERED_FILE, actor_uid=actor_uid, args=args, password=password
+            command=_LINK_REGISTERED_FILE,
+            actor_uid=actor_uid,
+            args=args,
+            password=password,
         )
     )
 
@@ -836,7 +884,11 @@ def load(
     """
     return _to_json(
         _gen_server_command(
-            command=_LOAD, args=args, actor_uid=actor_uid, password=password, run_async=run_async
+            command=_LOAD,
+            args=args,
+            actor_uid=actor_uid,
+            password=password,
+            run_async=run_async,
         )
     )
 
@@ -1257,7 +1309,9 @@ def register_locations_as_parameter(actor_uid: str, password: Optional[str] = No
     """
     return _to_json(
         _gen_server_command(
-            command=_REGISTER_LOCATIONS_AS_PARAMETER, actor_uid=actor_uid, password=password
+            command=_REGISTER_LOCATIONS_AS_PARAMETER,
+            actor_uid=actor_uid,
+            password=password,
         )
     )
 
@@ -1324,7 +1378,9 @@ def register_locations_as_response(actor_uid: str, password: Optional[str] = Non
     """
     return _to_json(
         _gen_server_command(
-            command=_REGISTER_LOCATIONS_AS_RESPONSE, actor_uid=actor_uid, password=password
+            command=_REGISTER_LOCATIONS_AS_RESPONSE,
+            actor_uid=actor_uid,
+            password=password,
         )
     )
 
@@ -1366,7 +1422,9 @@ def remove_all_internal_variables(actor_uid: str, password: Optional[str] = None
     """
     return _to_json(
         _gen_server_command(
-            command=_REMOVE_ALL_INTERNAL_LOCATIONS, actor_uid=actor_uid, password=password
+            command=_REMOVE_ALL_INTERNAL_LOCATIONS,
+            actor_uid=actor_uid,
+            password=password,
         )
     )
 
@@ -1452,7 +1510,10 @@ def remove_input_slot(actor_uid: str, name: str, password: Optional[str] = None)
     """
     return _to_json(
         _gen_server_command(
-            command=_REMOVE_INPUT_SLOT, args={"name": name}, actor_uid=actor_uid, password=password
+            command=_REMOVE_INPUT_SLOT,
+            args={"name": name},
+            actor_uid=actor_uid,
+            password=password,
         )
     )
 
@@ -1530,7 +1591,10 @@ def remove_parameter(actor_uid: str, name: str, password: Optional[str] = None) 
     """
     return _to_json(
         _gen_server_command(
-            command=_REMOVE_PARAMETER, args={"name": name}, actor_uid=actor_uid, password=password
+            command=_REMOVE_PARAMETER,
+            args={"name": name},
+            actor_uid=actor_uid,
+            password=password,
         )
     )
 
@@ -1554,7 +1618,10 @@ def remove_response(actor_uid: str, name: str, password: Optional[str] = None) -
     """
     return _to_json(
         _gen_server_command(
-            command=_REMOVE_RESPONSE, args={"name": name}, actor_uid=actor_uid, password=password
+            command=_REMOVE_RESPONSE,
+            args={"name": name},
+            actor_uid=actor_uid,
+            password=password,
         )
     )
 
@@ -1598,7 +1665,10 @@ def remove_criterion(actor_uid: str, name: str, password: Optional[str] = None) 
     """
     return _to_json(
         _gen_server_command(
-            command=_REMOVE_CRITERION, args={"name": name}, actor_uid=actor_uid, password=password
+            command=_REMOVE_CRITERION,
+            args={"name": name},
+            actor_uid=actor_uid,
+            password=password,
         )
     )
 
@@ -1727,7 +1797,10 @@ def rename_node(actor_uid: str, new_name: str, password: Optional[str] = None) -
     """
     return _to_json(
         _gen_server_command(
-            command=_RENAME_NODE, actor_uid=actor_uid, args={"name": new_name}, password=password
+            command=_RENAME_NODE,
+            actor_uid=actor_uid,
+            args={"name": new_name},
+            password=password,
         )
     )
 
@@ -1756,7 +1829,10 @@ def rename_placeholder(
     return _to_json(
         _gen_server_command(
             command=_RENAME_PLACEHOLDER,
-            args={"placeholder_id": placeholder_id, "new_placeholder_id": new_placeholder_id},
+            args={
+                "placeholder_id": placeholder_id,
+                "new_placeholder_id": new_placeholder_id,
+            },
             password=password,
         )
     )
@@ -1820,7 +1896,9 @@ def re_register_locations_as_parameter(actor_uid: str, password: Optional[str] =
     """
     return _to_json(
         _gen_server_command(
-            command=_RE_REGISTER_LOCATIONS_AS_PARAMETER, actor_uid=actor_uid, password=password
+            command=_RE_REGISTER_LOCATIONS_AS_PARAMETER,
+            actor_uid=actor_uid,
+            password=password,
         )
     )
 
@@ -1842,13 +1920,18 @@ def re_register_locations_as_response(actor_uid: str, password: Optional[str] = 
     """
     return _to_json(
         _gen_server_command(
-            command=_RE_REGISTER_LOCATIONS_AS_RESPONSE, actor_uid=actor_uid, password=password
+            command=_RE_REGISTER_LOCATIONS_AS_RESPONSE,
+            actor_uid=actor_uid,
+            password=password,
         )
     )
 
 
 def reset(
-    actor_uid: Optional[str] = None, hid: Optional[str] = None, password: Optional[str] = None
+    actor_uid: Optional[str] = None,
+    hid: Optional[str] = None,
+    run_async: bool = False,
+    password: Optional[str] = None,
 ) -> str:
     """Generate JSON string of ``reset`` command.
 
@@ -1858,6 +1941,14 @@ def reset(
         Actor uid entry. A Hierarchical ID (hid) is required. By default ``None``.
     hid: Optional[str], optional
         Hid entry. The actor uid is required. By default ``None``.
+    run_async: bool, optional
+        Whether to perform the reset as an asynchronous, non-blocking long running operation.
+        If ``True``, the server responds immediately with an operation ID that can be polled
+        or waited on via the ``get_long_running_operation_status``/
+        ``wait_for_long_running_operation`` queries. By default ``False``.
+
+        .. note:: Argument is supported for Ansys optiSLang version >= 27.1 only.
+
     password : Optional[str], optional
         Password, by default ``None``.
 
@@ -1871,12 +1962,20 @@ def reset(
     elif actor_uid is None and hid:
         raise ValueError("The actor uid is required.")
     return _to_json(
-        _gen_server_command(command=_RESET, actor_uid=actor_uid, hid=hid, password=password)
+        _gen_server_command(
+            command=_RESET,
+            actor_uid=actor_uid,
+            hid=hid,
+            password=password,
+            run_async=run_async,
+        )
     )
 
 
 def restart(
-    actor_uid: Optional[str] = None, hid: Optional[str] = None, password: Optional[str] = None
+    actor_uid: Optional[str] = None,
+    hid: Optional[str] = None,
+    password: Optional[str] = None,
 ) -> str:
     """Generate JSON string of ``restart`` command.
 
@@ -1922,6 +2021,7 @@ def resume(password: Optional[str] = None) -> str:
 def run_python_script(
     script: str,
     args_: Optional[list] = None,
+    run_async: bool = False,
     password: Optional[str] = None,
 ) -> str:
     """Generate JSON string of register_listener command.
@@ -1932,6 +2032,14 @@ def run_python_script(
         Path of the script.
     args: Optional[list], optional
         Script arguments, by default ``None``.
+    run_async: bool, optional
+        Whether to run the python script as an asynchronous, non-blocking long running
+        operation. If ``True``, the server responds immediately with an operation ID that can
+        be polled or waited on via the ``get_long_running_operation_status``/
+        ``wait_for_long_running_operation`` queries. By default ``False``.
+
+        .. note:: Argument is supported for Ansys optiSLang version >= 27.1 only.
+
     password : Optional[str], optional
         Password, by default ``None``.
 
@@ -1945,7 +2053,14 @@ def run_python_script(
     if args_ is not None:
         args["args"] = args_
 
-    return _to_json(_gen_server_command(command=_RUN_PYTHON_SCRIPT, args=args, password=password))
+    return _to_json(
+        _gen_server_command(
+            command=_RUN_PYTHON_SCRIPT,
+            args=args,
+            password=password,
+            run_async=run_async,
+        )
+    )
 
 
 def run_registered_files_actions(
@@ -1993,7 +2108,11 @@ def save(password: Optional[str] = None) -> str:
 
 
 def save_as(
-    path: str, do_force: bool, do_restore: bool, do_reset: bool, password: Optional[str] = None
+    path: str,
+    do_force: bool,
+    do_restore: bool,
+    do_reset: bool,
+    password: Optional[str] = None,
 ) -> str:
     """Generate JSON string of ``save_as`` command.
 
@@ -2075,7 +2194,10 @@ def set_actor_property(
 
     return _to_json(
         _gen_server_command(
-            command=_SET_ACTOR_PROPERTY, actor_uid=actor_uid, args=args, password=password
+            command=_SET_ACTOR_PROPERTY,
+            actor_uid=actor_uid,
+            args=args,
+            password=password,
         )
     )
 
@@ -2105,7 +2227,10 @@ def set_actor_setting(actor_uid: str, name: str, value: str, password: Optional[
 
     return _to_json(
         _gen_server_command(
-            command=_SET_ACTOR_SETTING, actor_uid=actor_uid, args=args, password=password
+            command=_SET_ACTOR_SETTING,
+            actor_uid=actor_uid,
+            args=args,
+            password=password,
         )
     )
 
@@ -2137,13 +2262,20 @@ def set_actor_state_property(
 
     return _to_json(
         _gen_server_command(
-            command=_SET_ACTOR_STATE_PROPERTY, actor_uid=actor_uid, args=args, password=password
+            command=_SET_ACTOR_STATE_PROPERTY,
+            actor_uid=actor_uid,
+            args=args,
+            password=password,
         )
     )
 
 
 def set_criterion_property(
-    actor_uid: str, criterion_name: str, name: str, value: Any, password: Optional[str] = None
+    actor_uid: str,
+    criterion_name: str,
+    name: str,
+    value: Any,
+    password: Optional[str] = None,
 ) -> str:
     """Generate JSON string of ``set_criterion_property`` command.
 
@@ -2172,7 +2304,10 @@ def set_criterion_property(
 
     return _to_json(
         _gen_server_command(
-            command=_SET_CRITERION_PROPERTY, actor_uid=actor_uid, args=args, password=password
+            command=_SET_CRITERION_PROPERTY,
+            actor_uid=actor_uid,
+            args=args,
+            password=password,
         )
     )
 
@@ -2308,7 +2443,10 @@ def set_start_designs(
 
     return _to_json(
         _gen_server_command(
-            command=_SET_START_DESIGNS, actor_uid=actor_uid, args=args, password=password
+            command=_SET_START_DESIGNS,
+            actor_uid=actor_uid,
+            args=args,
+            password=password,
         )
     )
 
@@ -2334,7 +2472,10 @@ def set_succeeded_state(
     """
     return _to_json(
         _gen_server_command(
-            command=_SET_SUCCEEDED_STATE, actor_uid=actor_uid, hid=hid, password=password
+            command=_SET_SUCCEEDED_STATE,
+            actor_uid=actor_uid,
+            hid=hid,
+            password=password,
         )
     )
 
@@ -2479,7 +2620,9 @@ def shutdown_when_finished(password: Optional[str] = None) -> str:
 
 
 def start(
-    actor_uid: Optional[str] = None, hid: Optional[str] = None, password: Optional[str] = None
+    actor_uid: Optional[str] = None,
+    hid: Optional[str] = None,
+    password: Optional[str] = None,
 ) -> str:
     """Generate JSON string of ``start`` command.
 
@@ -2508,7 +2651,9 @@ def start(
 
 
 def stop(
-    actor_uid: Optional[str] = None, hid: Optional[str] = None, password: Optional[str] = None
+    actor_uid: Optional[str] = None,
+    hid: Optional[str] = None,
+    password: Optional[str] = None,
 ) -> str:
     """Generate JSON string of ``stop`` command.
 
@@ -2537,7 +2682,9 @@ def stop(
 
 
 def stop_gently(
-    actor_uid: Optional[str] = None, hid: Optional[str] = None, password: Optional[str] = None
+    actor_uid: Optional[str] = None,
+    hid: Optional[str] = None,
+    password: Optional[str] = None,
 ) -> str:
     """Generate JSON string of ``stop_gently`` command.
 
@@ -2560,7 +2707,12 @@ def stop_gently(
     elif actor_uid is None and hid:
         raise ValueError("The actor uid is required.")
     return _to_json(
-        _gen_server_command(command=_STOP_GENTLY, actor_uid=actor_uid, hid=hid, password=password)
+        _gen_server_command(
+            command=_STOP_GENTLY,
+            actor_uid=actor_uid,
+            hid=hid,
+            password=password,
+        )
     )
 
 
@@ -2694,7 +2846,10 @@ def unlink_registered_file(actor_uid: str, uid: str, password: Optional[str] = N
 
     return _to_json(
         _gen_server_command(
-            command=_UNLINK_REGISTERED_FILE, actor_uid=actor_uid, args=args, password=password
+            command=_UNLINK_REGISTERED_FILE,
+            actor_uid=actor_uid,
+            args=args,
+            password=password,
         )
     )
 
@@ -2775,7 +2930,10 @@ def write_monitoring_database(
 
     return _to_json(
         _gen_server_command(
-            command=_WRITE_MONITORING_DATABASE, actor_uid=actor_uid, args=args, password=password
+            command=_WRITE_MONITORING_DATABASE,
+            actor_uid=actor_uid,
+            args=args,
+            password=password,
         )
     )
 

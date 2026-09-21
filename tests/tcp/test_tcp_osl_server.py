@@ -404,7 +404,7 @@ def test_timeouts_register(osl_server_process: OslServerProcess):
     """Test `timeouts_register`."""
     tcp_osl_server = create_tcp_osl_server(osl_server_process)
     timeouts_register = tcp_osl_server.timeouts_register
-    # note: method `create_tcp_osl_server` modifies timeout, default is `30` otherwise
+    # note: method `create_tcp_osl_server` modifies timeout, default is `60` otherwise
     assert timeouts_register.default_value == 60
 
     with pytest.raises(ValueError):
@@ -514,7 +514,10 @@ def test_connect_nodes(tmp_example_project):
     calculator_uid = "e63ce638-ec33-47cf-ba02-2d83771678fa"
 
     tcp_osl_server.connect_nodes(
-        from_actor_uid=variable_uid, from_slot="OVar", to_actor_uid=calculator_uid, to_slot="A"
+        from_actor_uid=variable_uid,
+        from_slot="OVar",
+        to_actor_uid=calculator_uid,
+        to_slot="A",
     )
     info = tcp_osl_server.get_actor_info(calculator_uid)
     assert len(info["connections"]) == 1
@@ -542,7 +545,8 @@ def test_create_remove_node(osl_server_process: OslServerProcess):
 def test_disconnect_slot(tmp_example_project):
     "Test ``disconnect_slot`` command."
     osl_server_process = create_osl_server_process(
-        shutdown_on_finished=True, project_path=tmp_example_project("calculator_with_params")
+        shutdown_on_finished=True,
+        project_path=tmp_example_project("calculator_with_params"),
     )
     tcp_osl_server = create_tcp_osl_server(osl_server_process)
     UID = "3577cb69-15b9-4ad1-a53c-ac8af8aaea82"
@@ -561,7 +565,8 @@ def test_disconnect_slot(tmp_example_project):
 def test_evaluate_design(tmp_example_project):
     "Test ``evaluate_design``."
     osl_server_process = create_osl_server_process(
-        shutdown_on_finished=True, project_path=tmp_example_project("calculator_with_params")
+        shutdown_on_finished=True,
+        project_path=tmp_example_project("calculator_with_params"),
     )
     tcp_osl_server = create_tcp_osl_server(osl_server_process)
     tcp_osl_server.reset()
@@ -575,7 +580,8 @@ def test_evaluate_design(tmp_example_project):
 def test_get_actor_queries(tmp_example_project):
     """Test `get_actor_` - `info`, `properties`,`states`, `status_info`, `supports` queries."""
     osl_server_process = create_osl_server_process(
-        shutdown_on_finished=True, project_path=tmp_example_project("calculator_with_params")
+        shutdown_on_finished=True,
+        project_path=tmp_example_project("calculator_with_params"),
     )
     tcp_osl_server = create_tcp_osl_server(osl_server_process)
     UID = "3577cb69-15b9-4ad1-a53c-ac8af8aaea82"
@@ -682,6 +688,8 @@ def test_load_async_and_long_running_operation_status(tmp_example_project):
         shutdown_on_finished=True, project_path=tmp_example_project("omdb_files")
     )
     tcp_osl_server = create_tcp_osl_server(osl_server_process)
+    if tcp_osl_server.osl_version < OslVersion(27, 1, 0, 0):
+        pytest.skip(f"Not compatible with {tcp_osl_server.osl_version_string}")
     tcp_osl_server.reset()
     tcp_osl_server.start()
     properties = tcp_osl_server.get_full_project_tree_with_properties()
@@ -734,6 +742,8 @@ def test_discard_long_running_operation(tmp_example_project):
         shutdown_on_finished=True, project_path=tmp_example_project("omdb_files")
     )
     tcp_osl_server = create_tcp_osl_server(osl_server_process)
+    if tcp_osl_server.osl_version < OslVersion(27, 1, 0, 0):
+        pytest.skip(f"Not compatible with {tcp_osl_server.osl_version_string}")
     tcp_osl_server.reset()
     tcp_osl_server.start()
     properties = tcp_osl_server.get_full_project_tree_with_properties()
@@ -800,7 +810,8 @@ def test_get_available_node_types(osl_server_process: OslServerProcess):
 def test_get_criteria(tmp_example_project):
     """Test ``get_criterion/a``."""
     osl_server_process = create_osl_server_process(
-        shutdown_on_finished=True, project_path=tmp_example_project("calculator_with_params")
+        shutdown_on_finished=True,
+        project_path=tmp_example_project("calculator_with_params"),
     )
     tcp_osl_server = create_tcp_osl_server(osl_server_process)
     root_system_uid = (
@@ -874,7 +885,8 @@ def test_get_project_queries(osl_server_process: OslServerProcess):
 def test_get_hpc_licensing_forwarded_environment(tmp_example_project):
     """Test ``get_hpc_licensing_forwarded_environment``."""
     osl_server_process = create_osl_server_process(
-        shutdown_on_finished=True, project_path=tmp_example_project("calculator_with_params")
+        shutdown_on_finished=True,
+        project_path=tmp_example_project("calculator_with_params"),
     )
     tcp_osl_server = create_tcp_osl_server(osl_server_process)
     hpc_licensing = tcp_osl_server.get_hpc_licensing_forwarded_environment(
@@ -888,7 +900,8 @@ def test_get_hpc_licensing_forwarded_environment(tmp_example_project):
 def test_get_input_slot_value(tmp_example_project):
     """Test ``get_input_slot_value``."""
     osl_server_process = create_osl_server_process(
-        shutdown_on_finished=True, project_path=tmp_example_project("calculator_with_params")
+        shutdown_on_finished=True,
+        project_path=tmp_example_project("calculator_with_params"),
     )
     tcp_osl_server = create_tcp_osl_server(osl_server_process)
     UID = "3577cb69-15b9-4ad1-a53c-ac8af8aaea82"
@@ -910,7 +923,8 @@ def test_get_input_slot_value(tmp_example_project):
 def test_get_output_slot_value(tmp_example_project):
     """Test ``get_output_slot_value``."""
     osl_server_process = create_osl_server_process(
-        shutdown_on_finished=True, project_path=tmp_example_project("calculator_with_params")
+        shutdown_on_finished=True,
+        project_path=tmp_example_project("calculator_with_params"),
     )
     tcp_osl_server = create_tcp_osl_server(osl_server_process)
     UID = "3577cb69-15b9-4ad1-a53c-ac8af8aaea82"
@@ -1054,7 +1068,10 @@ def test_remove_location(osl_server_process: OslServerProcess):
         design_flow="RECEIVE_SEND",
     )
     tcp_osl_server.register_location_as_input_slot(
-        uid=integration_uid, location="input_slot_1", name="input_slot_1", reference_value=10
+        uid=integration_uid,
+        location="input_slot_1",
+        name="input_slot_1",
+        reference_value=10,
     )
     tcp_osl_server.register_location_as_internal_variable(
         uid=integration_uid,
@@ -1063,13 +1080,22 @@ def test_remove_location(osl_server_process: OslServerProcess):
         reference_value=10,
     )
     tcp_osl_server.register_location_as_output_slot(
-        uid=integration_uid, location="output_slot_1", name="output_slot_1", reference_value=10
+        uid=integration_uid,
+        location="output_slot_1",
+        name="output_slot_1",
+        reference_value=10,
     )
     tcp_osl_server.register_location_as_parameter(
-        uid=integration_uid, location="parameter_1", name="parameter1", reference_value=10
+        uid=integration_uid,
+        location="parameter_1",
+        name="parameter1",
+        reference_value=10,
     )
     tcp_osl_server.register_location_as_response(
-        uid=integration_uid, location="response_1", name="response_1", reference_value=10
+        uid=integration_uid,
+        location="response_1",
+        name="response_1",
+        reference_value=10,
     )
 
     tcp_osl_server.remove_parameter(uid=integration_uid, name="parameter1")
@@ -1105,7 +1131,10 @@ def test_remove_all_locations(osl_server_process: OslServerProcess):
         design_flow="RECEIVE_SEND",
     )
     tcp_osl_server.register_location_as_input_slot(
-        uid=integration_uid, location="input_slot_1", name="input_slot_1", reference_value=10
+        uid=integration_uid,
+        location="input_slot_1",
+        name="input_slot_1",
+        reference_value=10,
     )
     tcp_osl_server.register_location_as_internal_variable(
         uid=integration_uid,
@@ -1114,13 +1143,22 @@ def test_remove_all_locations(osl_server_process: OslServerProcess):
         reference_value=10,
     )
     tcp_osl_server.register_location_as_output_slot(
-        uid=integration_uid, location="output_slot_1", name="output_slot_1", reference_value=10
+        uid=integration_uid,
+        location="output_slot_1",
+        name="output_slot_1",
+        reference_value=10,
     )
     tcp_osl_server.register_location_as_parameter(
-        uid=integration_uid, location="parameter_1", name="parameter1", reference_value=10
+        uid=integration_uid,
+        location="parameter_1",
+        name="parameter1",
+        reference_value=10,
     )
     tcp_osl_server.register_location_as_response(
-        uid=integration_uid, location="response_1", name="response_1", reference_value=10
+        uid=integration_uid,
+        location="response_1",
+        name="response_1",
+        reference_value=10,
     )
 
     tcp_osl_server.remove_all_parameters(uid=integration_uid)
@@ -1146,6 +1184,21 @@ def test_reset(osl_server_process: OslServerProcess):
     """Test ``reset``."""
     tcp_osl_server = create_tcp_osl_server(osl_server_process)
     tcp_osl_server.reset()
+    tcp_osl_server.shutdown()
+    tcp_osl_server.dispose()
+
+
+def test_reset_async(osl_server_process: OslServerProcess):
+    """Test ``reset``."""
+    tcp_osl_server = create_tcp_osl_server(osl_server_process)
+    if tcp_osl_server.osl_version < OslVersion(27, 1, 0, 0):
+        pytest.skip(f"Not compatible with {tcp_osl_server.osl_version_string}")
+    # asynchronous reset returns a long running operation ID
+    operation_id = tcp_osl_server.reset(run_async=True)
+    assert isinstance(operation_id, str)
+    status = tcp_osl_server.wait_for_long_running_operation(operation_id)
+    assert status["operation_id"] == operation_id
+    assert status["is_finished"] is True
     tcp_osl_server.shutdown()
     tcp_osl_server.dispose()
 
@@ -1182,6 +1235,22 @@ def test_run_python_script(osl_server_process: OslServerProcess):
     tcp_osl_server.shutdown()
     tcp_osl_server.dispose()
     assert isinstance(run_script, tuple)
+
+
+def test_run_python_script_async(osl_server_process: OslServerProcess):
+    """Test ``run_python_script``."""
+    cmd = "a = 5\nb = 10\nresult = a + b\nprint(result)"
+    tcp_osl_server = create_tcp_osl_server(osl_server_process)
+    if tcp_osl_server.osl_version < OslVersion(27, 1, 0, 0):
+        pytest.skip(f"Not compatible with {tcp_osl_server.osl_version_string}")
+    # asynchronous run returns a long running operation ID
+    operation_id = tcp_osl_server.run_python_script(script=cmd, run_async=True)
+    assert isinstance(operation_id, str)
+    status = tcp_osl_server.wait_for_long_running_operation(operation_id)
+    assert status["operation_id"] == operation_id
+    assert status["is_finished"] is True
+    tcp_osl_server.shutdown()
+    tcp_osl_server.dispose()
 
 
 def test_save(osl_server_process: OslServerProcess):
@@ -1265,7 +1334,8 @@ def test_save_copy(
 
 def test_set_actor_property(tmp_example_project):
     osl_server_process = create_osl_server_process(
-        shutdown_on_finished=True, project_path=tmp_example_project("calculator_with_params")
+        shutdown_on_finished=True,
+        project_path=tmp_example_project("calculator_with_params"),
     )
     tcp_osl_server = create_tcp_osl_server(osl_server_process)
 

@@ -145,6 +145,8 @@ def test_save_copy(optislang: Optislang, tmp_path: Path, path_type):
 
 def test_long_running_operation(optislang: Optislang, tmp_example_project):
     """Test ``get/wait_for/discard_long_running_operation`` exposed on ``Application``."""
+    if optislang.osl_version < OslVersion(27, 1, 0, 0):
+        pytest.skip(f"Not compatible with {optislang.osl_version_string}")
     application = optislang.application
 
     osl_node: IntegrationNode = application.project.root_system.create_node(
