@@ -50,6 +50,7 @@ from typing import (
     Sequence,
     Tuple,
     Union,
+    cast,
 )
 import uuid
 
@@ -5183,7 +5184,7 @@ class TcpOslServer(OslServer):
         with open(file_path, "r") as file:
             script = file.read()
 
-        return self.run_python_script(script, args)
+        return cast(Tuple[str, str], self.run_python_script(script, args))
 
     def save(self) -> None:
         """Save the changed data and settings of the current project.

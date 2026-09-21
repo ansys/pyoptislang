@@ -163,7 +163,7 @@ class TcpNodeProxy(Node):
         wait_for_completion: bool = False,
         timeout: Union[float, int] = 100,
         run_async: bool = False,
-    ) -> Union[bool, List[str]]:
+    ) -> Union[bool, str, List[str]]:
         """Control the node state.
 
         Parameters
@@ -199,7 +199,7 @@ class TcpNodeProxy(Node):
 
         Returns
         -------
-        Union[bool, List[str]]
+        Union[bool, str, List[str]]
             ``True`` when successful, ``False`` when failed. If ``run_async`` is ``True``, the
             list of long running operation IDs (one per hid) is returned instead.
         """
@@ -3399,13 +3399,15 @@ class TcpRootSystemProxy(TcpParametricSystemProxy, RootSystem):
             evaluate_dict[parameter.name] = parameter.value
 
         output = self._osl_server.evaluate_design(
-            evaluate_dict=evaluate_dict,
-            run_async=run_async,  # type: ignore[arg-type]
+            evaluate_dict=evaluate_dict,  # type: ignore[arg-type]
+            run_async=run_async,
         )
         if run_async:
-            return output  # type: ignore[return-value]
+            return cast(str, output)
         return self.__create_evaluated_design(
-            input_design=design, evaluate_dict=evaluate_dict, results=output[0]
+            input_design=design,
+            evaluate_dict=evaluate_dict,
+            results=cast(List[dict], output)[0],
         )
 
     def get_missing_parameters_names(self, design: Design) -> Tuple[str, ...]:

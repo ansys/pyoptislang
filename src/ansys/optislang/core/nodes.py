@@ -289,7 +289,7 @@ class Node(ABC):
         wait_for_completion: bool = False,
         timeout: Union[float, int] = 100,
         run_async: bool = False,
-    ) -> Union[bool, List[str]]:  # pragma: no cover
+    ) -> Union[bool, str, List[str]]:  # pragma: no cover
         """Control the node state.
 
         Parameters
@@ -323,9 +323,10 @@ class Node(ABC):
 
         Returns
         -------
-        Union[bool, List[str]]
+        Union[bool, str, List[str]]
             ``True`` when successful, ``False`` when failed. If ``run_async`` is ``True``, the
-            list of long running operation IDs (one per hid) is returned instead.
+            long running operation ID(s) are returned instead (a list with one ID per hid for
+            regular nodes, or a single ID for the root system).
         """
         pass
 
