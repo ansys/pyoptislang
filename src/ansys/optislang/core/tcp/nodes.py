@@ -4046,8 +4046,8 @@ class TcpInputSlotProxy(TcpSlotProxy, InputSlot):
 
     def connect_from(
         self,
-        from_slot: TcpSlotProxy,
-        skip_rename_slot: bool = False,  # type: ignore[override]
+        from_slot: TcpSlotProxy,  # type: ignore[override]
+        skip_rename_slot: bool = False,
     ) -> Edge:
         """Connect slot from another slot.
 
@@ -4165,8 +4165,8 @@ class TcpOutputSlotProxy(TcpSlotProxy, OutputSlot):
 
     def connect_to(
         self,
-        to_slot: TcpSlotProxy,
-        skip_rename_slot: bool = False,  # type: ignore[override]
+        to_slot: TcpSlotProxy,  # type: ignore[override]
+        skip_rename_slot: bool = False,
     ) -> Edge:
         """Connect slot to another slot.
 
@@ -4284,8 +4284,8 @@ class TcpInnerInputSlotProxy(TcpSlotProxy, InnerInputSlot):
 
     def connect_from(
         self,
-        from_slot: TcpSlotProxy,
-        skip_rename_slot: bool = False,  # type: ignore[override]
+        from_slot: TcpSlotProxy,  # type: ignore[override]
+        skip_rename_slot: bool = False,
     ) -> Edge:
         """Connect slot from another slot.
 
@@ -4403,8 +4403,8 @@ class TcpInnerOutputSlotProxy(TcpSlotProxy, InnerOutputSlot):
 
     def connect_to(
         self,
-        to_slot: TcpSlotProxy,
-        skip_rename_slot: bool = False,  # type: ignore[override]
+        to_slot: TcpSlotProxy,  # type: ignore[override]
+        skip_rename_slot: bool = False,
     ) -> Edge:
         """Connect slot to another slot.
 
