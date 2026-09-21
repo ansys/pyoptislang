@@ -214,7 +214,7 @@ def test_finalize_async(optislang: Optislang, tmp_example_project):
     """Test asynchronous ``finalize`` on a parametric system."""
     if optislang.osl_version < OslVersion(27, 1, 0, 0):
         pytest.skip(f"Not compatible with {optislang.osl_version_string}")
-        
+
     optislang.application.open(file_path=tmp_example_project("calculator_with_params"))
     application = optislang.application
     root_system = application.project.root_system
