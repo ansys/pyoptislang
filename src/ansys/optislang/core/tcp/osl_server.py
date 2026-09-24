@@ -4689,6 +4689,68 @@ class TcpOslServer(OslServer):
             max_request_attempts=self.max_request_attempts_register.get_value(current_func_name),
         )
 
+    def move_node(self, actor_uid: str, target_system_uid: str) -> None:
+        """Move node specified by uid into another system.
+
+        .. note:: Method is supported for Ansys optiSLang version >= 27.1 only.
+
+        Parameters
+        ----------
+        actor_uid : str
+            Actor uid.
+        target_system_uid: str
+            Uid of the system to move the node into.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        current_func_name = self.move_node.__name__
+        self.send_command(
+            command=commands.move_node(
+                actor_uid=actor_uid, target_system_uid=target_system_uid, password=self.__password
+            ),
+            timeout=self.timeouts_register.get_value(current_func_name),
+            max_request_attempts=self.max_request_attempts_register.get_value(current_func_name),
+        )
+
+    def move_nodes(self, actor_uids: Iterable[str], target_system_uid: str) -> None:
+        """Move nodes specified by uid into another system.
+
+        .. note:: Method is supported for Ansys optiSLang version >= 27.1 only.
+
+        Parameters
+        ----------
+        actor_uids : Iterable[str]
+            Uids of the actors to move.
+        target_system_uid: str
+            Uid of the system to move the nodes into.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        current_func_name = self.move_nodes.__name__
+        self.send_command(
+            command=commands.move_nodes(
+                actor_uids=actor_uids,
+                target_system_uid=target_system_uid,
+                password=self.__password,
+            ),
+            timeout=self.timeouts_register.get_value(current_func_name),
+            max_request_attempts=self.max_request_attempts_register.get_value(current_func_name),
+        )
+
     def remove_node(self, actor_uid: str) -> None:
         """Remove node specified by uid.
 

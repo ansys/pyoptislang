@@ -50,6 +50,8 @@ _EXPORT_DESIGNS = "EXPORT_DESIGNS"
 _FINALIZE = "FINALIZE"
 _LINK_REGISTERED_FILE = "LINK_REGISTERED_FILE"
 _LOAD = "LOAD"
+_MOVE_NODE = "MOVE_NODE"
+_MOVE_NODES = "MOVE_NODES"
 _NEW = "NEW"
 _OPEN = "OPEN"
 _PAUSE = "PAUSE"
@@ -1592,6 +1594,63 @@ def remove_criterion(actor_uid: str, name: str, password: Optional[str] = None) 
             command=_REMOVE_CRITERION, args={"name": name}, actor_uid=actor_uid, password=password
         )
     )
+
+
+def move_node(actor_uid: str, target_system_uid: str, password: Optional[str] = None) -> str:
+    """Generate JSON string of ``move_node`` command.
+
+    .. note:: Command is supported for Ansys optiSLang version >= 27.1 only.
+
+    Parameters
+    ----------
+    actor_uid: str
+        Actor uid entry.
+    target_system_uid: str
+        Uid of the system to move the node into.
+    password : Optional[str], optional
+        Password, by default ``None``.
+
+    Returns
+    -------
+    str
+        JSON string of ``move_node`` command.
+    """
+    return _to_json(
+        _gen_server_command(
+            command=_MOVE_NODE,
+            actor_uid=actor_uid,
+            args={"target_system_uid": target_system_uid},
+            password=password,
+        )
+    )
+
+
+def move_nodes(
+    actor_uids: Iterable[str], target_system_uid: str, password: Optional[str] = None
+) -> str:
+    """Generate JSON string of ``move_nodes`` command.
+
+    .. note:: Command is supported for Ansys optiSLang version >= 27.1 only.
+
+    Parameters
+    ----------
+    actor_uids: Iterable[str]
+        Uids of the actors to move.
+    target_system_uid: str
+        Uid of the system to move the nodes into.
+    password : Optional[str], optional
+        Password, by default ``None``.
+
+    Returns
+    -------
+    str
+        JSON string of ``move_nodes`` command.
+    """
+    args: CommandArgs = {}
+    args["actor_uids"] = list(actor_uids)
+    args["target_system_uid"] = target_system_uid
+
+    return _to_json(_gen_server_command(command=_MOVE_NODES, args=args, password=password))
 
 
 def remove_node(actor_uid: str, password: Optional[str] = None) -> str:
