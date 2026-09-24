@@ -201,4 +201,3 @@ For more information about security in the PyAnsys ecosystem, see:
 
 - `PyAnsys Developer Guide - Vulnerabilities <https://dev.docs.pyansys.com/how-to/vulnerabilities.html>`_
 - `Bandit documentation <https://bandit.readthedocs.io/>`_
-- `OWASP Secure Coding Practices <https://owasp.org/www-project-secure-coding-practices-quick-reference-guide/>`_
