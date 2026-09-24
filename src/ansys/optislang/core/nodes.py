@@ -331,6 +331,40 @@ class Node(ABC):
         pass
 
     @abstractmethod
+    def copy(
+        self, target_system: Optional[System] = None, deep_copy: bool = False
+    ) -> Node:  # pragma: no cover
+        """Copy current node into a target system.
+
+        .. note:: Method is supported for Ansys optiSLang version >= 27.1 only.
+
+        Parameters
+        ----------
+        target_system : Optional[System], optional
+            System the node is copied into, by default ``None``.
+            If not specified, the node is copied into the root system.
+        deep_copy : bool, optional
+            Whether children of the node are copied as well, by default ``False``.
+
+        Returns
+        -------
+        Node
+            Instance of the copied node.
+
+        Raises
+        ------
+        NotImplementedError
+            Raised when unsupported optiSLang server is used.
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        pass
+
+    @abstractmethod
     def delete(self) -> None:  # pragma: no cover
         """Delete current node and it's children from active project.
 

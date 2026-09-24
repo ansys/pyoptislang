@@ -37,6 +37,7 @@ _ADD_CRITERION = "ADD_CRITERION"
 _ASSIGN_PLACEHOLDER = "ASSIGN_PLACEHOLDER"
 _CLOSE = "CLOSE"
 _CONNECT_NODES = "CONNECT_NODES"
+_COPY_NODE = "COPY_NODE"
 _CREATE_INPUT_SLOT = "CREATE_INPUT_SLOT"
 _CREATE_NODE = "CREATE_NODE"
 _CREATE_OUTPUT_SLOT = "CREATE_OUTPUT_SLOT"
@@ -387,6 +388,41 @@ def disconnect_nodes(
     args["to_slot"] = to_slot
 
     return _to_json(_gen_server_command(command=_DISCONNECT_NODES, args=args, password=password))
+
+
+def copy_node(
+    actor_uid: str,
+    target_system_uid: Optional[str] = None,
+    deep_copy: bool = False,
+    password: Optional[str] = None,
+) -> str:
+    """Generate JSON string of ``copy_node`` command.
+
+    Parameters
+    ----------
+    actor_uid: str
+        Actor uid entry.
+    target_system_uid: Optional[str], optional
+        Uid of the system the node is copied into, by default ``None``.
+        If not specified, the node is copied into the root system.
+    deep_copy: bool, optional
+        Whether children of the node are copied as well, by default ``False``.
+    password : Optional[str], optional
+        Password, by default ``None``.
+
+    Returns
+    -------
+    str
+        JSON string of ``copy_node`` command.
+    """
+    args: CommandArgs = {}
+    if target_system_uid is not None:
+        args["target_system_uid"] = target_system_uid
+    args["deep_copy"] = deep_copy
+
+    return _to_json(
+        _gen_server_command(command=_COPY_NODE, actor_uid=actor_uid, args=args, password=password)
+    )
 
 
 def create_input_slot(

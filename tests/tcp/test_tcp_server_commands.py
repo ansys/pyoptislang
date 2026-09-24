@@ -247,6 +247,37 @@ def test_disconnect_nodes():
         sc.disconnect_nodes()
 
 
+def test_copy_node():
+    "Test copy_node."
+    # basic
+    json_string = sc.copy_node(actor_uid=actor_uid)
+    dictionary = json.loads(json_string)
+    requiered_string = json.loads(
+        '{ "projects": [ { "commands": [ { "type": "builtin", "command": "COPY_NODE", '
+        '"actor_uid": "5cdfb20b-bef6-4412-9985-89f5ded5ee95", '
+        '"args": { "deep_copy": false } } ] } ] }'
+    )
+    assert type(json_string) == str
+    assert sorted(dictionary.items()) == sorted(requiered_string.items())
+    # with optional values
+    json_string = sc.copy_node(actor_uid=actor_uid, target_system_uid=parent_uid, deep_copy=True)
+    dictionary = json.loads(json_string)
+    requiered_string = json.loads(
+        '{ "projects": [ { "commands": [ { "type": "builtin", "command": "COPY_NODE", '
+        '"actor_uid": "5cdfb20b-bef6-4412-9985-89f5ded5ee95", "args": '
+        '{ "target_system_uid": "fa743edb-4e0b-4302-b962-f2a32119a110", "deep_copy": true '
+        "} } ] } ] }"
+    )
+    assert type(json_string) == str
+    assert sorted(dictionary.items()) == sorted(requiered_string.items())
+    # with password
+    json_string = sc.copy_node(actor_uid=actor_uid, password=example_password)
+    dictionary = json.loads(json_string)
+    dictionary["Password"] == example_password
+    with pytest.raises(TypeError):
+        sc.copy_node()
+
+
 def test_create_input_slot():
     "Test create_input_slot."
     # basic
