@@ -1,4 +1,4 @@
-# Copyright (C) 2022 - 2025 ANSYS, Inc. and/or its affiliates.
+# Copyright (C) 2022 - 2026 ANSYS, Inc. and/or its affiliates.
 # SPDX-License-Identifier: MIT
 #
 #
@@ -31,6 +31,7 @@ from pathlib import Path
 import re
 import socket
 import sys
+import tempfile
 from typing import (
     DefaultDict,
     Dict,
@@ -44,6 +45,7 @@ from typing import (
     TypeVar,
     Union,
 )
+import uuid
 
 from ansys.optislang.core import FIRST_SUPPORTED_VERSION
 
@@ -96,7 +98,7 @@ def enum_from_str(
         string = string.upper()
     try:
         return enum_class[string]
-    except:
+    except Exception:
         raise ValueError(f"{string} is not a member of {enum_class.__name__}.")
 
 
@@ -454,8 +456,40 @@ def iter_awp_roots() -> Iterator[Tuple[int, Path]]:
 
 
 def is_iron_python():
-    """Whether current platform is IronPython."""
+    """Whether current platform is IronPython.
+
+    Returns
+    -------
+    bool
+        ``True`` if running under IronPython; ``False`` otherwise.
+
+    Notes
+    -----
+    IronPython is detected by checking if ``sys.platform == "cli"``.
+    This is different from Python.NET, which runs CPython with .NET interop.
+    """
     return sys.platform == "cli"
+
+
+def is_pythonnet():
+    """Whether Python.NET (pythonnet) is currently loaded.
+
+    Returns
+    -------
+    bool
+        ``True`` if Python.NET is loaded; ``False`` otherwise.
+
+    Notes
+    -----
+    Python.NET allows CPython to interoperate with .NET assemblies.
+    This is different from IronPython - Python.NET uses standard CPython
+    with a bridge to .NET, while IronPython is a complete reimplementation
+    of Python in C#.
+
+    When Python.NET is loaded, ``sys.platform`` remains "win32" or "linux",
+    and standard Python libraries (like subprocess) continue to work normally.
+    """
+    return "clr" in sys.modules
 
 
 def get_localhost_addresses() -> List[str]:
@@ -499,3 +533,20 @@ def is_localhost(host: str) -> bool:
         except ValueError:
             return False
     return True
+
+
+def generate_local_server_id() -> str:
+    r"""Generate a platform-specific local server identifier.
+
+    Returns
+    -------
+    str
+        Platform-specific server identifier:
+        - Windows: Named pipe path (\\.\pipe\pyoptislang_{uuid})
+        - Linux/Unix: Unix domain socket path in temp directory
+    """
+    if sys.platform == "win32":
+        return f"\\\\.\\pipe\\pyoptislang_{str(uuid.uuid4()).replace('-', '')}"
+    else:
+        temp_dir = tempfile.gettempdir()
+        return os.path.join(temp_dir, f"{str(uuid.uuid4())}.sock")

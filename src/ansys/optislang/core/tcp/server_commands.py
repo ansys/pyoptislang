@@ -1,4 +1,4 @@
-# Copyright (C) 2022 - 2025 ANSYS, Inc. and/or its affiliates.
+# Copyright (C) 2022 - 2026 ANSYS, Inc. and/or its affiliates.
 # SPDX-License-Identifier: MIT
 #
 #
@@ -22,7 +22,7 @@
 
 """Module for generation of all server commands."""
 import json
-from typing import Any, Dict, Iterable, Optional, Sequence, Union
+from typing import Any, Dict, Iterable, List, Optional, Sequence, Union
 
 from ansys.optislang.core.placeholder_types import PlaceholderType, UserLevel
 from ansys.optislang.core.slot_types import SlotTypeHint
@@ -36,6 +36,7 @@ _ADD_CRITERION = "ADD_CRITERION"
 _ASSIGN_PLACEHOLDER = "ASSIGN_PLACEHOLDER"
 _CLOSE = "CLOSE"
 _CONNECT_NODES = "CONNECT_NODES"
+_COPY_NODE = "COPY_NODE"
 _CREATE_INPUT_SLOT = "CREATE_INPUT_SLOT"
 _CREATE_NODE = "CREATE_NODE"
 _CREATE_OUTPUT_SLOT = "CREATE_OUTPUT_SLOT"
@@ -49,6 +50,8 @@ _EXPORT_DESIGNS = "EXPORT_DESIGNS"
 _FINALIZE = "FINALIZE"
 _LINK_REGISTERED_FILE = "LINK_REGISTERED_FILE"
 _LOAD = "LOAD"
+_MOVE_NODE = "MOVE_NODE"
+_MOVE_NODES = "MOVE_NODES"
 _NEW = "NEW"
 _OPEN = "OPEN"
 _PAUSE = "PAUSE"
@@ -63,10 +66,20 @@ _REGISTER_LOCATION_AS_PARAMETER = "REGISTER_LOCATION_AS_PARAMETER"
 _REGISTER_LOCATIONS_AS_PARAMETER = "REGISTER_LOCATIONS_AS_PARAMETER"
 _REGISTER_LOCATION_AS_RESPONSE = "REGISTER_LOCATION_AS_RESPONSE"
 _REGISTER_LOCATIONS_AS_RESPONSE = "REGISTER_LOCATIONS_AS_RESPONSE"
+_REMOVE_ALL_INPUT_SLOTS = "REMOVE_ALL_INPUT_SLOTS"
+_REMOVE_ALL_INTERNAL_LOCATIONS = "REMOVE_ALL_INTERNAL_LOCATIONS"
+_REMOVE_ALL_OUTPUT_SLOTS = "REMOVE_ALL_OUTPUT_SLOTS"
+_REMOVE_ALL_PARAMETERS = "REMOVE_ALL_PARAMETERS"
+_REMOVE_ALL_RESPONSES = "REMOVE_ALL_RESPONSES"
 _REMOVE_CRITERIA = "REMOVE_CRITERIA"
 _REMOVE_CRITERION = "REMOVE_CRITERION"
+_REMOVE_INPUT_SLOT = "REMOVE_INPUT_SLOT"
+_REMOVE_INTERNAL_LOCATION = "REMOVE_INTERNAL_LOCATION"
 _REMOVE_NODE = "REMOVE_NODE"
+_REMOVE_OUTPUT_SLOT = "REMOVE_OUTPUT_SLOT"
+_REMOVE_PARAMETER = "REMOVE_PARAMETER"
 _REMOVE_PLACEHOLDER = "REMOVE_PLACEHOLDER"
+_REMOVE_RESPONSE = "REMOVE_RESPONSE"
 _RENAME_NODE = "RENAME_NODE"
 _RENAME_PLACEHOLDER = "RENAME_PLACEHOLDER"
 _RENAME_SLOT = "RENAME_SLOT"
@@ -340,6 +353,41 @@ def disconnect_nodes(
     args["to_slot"] = to_slot
 
     return _to_json(_gen_server_command(command=_DISCONNECT_NODES, args=args, password=password))
+
+
+def copy_node(
+    actor_uid: str,
+    target_system_uid: Optional[str] = None,
+    deep_copy: bool = False,
+    password: Optional[str] = None,
+) -> str:
+    """Generate JSON string of ``copy_node`` command.
+
+    Parameters
+    ----------
+    actor_uid: str
+        Actor uid entry.
+    target_system_uid: Optional[str], optional
+        Uid of the system the node is copied into, by default ``None``.
+        If not specified, the node is copied into the root system.
+    deep_copy: bool, optional
+        Whether children of the node are copied as well, by default ``False``.
+    password : Optional[str], optional
+        Password, by default ``None``.
+
+    Returns
+    -------
+    str
+        JSON string of ``copy_node`` command.
+    """
+    args: CommandArgs = {}
+    if target_system_uid is not None:
+        args["target_system_uid"] = target_system_uid
+    args["deep_copy"] = deep_copy
+
+    return _to_json(
+        _gen_server_command(command=_COPY_NODE, actor_uid=actor_uid, args=args, password=password)
+    )
 
 
 def create_input_slot(
@@ -970,7 +1018,8 @@ def register_listener(
     port: Optional[int], optional
         Port of the TCP listener, by default ``None``.
     timeout: Optional[int], optional
-        Unregister policy timeout in ms, default 60000 ms, by default ``None``.
+        Unregister policy timeout in ms, by default ``None``.
+        If not specified, defaults to 60000 ms on optiSLang server side.
     notifications: Optional[Sequence], optional
         Notifications, by default ``None``.
     password : Optional[str], optional
@@ -1273,6 +1322,236 @@ def register_locations_as_response(actor_uid: str, password: Optional[str] = Non
     )
 
 
+def remove_all_input_slots(actor_uid: str, password: Optional[str] = None) -> str:
+    """Generate JSON string of ``remove_all_input_slots`` command.
+
+    Parameters
+    ----------
+    actor_uid: str
+        Actor uid entry.
+    password : Optional[str], optional
+        Password, by default ``None``.
+
+    Returns
+    -------
+    str
+        JSON string of ``remove_all_input_slots`` command.
+    """
+    return _to_json(
+        _gen_server_command(command=_REMOVE_ALL_INPUT_SLOTS, actor_uid=actor_uid, password=password)
+    )
+
+
+def remove_all_internal_variables(actor_uid: str, password: Optional[str] = None) -> str:
+    """Generate JSON string of ``remove_all_internal_variables`` command.
+
+    Parameters
+    ----------
+    actor_uid: str
+        Actor uid entry.
+    password : Optional[str], optional
+        Password, by default ``None``.
+
+    Returns
+    -------
+    str
+        JSON string of ``remove_all_internal_variables`` command.
+    """
+    return _to_json(
+        _gen_server_command(
+            command=_REMOVE_ALL_INTERNAL_LOCATIONS, actor_uid=actor_uid, password=password
+        )
+    )
+
+
+def remove_all_output_slots(actor_uid: str, password: Optional[str] = None) -> str:
+    """Generate JSON string of ``remove_all_output_slots`` command.
+
+    Parameters
+    ----------
+    actor_uid: str
+        Actor uid entry.
+    password : Optional[str], optional
+        Password, by default ``None``.
+
+    Returns
+    -------
+    str
+        JSON string of ``remove_all_output_slots`` command.
+    """
+    return _to_json(
+        _gen_server_command(
+            command=_REMOVE_ALL_OUTPUT_SLOTS, actor_uid=actor_uid, password=password
+        )
+    )
+
+
+def remove_all_parameters(actor_uid: str, password: Optional[str] = None) -> str:
+    """Generate JSON string of ``remove_all_parameters`` command.
+
+    Parameters
+    ----------
+    actor_uid: str
+        Actor uid entry.
+    password : Optional[str], optional
+        Password, by default ``None``.
+
+    Returns
+    -------
+    str
+        JSON string of ``remove_all_parameters`` command.
+    """
+    return _to_json(
+        _gen_server_command(command=_REMOVE_ALL_PARAMETERS, actor_uid=actor_uid, password=password)
+    )
+
+
+def remove_all_responses(actor_uid: str, password: Optional[str] = None) -> str:
+    """Generate JSON string of ``remove_all_responses`` command.
+
+    Parameters
+    ----------
+    actor_uid: str
+        Actor uid entry.
+    password : Optional[str], optional
+        Password, by default ``None``.
+
+    Returns
+    -------
+    str
+        JSON string of ``remove_all_responses`` command.
+    """
+    return _to_json(
+        _gen_server_command(command=_REMOVE_ALL_RESPONSES, actor_uid=actor_uid, password=password)
+    )
+
+
+def remove_input_slot(actor_uid: str, name: str, password: Optional[str] = None) -> str:
+    """Generate JSON string of ``remove_input_slot`` command.
+
+    Parameters
+    ----------
+    actor_uid: str
+        Actor uid entry.
+    name: str
+        Input slot name.
+    password : Optional[str], optional
+        Password, by default ``None``.
+
+    Returns
+    -------
+    str
+        JSON string of ``remove_input_slot`` command.
+    """
+    return _to_json(
+        _gen_server_command(
+            command=_REMOVE_INPUT_SLOT, args={"name": name}, actor_uid=actor_uid, password=password
+        )
+    )
+
+
+def remove_internal_variable(actor_uid: str, name: str, password: Optional[str] = None) -> str:
+    """Generate JSON string of ``remove_internal_variable`` command.
+
+    Parameters
+    ----------
+    actor_uid: str
+        Actor uid entry.
+    name: str
+        Internal variable name.
+    password : Optional[str], optional
+        Password, by default ``None``.
+
+    Returns
+    -------
+    str
+        JSON string of ``remove_internal_variable`` command.
+    """
+    return _to_json(
+        _gen_server_command(
+            command=_REMOVE_INTERNAL_LOCATION,
+            args={"name": name},
+            actor_uid=actor_uid,
+            password=password,
+        )
+    )
+
+
+def remove_output_slot(actor_uid: str, name: str, password: Optional[str] = None) -> str:
+    """Generate JSON string of ``remove_output_slot`` command.
+
+    Parameters
+    ----------
+    actor_uid: str
+        Actor uid entry.
+    name: str
+        Output slot name.
+    password : Optional[str], optional
+        Password, by default ``None``.
+
+    Returns
+    -------
+    str
+        JSON string of ``remove_output_slot`` command.
+    """
+    return _to_json(
+        _gen_server_command(
+            command=_REMOVE_OUTPUT_SLOT,
+            args={"name": name},
+            actor_uid=actor_uid,
+            password=password,
+        )
+    )
+
+
+def remove_parameter(actor_uid: str, name: str, password: Optional[str] = None) -> str:
+    """Generate JSON string of ``remove_parameter`` command.
+
+    Parameters
+    ----------
+    actor_uid: str
+        Actor uid entry.
+    name: str
+        Parameter name.
+    password : Optional[str], optional
+        Password, by default ``None``.
+
+    Returns
+    -------
+    str
+        JSON string of ``remove_parameter`` command.
+    """
+    return _to_json(
+        _gen_server_command(
+            command=_REMOVE_PARAMETER, args={"name": name}, actor_uid=actor_uid, password=password
+        )
+    )
+
+
+def remove_response(actor_uid: str, name: str, password: Optional[str] = None) -> str:
+    """Generate JSON string of ``remove_response`` command.
+
+    Parameters
+    ----------
+    actor_uid: str
+        Actor uid entry.
+    name: str
+        Response name.
+    password : Optional[str], optional
+        Password, by default ``None``.
+
+    Returns
+    -------
+    str
+        JSON string of ``remove_response`` command.
+    """
+    return _to_json(
+        _gen_server_command(
+            command=_REMOVE_RESPONSE, args={"name": name}, actor_uid=actor_uid, password=password
+        )
+    )
+
+
 def remove_criteria(actor_uid: str, password: Optional[str] = None) -> str:
     """Generate JSON string of ``remove_criteria`` command.
 
@@ -1315,6 +1594,63 @@ def remove_criterion(actor_uid: str, name: str, password: Optional[str] = None) 
             command=_REMOVE_CRITERION, args={"name": name}, actor_uid=actor_uid, password=password
         )
     )
+
+
+def move_node(actor_uid: str, target_system_uid: str, password: Optional[str] = None) -> str:
+    """Generate JSON string of ``move_node`` command.
+
+    .. note:: Command is supported for Ansys optiSLang version >= 27.1 only.
+
+    Parameters
+    ----------
+    actor_uid: str
+        Actor uid entry.
+    target_system_uid: str
+        Uid of the system to move the node into.
+    password : Optional[str], optional
+        Password, by default ``None``.
+
+    Returns
+    -------
+    str
+        JSON string of ``move_node`` command.
+    """
+    return _to_json(
+        _gen_server_command(
+            command=_MOVE_NODE,
+            actor_uid=actor_uid,
+            args={"target_system_uid": target_system_uid},
+            password=password,
+        )
+    )
+
+
+def move_nodes(
+    actor_uids: Iterable[str], target_system_uid: str, password: Optional[str] = None
+) -> str:
+    """Generate JSON string of ``move_nodes`` command.
+
+    .. note:: Command is supported for Ansys optiSLang version >= 27.1 only.
+
+    Parameters
+    ----------
+    actor_uids: Iterable[str]
+        Uids of the actors to move.
+    target_system_uid: str
+        Uid of the system to move the nodes into.
+    password : Optional[str], optional
+        Password, by default ``None``.
+
+    Returns
+    -------
+    str
+        JSON string of ``move_nodes`` command.
+    """
+    args: CommandArgs = {}
+    args["actor_uids"] = list(actor_uids)
+    args["target_system_uid"] = target_system_uid
+
+    return _to_json(_gen_server_command(command=_MOVE_NODES, args=args, password=password))
 
 
 def remove_node(actor_uid: str, password: Optional[str] = None) -> str:
@@ -1885,14 +2221,14 @@ def set_placeholder_value(placeholder_id: str, value: Any, password: Optional[st
     )
 
 
-def set_project_setting(name: str, value: str, password: Optional[str] = None) -> str:
+def set_project_setting(name: str, value: Any, password: Optional[str] = None) -> str:
     """Generate JSON string of ``set project settings`` command.
 
     Parameters
     ----------
     name: str
         Property name.
-    value: str
+    value: Any
         Value.
     password : Optional[str], optional
         Password, by default ``None``.
@@ -1940,15 +2276,17 @@ def set_registered_file_value(
     )
 
 
-def set_start_designs(actor_uid: str, start_designs: Dict, password: Optional[str] = None) -> str:
+def set_start_designs(
+    actor_uid: str, start_designs: List[dict], password: Optional[str] = None
+) -> str:
     """Generate JSON string of ``set start designs`` command.
 
     Parameters
     ----------
     actor_uid: str
         Actor uid entry.
-    start_designs: Dict
-        Dictionary of settings.
+    start_designs: List[dict]
+        List of start designs.
     password : Optional[str], optional
         Password, by default ``None``.
 
@@ -2240,7 +2578,7 @@ def subscribe_for_push_notifications(
             Nodes: [ "ACTOR_STATE_CHANGED", "ACTOR_ACTIVE_CHANGED", "ACTOR_NAME_CHANGED",
             ACTOR_CONTENTS_CHANGED", "ACTOR_DATA_CHANGED" ].
     node_types: Optional[Sequence], optional
-       Node types, e.g. ["Sensitivity", "AnsysWorkbench"]. By default ``None``.
+       Node types, e.g. ["Sensitivity"]. By default ``None``.
     password : Optional[str], optional
         Password, by default ``None``.
 

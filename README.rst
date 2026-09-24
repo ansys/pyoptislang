@@ -60,7 +60,7 @@ This is the best place to post questions and code.
 
 Installation
 ------------
-The ``ansys-optislang-core`` package supports Python 3.9 through 3.13 on
+The ``ansys-optislang-core`` package supports Python 3.12 through 3.14 on
 Windows and Linux. Three modes of installation are available:
 
 - User installation
@@ -114,15 +114,15 @@ assets and download the wheelhouse corresponding to your setup.
 You can then install PyOptiSLang and all of its dependencies from one single entry point
 that can be shared internally, which eases the security review of the PyOptiSLang package content.
 
-For example, on Linux with Python 3.9, unzip the wheelhouse and install PyOptiSLang with code
+For example, on Linux with Python 3.12, unzip the wheelhouse and install PyOptiSLang with code
 like this:
 
 .. code:: bash
 
-    unzip PyOptiSLang-v0.1.0-wheelhouse-Linux-3.9.zip wheelhouse
+    unzip PyOptiSLang-v0.1.0-wheelhouse-Linux-3.12.zip wheelhouse
     pip install ansys-optislang-core -f wheelhouse --no-index --upgrade --ignore-installed
 
-If you're on Windows with Python 3.9, unzip the wheelhouse to a wheelhouse directory and
+If you're on Windows with Python 3.12, unzip the wheelhouse to a wheelhouse directory and
 then install using the same ``pip`` command as in the preceding Linux code example.
 
 Dependencies
@@ -132,15 +132,18 @@ supported version is 2023 R1.
 
 Getting started
 ---------------
-Using the ``Optislang`` class, you can either launch optiSLang locally or connect to a
-remote optiSLang instance.
+Using the ``Optislang`` class, you can either launch optiSLang locally or connect to an
+already running optiSLang instance. By default, PyOptiSLang uses local domain communication
+(Named Pipes on Windows and Unix Domain Sockets on Linux) in user scope. For remote connections,
+TCP/IP communication can be used optionally.
 
 Launch optiSLang locally
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
-For launching optiSLang locally, both the ``host`` and ``port`` parameters in the ``Optislang``
-class must be set to ``None``, which are their defaults. Other parameters can optionally
-be specified.
+For launching optiSLang locally, use the ``Optislang`` class without specifying either of the
+``local_server_id`` or ``host`` and ``port`` arguments. This launches optiSLang locally and
+establishes a local domain communication channel. The ``communication_channel`` argument can be specified
+to use remote TCP/IP communication if desired. Other parameters can optionally be specified.
 
 .. code:: python
 
@@ -150,12 +153,12 @@ be specified.
     osl.dispose()
 
 
-Connect to a remote optiSLang instance
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Connect to an already running optiSLang instance
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-For remote connection, it is assumed that an optiSLang instance is already running on
-a remote (or local) host as a server. In this case, you must specify the ``host`` and ``port``
-parameters. Parameters related to the execution of a new optiSLang instance are ignored.
+For connection to an already running optiSLang instance, you must specify either of the
+``local_server_id`` or ``host`` and ``port`` arguments.
+Arguments related to the execution of a new optiSLang instance are ignored in this case.
 
 .. code:: python
 

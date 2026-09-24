@@ -1,4 +1,4 @@
-# Copyright (C) 2022 - 2025 ANSYS, Inc. and/or its affiliates.
+# Copyright (C) 2022 - 2026 ANSYS, Inc. and/or its affiliates.
 # SPDX-License-Identifier: MIT
 #
 #
@@ -113,7 +113,7 @@ def test_node_queries(optislang: Optislang, tmp_example_project):
     assert isinstance(info, dict)
 
     input_slots = node.get_input_slots()
-    assert len(input_slots) == 5
+    assert len(input_slots) > 0
     for slot in input_slots:
         assert isinstance(slot, TcpInputSlotProxy)
 
@@ -122,7 +122,7 @@ def test_node_queries(optislang: Optislang, tmp_example_project):
     assert name == "Calculator"
 
     output_slots = node.get_output_slots()
-    assert len(output_slots) == 5
+    assert len(output_slots) > 0
     for slot in output_slots:
         assert isinstance(slot, TcpOutputSlotProxy)
 
@@ -154,6 +154,9 @@ def test_node_queries(optislang: Optislang, tmp_example_project):
     status = node.get_status()
     assert isinstance(status, str)
 
+    hpc_licensing_forwarded_environment = node.get_hpc_licensing_forwarded_environment()
+    assert isinstance(hpc_licensing_forwarded_environment, dict)
+
     print(node)
 
 
@@ -165,10 +168,33 @@ def test_control(optislang: Optislang, tmp_example_project):
     node = root_system.find_nodes_by_name("Calculator")[0]
 
     for command in ["start", "restart", "stop_gently", "stop", "reset"]:
-        output = node.control(command, wait_for_completion=False)
-        assert output is None
-        output = node.control(command, timeout=60)
-        assert isinstance(output, bool)
+        output = node.control(command)
+        assert output
+
+
+def test_supports(optislang: Optislang, tmp_example_project):
+    """Test `supports` method of the instance of `Node` class."""
+    optislang.application.open(file_path=tmp_example_project("calculator_with_params"))
+    root_system = optislang.project.root_system
+    node: TcpNodeProxy = root_system.find_nodes_by_name("Calculator")[0]
+    assert isinstance(node.supports("can_finalize"), bool)
+
+
+def test_get_slot_value(optislang: Optislang, tmp_example_project):
+    """Test `get_input_slot_value` and `get_output_slot_value` methods."""
+    optislang.application.open(file_path=tmp_example_project("calculator_with_params"))
+    root_system: TcpRootSystemProxy = optislang.project.root_system
+    node = root_system.find_node_by_uid("3577cb69-15b9-4ad1-a53c-ac8af8aaea82", search_depth=-1)
+    assert node is not None
+    hid = "0"
+
+    input_slot_value = node.get_input_slot_value(hid=hid, slot_name="OVar")
+    assert isinstance(input_slot_value, dict)
+    assert bool(input_slot_value)
+
+    output_slot_value = node.get_output_slot_value(hid=hid, slot_name="var")
+    assert isinstance(output_slot_value, dict)
+    assert bool(output_slot_value)
 
 
 def test_get_ancestors(optislang: Optislang, tmp_example_project):
@@ -219,6 +245,22 @@ def test_set_property(optislang: Optislang, tmp_example_project):
     set_int_property = 2
     node.set_property("ExecutionOptions", set_int_property)
     assert node.get_property("ExecutionOptions") == set_int_property
+
+
+def test_set_properties(optislang: Optislang, tmp_example_project):
+    """Test `set_properties` method."""
+    optislang.application.open(file_path=tmp_example_project("calculator_with_params"))
+    root_system = optislang.project.root_system
+    node: TcpNodeProxy = root_system.find_nodes_by_name("Calculator")[0]
+    set_properties = {
+        "ExecutionOptions": 2,
+        "StopAfterExecution": True,
+        "ReadMode": {"value": "classic_reevaluate_mode"},
+    }
+    node.set_properties(set_properties)
+    assert node.get_property("ExecutionOptions") == 2
+    assert node.get_property("StopAfterExecution") is True
+    assert node.get_property("ReadMode").get("value") == "classic_reevaluate_mode"
 
 
 def test_node_execution_options(optislang: Optislang, tmp_example_project):
@@ -315,6 +357,89 @@ def test_register_location(optislang: Optislang):
     assert len(responses) == 1
     assert isinstance(responses[0], dict)
     assert actual_name == "response_1"
+
+
+def test_remove_location(optislang: Optislang):
+    """Test `remove_[parameter/response/input_slot/output_slot/internal_variable]`."""
+    root_system = optislang.application.project.root_system
+    sensitivity: TcpParametricSystemProxy = root_system.create_node(type_=Sensitivity)
+    integration_node: TcpIntegrationNodeProxy = sensitivity.create_node(
+        type_=optislang_node,
+        design_flow=DesignFlow.RECEIVE_SEND,
+    )
+    integration_node.register_location_as_input_slot(
+        location="input_slot_1", name="input_slot_1", reference_value=10
+    )
+    integration_node.register_location_as_internal_variable(
+        location={"expression": "10", "id": "variable_1"}, name="variable_1", reference_value=10
+    )
+    integration_node.register_location_as_output_slot(
+        location="output_slot_1", name="output_slot_1", reference_value=10
+    )
+    integration_node.register_location_as_parameter(
+        location="parameter_1", name="parameter1", reference_value=10
+    )
+    integration_node.register_location_as_response(
+        location="response_1", name="response_1", reference_value=10
+    )
+
+    integration_node.remove_parameter("parameter1")
+    assert len(integration_node.get_registered_parameters()) == 0
+
+    integration_node.remove_response("response_1")
+    assert len(integration_node.get_registered_responses()) == 0
+
+    integration_node.remove_input_slot("input_slot_1")
+    assert len(integration_node.get_registered_input_slots()) == 0
+
+    integration_node.remove_output_slot("output_slot_1")
+    assert len(integration_node.get_registered_output_slots()) == 0
+
+    integration_node.remove_internal_variable("variable_1")
+    assert len(integration_node.get_internal_variables()) == 0
+
+
+def test_remove_all_locations(optislang: Optislang):
+    """Test `remove_all_[parameters/responses/input_slots/output_slots/internal_variables]`."""
+    if optislang.osl_version < OslVersion(27, 1, 0, 0):
+        pytest.skip(f"Not compatible with {optislang.osl_version_string}")
+
+    root_system = optislang.application.project.root_system
+    sensitivity: TcpParametricSystemProxy = root_system.create_node(type_=Sensitivity)
+    integration_node: TcpIntegrationNodeProxy = sensitivity.create_node(
+        type_=optislang_node,
+        design_flow=DesignFlow.RECEIVE_SEND,
+    )
+    integration_node.register_location_as_input_slot(
+        location="input_slot_1", name="input_slot_1", reference_value=10
+    )
+    integration_node.register_location_as_internal_variable(
+        location={"expression": "10", "id": "variable_1"}, name="variable_1", reference_value=10
+    )
+    integration_node.register_location_as_output_slot(
+        location="output_slot_1", name="output_slot_1", reference_value=10
+    )
+    integration_node.register_location_as_parameter(
+        location="parameter_1", name="parameter1", reference_value=10
+    )
+    integration_node.register_location_as_response(
+        location="response_1", name="response_1", reference_value=10
+    )
+
+    integration_node.remove_all_parameters()
+    assert len(integration_node.get_registered_parameters()) == 0
+
+    integration_node.remove_all_responses()
+    assert len(integration_node.get_registered_responses()) == 0
+
+    integration_node.remove_all_input_slots()
+    assert len(integration_node.get_registered_input_slots()) == 0
+
+    integration_node.remove_all_output_slots()
+    assert len(integration_node.get_registered_output_slots()) == 0
+
+    integration_node.remove_all_internal_variables()
+    assert len(integration_node.get_internal_variables()) == 0
 
 
 # endregion

@@ -1,4 +1,4 @@
-# Copyright (C) 2022 - 2025 ANSYS, Inc. and/or its affiliates.
+# Copyright (C) 2022 - 2026 ANSYS, Inc. and/or its affiliates.
 # SPDX-License-Identifier: MIT
 #
 #
@@ -32,6 +32,7 @@ import uuid
 import pytest
 
 from ansys.optislang.core import OslServerProcess, errors
+from ansys.optislang.core.communication_channels import CommunicationChannel
 from ansys.optislang.core.node_types import NodeType
 from ansys.optislang.core.osl_server import OslVersion
 from ansys.optislang.core.placeholder_types import PlaceholderType, UserLevel
@@ -61,6 +62,8 @@ def create_osl_server_process(shutdown_on_finished=False, project_path=None) -> 
             project_path=project_path,
             port_range=(port, port),
             server_info=server_info_file,
+            enable_tcp_server=True,
+            listener=("127.0.0.1", 56789) if shutdown_on_finished else None,
         )
         osl_server_process.start()
 
@@ -84,7 +87,7 @@ def create_osl_server_process(shutdown_on_finished=False, project_path=None) -> 
 @pytest.fixture(scope="function", autouse=False)
 def osl_server_process():
     # Will be executed before each test
-    return create_osl_server_process(shutdown_on_finished=False)
+    return create_osl_server_process(shutdown_on_finished=True)
 
 
 @pytest.fixture(scope="function", autouse=False)
@@ -95,6 +98,7 @@ def tcp_listener():
         name="GeneralListener",
         uid=str(uuid.uuid4()),
         logger=logging.getLogger(__name__),
+        communication_channel=CommunicationChannel.TCP,
     )
 
 
@@ -503,7 +507,7 @@ def test_add_remove_set_criterion(osl_server_process: OslServerProcess):
 def test_connect_nodes(tmp_example_project):
     """Test `connect_nodes` method."""
     osl_server_process = create_osl_server_process(
-        shutdown_on_finished=False, project_path=tmp_example_project("nodes_connection")
+        shutdown_on_finished=True, project_path=tmp_example_project("nodes_connection")
     )
     tcp_osl_server = create_tcp_osl_server(osl_server_process)
     variable_uid = "b8b8b48f-b806-4382-9777-f03ceb5dccc0"
@@ -538,7 +542,7 @@ def test_create_remove_node(osl_server_process: OslServerProcess):
 def test_disconnect_slot(tmp_example_project):
     "Test ``disconnect_slot`` command."
     osl_server_process = create_osl_server_process(
-        shutdown_on_finished=False, project_path=tmp_example_project("calculator_with_params")
+        shutdown_on_finished=True, project_path=tmp_example_project("calculator_with_params")
     )
     tcp_osl_server = create_tcp_osl_server(osl_server_process)
     UID = "3577cb69-15b9-4ad1-a53c-ac8af8aaea82"
@@ -557,7 +561,7 @@ def test_disconnect_slot(tmp_example_project):
 def test_evaluate_design(tmp_example_project):
     "Test ``evaluate_design``."
     osl_server_process = create_osl_server_process(
-        shutdown_on_finished=False, project_path=tmp_example_project("calculator_with_params")
+        shutdown_on_finished=True, project_path=tmp_example_project("calculator_with_params")
     )
     tcp_osl_server = create_tcp_osl_server(osl_server_process)
     tcp_osl_server.reset()
@@ -571,7 +575,7 @@ def test_evaluate_design(tmp_example_project):
 def test_get_actor_queries(tmp_example_project):
     """Test `get_actor_` - `info`, `properties`,`states`, `status_info`, `supports` queries."""
     osl_server_process = create_osl_server_process(
-        shutdown_on_finished=False, project_path=tmp_example_project("calculator_with_params")
+        shutdown_on_finished=True, project_path=tmp_example_project("calculator_with_params")
     )
     tcp_osl_server = create_tcp_osl_server(osl_server_process)
     UID = "3577cb69-15b9-4ad1-a53c-ac8af8aaea82"
@@ -640,7 +644,7 @@ def test_get_actor_queries(tmp_example_project):
 def test_get_available_locations(tmp_example_project):
     """Test `get_available_[input/output]_locations``."""
     osl_server_process = create_osl_server_process(
-        shutdown_on_finished=False, project_path=tmp_example_project("omdb_files")
+        shutdown_on_finished=True, project_path=tmp_example_project("omdb_files")
     )
     tcp_osl_server = create_tcp_osl_server(osl_server_process)
     tcp_osl_server.reset()
@@ -702,7 +706,7 @@ def test_get_available_node_types(osl_server_process: OslServerProcess):
 def test_get_criteria(tmp_example_project):
     """Test ``get_criterion/a``."""
     osl_server_process = create_osl_server_process(
-        shutdown_on_finished=False, project_path=tmp_example_project("calculator_with_params")
+        shutdown_on_finished=True, project_path=tmp_example_project("calculator_with_params")
     )
     tcp_osl_server = create_tcp_osl_server(osl_server_process)
     root_system_uid = (
@@ -723,7 +727,7 @@ def test_get_criteria(tmp_example_project):
 def test_get_doe_size(tmp_example_project):
     """Test ``get_doe_size``."""
     osl_server_process = create_osl_server_process(
-        shutdown_on_finished=False, project_path=tmp_example_project("omdb_files")
+        shutdown_on_finished=True, project_path=tmp_example_project("omdb_files")
     )
     tcp_osl_server = create_tcp_osl_server(osl_server_process)
     UID = "011097b5-380d-4726-a0d0-128ddee83a7a"
@@ -776,7 +780,7 @@ def test_get_project_queries(osl_server_process: OslServerProcess):
 def test_get_hpc_licensing_forwarded_environment(tmp_example_project):
     """Test ``get_hpc_licensing_forwarded_environment``."""
     osl_server_process = create_osl_server_process(
-        shutdown_on_finished=False, project_path=tmp_example_project("calculator_with_params")
+        shutdown_on_finished=True, project_path=tmp_example_project("calculator_with_params")
     )
     tcp_osl_server = create_tcp_osl_server(osl_server_process)
     hpc_licensing = tcp_osl_server.get_hpc_licensing_forwarded_environment(
@@ -790,7 +794,7 @@ def test_get_hpc_licensing_forwarded_environment(tmp_example_project):
 def test_get_input_slot_value(tmp_example_project):
     """Test ``get_input_slot_value``."""
     osl_server_process = create_osl_server_process(
-        shutdown_on_finished=False, project_path=tmp_example_project("calculator_with_params")
+        shutdown_on_finished=True, project_path=tmp_example_project("calculator_with_params")
     )
     tcp_osl_server = create_tcp_osl_server(osl_server_process)
     UID = "3577cb69-15b9-4ad1-a53c-ac8af8aaea82"
@@ -812,7 +816,7 @@ def test_get_input_slot_value(tmp_example_project):
 def test_get_output_slot_value(tmp_example_project):
     """Test ``get_output_slot_value``."""
     osl_server_process = create_osl_server_process(
-        shutdown_on_finished=False, project_path=tmp_example_project("calculator_with_params")
+        shutdown_on_finished=True, project_path=tmp_example_project("calculator_with_params")
     )
     tcp_osl_server = create_tcp_osl_server(osl_server_process)
     UID = "3577cb69-15b9-4ad1-a53c-ac8af8aaea82"
@@ -945,6 +949,105 @@ def test_register_location(osl_server_process: OslServerProcess):
     tcp_osl_server.dispose()
 
 
+def test_remove_location(osl_server_process: OslServerProcess):
+    """Test ``remove_[parameter/response/input_slot/output_slot/internal_variable]``."""
+    tcp_osl_server = create_tcp_osl_server(osl_server_process)
+    sensitivity_uid = tcp_osl_server.create_node(type_="Sensitivity")
+    integration_uid = tcp_osl_server.create_node(
+        type_="optislang_node",
+        integration_type="integration_plugin",
+        parent_uid=sensitivity_uid,
+        design_flow="RECEIVE_SEND",
+    )
+    tcp_osl_server.register_location_as_input_slot(
+        uid=integration_uid, location="input_slot_1", name="input_slot_1", reference_value=10
+    )
+    tcp_osl_server.register_location_as_internal_variable(
+        uid=integration_uid,
+        location={"expression": "10", "id": "variable_1"},
+        name="variable_1",
+        reference_value=10,
+    )
+    tcp_osl_server.register_location_as_output_slot(
+        uid=integration_uid, location="output_slot_1", name="output_slot_1", reference_value=10
+    )
+    tcp_osl_server.register_location_as_parameter(
+        uid=integration_uid, location="parameter_1", name="parameter1", reference_value=10
+    )
+    tcp_osl_server.register_location_as_response(
+        uid=integration_uid, location="response_1", name="response_1", reference_value=10
+    )
+
+    tcp_osl_server.remove_parameter(uid=integration_uid, name="parameter1")
+    assert len(tcp_osl_server.get_actor_registered_parameters(uid=integration_uid)) == 0
+
+    tcp_osl_server.remove_response(uid=integration_uid, name="response_1")
+    assert len(tcp_osl_server.get_actor_registered_responses(uid=integration_uid)) == 0
+
+    tcp_osl_server.remove_input_slot(uid=integration_uid, name="input_slot_1")
+    assert len(tcp_osl_server.get_actor_registered_input_slots(uid=integration_uid)) == 0
+
+    tcp_osl_server.remove_output_slot(uid=integration_uid, name="output_slot_1")
+    assert len(tcp_osl_server.get_actor_registered_output_slots(uid=integration_uid)) == 0
+
+    tcp_osl_server.remove_internal_variable(uid=integration_uid, name="variable_1")
+    assert len(tcp_osl_server.get_actor_internal_variables(uid=integration_uid)) == 0
+
+    tcp_osl_server.shutdown()
+    tcp_osl_server.dispose()
+
+
+def test_remove_all_locations(osl_server_process: OslServerProcess):
+    """Test ``remove_all_[parameters/responses/input_slots/output_slots/internal_variables]``."""
+    tcp_osl_server = create_tcp_osl_server(osl_server_process)
+    if tcp_osl_server.osl_version < OslVersion(27, 1, 0, 0):
+        pytest.skip(f"Not compatible with {tcp_osl_server.osl_version_string}")
+
+    sensitivity_uid = tcp_osl_server.create_node(type_="Sensitivity")
+    integration_uid = tcp_osl_server.create_node(
+        type_="optislang_node",
+        integration_type="integration_plugin",
+        parent_uid=sensitivity_uid,
+        design_flow="RECEIVE_SEND",
+    )
+    tcp_osl_server.register_location_as_input_slot(
+        uid=integration_uid, location="input_slot_1", name="input_slot_1", reference_value=10
+    )
+    tcp_osl_server.register_location_as_internal_variable(
+        uid=integration_uid,
+        location={"expression": "10", "id": "variable_1"},
+        name="variable_1",
+        reference_value=10,
+    )
+    tcp_osl_server.register_location_as_output_slot(
+        uid=integration_uid, location="output_slot_1", name="output_slot_1", reference_value=10
+    )
+    tcp_osl_server.register_location_as_parameter(
+        uid=integration_uid, location="parameter_1", name="parameter1", reference_value=10
+    )
+    tcp_osl_server.register_location_as_response(
+        uid=integration_uid, location="response_1", name="response_1", reference_value=10
+    )
+
+    tcp_osl_server.remove_all_parameters(uid=integration_uid)
+    assert len(tcp_osl_server.get_actor_registered_parameters(uid=integration_uid)) == 0
+
+    tcp_osl_server.remove_all_responses(uid=integration_uid)
+    assert len(tcp_osl_server.get_actor_registered_responses(uid=integration_uid)) == 0
+
+    tcp_osl_server.remove_all_input_slots(uid=integration_uid)
+    assert len(tcp_osl_server.get_actor_registered_input_slots(uid=integration_uid)) == 0
+
+    tcp_osl_server.remove_all_output_slots(uid=integration_uid)
+    assert len(tcp_osl_server.get_actor_registered_output_slots(uid=integration_uid)) == 0
+
+    tcp_osl_server.remove_all_internal_variables(uid=integration_uid)
+    assert len(tcp_osl_server.get_actor_internal_variables(uid=integration_uid)) == 0
+
+    tcp_osl_server.shutdown()
+    tcp_osl_server.dispose()
+
+
 def test_reset(osl_server_process: OslServerProcess):
     """Test ``reset``."""
     tcp_osl_server = create_tcp_osl_server(osl_server_process)
@@ -1068,7 +1171,7 @@ def test_save_copy(
 
 def test_set_actor_property(tmp_example_project):
     osl_server_process = create_osl_server_process(
-        shutdown_on_finished=False, project_path=tmp_example_project("calculator_with_params")
+        shutdown_on_finished=True, project_path=tmp_example_project("calculator_with_params")
     )
     tcp_osl_server = create_tcp_osl_server(osl_server_process)
 
@@ -1239,6 +1342,18 @@ def test_set_placeholder_value(osl_server_process: OslServerProcess):
     tcp_osl_server.set_placeholder_value(placeholder_id, "new_string_value")
     tcp_osl_server.set_placeholder_value(placeholder_id, 42.5)
     tcp_osl_server.set_placeholder_value(placeholder_id, True)
+
+    tcp_osl_server.shutdown()
+    tcp_osl_server.dispose()
+
+
+def test_set_project_setting(osl_server_process: OslServerProcess):
+    """Test set_project_setting method."""
+    tcp_osl_server = create_tcp_osl_server(osl_server_process)
+
+    # Set different types of values
+    tcp_osl_server.set_project_setting("number_of_message_queue_threads", 2)
+    tcp_osl_server.set_project_setting("hide_number_of_message_queue_threads_warning", True)
 
     tcp_osl_server.shutdown()
     tcp_osl_server.dispose()

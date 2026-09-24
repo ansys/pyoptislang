@@ -1,4 +1,4 @@
-# Copyright (C) 2022 - 2025 ANSYS, Inc. and/or its affiliates.
+# Copyright (C) 2022 - 2026 ANSYS, Inc. and/or its affiliates.
 # SPDX-License-Identifier: MIT
 #
 #
@@ -31,12 +31,11 @@ import importlib.util
 import os
 import sys
 
+from ansys.optislang import __version__
 from ansys.optislang.core.logging import OslLogger
 
 LOG = OslLogger(loglevel="ERROR", log_to_file=False, log_to_stdout=True)
 LOG.logger.debug("Loaded logging module as LOG")
-
-__version__ = importlib.metadata.version(__name__.replace(".", "-"))
 
 # First supported version of optiSLang: 2023R1
 FIRST_SUPPORTED_VERSION = 231

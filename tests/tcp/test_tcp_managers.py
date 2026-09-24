@@ -1,4 +1,4 @@
-# Copyright (C) 2022 - 2025 ANSYS, Inc. and/or its affiliates.
+# Copyright (C) 2022 - 2026 ANSYS, Inc. and/or its affiliates.
 # SPDX-License-Identifier: MIT
 #
 #
@@ -137,6 +137,16 @@ def test_get_criteria_names(optislang: Optislang):
     assert isinstance(criteria_names, tuple)
     assert len(criteria_names) > 0
     assert criteria_names[0] == "obj_c"
+
+
+def test_get_criterion(optislang: Optislang):
+    """Test ``get_criterion``."""
+    criteria_manager = optislang.project.root_system.criteria_manager
+    criterion = criteria_manager.get_criterion("obj_c")
+    assert isinstance(criterion, ObjectiveCriterion)
+    assert criterion.name == "obj_c"
+    with pytest.raises(ValueError):
+        criteria_manager.get_criterion("non_existing_criterion")
 
 
 def test_modify_criterion(optislang: Optislang):
@@ -340,6 +350,30 @@ def test_modify_parameter_property(optislang: Optislang):
     assert modified_parameter.const == False
 
 
+def test_modify_parameter_property_deterministic_property(optislang: Optislang):
+    """Test ``test_modify_parameter_property_range``."""
+    parameter_manager = optislang.project.root_system.parameter_manager
+    parameter = [
+        parameter for parameter in parameter_manager.get_parameters() if parameter.name == "b"
+    ][0]
+    deterministic_property = parameter.to_dict()["deterministic_property"]
+    range_dict = {
+        "lower_bound": -10.0,
+        "upper_bound": 10.0,
+    }
+    deterministic_property.update(range_dict)
+
+    parameter_manager.modify_parameter_property(
+        parameter_name="b",
+        property_name="deterministic_property",
+        property_value=deterministic_property,
+    )
+    modified_parameter = [
+        parameter for parameter in parameter_manager.get_parameters() if parameter.name == "b"
+    ][0]
+    assert modified_parameter.range == (-10.0, 10.0)
+
+
 def test_remove_parameter(optislang: Optislang):
     """Test ``remove_parameter``."""
     parameter_manager = optislang.project.root_system.parameter_manager
@@ -446,6 +480,34 @@ def test_get_design_s(optislang: Optislang, tmp_example_project):
             assert isinstance(designs_no_values, tuple)
             assert all(isinstance(d, Design) for d in designs_no_values)
             __test_design_values(designs_no_values, False)
+
+
+def test_get_best_designs(optislang: Optislang, tmp_example_project):
+    """Test ``get_best_designs`` method."""
+    with Optislang(project_path=tmp_example_project("omdb_files")) as osl:
+        project = osl.project
+        root_system = project.root_system
+        sensitivity_outer: ParametricSystem = root_system.find_nodes_by_name("Sensitivity")[0]
+        sensitivity_inner: ParametricSystem = root_system.find_nodes_by_name(
+            "MostInnerSensitivity", 3
+        )[0]
+        design_manager_outer = sensitivity_outer.design_manager
+        design_manager_inner = sensitivity_inner.design_manager
+        hids_outer = sensitivity_outer.get_states_ids()
+        hids_inner = sensitivity_inner.get_states_ids()
+
+        for design_manager, hids in [
+            (design_manager_outer, hids_outer),
+            (design_manager_inner, hids_inner),
+        ]:
+            designs = design_manager.get_designs(hids[0])
+            best_designs = design_manager.get_best_designs(hids[0])
+            assert isinstance(best_designs, tuple)
+            assert all(isinstance(d, Design) for d in best_designs)
+            assert all(d.pareto_design for d in best_designs)
+
+            expected_best_designs = design_manager.filter_designs_by(designs, pareto_design=True)
+            assert {d.id for d in best_designs} == {d.id for d in expected_best_designs}
 
 
 def test_save_designs_as(tmp_path: Path, tmp_example_project):

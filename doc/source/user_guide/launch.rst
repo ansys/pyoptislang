@@ -5,7 +5,7 @@ OptiSLang instance management
 =============================
 You use the :py:class:`Optislang <ansys.optislang.core.optislang.Optislang>`
 class to launch optiSLang as a server and to control and query optiSLang projects.
-You can either launch optiSLang locally or connect to a remote optiSLang instance.
+You can either launch optiSLang locally or connect to an already running optiSLang instance.
 
 .. note::
     When you are done using an optiSLang instance, you should always use the
@@ -17,7 +17,7 @@ You can either launch optiSLang locally or connect to a remote optiSLang instanc
 
 Launch optiSLang locally
 ------------------------
-The :py:class:`Optislang <ansys.optislang.core.optislang.Optislang>` class must know 
+The :py:class:`Optislang <ansys.optislang.core.optislang.Optislang>` class must know
 the location of the optiSLang executable file to run. By default, the latest installed
 version of optiSLang is launched. To initialize an optiSLang instance and start it
 locally as a server, run this code:
@@ -30,8 +30,31 @@ locally as a server, run this code:
     print(osl)
     osl.dispose()
 
+This launches optiSLang locally and establishes a local domain communication channel in user scope.
+In this default mode, only local communication is possible and only the user who started the optiSLang
+instance can connect to and access it. The ``communication_channel`` argument can be specified
+to use (remote) TCP/IP communication if desired. Even in this case, optiSLang listens on localhost
+only by default, unless specified otherwise using the ``server_address`` parameter:
 
-Calling the :py:meth:`dispose() <ansys.optislang.core.optislang.Optislang.dispose>` method 
+.. code:: python
+
+    from ansys.optislang.core import Optislang
+    from ansys.optislang.core.communication_channels import CommunicationChannel
+
+    osl = Optislang(
+        communication_channel=CommunicationChannel.TCP, server_address="0.0.0.0"
+    )
+    print(osl)
+    osl.dispose()
+
+.. warning::
+
+    With ``CommunicationChannel.TCP``, insecure communication mode without TLS
+    is used. This mode allows remote communication but is not recommended.
+    For more details on the implications and usage of insecure mode,
+    refer to the optiSLang documentation.
+
+Calling the :py:meth:`dispose() <ansys.optislang.core.optislang.Optislang.dispose>` method
 closes the connection with the optiSLang server. If an optiSLang instance is started with the
 ``shutdown_on_finished`` parameter set to ``True``, which is the default, the server shuts down
 automatically. For information on how to keep the server running after disposing the optiSLang
@@ -77,13 +100,28 @@ code creates a project in the current working directory:
     osl.dispose()
 
 
-Connect to a remote optiSLang instance
---------------------------------------
-For remote connection, it is assumed that optiSLang is already running as a server
-on a remote (or local) host. To connect to this running instance, you must specify the
-host and port. Parameters related to the execution of a new optiSLang server are ignored.
+Connect to an already running optiSLang instance
+------------------------------------------------
+For connection to an already running optiSLang instance, you must specify either of the
+``local_server_id`` or ``host`` and ``port`` arguments.
+Parameters related to the execution of a new optiSLang server are ignored.
 
-This code initializes optiSLang and connects to a remote optiSLang server:
+This code connects to a local optiSLang server listening on the specified server ID:
+
+.. code:: python
+
+     from ansys.optislang.core import Optislang
+
+     local_server_id = "local_osl_server_id"
+
+     osl = Optislang(local_server_id=local_server_id)
+     print(osl)
+     osl.dispose()
+
+The ``local_server_id`` is the identifier of the local server socket. For Windows, it is the name of the Named Pipe,
+and for Linux, it is the path to the Unix Domain Socket.
+
+This code connects to a (remote) optiSLang server listening on the specified host and port:
 
 .. code:: python
 
@@ -97,11 +135,11 @@ This code initializes optiSLang and connects to a remote optiSLang server:
      osl.dispose()
 
 
-Calling the :py:meth:`dispose() <ansys.optislang.core.optislang.Optislang.dispose>` method 
+Calling the :py:meth:`dispose() <ansys.optislang.core.optislang.Optislang.dispose>` method
 closes the connection with the remote optiSLang server. However, if this server was
 started with the ``shutdown_on_finished`` parameter set to ``False``, the server won't
 shut down. You must use the :py:meth:`shutdown() <ansys.optislang.core.optislang.Optislang.shutdown>`
-method to shut down the server before disposing the 
+method to shut down the server before disposing the
 :py:class:`Optislang <ansys.optislang.core.optislang.Optislang>` instance. For more information,
 see :ref:`optislang-termination`.
 
@@ -127,7 +165,7 @@ Differences in the termination methods mentioned earlier follow:
 * The :py:meth:`shutdown() <ansys.optislang.core.optislang.Optislang.shutdown>` method sends a
   command to shut down the optiSLang server, which is necessary when termination of the
   server is requested and either of these situations exist:
-  
+
   * The server is started locally by an optiSLang instance with the
     ``shutdown_on_finished`` parameter set to ``False``.
   * The optiSLang instance is connected to a remote optiSLang server, that is not set to shutdown
@@ -164,8 +202,8 @@ initialized with the ``shutdown_on_finished`` parameter set to ``False``.
 
 * To shut down the optiSLang server, use both the
    :py:meth:`shutdown() <ansys.optislang.core.optislang.Optislang.shutdown>` and
-   :py:meth:`dispose() <ansys.optislang.core.optislang.Optislang.dispose>` methods: 
-   
+   :py:meth:`dispose() <ansys.optislang.core.optislang.Optislang.dispose>` methods:
+
    .. code:: python
 
         from ansys.optislang.core import Optislang
@@ -229,4 +267,3 @@ the :py:meth:`dispose() <ansys.optislang.core.optislang.Optislang.dispose>` meth
             print(osl)
             osl.start()
             osl.shutdown()
-

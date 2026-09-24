@@ -1,4 +1,4 @@
-# Copyright (C) 2022 - 2025 ANSYS, Inc. and/or its affiliates.
+# Copyright (C) 2022 - 2026 ANSYS, Inc. and/or its affiliates.
 # SPDX-License-Identifier: MIT
 #
 #
@@ -21,6 +21,7 @@
 # SOFTWARE.
 
 """Contains Optislang class, which provides the Python API for the optiSLang app."""
+
 from __future__ import annotations
 
 from importlib.metadata import version
@@ -31,6 +32,7 @@ from typing import TYPE_CHECKING, Iterable, Mapping, Optional, Sequence, Tuple, 
 from deprecated.sphinx import deprecated
 
 from ansys.optislang.core import LOG
+from ansys.optislang.core.communication_channels import CommunicationChannel
 from ansys.optislang.core.tcp.application import TcpApplicationProxy
 from ansys.optislang.core.tcp.osl_server import TcpOslServer
 
@@ -54,11 +56,14 @@ class Optislang:
 
     Parameters
     ----------
+    local_server_id: Optional[str], optional
+        Local domain server ID on which optiSLang is running as a local server.
+        The default is ``None``.
     host : Optional[str], optional
-        IPv4/v6 address or domain name on which optiSLang is running as a
+        IPv4/v6 address on which optiSLang is running as a remote
         server. The default is ``None``.
     port : Optional[int], optional
-        Port on which optiSLang is running as a server. The default is ``None``.
+        Port on which optiSLang is running as a remote server. The default is ``None``.
     executable : Optional[Union[str, pathlib.Path]], optional
         Path to the optiSLang executable file to execute on a the local host.
         The default is ``None``. This parameter is ignored when ``host``
@@ -76,21 +81,34 @@ class Optislang:
     batch : bool, optional
         Determines whether to start optiSLang server in batch mode. Defaults to ``True``.
 
-        ..note:: Cannot be used in combination with service mode.
+        .. note:: Cannot be used in combination with service mode.
+
+        .. note:: Parameters marked as "Only supported in batch mode"
+            are ignored when ``batch=False``.
 
     service: bool, optional
         Determines whether to start optiSLang server in service mode. If ``True``,
         ``batch`` argument is set to ``False``. Defaults to ``False``.
 
-        ..note:: Cannot be used in combination with batch mode.
+        .. note:: Cannot be used in combination with batch mode.
+
+    communication_channel : CommunicationChannel, optional
+        Defines the communication channel to be used for the optiSLang server.
+        If not specified, local domain communication channel is used.
+        Defaults to ``CommunicationChannel.LOCAL_DOMAIN``.
+
+        .. warning:: If set to ``CommunicationChannel.TCP``, insecure communication mode without TLS
+            is used. This mode allows remote communication but is not recommended.
+            For more details on the implications and usage of insecure mode,
+            refer to the optiSLang documentation.
 
     server_address : Optional[str], optional
         In case an optiSLang server is to be started, this defines the address
-        of the optiSLang server. If not specified, optiSLang will be listening on
+        of the optiSLang server. If not specified, optiSLang listens on
         local host only. Defaults to ``None``.
     port_range : Optional[Tuple[int, int]], optional
         In case an optiSLang server is to be started, this restricts the port range
-        for the optiSLang server. If not specified, optiSLang will be allowed to
+        for the optiSLang server. If not specified, optiSLang is allowed to
         listen on any port. Defaults to ``None``.
     no_run : Optional[bool], optional
         Determines whether not to run the specified project when started in batch mode.
@@ -226,12 +244,14 @@ class Optislang:
 
     def __init__(
         self,
+        local_server_id: Optional[str] = None,
         host: Optional[str] = None,
         port: Optional[int] = None,
         executable: Optional[Union[str, Path]] = None,
         project_path: Optional[Union[str, Path]] = None,
         batch: bool = True,
         service: bool = False,
+        communication_channel: CommunicationChannel = CommunicationChannel.LOCAL_DOMAIN,
         server_address: Optional[str] = None,
         port_range: Optional[Tuple[int, int]] = None,
         no_run: Optional[bool] = None,
@@ -261,12 +281,14 @@ class Optislang:
         additional_args: Optional[Iterable[str]] = None,
     ) -> None:
         """Initialize a new instance of the ``Optislang`` class."""
+        self.__local_server_id = local_server_id
         self.__host = host
         self.__port = port
         self.__executable = Path(executable) if executable is not None else None
         self.__project_path = Path(project_path) if project_path is not None else None
         self.__batch = batch
         self.__service = service
+        self.__communication_channel = communication_channel
         self.__server_address = server_address
         self.__port_range = port_range
         self.__no_run = no_run
@@ -294,17 +316,15 @@ class Optislang:
         self.__logger = LOG.add_instance_logger(self.name, self, loglevel)
         self.__log_process_stdout = log_process_stdout
         self.__log_process_stderr = log_process_stderr
-        self.__osl_server: OslServer = self.__init_osl_server("tcp")
+        self.__osl_server: OslServer = self.__init_osl_server()
         self.__application: Application = self.__init_application()
 
-    def __init_osl_server(self, server_type: str) -> OslServer:
-        """Initialize optiSLang server.
+        if self.__project_path and not self.__batch and not self.__service:  # pragma: no cover
+            # trigger lazy project load in GUI mode
+            self.open(file_path=self.__project_path, force=self.__force, reset=self.__reset)
 
-        Parameters
-        ----------
-        server_type : str, optional
-            Type of the optiSLang server. The default is ``tcp``, in which case
-            the plain TCP/IP communication protocol is used.
+    def __init_osl_server(self) -> OslServer:
+        """Initialize optiSLang server.
 
         Returns
         -------
@@ -320,12 +340,16 @@ class Optislang:
         OslServerLicensingError
             Raised when optiSLang server process failed to start due to licensing issues
         """
-        if server_type.lower() == "tcp":
+        if (
+            self.__communication_channel == CommunicationChannel.LOCAL_DOMAIN
+            or self.__communication_channel == CommunicationChannel.TCP
+        ):
             return TcpOslServer(
+                local_server_id=self.__local_server_id,
                 host=self.__host,
                 port=self.__port,
                 executable=self.__executable,
-                project_path=self.__project_path,
+                project_path=self.__project_path if self.__batch else None,
                 no_save=self.__no_save,
                 ini_timeout=self.__ini_timeout,
                 password=self.__password,
@@ -335,6 +359,7 @@ class Optislang:
                 shutdown_on_finished=self.__shutdown_on_finished,
                 batch=self.__batch,
                 service=self.__service,
+                communication_channel=self.__communication_channel,
                 server_address=self.__server_address,
                 port_range=self.__port_range,
                 no_run=self.__no_run,
@@ -356,9 +381,7 @@ class Optislang:
                 additional_args=self.__additional_args,
             )
         else:
-            raise NotImplementedError(
-                f"OptiSLang server of type ``{server_type}`` is not supported."
-            )
+            raise NotImplementedError("Desired communication type is not yet supported.")
 
     def __init_application(self) -> Application:
         if isinstance(self.__osl_server, TcpOslServer):

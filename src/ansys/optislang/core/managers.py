@@ -1,4 +1,4 @@
-# Copyright (C) 2022 - 2025 ANSYS, Inc. and/or its affiliates.
+# Copyright (C) 2022 - 2026 ANSYS, Inc. and/or its affiliates.
 # SPDX-License-Identifier: MIT
 #
 #
@@ -99,6 +99,33 @@ class CriteriaManager:
 
         Raises
         ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        pass
+
+    @abstractmethod
+    def get_criterion(self, name: str) -> Criterion:  # pragma: no cover
+        """Get criterion of the system by name.
+
+        Parameters
+        ----------
+        name : str
+            Name of the criterion.
+
+        Returns
+        -------
+        Criterion
+            Criterion of the given name.
+
+        Raises
+        ------
+        ValueError
+            Raised when no criterion of the given name exists.
         OslCommunicationError
             Raised when an error occurs while communicating with the server.
         OslCommandError
@@ -252,6 +279,32 @@ class DesignManager:
         pass
 
     @abstractmethod
+    def get_best_designs(self, hid: str = "0") -> Tuple[Design, ...]:  # pragma: no cover
+        """Get the best (pareto) designs for a given state.
+
+        Parameters
+        ----------
+        hid : str, optional
+            State/Design hierarchical id. Defaults to the "root" id ("0").
+
+        Returns
+        -------
+        Tuple[Design, ...]
+            Tuple of the best designs for a given state, determined by the
+            ``Design.pareto_design`` flag.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        pass
+
+    @abstractmethod
     def save_designs_as_json(
         self, file_path: Union[Path, str], hid: str = "0"
     ) -> File:  # pragma: no cover
@@ -318,6 +371,30 @@ class DesignManager:
             `file_path` is `None` or unsupported type.
         ValueError
             Raised when ``hid`` does not exist.
+        """
+        pass
+
+    @abstractmethod
+    def set_start_designs(
+        self,
+        start_designs: Iterable[Design],
+    ) -> None:  # pragma: no cover
+        """Set unevaluated start designs for the parametric system.
+
+        Parameters
+        ----------
+        id : str
+            Design id.
+        start_designs: Iterable[Design]
+            Iterable of `Design` instances containing parameters with values.
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
         """
         pass
 

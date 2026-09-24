@@ -1,4 +1,4 @@
-# Copyright (C) 2022 - 2025 ANSYS, Inc. and/or its affiliates.
+# Copyright (C) 2022 - 2026 ANSYS, Inc. and/or its affiliates.
 # SPDX-License-Identifier: MIT
 #
 #
@@ -21,11 +21,12 @@
 # SOFTWARE.
 
 """Contains abstract base classes ``Node``, ``System``, ``ParametricSystem`` and ``RootSystem``."""
+
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from enum import Enum, Flag
-from typing import TYPE_CHECKING, Any, Optional, Tuple, Union
+from typing import TYPE_CHECKING, Any, Iterable, Mapping, Optional, Tuple, Union
 
 from deprecated.sphinx import deprecated
 
@@ -285,9 +286,9 @@ class Node(ABC):
         self,
         command: str,
         hid: Optional[str] = None,
-        wait_for_completion: bool = True,
+        wait_for_completion: bool = False,
         timeout: Union[float, int] = 100,
-    ) -> Optional[bool]:  # pragma: no cover
+    ) -> bool:  # pragma: no cover
         """Control the node state.
 
         Parameters
@@ -298,20 +299,83 @@ class Node(ABC):
         hid: Optional[str], optional
             Hid entry. The default is ``None``.
         wait_for_completion: bool, optional
-            Whether to wait for completion. The default is ``True``.
+            Whether to wait for completion. The default is ``False``.
+
+            .. deprecated:: 1.1.0
+                This argument is ignored and will be removed in future versions.
+                Waiting for command completion is currently not supported.
+
         timeout: Union[float, int], optional
             Time limit for monitoring the status of the command. The default is ``100 s``.
 
+            .. deprecated:: 1.1.0
+                This argument is ignored and will be removed in future versions.
+                Waiting for command completion is currently not supported.
+
         Returns
         -------
-        Optional[bool]
+        bool
             ``True`` when successful, ``False`` when failed.
+        """
+        pass
+
+    @abstractmethod
+    def copy(
+        self, target_system: Optional[System] = None, deep_copy: bool = False
+    ) -> Node:  # pragma: no cover
+        """Copy current node into a target system.
+
+        .. note:: Method is supported for Ansys optiSLang version >= 27.1 only.
+
+        Parameters
+        ----------
+        target_system : Optional[System], optional
+            System the node is copied into, by default ``None``.
+            If not specified, the node is copied into the root system.
+        deep_copy : bool, optional
+            Whether children of the node are copied as well, by default ``False``.
+
+        Returns
+        -------
+        Node
+            Instance of the copied node.
+
+        Raises
+        ------
+        NotImplementedError
+            Raised when unsupported optiSLang server is used.
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
         """
         pass
 
     @abstractmethod
     def delete(self) -> None:  # pragma: no cover
         """Delete current node and it's children from active project.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        pass
+
+    @abstractmethod
+    def move_to(self, to_system: System) -> None:  # pragma: no cover
+        """Move node into another system.
+
+        Parameters
+        ----------
+        to_system: System
+            System to move the node into.
 
         Raises
         ------
@@ -346,12 +410,12 @@ class Node(ABC):
 
     @abstractmethod
     def get_ancestors(self) -> Tuple[Node, ...]:  # pragma: no cover
-        """Get tuple of ordered ancestors starting from root system at position 0.
+        """Get ordered ancestors of this node, starting with the root system.
 
         Returns
         -------
         Tuple[Node, ...]
-            Tuple of ordered ancestors, starting from root system at position.
+            Ancestor nodes ordered from root system at index 0 to the direct parent.
 
         Raises
         ------
@@ -524,18 +588,38 @@ class Node(ABC):
         pass
 
     @abstractmethod
+    def get_properties(self) -> dict[str, Any]:
+        """Get the full dictionary of the node properties.
+
+        Returns
+        -------
+        dict[str, Any]
+            Dictionary with the node properties.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        pass
+
+    @abstractmethod
     def get_property(self, name: str) -> Any:  # pragma: no cover
         """Get property from properties dictionary.
 
         Parameters
         ----------
-        name
+        name: str
             Name of property to be returned.
 
         Returns
         -------
         Any
-            Value of given property, ``None`` if property doesn't exits.
+            Value of given property, ``None`` if property doesn't exists.
 
         Raises
         ------
@@ -629,6 +713,119 @@ class Node(ABC):
         pass
 
     @abstractmethod
+    def get_hpc_licensing_forwarded_environment(self) -> dict:  # pragma: no cover
+        """Get HPC licensing forwarded environment for the node.
+
+        Returns
+        -------
+        dict
+            Dictionary with HPC licensing forwarded environment for the node.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        pass
+
+    @abstractmethod
+    def get_input_slot_value(
+        self, hid: str, slot_name: str, legacy_design_format: bool = False
+    ) -> dict:  # pragma: no cover
+        """Get input slot value of the node.
+
+        Parameters
+        ----------
+        hid : str
+            State/Design hierarchical id.
+        slot_name : str
+            Slot name.
+        legacy_design_format : bool, optional
+            Whether to use legacy format for designs and design container type slots.
+            Defaults to ``False``.
+
+            .. note:: Argument has effect for Ansys optiSLang version >= 25.2 only.
+
+        Returns
+        -------
+        dict
+            Input slot value of the node.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        pass
+
+    @abstractmethod
+    def get_output_slot_value(
+        self, hid: str, slot_name: str, legacy_design_format: bool = False
+    ) -> dict:  # pragma: no cover
+        """Get output slot value of the node.
+
+        Parameters
+        ----------
+        hid : str
+            State/Design hierarchical id.
+        slot_name : str
+            Slot name.
+        legacy_design_format : bool, optional
+            Whether to use legacy format for designs and design container type slots.
+            Defaults to ``False``.
+
+            .. note:: Argument has effect for Ansys optiSLang version >= 25.2 only.
+
+        Returns
+        -------
+        dict
+            Output slot value of the node.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        pass
+
+    @abstractmethod
+    def supports(self, feature_name: str) -> bool:  # pragma: no cover
+        """Get whether a given feature is supported by the node.
+
+        Parameters
+        ----------
+        feature_name : str
+            Name of the feature.
+
+        Returns
+        -------
+        bool
+            Whether the given feature is supported.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        pass
+
+    @abstractmethod
     def set_execution_options(self, value: ExecutionOption) -> None:  # pragma: no cover
         """Set execution options.
 
@@ -671,6 +868,28 @@ class Node(ABC):
 
         Raises
         ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        pass
+
+    @abstractmethod
+    def set_properties(self, properties: Mapping[str, Any]) -> None:  # pragma: no cover
+        """Set multiple node properties.
+
+        Parameters
+        ----------
+        properties : Mapping[str, Any]
+            Mapping of property names to property values.
+
+        Raises
+        ------
+        TypeError
+            Raised when ``properties`` is not a mapping or contains non-string keys.
         OslCommunicationError
             Raised when an error occurs while communicating with the server.
         OslCommandError
@@ -1274,6 +1493,201 @@ class IntegrationNode(Node):
         """
         pass
 
+    @abstractmethod
+    def remove_all_input_slots(self) -> None:  # pragma: no cover
+        """Remove all registered input slots.
+
+        .. note:: Method is supported for Ansys optiSLang version >= 27.1 only.
+
+        Raises
+        ------
+        NotImplementedError
+            Raised when unsupported optiSLang server is used.
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        pass
+
+    @abstractmethod
+    def remove_all_internal_variables(self) -> None:  # pragma: no cover
+        """Remove all registered internal variables.
+
+        .. note:: Method is supported for Ansys optiSLang version >= 27.1 only.
+
+        Raises
+        ------
+        NotImplementedError
+            Raised when unsupported optiSLang server is used.
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        pass
+
+    @abstractmethod
+    def remove_all_output_slots(self) -> None:  # pragma: no cover
+        """Remove all registered output slots.
+
+        .. note:: Method is supported for Ansys optiSLang version >= 27.1 only.
+
+        Raises
+        ------
+        NotImplementedError
+            Raised when unsupported optiSLang server is used.
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        pass
+
+    @abstractmethod
+    def remove_all_parameters(self) -> None:  # pragma: no cover
+        """Remove all registered parameters.
+
+        .. note:: Method is supported for Ansys optiSLang version >= 27.1 only.
+
+        Raises
+        ------
+        NotImplementedError
+            Raised when unsupported optiSLang server is used.
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        pass
+
+    @abstractmethod
+    def remove_all_responses(self) -> None:  # pragma: no cover
+        """Remove all registered responses.
+
+        .. note:: Method is supported for Ansys optiSLang version >= 27.1 only.
+
+        Raises
+        ------
+        NotImplementedError
+            Raised when unsupported optiSLang server is used.
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        pass
+
+    @abstractmethod
+    def remove_input_slot(self, name: str) -> None:  # pragma: no cover
+        """Remove the given registered input slot.
+
+        Parameters
+        ----------
+        name : str
+            Name of the registered input slot.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        pass
+
+    @abstractmethod
+    def remove_internal_variable(self, name: str) -> None:  # pragma: no cover
+        """Remove the given registered internal variable.
+
+        Parameters
+        ----------
+        name : str
+            Name of the registered internal variable.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        pass
+
+    @abstractmethod
+    def remove_output_slot(self, name: str) -> None:  # pragma: no cover
+        """Remove the given registered output slot.
+
+        Parameters
+        ----------
+        name : str
+            Name of the registered output slot.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        pass
+
+    @abstractmethod
+    def remove_parameter(self, name: str) -> None:  # pragma: no cover
+        """Remove the given registered parameter.
+
+        Parameters
+        ----------
+        name : str
+            Name of the registered parameter.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        pass
+
+    @abstractmethod
+    def remove_response(self, name: str) -> None:  # pragma: no cover
+        """Remove the given registered response.
+
+        Parameters
+        ----------
+        name : str
+            Name of the registered response.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        pass
+
 
 class ProxySolverNode(IntegrationNode):
     """Base class for classes which provide for creating and operating on an proxy solver node."""
@@ -1373,6 +1787,26 @@ class System(Node):
     @abstractmethod
     def delete_children_nodes(self) -> None:  # pragma: no cover
         """Delete all children nodes from the active project.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        pass
+
+    @abstractmethod
+    def move_nodes_here(self, nodes: Iterable[Node]) -> None:  # pragma: no cover
+        """Move existing nodes into this system.
+
+        Parameters
+        ----------
+        nodes: Iterable[Node]
+            Nodes to move into this system.
 
         Raises
         ------
@@ -1747,7 +2181,7 @@ class RootSystem(ParametricSystem):
         hid: Optional[str] = None,
         wait_for_completion: bool = True,
         timeout: Union[float, int] = 100,
-    ) -> Optional[bool]:  # pragma: no cover
+    ) -> bool:  # pragma: no cover
         """Control the node state.
 
         Parameters
@@ -1764,7 +2198,7 @@ class RootSystem(ParametricSystem):
 
         Returns
         -------
-        Optional[bool]
+        bool
             ``True`` when successful, ``False`` when failed.
         """
         pass

@@ -1,4 +1,4 @@
-# Copyright (C) 2022 - 2025 ANSYS, Inc. and/or its affiliates.
+# Copyright (C) 2022 - 2026 ANSYS, Inc. and/or its affiliates.
 # SPDX-License-Identifier: MIT
 #
 #
@@ -51,7 +51,7 @@ This image shows the workflow:
 
 #########################################################
 # Workflow:
-# .. image:: ../../_static/01_ten_bar_truss_evaluate_design.png
+# .. image:: ../../../_static/01_ten_bar_truss_evaluate_design.png
 #  :width: 400
 #  :alt: Result of script.
 #
@@ -61,6 +61,10 @@ This image shows the workflow:
 # Perform required imports
 # ~~~~~~~~~~~~~~~~~~~~~~~~
 # Perform the required imports.
+
+# sphinx_gallery_start_ignore
+# sphinx_gallery_thumbnail_path = "../../doc/source/_static/01_ten_bar_truss_evaluate_design.png"
+# sphinx_gallery_end_ignore
 
 from pathlib import Path
 import tempfile
@@ -126,7 +130,6 @@ while True in try_decrease_param:
     for j in range(parameters_count):
         if not try_decrease_param[j]:
             continue
-        design_count += 1
         design = successful_designs[-1].copy_unevaluated_design()
         parameters = design.parameters
         parameter_value = parameters[j].value
@@ -135,6 +138,7 @@ while True in try_decrease_param:
         else:
             try_decrease_param[j] = False
             continue
+        design_count += 1
         evaluated_design = root_system.evaluate_design(design)
         if evaluated_design.feasibility:
             successful_designs.append(evaluated_design)

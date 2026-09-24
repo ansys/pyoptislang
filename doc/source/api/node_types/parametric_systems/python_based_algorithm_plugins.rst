@@ -6,6 +6,7 @@ Python based algorithm plugins
     :toctree: _autosummary
     
     BASS
+    DLS
     DXAMO
     DXASO
     DXMISQP

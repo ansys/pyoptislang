@@ -1,4 +1,4 @@
-# Copyright (C) 2022 - 2025 ANSYS, Inc. and/or its affiliates.
+# Copyright (C) 2022 - 2026 ANSYS, Inc. and/or its affiliates.
 # SPDX-License-Identifier: MIT
 #
 #
@@ -30,7 +30,19 @@ import json
 import logging
 from pathlib import Path
 import time
-from typing import TYPE_CHECKING, Any, Dict, Iterable, List, Optional, Tuple, Type, Union, cast
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Dict,
+    Iterable,
+    List,
+    Mapping,
+    Optional,
+    Tuple,
+    Type,
+    Union,
+    cast,
+)
 
 from deprecated.sphinx import deprecated
 
@@ -38,7 +50,6 @@ from ansys.optislang.core.errors import OslCommandError
 from ansys.optislang.core.io import File, FileOutputFormat, RegisteredFile, RegisteredFileUsage
 from ansys.optislang.core.node_types import AddinType, NodeType, get_node_type_from_str
 from ansys.optislang.core.nodes import (
-    ACTOR_COMMANDS_RETURN_STATES,
     PROJECT_COMMANDS_RETURN_STATES,
     DesignFlow,
     Edge,
@@ -143,9 +154,9 @@ class TcpNodeProxy(Node):
         self,
         command: str,
         hid: Optional[str] = None,
-        wait_for_completion: bool = True,
+        wait_for_completion: bool = False,
         timeout: Union[float, int] = 100,
-    ) -> Optional[bool]:
+    ) -> bool:
         """Control the node state.
 
         Parameters
@@ -156,13 +167,22 @@ class TcpNodeProxy(Node):
         hid: Optional[str], optional
             Hid entry. The default is ``None``.
         wait_for_completion: bool, optional
-            Whether to wait for completion. The default is ``True``.
+            Whether to wait for completion. The default is ``False``.
+
+            .. deprecated:: 1.1.0
+                This argument is ignored and will be removed in future versions.
+                Waiting for command completion is currently not supported.
+
         timeout: Union[float, int], optional
             Time limit for monitoring the status of the command. The default is ``100 s``.
 
+            .. deprecated:: 1.1.0
+                This argument is ignored and will be removed in future versions.
+                Waiting for command completion is currently not supported.
+
         Returns
         -------
-        Optional[bool]
+        bool
             ``True`` when successful, ``False`` when failed.
         """
         if hid is None:  # Run command against all designs
@@ -182,26 +202,55 @@ class TcpNodeProxy(Node):
             if response[0]["status"] != "success":
                 raise Exception(f"{command} command execution failed.")
 
-        if wait_for_completion:
-            time_stamp = time.time()
-            while True:
-                print(
-                    f"Project: {self.get_name()} | "
-                    f"State: {self.get_status()} | "
-                    f"Time: {round(time.time() - time_stamp)}s"
-                )
-                if self.get_status() == ACTOR_COMMANDS_RETURN_STATES[command]:
-                    print(f"{command} command successfully executed.")
-                    status = True
-                    break
-                if (time.time() - time_stamp) > timeout:
-                    print("Timeout limit reached. Skip monitoring of command {command}.")
-                    status = False
-                    break
-                time.sleep(3)
-            return status
-        else:
-            return None
+        return True
+
+    def copy(self, target_system: Optional[System] = None, deep_copy: bool = False) -> TcpNodeProxy:
+        """Copy current node into a target system.
+
+        .. note:: Method is supported for Ansys optiSLang version >= 27.1 only.
+
+        Parameters
+        ----------
+        target_system : Optional[System], optional
+            System the node is copied into, by default ``None``.
+            If not specified, the node is copied into the root system.
+        deep_copy : bool, optional
+            Whether children of the node are copied as well, by default ``False``.
+
+        Returns
+        -------
+        TcpNodeProxy
+            Instance of the copied node.
+
+        Raises
+        ------
+        NotImplementedError
+            Raised when unsupported optiSLang server is used.
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        if not (
+            (self._osl_server.osl_version.major == 27 and self._osl_server.osl_version.minor >= 1)
+            or self._osl_server.osl_version.major > 27
+        ):
+            raise NotImplementedError("Method is supported for Ansys optiSLang version >= 27.1.")
+
+        uid = self._osl_server.copy_node(
+            actor_uid=self.uid,
+            target_system_uid=target_system.uid if target_system is not None else None,
+            deep_copy=deep_copy,
+        )
+        info = self._osl_server.get_actor_info(
+            uid=uid, include_log_messages=False, include_integrations_registered_locations=False
+        )
+        info["is_parametric_system"] = "estimated_designs" in info.keys()
+        return create_nodes_from_properties_dicts(
+            osl_server=self._osl_server, properties_dicts_list=[info], logger=self._logger
+        )[0]
 
     def delete(self) -> None:
         """Delete current node and it's children from active project.
@@ -622,6 +671,125 @@ class TcpNodeProxy(Node):
         )
         return actor_info["status"]
 
+    def get_hpc_licensing_forwarded_environment(self) -> dict:
+        """Get HPC licensing forwarded environment for the node.
+
+        Returns
+        -------
+        dict
+            Dictionary with HPC licensing forwarded environment for the node.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        return self._osl_server.get_hpc_licensing_forwarded_environment(uid=self.uid)
+
+    def get_input_slot_value(
+        self, hid: str, slot_name: str, legacy_design_format: bool = False
+    ) -> dict:
+        """Get input slot value of the node.
+
+        Parameters
+        ----------
+        hid : str
+            State/Design hierarchical id.
+        slot_name : str
+            Slot name.
+        legacy_design_format : bool, optional
+            Whether to use legacy format for designs and design container type slots.
+            Defaults to ``False``.
+
+            .. note:: Argument has effect for Ansys optiSLang version >= 25.2 only.
+
+        Returns
+        -------
+        dict
+            Input slot value of the node.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        return self._osl_server.get_input_slot_value(
+            uid=self.uid,
+            hid=hid,
+            slot_name=slot_name,
+            legacy_design_format=legacy_design_format,
+        )
+
+    def get_output_slot_value(
+        self, hid: str, slot_name: str, legacy_design_format: bool = False
+    ) -> dict:
+        """Get output slot value of the node.
+
+        Parameters
+        ----------
+        hid : str
+            State/Design hierarchical id.
+        slot_name : str
+            Slot name.
+        legacy_design_format : bool, optional
+            Whether to use legacy format for designs and design container type slots.
+            Defaults to ``False``.
+
+            .. note:: Argument has effect for Ansys optiSLang version >= 25.2 only.
+
+        Returns
+        -------
+        dict
+            Output slot value of the node.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        return self._osl_server.get_output_slot_value(
+            uid=self.uid,
+            hid=hid,
+            slot_name=slot_name,
+            legacy_design_format=legacy_design_format,
+        )
+
+    def supports(self, feature_name: str) -> bool:
+        """Get whether a given feature is supported by the node.
+
+        Parameters
+        ----------
+        feature_name : str
+            Name of the feature.
+
+        Returns
+        -------
+        bool
+            Whether the given feature is supported.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        return self._osl_server.get_actor_supports(uid=self.uid, feature_name=feature_name)
+
     @deprecated(version="0.6.0", reason="Use :py:attr:`TcpNodeProxy.type` instead.")
     def get_type(self) -> NodeType:
         """Get the type of the node.
@@ -695,7 +863,50 @@ class TcpNodeProxy(Node):
         TimeoutError
             Raised when the timeout float value expires.
         """
+        from ansys.optislang.core.settings.types import SettingInstance
+        from ansys.optislang.core.tcp.settings import TcpSerializer
+
+        if isinstance(value, SettingInstance):
+            if name != value.name:
+                raise ValueError(
+                    f"Property name mismatch: received name '{name}', but setting instance "
+                    f"is bound to '{value.name}'."
+                )
+            value = value._serialize_value(TcpSerializer())
+
         self._osl_server.set_actor_property(actor_uid=self.uid, name=name, value=value)
+
+    def set_properties(self, properties: Mapping[str, Any]) -> None:
+        """Set multiple node properties.
+
+        Parameters
+        ----------
+        properties : Mapping[str, Any]
+            Mapping of property names to property values.
+
+        Raises
+        ------
+        TypeError
+            Raised when ``properties`` is not a mapping or contains non-string keys.
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+
+        Notes
+        -----
+        Properties are applied in iteration order. If setting one property fails,
+        the exception is raised immediately and remaining properties are not applied.
+        """
+        if not isinstance(properties, Mapping):
+            raise TypeError(f"Unsupported type of properties: ``{type(properties)}``.")
+
+        for name, value in properties.items():
+            if not isinstance(name, str):
+                raise TypeError(f"Unsupported type of property name: ``{type(name)}``.")
+            self.set_property(name=name, value=value)
 
     def create_input_slot(self, slot_name: str, type_hint: Optional[SlotTypeHint] = None) -> None:
         """Create dynamic input slot.
@@ -770,6 +981,34 @@ class TcpNodeProxy(Node):
             self._osl_server.rename_node(actor_uid=self.uid, new_name=new_name)
         else:
             raise NotImplementedError("Method is supported for Ansys optiSLang version >= 25.2.")
+
+    def move_to(self, to_system: System) -> None:
+        """Move node into another system.
+
+        .. note:: Method is supported for Ansys optiSLang version >= 27.1 only.
+
+        Parameters
+        ----------
+        to_system: System
+            System to move the node into.
+
+        Raises
+        ------
+        NotImplementedError
+            Raised when unsupported optiSLang server is used.
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        if (
+            self._osl_server.osl_version.major == 27 and self._osl_server.osl_version.minor >= 1
+        ) or self._osl_server.osl_version.major > 27:
+            self._osl_server.move_node(actor_uid=self.uid, target_system_uid=to_system.uid)
+        else:
+            raise NotImplementedError("Method is supported for Ansys optiSLang version >= 27.1.")
 
     def create_placeholder_from_property(
         self,
@@ -916,8 +1155,11 @@ class TcpNodeProxy(Node):
             direction = SlotType.to_dir_str(slot_type)
             uid_keys = [direction + "_uuid"]
             slot_name_keys = [direction + "_slot"]
-            slot_type_key = [direction + "_slot_is_inner"]
-            slot_type_is_inner = slot_type in [SlotType.INNER_INPUT, SlotType.INNER_OUTPUT]
+            slot_type_key = direction + "_slot_is_inner"
+            slot_type_is_inner = slot_type in [
+                SlotType.INNER_INPUT,
+                SlotType.INNER_OUTPUT,
+            ]
         else:
             uid_keys = ["receiving_uuid", "sending_uuid"]
             slot_name_keys = ["receiving_slot", "sending_slot"]
@@ -1786,6 +2028,216 @@ class TcpIntegrationNodeProxy(TcpNodeProxy, IntegrationNode):
         # TODO: test
         self._osl_server.re_register_locations_as_response(uid=self.uid)
 
+    def remove_all_input_slots(self) -> None:
+        """Remove all registered input slots.
+
+        .. note:: Method is supported for Ansys optiSLang version >= 27.1 only.
+
+        Raises
+        ------
+        NotImplementedError
+            Raised when unsupported optiSLang server is used.
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        if (
+            self._osl_server.osl_version.major == 27 and self._osl_server.osl_version.minor >= 1
+        ) or self._osl_server.osl_version.major > 27:
+            self._osl_server.remove_all_input_slots(uid=self.uid)
+        else:
+            raise NotImplementedError("Method is supported for Ansys optiSLang version >= 27.1.")
+
+    def remove_all_internal_variables(self) -> None:
+        """Remove all registered internal variables.
+
+        .. note:: Method is supported for Ansys optiSLang version >= 27.1 only.
+
+        Raises
+        ------
+        NotImplementedError
+            Raised when unsupported optiSLang server is used.
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        if (
+            self._osl_server.osl_version.major == 27 and self._osl_server.osl_version.minor >= 1
+        ) or self._osl_server.osl_version.major > 27:
+            self._osl_server.remove_all_internal_variables(uid=self.uid)
+        else:
+            raise NotImplementedError("Method is supported for Ansys optiSLang version >= 27.1.")
+
+    def remove_all_output_slots(self) -> None:
+        """Remove all registered output slots.
+
+        .. note:: Method is supported for Ansys optiSLang version >= 27.1 only.
+
+        Raises
+        ------
+        NotImplementedError
+            Raised when unsupported optiSLang server is used.
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        if (
+            self._osl_server.osl_version.major == 27 and self._osl_server.osl_version.minor >= 1
+        ) or self._osl_server.osl_version.major > 27:
+            self._osl_server.remove_all_output_slots(uid=self.uid)
+        else:
+            raise NotImplementedError("Method is supported for Ansys optiSLang version >= 27.1.")
+
+    def remove_all_parameters(self) -> None:
+        """Remove all registered parameters.
+
+        .. note:: Method is supported for Ansys optiSLang version >= 27.1 only.
+
+        Raises
+        ------
+        NotImplementedError
+            Raised when unsupported optiSLang server is used.
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        if (
+            self._osl_server.osl_version.major == 27 and self._osl_server.osl_version.minor >= 1
+        ) or self._osl_server.osl_version.major > 27:
+            self._osl_server.remove_all_parameters(uid=self.uid)
+        else:
+            raise NotImplementedError("Method is supported for Ansys optiSLang version >= 27.1.")
+
+    def remove_all_responses(self) -> None:
+        """Remove all registered responses.
+
+        .. note:: Method is supported for Ansys optiSLang version >= 27.1 only.
+
+        Raises
+        ------
+        NotImplementedError
+            Raised when unsupported optiSLang server is used.
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        if (
+            self._osl_server.osl_version.major == 27 and self._osl_server.osl_version.minor >= 1
+        ) or self._osl_server.osl_version.major > 27:
+            self._osl_server.remove_all_responses(uid=self.uid)
+        else:
+            raise NotImplementedError("Method is supported for Ansys optiSLang version >= 27.1.")
+
+    def remove_input_slot(self, name: str) -> None:
+        """Remove the given registered input slot.
+
+        Parameters
+        ----------
+        name : str
+            Name of the registered input slot.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        self._osl_server.remove_input_slot(uid=self.uid, name=name)
+
+    def remove_internal_variable(self, name: str) -> None:
+        """Remove the given registered internal variable.
+
+        Parameters
+        ----------
+        name : str
+            Name of the registered internal variable.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        self._osl_server.remove_internal_variable(uid=self.uid, name=name)
+
+    def remove_output_slot(self, name: str) -> None:
+        """Remove the given registered output slot.
+
+        Parameters
+        ----------
+        name : str
+            Name of the registered output slot.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        self._osl_server.remove_output_slot(uid=self.uid, name=name)
+
+    def remove_parameter(self, name: str) -> None:
+        """Remove the given registered parameter.
+
+        Parameters
+        ----------
+        name : str
+            Name of the registered parameter.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        self._osl_server.remove_parameter(uid=self.uid, name=name)
+
+    def remove_response(self, name: str) -> None:
+        """Remove the given registered response.
+
+        Parameters
+        ----------
+        name : str
+            Name of the registered response.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        self._osl_server.remove_response(uid=self.uid, name=name)
+
 
 class TcpProxySolverNodeProxy(TcpIntegrationNodeProxy, ProxySolverNode):
     """Provides for creating and operating on integration nodes."""
@@ -1980,6 +2432,36 @@ class TcpSystemProxy(TcpNodeProxy, System):
         for node in nodes:
             node.delete()
 
+    def move_nodes_here(self, nodes: Iterable[Node]) -> None:
+        """Move existing nodes into this system.
+
+        .. note:: Method is supported for Ansys optiSLang version >= 27.1 only.
+
+        Parameters
+        ----------
+        nodes: Iterable[Node]
+            Nodes to move into this system.
+
+        Raises
+        ------
+        NotImplementedError
+            Raised when unsupported optiSLang server is used.
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        if (
+            self._osl_server.osl_version.major == 27 and self._osl_server.osl_version.minor >= 1
+        ) or self._osl_server.osl_version.major > 27:
+            self._osl_server.move_nodes(
+                actor_uids=[node.uid for node in nodes], target_system_uid=self.uid
+            )
+        else:
+            raise NotImplementedError("Method is supported for Ansys optiSLang version >= 27.1.")
+
     def find_node_by_uid(self, uid: str, search_depth: int = 1) -> Optional[TcpNodeProxy]:
         """Find a node in the system with a specified unique ID.
 
@@ -2034,7 +2516,6 @@ class TcpSystemProxy(TcpNodeProxy, System):
         )
 
         if len(properties_dicts_list) == 0:
-            self._logger.error(f"Node `{uid}` was not found in the current system.")
             return None
 
         return create_nodes_from_properties_dicts(
@@ -2096,7 +2577,6 @@ class TcpSystemProxy(TcpNodeProxy, System):
         )
 
         if len(properties_dicts_list) == 0:
-            self._logger.error(f"Node `{name}` not found in the current system.")
             return tuple()
 
         return create_nodes_from_properties_dicts(
@@ -2757,7 +3237,7 @@ class TcpRootSystemProxy(TcpParametricSystemProxy, RootSystem):
         hid: Optional[str] = None,
         wait_for_completion: bool = True,
         timeout: Union[float, int] = 100,
-    ) -> Optional[bool]:
+    ) -> bool:
         """Control the root system state.
 
         Parameters
@@ -2774,7 +3254,7 @@ class TcpRootSystemProxy(TcpParametricSystemProxy, RootSystem):
 
         Returns
         -------
-        Optional[bool]
+        bool
             ``True`` when successful, ``False`` when failed.
         """
         response = self._osl_server.send_command(getattr(commands, command)())
@@ -2800,7 +3280,7 @@ class TcpRootSystemProxy(TcpParametricSystemProxy, RootSystem):
                 time.sleep(3)
             return status
         else:
-            return None
+            return True
 
     def delete(self) -> None:
         """Delete current node and it's children from active project.

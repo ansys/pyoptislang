@@ -1,4 +1,4 @@
-# Copyright (C) 2022 - 2025 ANSYS, Inc. and/or its affiliates.
+# Copyright (C) 2022 - 2026 ANSYS, Inc. and/or its affiliates.
 # SPDX-License-Identifier: MIT
 #
 #
@@ -155,6 +155,35 @@ class TcpCriteriaManagerProxy(CriteriaManager):
             .get("sequence", [{}])
         )
         return tuple([criterion_dict["First"] for criterion_dict in container])
+
+    def get_criterion(self, name: str) -> Criterion:
+        """Get criterion of the system by name.
+
+        Parameters
+        ----------
+        name : str
+            Name of the criterion.
+
+        Returns
+        -------
+        Criterion
+            Criterion of the given name.
+
+        Raises
+        ------
+        ValueError
+            Raised when no criterion of the given name exists.
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        for criterion in self.get_criteria():
+            if criterion.name == name:
+                return criterion
+        raise ValueError(f"Criterion `{name}` doesn't exist in the system.")
 
     def modify_criterion(self, criterion: Criterion) -> None:
         """Modify criterion in the system.
@@ -521,6 +550,23 @@ class TcpDesignManagerProxy(DesignManager):
         """
         return self.__save_designs_as(file_path=file_path, format=FileOutputFormat.CSV, hid=hid)
 
+    def get_best_designs(self, hid: str = "0") -> Tuple[Design, ...]:
+        """Get the best (pareto) designs for a given state.
+
+        Parameters
+        ----------
+        hid : str, optional
+            State/Design hierarchical id. Defaults to the "root" id ("0").
+
+        Returns
+        -------
+        Tuple[Design, ...]
+            Tuple of the best designs for a given state, determined by the
+            ``Design.pareto_design`` flag.
+        """
+        designs = self.get_designs(hid=hid)
+        return self.filter_designs_by(designs, pareto_design=True)
+
     def __save_designs_as(
         self, file_path: Union[Path, str], format: FileOutputFormat, hid: str = "0"
     ) -> File:
@@ -596,6 +642,49 @@ class TcpDesignManagerProxy(DesignManager):
         with open(file_path, "w", newline=newline) as f:
             f.write(file_output)
         return File(file_path)
+
+    def set_start_designs(
+        self,
+        start_designs: Iterable[Design],
+    ) -> None:
+        """Set unevaluated start designs for the parametric system.
+
+        Parameters
+        ----------
+        id : str
+            Design id.
+        start_designs: Iterable[Design]
+            Iterable of `Design` instances containing parameters with values.
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        # TODO: unit test
+        # TODO: extend for option to set evaluated designs
+        design_dicts = []
+        for design in start_designs:
+            design_dict = {
+                "activation_state": {"value": "active"},
+                "is_approximated": False,
+                "iteration_number": 0,
+                "run_state": {"value": "awaiting"},
+            }
+            if design.id:
+                design_dict["id"] = design.id
+            if design.parameters:
+                design_dict["parameters"] = {
+                    "header": 0,
+                    "sequence": [
+                        {"First": par.name, "Second": par.value} for par in design.parameters
+                    ],
+                }
+            design_dicts.append(design_dict)
+        self.__osl_server.set_start_designs(actor_uid=self.__uid, start_designs=design_dicts)
 
     @staticmethod
     def filter_designs_by(
