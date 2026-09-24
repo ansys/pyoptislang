@@ -1194,7 +1194,7 @@ class TcpNodeProxy(Node):
             direction = SlotType.to_dir_str(slot_type)
             uid_keys = [direction + "_uuid"]
             slot_name_keys = [direction + "_slot"]
-            slot_type_key = [direction + "_slot_is_inner"]
+            slot_type_key = direction + "_slot_is_inner"
             slot_type_is_inner = slot_type in [
                 SlotType.INNER_INPUT,
                 SlotType.INNER_OUTPUT,
