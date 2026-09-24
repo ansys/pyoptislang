@@ -204,6 +204,54 @@ class TcpNodeProxy(Node):
 
         return True
 
+    def copy(self, target_system: Optional[System] = None, deep_copy: bool = False) -> TcpNodeProxy:
+        """Copy current node into a target system.
+
+        .. note:: Method is supported for Ansys optiSLang version >= 27.1 only.
+
+        Parameters
+        ----------
+        target_system : Optional[System], optional
+            System the node is copied into, by default ``None``.
+            If not specified, the node is copied into the root system.
+        deep_copy : bool, optional
+            Whether children of the node are copied as well, by default ``False``.
+
+        Returns
+        -------
+        TcpNodeProxy
+            Instance of the copied node.
+
+        Raises
+        ------
+        NotImplementedError
+            Raised when unsupported optiSLang server is used.
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        if not (
+            (self._osl_server.osl_version.major == 27 and self._osl_server.osl_version.minor >= 1)
+            or self._osl_server.osl_version.major > 27
+        ):
+            raise NotImplementedError("Method is supported for Ansys optiSLang version >= 27.1.")
+
+        uid = self._osl_server.copy_node(
+            actor_uid=self.uid,
+            target_system_uid=target_system.uid if target_system is not None else None,
+            deep_copy=deep_copy,
+        )
+        info = self._osl_server.get_actor_info(
+            uid=uid, include_log_messages=False, include_integrations_registered_locations=False
+        )
+        info["is_parametric_system"] = "estimated_designs" in info.keys()
+        return create_nodes_from_properties_dicts(
+            osl_server=self._osl_server, properties_dicts_list=[info], logger=self._logger
+        )[0]
+
     def delete(self) -> None:
         """Delete current node and it's children from active project.
 
