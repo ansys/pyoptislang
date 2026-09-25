@@ -43,26 +43,30 @@ class TcpApplicationProxy(Application):
         """Initialize a new instance of ``TcpApplicationProxy``."""
         self.__osl_server = osl_server
         self._logger = logging.getLogger(__name__) if logger is None else logger
-
-        try:
-            project_uid = self.__get_project_uid()
-        except OslCommandError:
-            project_uid = None
-        self.__project = (
-            TcpProjectProxy(osl_server=self.__osl_server, uid=project_uid, logger=self._logger)
-            if project_uid
-            else None
-        )
+        self.__project = self.__create_current_project_proxy()
 
     @property
     def project(self) -> Optional[TcpProjectProxy]:
         """Instance of the ``TcpProjectProxy`` class.
 
+        If the project currently loaded on the server no longer matches the cached
+        instance (for example because the project was closed/opened directly in the
+        optiSLang UI, bypassing :py:meth:`new`/:py:meth:`open`), the cached instance is
+        transparently rebuilt so a stale project/root system is never returned.
+
         Returns
         -------
         Optional[TcpProjectProxy]
             Loaded project. If no project is loaded, ``None`` is returned.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        TimeoutError
+            Raised when the timeout float value expires.
         """
+        self.__refresh_project_if_stale()
         return self.__project
 
     @property
@@ -101,11 +105,7 @@ class TcpApplicationProxy(Application):
             Raised when the timeout float value expires.
         """
         self.__osl_server.new()
-        self.__project = TcpProjectProxy(
-            osl_server=self.__osl_server,
-            uid=self.__get_project_uid(),
-            logger=self._logger,
-        )
+        self.__project = self.__create_current_project_proxy()
 
     def open(
         self,
@@ -151,10 +151,7 @@ class TcpApplicationProxy(Application):
             reset=reset,
             project_properties_file=project_properties_file,
         )
-        self.__project = TcpProjectProxy(
-            osl_server=self.__osl_server,
-            uid=self.__get_project_uid(),
-        )
+        self.__project = self.__create_current_project_proxy()
 
     def save(self) -> None:
         """Save changes to the project data and settings.
@@ -338,6 +335,37 @@ class TcpApplicationProxy(Application):
         """
         project_tree = self.__osl_server.get_full_project_tree_with_properties()
         return project_tree["projects"][0]["system"]["uid"]
+
+    def __get_project_uid_or_none(self) -> Optional[str]:
+        """Get the uid of the project currently loaded on the server, if any."""
+        try:
+            return self.__get_project_uid()
+        except OslCommandError:
+            return None
+
+    def __create_current_project_proxy(self) -> Optional[TcpProjectProxy]:
+        """Build a ``TcpProjectProxy`` bound to whatever project is currently active."""
+        project_uid = self.__get_project_uid_or_none()
+        if project_uid is None:
+            return None
+        return TcpProjectProxy(osl_server=self.__osl_server, uid=project_uid, logger=self._logger)
+
+    def __refresh_project_if_stale(self) -> None:
+        """Rebuild the cached project if the server's active project uid has changed.
+
+        This covers project switches made outside this instance's own
+        :py:meth:`new`/:py:meth:`open` calls, e.g. directly in the optiSLang UI, on the
+        same, still-alive server connection.
+        """
+        current_uid = self.__get_project_uid_or_none()
+        cached_uid = self.__project.uid if self.__project is not None else None
+        if current_uid == cached_uid:
+            return
+        self.__project = (
+            TcpProjectProxy(osl_server=self.__osl_server, uid=current_uid, logger=self._logger)
+            if current_uid is not None
+            else None
+        )
 
     # FUTURES:
 
