@@ -1,0 +1,6 @@
+get\_long\_running\_operation\_status
+=====================================
+
+.. currentmodule:: ansys.optislang.core.tcp.osl_server
+
+.. automethod:: TcpOslServer.get_long_running_operation_status

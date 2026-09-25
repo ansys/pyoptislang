@@ -1,0 +1,6 @@
+remove\_internal\_variable
+==========================
+
+.. currentmodule:: ansys.optislang.core.nodes
+
+.. automethod:: IntegrationNode.remove_internal_variable

@@ -1,0 +1,6 @@
+finalize
+========
+
+.. currentmodule:: ansys.optislang.core.nodes
+
+.. automethod:: RootSystem.finalize

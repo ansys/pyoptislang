@@ -1,0 +1,6 @@
+discard\_long\_running\_operation
+=================================
+
+.. currentmodule:: ansys.optislang.core.tcp.osl_server
+
+.. automethod:: TcpOslServer.discard_long_running_operation

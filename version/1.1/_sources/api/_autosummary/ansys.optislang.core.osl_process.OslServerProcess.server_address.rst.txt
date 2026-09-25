@@ -1,0 +1,6 @@
+server\_address
+===============
+
+.. currentmodule:: ansys.optislang.core.osl_process
+
+.. autoproperty:: OslServerProcess.server_address

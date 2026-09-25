@@ -1,0 +1,6 @@
+rename\_node
+============
+
+.. currentmodule:: ansys.optislang.core.tcp.osl_server
+
+.. automethod:: TcpOslServer.rename_node

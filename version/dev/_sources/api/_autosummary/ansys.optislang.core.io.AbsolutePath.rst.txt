@@ -1,0 +1,51 @@
+﻿AbsolutePath
+============
+
+.. currentmodule:: ansys.optislang.core.io
+
+.. autoclass:: AbsolutePath
+
+   
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :toctree:
+   
+      
+      
+      AbsolutePath.convert_to_absolute_path
+      
+      
+      AbsolutePath.convert_to_project_dir_relative
+      
+      
+      AbsolutePath.convert_to_project_working_dir_relative
+      
+      
+      AbsolutePath.convert_to_reference_files_dir_relative
+      
+      
+      AbsolutePath.convert_to_working_dir_relative
+      
+      
+      AbsolutePath.from_dict
+      
+      
+      AbsolutePath.to_dict
+      
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+      :toctree:
+   
+      AbsolutePath.path
+      AbsolutePath.type
+   
+   

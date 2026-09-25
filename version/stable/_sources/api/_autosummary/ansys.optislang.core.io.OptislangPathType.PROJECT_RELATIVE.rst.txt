@@ -1,0 +1,6 @@
+PROJECT\_RELATIVE
+=================
+
+.. currentmodule:: ansys.optislang.core.io
+
+.. autoattribute:: OptislangPathType.PROJECT_RELATIVE

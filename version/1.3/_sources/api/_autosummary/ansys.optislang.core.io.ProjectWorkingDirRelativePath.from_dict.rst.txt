@@ -1,0 +1,6 @@
+from\_dict
+==========
+
+.. currentmodule:: ansys.optislang.core.io
+
+.. automethod:: ProjectWorkingDirRelativePath.from_dict

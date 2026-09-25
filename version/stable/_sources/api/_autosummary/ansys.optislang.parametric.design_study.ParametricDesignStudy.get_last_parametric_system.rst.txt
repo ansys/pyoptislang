@@ -1,0 +1,6 @@
+get\_last\_parametric\_system
+=============================
+
+.. currentmodule:: ansys.optislang.parametric.design_study
+
+.. automethod:: ParametricDesignStudy.get_last_parametric_system

@@ -1,0 +1,6 @@
+DESIGN\_POINT
+=============
+
+.. currentmodule:: ansys.optislang.core.slot_types
+
+.. autoattribute:: SlotTypeHint.DESIGN_POINT

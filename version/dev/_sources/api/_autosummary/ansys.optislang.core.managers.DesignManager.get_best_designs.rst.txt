@@ -1,0 +1,6 @@
+get\_best\_designs
+==================
+
+.. currentmodule:: ansys.optislang.core.managers
+
+.. automethod:: DesignManager.get_best_designs

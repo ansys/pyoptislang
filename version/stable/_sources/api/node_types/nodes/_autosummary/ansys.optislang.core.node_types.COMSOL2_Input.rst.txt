@@ -1,0 +1,6 @@
+﻿COMSOL2\_Input
+==============
+
+.. currentmodule:: ansys.optislang.core.node_types
+
+.. autodata:: COMSOL2_Input

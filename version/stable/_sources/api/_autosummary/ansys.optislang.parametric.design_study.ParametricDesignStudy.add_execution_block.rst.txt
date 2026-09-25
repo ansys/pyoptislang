@@ -1,0 +1,6 @@
+add\_execution\_block
+=====================
+
+.. currentmodule:: ansys.optislang.parametric.design_study
+
+.. automethod:: ParametricDesignStudy.add_execution_block

@@ -1,0 +1,6 @@
+set\_project\_setting
+=====================
+
+.. currentmodule:: ansys.optislang.core.tcp.osl_server
+
+.. automethod:: TcpOslServer.set_project_setting

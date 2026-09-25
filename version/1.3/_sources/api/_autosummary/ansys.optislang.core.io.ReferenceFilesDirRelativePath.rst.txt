@@ -1,0 +1,44 @@
+﻿ReferenceFilesDirRelativePath
+=============================
+
+.. currentmodule:: ansys.optislang.core.io
+
+.. autoclass:: ReferenceFilesDirRelativePath
+
+   
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :toctree:
+   
+      
+      
+      ReferenceFilesDirRelativePath.convert_to_absolute_path
+      
+      
+      ReferenceFilesDirRelativePath.from_dict
+      
+      
+      ReferenceFilesDirRelativePath.from_file_and_reference_dir_paths
+      
+      
+      ReferenceFilesDirRelativePath.to_dict
+      
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+      :toctree:
+   
+      ReferenceFilesDirRelativePath.file_path
+      ReferenceFilesDirRelativePath.reference_dir_path
+      ReferenceFilesDirRelativePath.tail
+      ReferenceFilesDirRelativePath.type
+   
+   

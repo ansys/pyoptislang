@@ -1,0 +1,6 @@
+get\_long\_running\_operation\_status
+=====================================
+
+.. currentmodule:: ansys.optislang.core.application
+
+.. automethod:: Application.get_long_running_operation_status

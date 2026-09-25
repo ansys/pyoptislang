@@ -1,0 +1,6 @@
+from\_file\_and\_project\_dir\_paths
+====================================
+
+.. currentmodule:: ansys.optislang.core.io
+
+.. automethod:: ProjectRelativePath.from_file_and_project_dir_paths
