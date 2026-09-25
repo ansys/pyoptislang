@@ -18,7 +18,7 @@ launching optiSLang:
 
 Timeout error when launching optiSLang
 --------------------------------------
-The default timeout for launching optiSLang is 20 seconds. You can use
+The default timeout for launching optiSLang is 60 seconds. You can use
 the ``ini_timeout`` parameter to increase the timeout when launching
 optiSLang:
 
@@ -26,5 +26,5 @@ optiSLang:
 
     from ansys.optislang.core import Optislang
 
-    osl = Optislang(ini_timeout=30)
+    osl = Optislang(ini_timeout=120)
     osl.dispose()

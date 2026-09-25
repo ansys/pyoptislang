@@ -26,7 +26,7 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from enum import Enum, Flag
-from typing import TYPE_CHECKING, Any, Iterable, Mapping, Optional, Tuple, Union
+from typing import TYPE_CHECKING, Any, Iterable, List, Mapping, Optional, Tuple, Union
 
 from deprecated.sphinx import deprecated
 
@@ -288,7 +288,8 @@ class Node(ABC):
         hid: Optional[str] = None,
         wait_for_completion: bool = False,
         timeout: Union[float, int] = 100,
-    ) -> bool:  # pragma: no cover
+        run_async: bool = False,
+    ) -> Union[bool, str, List[str]]:  # pragma: no cover
         """Control the node state.
 
         Parameters
@@ -312,10 +313,20 @@ class Node(ABC):
                 This argument is ignored and will be removed in future versions.
                 Waiting for command completion is currently not supported.
 
+        run_async: bool, optional
+            Whether to execute the command as an asynchronous, non-blocking long running
+            operation. If ``True``, this method returns immediately with the IDs of the long
+            running operations (one per hid) instead of waiting for completion. Only supported
+            for the ``"reset"`` command. By default ``False``.
+
+            .. note:: Argument is supported for Ansys optiSLang version >= 27.1 only.
+
         Returns
         -------
-        bool
-            ``True`` when successful, ``False`` when failed.
+        Union[bool, str, List[str]]
+            ``True`` when successful, ``False`` when failed. If ``run_async`` is ``True``, the
+            long running operation ID(s) are returned instead (a list with one ID per hid for
+            regular nodes, or a single ID for the root system).
         """
         pass
 
@@ -901,7 +912,9 @@ class Node(ABC):
 
     @abstractmethod
     def create_input_slot(
-        self, slot_name: str, type_hint: Optional[SlotTypeHint] = None  # pragma: no cover
+        self,
+        slot_name: str,
+        type_hint: Optional[SlotTypeHint] = None,  # pragma: no cover
     ) -> None:
         """Create dynamic input slot.
 
@@ -1241,7 +1254,9 @@ class IntegrationNode(Node):
         pass
 
     @abstractmethod
-    def load(self, args: Optional[dict] = None) -> None:  # pragma: no cover
+    def load(
+        self, args: Optional[dict] = None, run_async: bool = False
+    ) -> Optional[str]:  # pragma: no cover
         """Explicitly load the node.
 
         Some optiSLang nodes support/need an explicit load prior to being able to register
@@ -1251,6 +1266,17 @@ class IntegrationNode(Node):
         ----------
         args: Optional[dict], optional
             Additional arguments, by default ``None``.
+        run_async: bool, optional
+            Whether to perform the load as an asynchronous, non-blocking long running
+            operation, returning immediately with the ID of the long running operation instead
+            of waiting for the load to complete. By default ``False``.
+
+            .. note:: Argument is supported for Ansys optiSLang version >= 27.1 only.
+
+        Returns
+        -------
+        Optional[str]
+            ID of the long running operation if ``run_async`` is ``True``, ``None`` otherwise.
 
         Raises
         ------
@@ -1919,6 +1945,36 @@ class ParametricSystem(System):
         """``ParametricSystem`` class is an abstract base class and cannot be instantiated."""
         pass
 
+    @abstractmethod
+    def finalize(self, run_async: bool = False) -> Optional[str]:  # pragma: no cover
+        """Finalize the parametric system.
+
+        Parameters
+        ----------
+        run_async: bool, optional
+            Whether to perform the finalize as an asynchronous, non-blocking long running
+            operation. If ``True``, this method returns immediately with the ID of the long
+            running operation instead of waiting for the finalize to complete. By default
+            ``False``.
+
+            .. note:: Argument is supported for Ansys optiSLang version >= 27.1 only.
+
+        Returns
+        -------
+        Optional[str]
+            ID of the long running operation if ``run_async`` is ``True``, ``None`` otherwise.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        pass
+
     @property
     @abstractmethod
     def criteria_manager(self) -> CriteriaManager:  # pragma: no cover
@@ -2181,7 +2237,8 @@ class RootSystem(ParametricSystem):
         hid: Optional[str] = None,
         wait_for_completion: bool = True,
         timeout: Union[float, int] = 100,
-    ) -> bool:  # pragma: no cover
+        run_async: bool = False,
+    ) -> Union[bool, str]:  # pragma: no cover
         """Control the node state.
 
         Parameters
@@ -2195,27 +2252,44 @@ class RootSystem(ParametricSystem):
             Whether to wait for completion. The default is ``True``.
         timeout: Union[float, int], optional
             Time limit for monitoring the status of the command. The default is ``100 s``.
+        run_async: bool, optional
+            Whether to execute the command as an asynchronous, non-blocking long running
+            operation. If ``True``, this method returns immediately with the ID of the long
+            running operation instead of waiting for completion (``wait_for_completion`` is
+            ignored). Only supported for the ``"reset"`` command. By default ``False``.
+
+            .. note:: Argument is supported for Ansys optiSLang version >= 27.1 only.
 
         Returns
         -------
-        bool
-            ``True`` when successful, ``False`` when failed.
+        Union[bool, str]
+            ``True`` when successful, ``False`` when failed. If ``run_async`` is ``True``, the
+            ID of the long running operation is returned instead.
         """
         pass
 
     @abstractmethod
-    def evaluate_design(self, design: Design) -> Design:  # pragma: no cover
+    def evaluate_design(
+        self, design: Design, run_async: bool = False
+    ) -> Union[Design, str]:  # pragma: no cover
         """Evaluate a design.
 
         Parameters
         ----------
         design: Design
             Instance of a ``Design`` class with defined parameters.
+        run_async: bool, optional
+            Whether to perform the evaluation as an asynchronous, non-blocking long running
+            operation. If ``True``, this method returns immediately with the ID of the long
+            running operation instead of the evaluated design. By default ``False``.
+
+            .. note:: Argument is supported for Ansys optiSLang version >= 27.1 only.
 
         Returns
         -------
-        Design
-            Evaluated design.
+        Union[Design, str]
+            Evaluated design, or the ID of the long running operation if ``run_async`` is
+            ``True``.
 
         Raises
         ------

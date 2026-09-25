@@ -24,8 +24,11 @@ from pathlib import Path
 
 import pytest
 
-from ansys.optislang.core import Optislang
+from ansys.optislang.core import Optislang, errors
+from ansys.optislang.core.node_types import optislang_node
+from ansys.optislang.core.nodes import IntegrationNode
 from ansys.optislang.core.osl_server import OslVersion
+from ansys.optislang.core.tcp.nodes import DesignFlow
 from ansys.optislang.core.tcp.project import TcpProjectProxy
 
 pytestmark = pytest.mark.local_osl
@@ -138,6 +141,55 @@ def test_save_copy(optislang: Optislang, tmp_path: Path, path_type):
     assert copy_path.is_file()
     assert old_wdir == new_wdir
     assert old_location == new_location
+
+
+def test_long_running_operation(optislang: Optislang, tmp_example_project):
+    """Test ``get/wait_for/discard_long_running_operation`` exposed on ``Application``."""
+    if optislang.osl_version < OslVersion(27, 1, 0, 0):
+        pytest.skip(f"Not compatible with {optislang.osl_version_string}")
+    application = optislang.application
+
+    osl_node: IntegrationNode = application.project.root_system.create_node(
+        type_=optislang_node,
+        design_flow=DesignFlow.RECEIVE_SEND,
+    )
+    calculator_project_path = tmp_example_project("calculator_with_params")
+    path_value = {
+        "path": {
+            "base_path_mode": {"value": "ABSOLUTE_PATH"},
+            "split_path": {
+                "head": "",
+                "tail": str(calculator_project_path),
+            },
+        }
+    }
+    osl_node.set_property("project_file", path_value)
+
+    # asynchronous load returns immediately with an operation ID
+    operation_id = osl_node.load(run_async=True)
+    assert isinstance(operation_id, str)
+
+    # non-destructive, repeatable status poll
+    status = application.get_long_running_operation_status(operation_id)
+    assert status["operation_id"] == operation_id
+
+    # waiting for completion consumes the operation
+    status = application.wait_for_long_running_operation(operation_id)
+    assert status["operation_id"] == operation_id
+    assert status["is_finished"] is True
+    assert "result" in status
+
+    with pytest.raises(errors.OslCommandError):
+        application.get_long_running_operation_status(operation_id)
+
+    # explicit discard also works for an operation that hasn't been waited on
+    another_operation_id = osl_node.load(run_async=True)
+    application.discard_long_running_operation(another_operation_id)
+    with pytest.raises(errors.OslCommandError):
+        application.get_long_running_operation_status(another_operation_id)
+
+    assert len(osl_node.get_available_input_locations()) > 0
+    assert len(osl_node.get_available_output_locations()) > 0
 
 
 # def test_close(optislang: Optislang):

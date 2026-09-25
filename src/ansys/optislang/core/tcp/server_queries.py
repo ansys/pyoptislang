@@ -47,6 +47,7 @@ _FULL_PROJECT_TREE_WITH_PROPERTIES = "FULL_PROJECT_TREE_WITH_PROPERTIES"
 _GET_CRITERIA = "GET_CRITERIA"
 _GET_CRITERION = "GET_CRITERION"
 _GET_DESIGNS = "GET_DESIGNS"
+_GET_LONG_RUNNING_OPERATION_STATUS = "GET_LONG_RUNNING_OPERATION_STATUS"
 _GET_PLACEHOLDER = "GET_PLACEHOLDER"
 _GET_PLACEHOLDER_IDS = "GET_PLACEHOLDER_IDS"
 _HPC_LICENSING_FORWARDED_ENVIRONMENT = "HPC_LICENSING_FORWARDED_ENVIRONMENT"
@@ -59,6 +60,7 @@ _SERVER_INFO = "SERVER_INFO"
 _SERVER_IS_ALIVE = "SERVER_IS_ALIVE"
 _SYSTEMS_STATUS_INFO = "SYSTEMS_STATUS_INFO"
 _FULL_SUBTREE_STATUS_INFO = "FULL_SUBTREE_STATUS_INFO"
+_WAIT_FOR_LONG_RUNNING_OPERATION = "WAIT_FOR_LONG_RUNNING_OPERATION"
 
 
 def actor_info(
@@ -638,6 +640,60 @@ def get_designs(uid: str, password: Optional[str] = None) -> str:
         JSON string of get_designs query.
     """
     return _to_json(_gen_query(what=_GET_DESIGNS, uid=uid, password=password))
+
+
+def get_long_running_operation_status(operation_id: str, password: Optional[str] = None) -> str:
+    """Generate JSON string of get_long_running_operation_status query.
+
+    .. note:: Command is supported for Ansys optiSLang version >= 27.1 only.
+
+    Parameters
+    ----------
+    operation_id : str
+        ID of the long running operation, as returned e.g. by the ``load`` command when
+        executed with ``run_async=True``.
+    password : Optional[str], optional
+        Password. Defaults to ``None``.
+
+    Returns
+    -------
+    str
+        JSON string of get_long_running_operation_status query.
+    """
+    return _to_json(
+        _gen_query(
+            what=_GET_LONG_RUNNING_OPERATION_STATUS,
+            args={"operation_id": operation_id},
+            password=password,
+        )
+    )
+
+
+def wait_for_long_running_operation(operation_id: str, password: Optional[str] = None) -> str:
+    """Generate JSON string of wait_for_long_running_operation query.
+
+    .. note:: Command is supported for Ansys optiSLang version >= 27.1 only.
+
+    Parameters
+    ----------
+    operation_id : str
+        ID of the long running operation, as returned e.g. by the ``load`` command when
+        executed with ``run_async=True``.
+    password : Optional[str], optional
+        Password. Defaults to ``None``.
+
+    Returns
+    -------
+    str
+        JSON string of wait_for_long_running_operation query.
+    """
+    return _to_json(
+        _gen_query(
+            what=_WAIT_FOR_LONG_RUNNING_OPERATION,
+            args={"operation_id": operation_id},
+            password=password,
+        )
+    )
 
 
 def get_placeholder_ids(password: Optional[str] = None) -> str:

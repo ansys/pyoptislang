@@ -25,7 +25,7 @@ from __future__ import annotations
 
 import logging
 from pathlib import Path
-from typing import TYPE_CHECKING, Optional, Union
+from typing import TYPE_CHECKING, Any, Dict, Optional, Union
 
 from ansys.optislang.core.application import Application
 from ansys.optislang.core.errors import OslCommandError
@@ -221,6 +221,100 @@ class TcpApplicationProxy(Application):
             Raised when the timeout float value expires.
         """
         self.__osl_server.save_copy(file_path=file_path)
+
+    def get_long_running_operation_status(self, operation_id: str) -> Dict[str, Any]:
+        """Get the status (and, once finished, the result) of a long running operation.
+
+        .. note:: This is a non-destructive, repeatable status poll: the operation is *not*
+            removed from the server-side registry, even once finished. Use
+            :py:meth:`wait_for_long_running_operation` to also consume/discard it.
+
+        .. note:: Method is supported for Ansys optiSLang version >= 27.1 only.
+
+        Parameters
+        ----------
+        operation_id: str
+            ID of the long running operation, as returned e.g. by a node's ``load`` method
+            when called with ``run_async=True``.
+
+        Returns
+        -------
+        Dict[str, Any]
+            Dictionary with keys ``operation_id``, ``is_finished`` and, once finished,
+            ``result``.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails, e.g. because no such operation is
+            registered.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        return self.__osl_server.get_long_running_operation_status(operation_id=operation_id)
+
+    def wait_for_long_running_operation(self, operation_id: str) -> Dict[str, Any]:
+        """Wait for a long running operation to finish, then return its status.
+
+        .. note:: This method blocks until the operation completes. Unlike
+            :py:meth:`get_long_running_operation_status`, it consumes the operation: once this
+            call returns, the operation is removed from the server-side registry and a
+            subsequent call with the same ``operation_id`` fails.
+
+        .. note:: Method is supported for Ansys optiSLang version >= 27.1 only.
+
+        Parameters
+        ----------
+        operation_id: str
+            ID of the long running operation, as returned e.g. by a node's ``load`` method
+            when called with ``run_async=True``.
+
+        Returns
+        -------
+        Dict[str, Any]
+            Dictionary with keys ``operation_id``, ``is_finished`` and, once finished,
+            ``result``.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails, e.g. because no such operation is
+            registered.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        return self.__osl_server.wait_for_long_running_operation(operation_id=operation_id)
+
+    def discard_long_running_operation(self, operation_id: str) -> None:
+        """Discard a previously registered long running operation.
+
+        .. note:: Method is supported for Ansys optiSLang version >= 27.1 only.
+
+        Unlike :py:meth:`wait_for_long_running_operation`, this does not wait for the
+        operation to finish; it removes it from the server-side registry regardless of
+        whether it has completed yet.
+
+        Parameters
+        ----------
+        operation_id: str
+            ID of the long running operation, as returned e.g. by a node's ``load`` method
+            when called with ``run_async=True``.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with the server.
+        OslCommandError
+            Raised when a command or query fails, e.g. because no such operation is
+            registered.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        self.__osl_server.discard_long_running_operation(operation_id=operation_id)
 
     def __get_project_uid(self) -> str:
         """Get project uid.

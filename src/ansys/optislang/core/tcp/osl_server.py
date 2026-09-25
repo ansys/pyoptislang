@@ -39,7 +39,19 @@ import struct
 import sys
 import threading
 import time
-from typing import Any, Callable, Dict, Iterable, List, Mapping, Optional, Sequence, Tuple, Union
+from typing import (
+    Any,
+    Callable,
+    Dict,
+    Iterable,
+    List,
+    Mapping,
+    Optional,
+    Sequence,
+    Tuple,
+    Union,
+    cast,
+)
 import uuid
 
 from deprecated.sphinx import deprecated
@@ -62,7 +74,11 @@ from ansys.optislang.core.json_utils import _get_enum_value
 from ansys.optislang.core.node_types import AddinType, NodeType
 from ansys.optislang.core.osl_process import OslServerProcess, ServerNotification
 from ansys.optislang.core.osl_server import OslServer, OslVersion
-from ansys.optislang.core.placeholder_types import PlaceholderInfo, PlaceholderType, UserLevel
+from ansys.optislang.core.placeholder_types import (
+    PlaceholderInfo,
+    PlaceholderType,
+    UserLevel,
+)
 from ansys.optislang.core.slot_types import SlotTypeHint
 from ansys.optislang.core.tcp import server_commands as commands
 from ansys.optislang.core.tcp import server_queries as queries
@@ -472,7 +488,9 @@ class TcpClient:
             self.__socket.sendall(header + data)
         elif self.__local_socket is not None:
             self._logger.debug(
-                "Sending message to local server %s. Message: %s", self.__local_socket.address, msg
+                "Sending message to local server %s. Message: %s",
+                self.__local_socket.address,
+                msg,
             )
             self.__local_socket.settimeout(timeout)
             # Send header and data
@@ -520,7 +538,9 @@ class TcpClient:
         with open(file_path, "rb") as file:
             if self.__socket is not None:
                 self._logger.debug(
-                    "Sending file to %s. File path: %s", self.__socket.getpeername(), file_path
+                    "Sending file to %s. File path: %s",
+                    self.__socket.getpeername(),
+                    file_path,
                 )
                 self.__socket.settimeout(timeout)
                 self.__socket.sendall(header)
@@ -896,7 +916,7 @@ class TcpOslListener:
     >>> from ansys.optislang.core.tcp.osl_server import TcpOslListener
     >>> general_listener = TcpOslListener(
     >>>     port_range = (49152, 65535),
-    >>>     timeout = 30,
+    >>>     timeout = 60,
     >>>     name = 'GeneralListener',
     >>>     host = '127.0.0.1',
     >>>     uid = str(uuid.uuid4()),
@@ -956,7 +976,8 @@ class TcpOslListener:
             if actually_used_port_range[0] > actually_used_port_range[1]:
                 raise ValueError("First number is higher.")
             self.__init_listener_socket(
-                host=host if host is not None else "", port_range=actually_used_port_range
+                host=host if host is not None else "",
+                port_range=actually_used_port_range,
             )
 
     def is_initialized(self) -> bool:
@@ -1148,7 +1169,8 @@ class TcpOslListener:
                         current_timeout = _get_current_timeout(timeout, start_time)
                         local_client, address = self.__local_server_socket.accept(current_timeout)
                         self._logger.debug(
-                            "Connection from local client %s has been established.", address
+                            "Connection from local client %s has been established.",
+                            address,
                         )
                         client = TcpClient(local_socket=local_client)
                 else:
@@ -1678,7 +1700,7 @@ class TcpOslServer(OslServer):
         return self.timeouts_register.default_value
 
     @timeout.setter
-    def timeout(self, timeout: Optional[float] = 30) -> None:
+    def timeout(self, timeout: Optional[float] = 60) -> None:
         """Set default timeout value for execution of commands.
 
         Parameters
@@ -1688,7 +1710,7 @@ class TcpOslServer(OslServer):
             Certain functions will raise a timeout exception if the timeout period value has
             elapsed before the operation has completed.
             If ``None`` is given, functions will wait until they're finished (no timeout
-            exception is raised). Defaults to ``30``.
+            exception is raised). Defaults to ``60``.
         """
         self.timeouts_register.default_value = timeout
 
@@ -2061,18 +2083,30 @@ class TcpOslServer(OslServer):
         self.__dispose_all_listeners()
         self.__disposed = True
 
-    def evaluate_design(self, evaluate_dict: Dict[str, float]) -> List[dict]:
+    def evaluate_design(
+        self, evaluate_dict: Dict[str, float], run_async: bool = False
+    ) -> Union[List[dict], str]:
         """Evaluate requested design.
 
         Parameters
         ----------
         evaluate_dict: Dict[str, float]
             {'parName': value, ...}
+        run_async: bool, optional
+            Whether to perform the evaluation as an asynchronous, non-blocking long running
+            operation. If ``True``, this method returns immediately with the ID of the long
+            running operation instead of waiting for the evaluation to complete. Use
+            :py:meth:`get_long_running_operation_status` or
+            :py:meth:`wait_for_long_running_operation` to poll for or await its completion.
+            By default ``False``.
+
+            .. note:: Argument is supported for Ansys optiSLang version >= 27.1 only.
 
         Returns
         -------
-        List[dict]
-            Output from optislang server.
+        Union[List[dict], str]
+            Output from optislang server, or the ID of the long running operation if
+            ``run_async`` is ``True``.
 
         Raises
         ------
@@ -2084,11 +2118,53 @@ class TcpOslServer(OslServer):
             Raised when the timeout float value expires.
         """
         current_func_name = self.evaluate_design.__name__
-        return self.send_command(  # type: ignore[return-value]
-            command=commands.evaluate_design(evaluate_dict, self.__password),
+        response = self.send_command(
+            command=commands.evaluate_design(evaluate_dict, run_async, self.__password),
             timeout=self.timeouts_register.get_value(current_func_name),
             max_request_attempts=self.max_request_attempts_register.get_value(current_func_name),
         )
+        if run_async and "operation_id" in response[0]:
+            return response[0]["operation_id"]
+        return response  # type: ignore[return-value]
+
+    def finalize(self, uid: str, run_async: bool = False) -> Optional[str]:
+        """Finalize the actor defined by uid.
+
+        Parameters
+        ----------
+        uid: str
+            Actor uid.
+        run_async: bool, optional
+            Whether to perform the finalize as an asynchronous, non-blocking long running
+            operation. If ``True``, this method returns immediately with the ID of the long
+            running operation instead of waiting for the finalize to complete. Use
+            :py:meth:`get_long_running_operation_status` or
+            :py:meth:`wait_for_long_running_operation` to poll for or await its completion.
+            By default ``False``.
+
+            .. note:: Argument is supported for Ansys optiSLang version >= 27.1 only.
+
+        Returns
+        -------
+        Optional[str]
+            ID of the long running operation if ``run_async`` is ``True``, ``None`` otherwise.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        current_func_name = self.finalize.__name__
+        response = self.send_command(
+            command=commands.finalize(actor_uid=uid, run_async=run_async, password=self.__password),
+            timeout=self.timeouts_register.get_value(current_func_name),
+            max_request_attempts=self.max_request_attempts_register.get_value(current_func_name),
+        )
+        return response[0]["operation_id"] if run_async and "operation_id" in response[0] else None
 
     def get_actor_info(
         self,
@@ -2162,7 +2238,9 @@ class TcpOslServer(OslServer):
         current_func_name = self.get_actor_internal_variables.__name__
         return self.send_command(
             command=queries.actor_internal_variables(
-                uid=uid, include_reference_values=include_reference_values, password=self.__password
+                uid=uid,
+                include_reference_values=include_reference_values,
+                password=self.__password,
             ),
             timeout=self.timeouts_register.get_value(current_func_name),
             max_request_attempts=self.max_request_attempts_register.get_value(current_func_name),
@@ -2226,7 +2304,9 @@ class TcpOslServer(OslServer):
         current_func_name = self.get_actor_registered_input_slots.__name__
         return self.send_command(
             command=queries.actor_registered_input_slots(
-                uid=uid, include_reference_values=include_reference_values, password=self.__password
+                uid=uid,
+                include_reference_values=include_reference_values,
+                password=self.__password,
             ),
             timeout=self.timeouts_register.get_value(current_func_name),
             max_request_attempts=self.max_request_attempts_register.get_value(current_func_name),
@@ -2261,7 +2341,9 @@ class TcpOslServer(OslServer):
         current_func_name = self.get_actor_registered_output_slots.__name__
         return self.send_command(
             command=queries.actor_registered_output_slots(
-                uid=uid, include_reference_values=include_reference_values, password=self.__password
+                uid=uid,
+                include_reference_values=include_reference_values,
+                password=self.__password,
             ),
             timeout=self.timeouts_register.get_value(current_func_name),
             max_request_attempts=self.max_request_attempts_register.get_value(current_func_name),
@@ -2296,7 +2378,9 @@ class TcpOslServer(OslServer):
         current_func_name = self.get_actor_registered_parameters.__name__
         return self.send_command(
             command=queries.actor_registered_parameters(
-                uid=uid, include_reference_values=include_reference_values, password=self.__password
+                uid=uid,
+                include_reference_values=include_reference_values,
+                password=self.__password,
             ),
             timeout=self.timeouts_register.get_value(current_func_name),
             max_request_attempts=self.max_request_attempts_register.get_value(current_func_name),
@@ -2331,7 +2415,9 @@ class TcpOslServer(OslServer):
         current_func_name = self.get_actor_registered_responses.__name__
         return self.send_command(
             command=queries.actor_registered_responses(
-                uid=uid, include_reference_values=include_reference_values, password=self.__password
+                uid=uid,
+                include_reference_values=include_reference_values,
+                password=self.__password,
             ),
             timeout=self.timeouts_register.get_value(current_func_name),
             max_request_attempts=self.max_request_attempts_register.get_value(current_func_name),
@@ -2493,7 +2579,8 @@ class TcpOslServer(OslServer):
         )["available_input_locations"]
 
     @deprecated(
-        version="1.1.0", reason="Use :py:attr:`TcpOslServer.get_available_node_types` instead."
+        version="1.1.0",
+        reason="Use :py:attr:`TcpOslServer.get_available_node_types` instead.",
     )
     def get_available_nodes(self) -> Dict[str, List[str]]:
         """Get available node types for current oSL server.
@@ -3103,7 +3190,10 @@ class TcpOslServer(OslServer):
         """
         return self._get_osl_version()
 
-    @deprecated(version="0.5.0", reason="Use :py:attr:`TcpOslServer.osl_version_string` instead.")
+    @deprecated(
+        version="0.5.0",
+        reason="Use :py:attr:`TcpOslServer.osl_version_string` instead.",
+    )
     def get_osl_version_string(self) -> str:
         """Get version of used optiSLang.
 
@@ -3555,7 +3645,9 @@ class TcpOslServer(OslServer):
         current_func_name = self.unassign_placeholder.__name__
         self.send_command(
             commands.unassign_placeholder(
-                actor_uid=actor_uid, property_name=property_name, password=self.__password
+                actor_uid=actor_uid,
+                property_name=property_name,
+                password=self.__password,
             ),
             timeout=self.timeouts_register.get_value(current_func_name),
             max_request_attempts=self.max_request_attempts_register.get_value(current_func_name),
@@ -3914,7 +4006,12 @@ class TcpOslServer(OslServer):
             return None
         return Path(project_info.get("projects", [{}])[0].get("working_dir", None))
 
-    def load(self, uid: str, args: Optional[Dict[str, Any]] = None) -> None:
+    def load(
+        self,
+        uid: str,
+        args: Optional[Dict[str, Any]] = None,
+        run_async: bool = False,
+    ) -> Optional[str]:
         """Explicit load of node.
 
         Parameters
@@ -3923,6 +4020,20 @@ class TcpOslServer(OslServer):
             Actor uid.
         args: Optional[Dict[str, any]], optional
             Additional arguments, by default ``None``.
+        run_async: bool, optional
+            Whether to perform the load as an asynchronous, non-blocking long running
+            operation. If ``True``, this method returns immediately with the ID of the long
+            running operation instead of waiting for the load to complete. Use
+            :py:meth:`get_long_running_operation_status` or
+            :py:meth:`wait_for_long_running_operation` to poll for or await its completion.
+            By default ``False``.
+
+            .. note:: Argument is supported for Ansys optiSLang version >= 27.1 only.
+
+        Returns
+        -------
+        Optional[str]
+            ID of the long running operation if ``run_async`` is ``True``, ``None`` otherwise.
 
         Raises
         ------
@@ -3935,11 +4046,129 @@ class TcpOslServer(OslServer):
         """
         # TODO: create unit test
         current_func_name = self.load.__name__
-        self.send_command(
+        response = self.send_command(
             command=commands.load(
                 actor_uid=uid,
                 args=args,
+                run_async=run_async,
                 password=self.__password,
+            ),
+            timeout=self.timeouts_register.get_value(current_func_name),
+            max_request_attempts=self.max_request_attempts_register.get_value(current_func_name),
+        )
+        return response[0]["operation_id"] if run_async and "operation_id" in response[0] else None
+
+    def get_long_running_operation_status(self, operation_id: str) -> Dict[str, Any]:
+        """Get the status (and, once finished, the result) of a long running operation.
+
+        .. note:: This is a non-destructive, repeatable status poll: the operation is *not*
+            removed from the server-side registry, even once finished. Use
+            :py:meth:`wait_for_long_running_operation` to also consume/discard it.
+
+        .. note:: Method is supported for Ansys optiSLang version >= 27.1 only.
+
+        Parameters
+        ----------
+        operation_id: str
+            ID of the long running operation, as returned e.g. by :py:meth:`load` when called
+            with ``run_async=True``.
+
+        Returns
+        -------
+        Dict[str, Any]
+            Dictionary with keys ``operation_id``, ``is_finished`` and, once finished,
+            ``result``.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails, e.g. because no such operation is
+            registered.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        current_func_name = self.get_long_running_operation_status.__name__
+        return self.send_command(
+            command=queries.get_long_running_operation_status(
+                operation_id=operation_id, password=self.__password
+            ),
+            timeout=self.timeouts_register.get_value(current_func_name),
+            max_request_attempts=self.max_request_attempts_register.get_value(current_func_name),
+        )
+
+    def wait_for_long_running_operation(self, operation_id: str) -> Dict[str, Any]:
+        """Wait for a long running operation to finish, then return its status.
+
+        .. note:: This method blocks on the server side until the operation completes; no
+            client-side timeout is applied by default (see ``timeouts_register``). Unlike
+            :py:meth:`get_long_running_operation_status`, it consumes the operation: once this
+            call returns, the operation is removed from the server-side registry and a
+            subsequent call with the same ``operation_id`` fails.
+
+        .. note:: Method is supported for Ansys optiSLang version >= 27.1 only.
+
+        Parameters
+        ----------
+        operation_id: str
+            ID of the long running operation, as returned e.g. by :py:meth:`load` when called
+            with ``run_async=True``.
+
+        Returns
+        -------
+        Dict[str, Any]
+            Dictionary with keys ``operation_id``, ``is_finished`` and, once finished,
+            ``result``.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails, e.g. because no such operation is
+            registered.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        current_func_name = self.wait_for_long_running_operation.__name__
+        return self.send_command(
+            command=queries.wait_for_long_running_operation(
+                operation_id=operation_id, password=self.__password
+            ),
+            timeout=self.timeouts_register.get_value(current_func_name),
+            max_request_attempts=self.max_request_attempts_register.get_value(current_func_name),
+        )
+
+    def discard_long_running_operation(self, operation_id: str) -> None:
+        """Discard a previously registered long running operation.
+
+        .. note:: Method is supported for Ansys optiSLang version >= 27.1 only.
+
+        Unlike :py:meth:`wait_for_long_running_operation`, this does not wait for the
+        operation to finish; it removes it from the server-side registry regardless of
+        whether it has completed yet.
+
+        Parameters
+        ----------
+        operation_id: str
+            ID of the long running operation, as returned e.g. by :py:meth:`load` when called
+            with ``run_async=True``.
+
+        Raises
+        ------
+        OslCommunicationError
+            Raised when an error occurs while communicating with server.
+        OslCommandError
+            Raised when the command or query fails, e.g. because no such operation is
+            registered.
+        TimeoutError
+            Raised when the timeout float value expires.
+        """
+        current_func_name = self.discard_long_running_operation.__name__
+        self.send_command(
+            command=commands.discard_long_running_operation(
+                operation_id=operation_id, password=self.__password
             ),
             timeout=self.timeouts_register.get_value(current_func_name),
             max_request_attempts=self.max_request_attempts_register.get_value(current_func_name),
@@ -4713,7 +4942,9 @@ class TcpOslServer(OslServer):
         current_func_name = self.move_node.__name__
         self.send_command(
             command=commands.move_node(
-                actor_uid=actor_uid, target_system_uid=target_system_uid, password=self.__password
+                actor_uid=actor_uid,
+                target_system_uid=target_system_uid,
+                password=self.__password,
             ),
             timeout=self.timeouts_register.get_value(current_func_name),
             max_request_attempts=self.max_request_attempts_register.get_value(current_func_name),
@@ -4851,7 +5082,12 @@ class TcpOslServer(OslServer):
             max_request_attempts=self.max_request_attempts_register.get_value(current_func_name),
         )
 
-    def reset(self, actor_uid: Optional[str] = None, hid: Optional[str] = None):
+    def reset(
+        self,
+        actor_uid: Optional[str] = None,
+        hid: Optional[str] = None,
+        run_async: bool = False,
+    ) -> Optional[str]:
         """Reset complete project or a specific actor state.
 
         For a complete project reset, do not specify the actor_uid and hid entries.
@@ -4862,6 +5098,20 @@ class TcpOslServer(OslServer):
             Actor uid entry. A Hierarchical ID (hid) is required. By default ``None``.
         hid: Optional[str], optional
             Hid entry. The actor uid is required. By default ``None``.
+        run_async: bool, optional
+            Whether to perform the reset as an asynchronous, non-blocking long running
+            operation. If ``True``, this method returns immediately with the ID of the long
+            running operation instead of waiting for the reset to complete. Use
+            :py:meth:`get_long_running_operation_status` or
+            :py:meth:`wait_for_long_running_operation` to poll for or await its completion.
+            By default ``False``.
+
+            .. note:: Argument is supported for Ansys optiSLang version >= 27.1 only.
+
+        Returns
+        -------
+        Optional[str]
+            ID of the long running operation if ``run_async`` is ``True``, ``None`` otherwise.
 
         Raises
         ------
@@ -4873,17 +5123,24 @@ class TcpOslServer(OslServer):
             Raised when the timeout float value expires.
         """
         current_func_name = self.reset.__name__
-        self.send_command(
-            command=commands.reset(actor_uid=actor_uid, hid=hid, password=self.__password),
+        response = self.send_command(
+            command=commands.reset(
+                actor_uid=actor_uid,
+                hid=hid,
+                run_async=run_async,
+                password=self.__password,
+            ),
             timeout=self.timeouts_register.get_value(current_func_name),
             max_request_attempts=self.max_request_attempts_register.get_value(current_func_name),
         )
+        return response[0]["operation_id"] if run_async and "operation_id" in response[0] else None
 
     def run_python_script(
         self,
         script: str,
         args: Optional[Sequence[object]] = None,
-    ) -> Tuple[str, str]:
+        run_async: bool = False,
+    ) -> Union[Tuple[str, str], str]:
         """Load a Python script in a project context and execute it.
 
         Parameters
@@ -4892,11 +5149,21 @@ class TcpOslServer(OslServer):
             Python commands to be executed on the server.
         args : Sequence[object], None, optional
             Sequence of arguments used in Python script. Defaults to ``None``.
+        run_async: bool, optional
+            Whether to run the python script as an asynchronous, non-blocking long running
+            operation. If ``True``, this method returns immediately with the ID of the long
+            running operation instead of waiting for the script to complete. Use
+            :py:meth:`get_long_running_operation_status` or
+            :py:meth:`wait_for_long_running_operation` to poll for or await its completion.
+            By default ``False``.
+
+            .. note:: Argument is supported for Ansys optiSLang version >= 27.1 only.
 
         Returns
         -------
-        Tuple[str, str]
-            STDOUT and STDERR from executed Python script.
+        Union[Tuple[str, str], str]
+            STDOUT and STDERR from executed Python script, or the ID of the long running
+            operation if ``run_async`` is ``True``.
 
         Raises
         ------
@@ -4912,11 +5179,14 @@ class TcpOslServer(OslServer):
             command=commands.run_python_script(
                 script,
                 args,  # type: ignore[arg-type]
+                run_async,
                 self.__password,
             ),
             timeout=self.timeouts_register.get_value(current_func_name),
             max_request_attempts=self.max_request_attempts_register.get_value(current_func_name),
         )
+        if run_async and "operation_id" in responses[0]:
+            return responses[0]["operation_id"]
         std_out = ""
         std_err = ""
         for response in responses:
@@ -4961,7 +5231,7 @@ class TcpOslServer(OslServer):
         with open(file_path, "r") as file:
             script = file.read()
 
-        return self.run_python_script(script, args)
+        return cast(Tuple[str, str], self.run_python_script(script, args))
 
     def save(self) -> None:
         """Save the changed data and settings of the current project.
@@ -5278,7 +5548,9 @@ class TcpOslServer(OslServer):
         current_func_name = self.set_start_designs.__name__
         self.send_command(
             command=commands.set_start_designs(
-                actor_uid=actor_uid, start_designs=list(start_designs), password=self.__password
+                actor_uid=actor_uid,
+                start_designs=list(start_designs),
+                password=self.__password,
             ),
             timeout=self.timeouts_register.get_value(current_func_name),
             max_request_attempts=self.max_request_attempts_register.get_value(current_func_name),
@@ -5298,7 +5570,7 @@ class TcpOslServer(OslServer):
             Another functions will raise a timeout exception if the timeout period value has
             elapsed before the operation has completed.
             If ``None`` is given, functions will wait until they're finished (no timeout
-            exception is raised). Defaults to ``30``.
+            exception is raised). Defaults to ``60``.
 
         Raises
         ------
@@ -6397,10 +6669,14 @@ class TcpOslServer(OslServer):
 
     def __get_default_max_request_attempts_register(self) -> FunctionsAttributeRegister:
         max_requests_register = FunctionsAttributeRegister(
-            default_value=2, validator=self.__class__.__validate_max_request_attempts_value
+            default_value=2,
+            validator=self.__class__.__validate_max_request_attempts_value,
         )
         max_requests_register.register(self.__class__.evaluate_design, 1)
+        max_requests_register.register(self.__class__.discard_long_running_operation, 1)
+        max_requests_register.register(self.__class__.finalize, 1)
         max_requests_register.register(self.__class__.get_full_project_status_info, 1)
+        max_requests_register.register(self.__class__.get_long_running_operation_status, 1)
         max_requests_register.register(self.__class__.load, 1)
         max_requests_register.register(self.__class__.open, 1)
         max_requests_register.register(self.__class__.reset, 1)
@@ -6410,13 +6686,15 @@ class TcpOslServer(OslServer):
         max_requests_register.register(self.__class__.save_copy, 1)
         max_requests_register.register(self.__class__.start, 1)
         max_requests_register.register(self.__class__.stop, 1)
+        max_requests_register.register(self.__class__.wait_for_long_running_operation, 1)
         return max_requests_register
 
     def __get_default_timeouts_register(self) -> FunctionsAttributeRegister:
         timeout_register = FunctionsAttributeRegister(
-            default_value=30, validator=self.__class__.__validate_timeout_value
+            default_value=60, validator=self.__class__.__validate_timeout_value
         )
         timeout_register.register(self.__class__.evaluate_design, None)
+        timeout_register.register(self.__class__.finalize, None)
         timeout_register.register(self.__class__.get_full_project_status_info, None)
         timeout_register.register(self.__class__.load, None)
         timeout_register.register(self.__class__.open, None)
@@ -6427,6 +6705,7 @@ class TcpOslServer(OslServer):
         timeout_register.register(self.__class__.save_copy, None)
         timeout_register.register(self.__class__.start, None)
         timeout_register.register(self.__class__.stop, None)
+        timeout_register.register(self.__class__.wait_for_long_running_operation, None)
         return timeout_register
 
     @staticmethod
@@ -6473,7 +6752,10 @@ class TcpOslServer(OslServer):
             sender.stop_listening()
             sender.clear_callbacks()
             sender.refresh_listener_registration = False
-            if type in [ServerNotification.EXEC_FAILED.name, ServerNotification.CHECK_FAILED.name]:
+            if type in [
+                ServerNotification.EXEC_FAILED.name,
+                ServerNotification.CHECK_FAILED.name,
+            ]:
                 target_queue.put(False)
                 logger.error(f"Listener {sender.name} received error notification.")
             elif type in target_notifications:

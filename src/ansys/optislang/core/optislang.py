@@ -27,7 +27,16 @@ from __future__ import annotations
 from importlib.metadata import version
 from logging import Logger
 from pathlib import Path
-from typing import TYPE_CHECKING, Iterable, Mapping, Optional, Sequence, Tuple, Union
+from typing import (
+    TYPE_CHECKING,
+    Iterable,
+    Mapping,
+    Optional,
+    Sequence,
+    Tuple,
+    Union,
+    cast,
+)
 
 from deprecated.sphinx import deprecated
 
@@ -431,7 +440,10 @@ class Optislang:
         return self.__application
 
     @property
-    @deprecated(version="0.6.0", reason="Use `Optislang.application.project is not None` instead.")
+    @deprecated(
+        version="0.6.0",
+        reason="Use `Optislang.application.project is not None` instead.",
+    )
     def has_active_project(self) -> bool:
         """
         Whether a project is loaded.
@@ -801,7 +813,10 @@ class Optislang:
             Raised when the timeout float value expires.
         """
         if self.application.project is not None:
-            return self.application.project.run_python_script(script, args)
+            return cast(
+                Tuple[str, str],
+                self.application.project.run_python_script(script, args),
+            )
         self.log.error("Cannot run Python script: No project loaded.")
         return ("", "")
 
