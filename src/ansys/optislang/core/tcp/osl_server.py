@@ -68,6 +68,7 @@ from ansys.optislang.core.errors import (
     OslDisposedError,
     OslServerLicensingError,
     OslServerStartError,
+    OslVersionError,
     ResponseFormatError,
 )
 from ansys.optislang.core.json_utils import _get_enum_value
@@ -87,6 +88,10 @@ from ansys.optislang.core.tcp.local_socket import (
     LocalServerSocket,
 )
 from ansys.optislang.core.tcp.placeholder_types import PlaceholderTypeTCP, UserLevelTCP
+
+# Minimum (major, minor) Ansys optiSLang server version that supports long running
+# operations (the ``run_async=True`` argument).
+_MIN_RUN_ASYNC_VERSION = (27, 1)
 
 
 def _get_current_timeout(initial_timeout: Optional[float], start_time: float) -> Optional[float]:
@@ -1676,6 +1681,40 @@ class TcpOslServer(OslServer):
         """
         return self.__osl_version_string
 
+    def _check_run_async_supported(self, feature: str) -> None:
+        """Ensure the connected optiSLang server supports long running operations.
+
+        Long running operations (the ``run_async=True`` argument) are only supported by
+        Ansys optiSLang server version 27.1 and newer. On older servers the request would
+        otherwise degrade silently (the server ignores ``run_async`` and completes
+        synchronously), leaving the caller without a pollable operation ID. This guard
+        instead fails loudly so the version mismatch is unambiguous.
+
+        Parameters
+        ----------
+        feature: str
+            Name of the calling operation, used in the error message (for example
+            ``"evaluate_design"``).
+
+        Raises
+        ------
+        OslVersionError
+            Raised when ``run_async=True`` is requested against a server older than 27.1.
+        """
+        version = self.__osl_version
+        # A ``None`` major version means the version could not be determined; do not block
+        # in that case to preserve backward compatibility.
+        if version[0] is None:
+            return
+        if (version[0], version[1]) < _MIN_RUN_ASYNC_VERSION:
+            raise OslVersionError(
+                f"The '{feature}' long running operation (run_async=True) requires "
+                f"Ansys optiSLang version >= "
+                f"{_MIN_RUN_ASYNC_VERSION[0]}.{_MIN_RUN_ASYNC_VERSION[1]}, but the "
+                f"connected server is version {self.__osl_version_string}. Call "
+                f"'{feature}' without run_async, or connect to a newer server."
+            )
+
     @property
     def port(self) -> Optional[int]:
         """Get the port the osl server is listening on.
@@ -2118,6 +2157,8 @@ class TcpOslServer(OslServer):
             Raised when the timeout float value expires.
         """
         current_func_name = self.evaluate_design.__name__
+        if run_async:
+            self._check_run_async_supported(current_func_name)
         response = self.send_command(
             command=commands.evaluate_design(evaluate_dict, run_async, self.__password),
             timeout=self.timeouts_register.get_value(current_func_name),
@@ -2159,6 +2200,8 @@ class TcpOslServer(OslServer):
             Raised when the timeout float value expires.
         """
         current_func_name = self.finalize.__name__
+        if run_async:
+            self._check_run_async_supported(current_func_name)
         response = self.send_command(
             command=commands.finalize(actor_uid=uid, run_async=run_async, password=self.__password),
             timeout=self.timeouts_register.get_value(current_func_name),
@@ -4046,6 +4089,8 @@ class TcpOslServer(OslServer):
         """
         # TODO: create unit test
         current_func_name = self.load.__name__
+        if run_async:
+            self._check_run_async_supported(current_func_name)
         response = self.send_command(
             command=commands.load(
                 actor_uid=uid,
@@ -5123,6 +5168,8 @@ class TcpOslServer(OslServer):
             Raised when the timeout float value expires.
         """
         current_func_name = self.reset.__name__
+        if run_async:
+            self._check_run_async_supported(current_func_name)
         response = self.send_command(
             command=commands.reset(
                 actor_uid=actor_uid,
@@ -5175,6 +5222,8 @@ class TcpOslServer(OslServer):
             Raised when the timeout float value expires.
         """
         current_func_name = self.run_python_script.__name__
+        if run_async:
+            self._check_run_async_supported(current_func_name)
         responses = self.send_command(
             command=commands.run_python_script(
                 script,

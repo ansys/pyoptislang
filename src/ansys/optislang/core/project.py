@@ -153,6 +153,9 @@ class Project(ABC):
             Raised when an error occurs while communicating with the server.
         OslCommandError
             Raised when a command or query fails.
+        OslVersionError
+            Raised when ``run_async`` is ``True`` and the connected Ansys optiSLang server
+            is older than version 27.1.
         TimeoutError
             Raised when the timeout float value expires.
         """
@@ -369,6 +372,9 @@ class Project(ABC):
             Raised when an error occurs while communicating with the server.
         OslCommandError
             Raised when a command or query fails.
+        OslVersionError
+            Raised when ``run_async`` is ``True`` and the connected Ansys optiSLang server
+            is older than version 27.1.
         TimeoutError
             Raised when the timeout float value expires.
         """
@@ -442,6 +448,9 @@ class Project(ABC):
             Raised when an error occurs while communicating with the server.
         OslCommandError
             Raised when a command or query fails.
+        OslVersionError
+            Raised when ``run_async`` is ``True`` and the connected Ansys optiSLang server
+            is older than version 27.1.
         TimeoutError
             Raised when the timeout float value expires.
         """

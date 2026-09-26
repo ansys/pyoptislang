@@ -59,6 +59,12 @@ class OslCommandError(Exception):
     pass
 
 
+class OslVersionError(Exception):
+    """Raised when a feature is used against an unsupported optiSLang server version."""
+
+    pass
+
+
 class OslCommunicationError(Exception):
     """Raised when error occurs during communication with a server."""
 
