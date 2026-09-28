@@ -1,0 +1,75 @@
+{
+    "$id": "https://ldl-laki.docs.ansys.com/schema/rev00/datapin_metadata",
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "title": "Laki datapin metadata definition",
+    "description": "Defines the common metadata for datapins, plus a place to store arbitrary metadata.",
+    "$defs": {
+        "children": {
+            "$comment": "Defines a map of name to datapins where each datapin can be any type.",
+            "type": "object",
+            "$comment": "DRY would say this regex should not be cut-n-pasted. Not sure how to achieve that in JSON-Schema reasonably.",
+            "patternProperties": {
+                "^[^~!@#$%^&*()+=\\-0-9\\`\\\"\\';:?/.,><\\s][^~!@#$%^&*()+=\\-\\`\\\"\\';:?/.,><\\s]*$": { "$ref": "#"}
+            },            
+            "additionalProperties": false
+        }
+    },
+    "type": "object",
+    "properties": {
+        "type": {
+            "type": "string",
+            "$comment": "The variable type as per the allowed types from the type library in use."
+        },
+        "direction": {
+            "$comment": "component_input - the component consumes this external value when it is run.",
+            "$comment": "component_result - the component produces this external value when it is run.",
+            "$comment": "control_statement_to_component - Only valid on inner_datapins. Indicates that this is a value that the control statement produces before running the sub-workflow.",
+            "$comment": "control_statement_from_component - Only valid on inner_datapins. Indicates that this is a value that the control statement consumes after running the sub-workflow.",
+            "enum": [ "component_input", "component_result", "control_statement_to_component", "control_statement_from_component" ]
+        },
+        "additionalMetadata": {
+            "type": "object",
+            "$comment": "Arbitrary additional metadata, that is serialized JSON of the specified type."
+        },
+        "$ref": {
+            "$comment": "Reference a type defined elsewhere.",
+            "$comment": "TODO: Need to define precendence or legality of having $ref and conflicting local defs.",
+            "type": "string",
+            "format": "uri-reference"
+        }
+    },
+    "required": [ "type" ],
+    "additionalProperties": true,
+    "if": {
+        "$comment": "If it is of type Struct",
+        "properties": {
+            "type": { "enum": [ "Struct", "Struct[]"] }
+        }
+    },
+    "then": {
+        "$comment": "then create the children properties",
+        "properties": {
+            "children": {
+                "if": {
+                    "required": [ "$ref" ]
+                },
+                "then": {
+                    "$comment": "Having a $ref at the children level only makes sense for Struct[], where you might want to declare an array of an already existing struct. The if statements to make it only valid in Struct[] feel like overkill to me.",
+                    "properties": {
+                        "$ref": {
+                            "type": "string",
+                            "format": "uri-reference"
+                        }
+                    }
+                },
+                "else": {
+                    "$ref": "#/$defs/children"
+                }
+            }
+        }
+    },
+    "else": {
+        "$comment": "disallow 'children' property if not type Struct",
+        "not": { "required": [ "children" ] }
+    }
+}
