@@ -1,0 +1,68 @@
+
+
+.. _sphx_glr_examples_gallery_examples_osl_server:
+
+Raw optiSLang server communication
+----------------------------------
+
+These examples demonstrate how to use PyOptiSLang to perform raw communiction with the optiSLang server.
+
+
+.. raw:: html
+
+  <div id='sg-tag-list' class='sphx-glr-tag-list'></div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbnails">
+
+.. thumbnail-parent-div-open
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="This example demonstrates how to use PyOptiSLang to perform basic queries/commands on the optiSLang server using the explicit API.">
+
+.. only:: html
+
+  .. image:: /examples/gallery_examples/osl_server/images/thumb/sphx_glr_01_basic_queries_thumb.png
+    :alt:
+
+  :doc:`/examples/gallery_examples/osl_server/01_basic_queries`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Basic server queries</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="This example demonstrates how to use PyOptiSLang to perform raw queries/commands on the optiSLang server using the commands and queries convenience classes.">
+
+.. only:: html
+
+  .. image:: /examples/gallery_examples/osl_server/images/thumb/sphx_glr_02_raw_communication_thumb.png
+    :alt:
+
+  :doc:`/examples/gallery_examples/osl_server/02_raw_communication`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Raw communication with osl server</div>
+    </div>
+
+
+.. thumbnail-parent-div-close
+
+.. raw:: html
+
+    </div>
+
+
+.. toctree::
+   :hidden:
+
+   /examples/gallery_examples/osl_server/01_basic_queries
+   /examples/gallery_examples/osl_server/02_raw_communication
+

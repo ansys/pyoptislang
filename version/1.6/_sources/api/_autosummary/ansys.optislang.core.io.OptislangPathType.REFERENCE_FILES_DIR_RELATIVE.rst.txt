@@ -1,0 +1,6 @@
+REFERENCE\_FILES\_DIR\_RELATIVE
+===============================
+
+.. currentmodule:: ansys.optislang.core.io
+
+.. autoattribute:: OptislangPathType.REFERENCE_FILES_DIR_RELATIVE

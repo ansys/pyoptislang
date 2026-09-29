@@ -1,0 +1,6 @@
+remove\_parameter
+=================
+
+.. currentmodule:: ansys.optislang.core.nodes
+
+.. automethod:: IntegrationNode.remove_parameter

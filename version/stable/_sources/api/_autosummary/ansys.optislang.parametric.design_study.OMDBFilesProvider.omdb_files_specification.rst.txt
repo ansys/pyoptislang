@@ -1,0 +1,6 @@
+omdb\_files\_specification
+==========================
+
+.. currentmodule:: ansys.optislang.parametric.design_study
+
+.. autoproperty:: OMDBFilesProvider.omdb_files_specification

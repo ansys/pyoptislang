@@ -1,0 +1,44 @@
+﻿SlotTypeHint
+============
+
+.. currentmodule:: ansys.optislang.core.slot_types
+
+.. autoclass:: SlotTypeHint
+
+   
+
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+      :toctree:
+   
+      SlotTypeHint.UNDEFINED
+      SlotTypeHint.BOOL
+      SlotTypeHint.INTEGER
+      SlotTypeHint.UNSIGNED_INTEGER
+      SlotTypeHint.UNSIGNED_INTEGER_VECTOR
+      SlotTypeHint.REAL
+      SlotTypeHint.STRING
+      SlotTypeHint.STRING_LIST
+      SlotTypeHint.VARIANT
+      SlotTypeHint.PATH
+      SlotTypeHint.PARAMETER
+      SlotTypeHint.PARAMETER_SET
+      SlotTypeHint.PARAMETER_MANAGER
+      SlotTypeHint.DESIGN
+      SlotTypeHint.DESIGN_POINT
+      SlotTypeHint.DESIGN_CONTAINER
+      SlotTypeHint.BOOL_VECTOR
+      SlotTypeHint.CRITERION
+      SlotTypeHint.CRITERION_SEQUENCE
+      SlotTypeHint.DESIGN_ENTRY
+      SlotTypeHint.RUN_INFO_META
+      SlotTypeHint.RUN_INFO
+      SlotTypeHint.DESIGN_POINTS
+   
+   

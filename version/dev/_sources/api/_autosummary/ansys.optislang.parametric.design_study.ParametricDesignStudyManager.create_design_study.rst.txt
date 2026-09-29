@@ -1,0 +1,6 @@
+create\_design\_study
+=====================
+
+.. currentmodule:: ansys.optislang.parametric.design_study
+
+.. automethod:: ParametricDesignStudyManager.create_design_study

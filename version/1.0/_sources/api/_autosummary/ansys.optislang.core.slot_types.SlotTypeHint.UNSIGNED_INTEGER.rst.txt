@@ -1,0 +1,6 @@
+UNSIGNED\_INTEGER
+=================
+
+.. currentmodule:: ansys.optislang.core.slot_types
+
+.. autoattribute:: SlotTypeHint.UNSIGNED_INTEGER

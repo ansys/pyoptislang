@@ -1,0 +1,6 @@
+stop\_after\_execution
+======================
+
+.. currentmodule:: ansys.optislang.parametric.design_study_templates
+
+.. autoattribute:: ProxySolverNodeSettings.stop_after_execution

@@ -1,0 +1,6 @@
+find\_execution\_block\_index\_for\_instance
+============================================
+
+.. currentmodule:: ansys.optislang.parametric.design_study
+
+.. automethod:: ParametricDesignStudy.find_execution_block_index_for_instance

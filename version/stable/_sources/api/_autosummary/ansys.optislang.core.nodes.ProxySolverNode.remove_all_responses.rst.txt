@@ -1,0 +1,6 @@
+remove\_all\_responses
+======================
+
+.. currentmodule:: ansys.optislang.core.nodes
+
+.. automethod:: ProxySolverNode.remove_all_responses

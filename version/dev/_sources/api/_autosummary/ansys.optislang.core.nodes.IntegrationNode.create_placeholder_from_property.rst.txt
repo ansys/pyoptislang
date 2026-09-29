@@ -1,0 +1,6 @@
+create\_placeholder\_from\_property
+===================================
+
+.. currentmodule:: ansys.optislang.core.nodes
+
+.. automethod:: IntegrationNode.create_placeholder_from_property

@@ -1,0 +1,6 @@
+remove\_input\_slot
+===================
+
+.. currentmodule:: ansys.optislang.core.nodes
+
+.. automethod:: ProxySolverNode.remove_input_slot

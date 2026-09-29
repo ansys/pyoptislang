@@ -1,0 +1,6 @@
+remove\_all\_input\_slots
+=========================
+
+.. currentmodule:: ansys.optislang.core.nodes
+
+.. automethod:: IntegrationNode.remove_all_input_slots

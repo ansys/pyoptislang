@@ -1,0 +1,6 @@
+﻿SimAI\_Upload
+=============
+
+.. currentmodule:: ansys.optislang.core.node_types
+
+.. autodata:: SimAI_Upload

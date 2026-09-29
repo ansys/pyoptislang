@@ -1,0 +1,6 @@
+clear
+=====
+
+.. currentmodule:: ansys.optislang.parametric.design_study_templates
+
+.. automethod:: MopSolverNodeSettings.clear

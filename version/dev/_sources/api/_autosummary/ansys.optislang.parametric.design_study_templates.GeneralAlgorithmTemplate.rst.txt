@@ -1,0 +1,34 @@
+﻿GeneralAlgorithmTemplate
+========================
+
+.. currentmodule:: ansys.optislang.parametric.design_study_templates
+
+.. autoclass:: GeneralAlgorithmTemplate
+
+   
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :toctree:
+   
+      
+      
+      GeneralAlgorithmTemplate.create_algorithm
+      
+      
+      GeneralAlgorithmTemplate.create_design_study
+      
+      
+      GeneralAlgorithmTemplate.create_design_study_instance
+      
+      
+      GeneralAlgorithmTemplate.create_solver_node
+      
+   
+   
+
+   
+   
+   

@@ -1,0 +1,31 @@
+﻿ProxySolverManagedParametricSystem
+==================================
+
+.. currentmodule:: ansys.optislang.parametric.design_study
+
+.. autoclass:: ProxySolverManagedParametricSystem
+
+   
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :toctree:
+   
+      
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+      :toctree:
+   
+      ProxySolverManagedParametricSystem.callback
+      ProxySolverManagedParametricSystem.instance
+      ProxySolverManagedParametricSystem.solver_node
+   
+   

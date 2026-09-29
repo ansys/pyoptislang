@@ -1,0 +1,6 @@
+read\_mode
+==========
+
+.. currentmodule:: ansys.optislang.parametric.design_study_templates
+
+.. autoattribute:: GeneralNodeSettings.read_mode

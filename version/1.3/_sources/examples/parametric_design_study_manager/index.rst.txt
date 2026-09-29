@@ -1,0 +1,65 @@
+
+
+.. _sphx_glr_examples_parametric_design_study_manager:
+
+Parametric Design Study Manager
+-------------------------------
+
+These examples demonstrate how to create and execute design studies
+using templates.
+
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbnails">
+
+.. thumbnail-parent-div-open
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="This example demonstrates how to create and execute optimization using ParametricDesignStudyManager.">
+
+.. only:: html
+
+  .. image:: /examples/parametric_design_study_manager/images/thumb/sphx_glr_01_general_algorithm_thumb.png
+    :alt:
+
+  :ref:`sphx_glr_examples_parametric_design_study_manager_01_general_algorithm.py`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Optimization with proxy solver</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="This example demonstrates how to create and execute optimization on MOP using ParametricDesignStudyManager">
+
+.. only:: html
+
+  .. image:: /examples/parametric_design_study_manager/images/thumb/sphx_glr_02_optimization_on_mop_thumb.png
+    :alt:
+
+  :ref:`sphx_glr_examples_parametric_design_study_manager_02_optimization_on_mop.py`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Optimization on MOP with proxy solver</div>
+    </div>
+
+
+.. thumbnail-parent-div-close
+
+.. raw:: html
+
+    </div>
+
+
+.. toctree::
+   :hidden:
+
+   /examples/parametric_design_study_manager/01_general_algorithm
+   /examples/parametric_design_study_manager/02_optimization_on_mop
+

@@ -1,0 +1,41 @@
+﻿ProjectWorkingDirRelativePath
+=============================
+
+.. currentmodule:: ansys.optislang.core.io
+
+.. autoclass:: ProjectWorkingDirRelativePath
+
+   
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :toctree:
+   
+      
+      
+      ProjectWorkingDirRelativePath.convert_to_absolute_path
+      
+      
+      ProjectWorkingDirRelativePath.from_dict
+      
+      
+      ProjectWorkingDirRelativePath.to_dict
+      
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+      :toctree:
+   
+      ProjectWorkingDirRelativePath.head
+      ProjectWorkingDirRelativePath.path
+      ProjectWorkingDirRelativePath.tail
+      ProjectWorkingDirRelativePath.type
+   
+   

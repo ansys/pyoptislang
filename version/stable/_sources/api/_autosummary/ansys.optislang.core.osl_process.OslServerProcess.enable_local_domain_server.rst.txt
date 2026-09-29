@@ -1,0 +1,6 @@
+enable\_local\_domain\_server
+=============================
+
+.. currentmodule:: ansys.optislang.core.osl_process
+
+.. autoproperty:: OslServerProcess.enable_local_domain_server

@@ -1,0 +1,6 @@
+auto\_save\_mode
+================
+
+.. currentmodule:: ansys.optislang.parametric.design_study_templates
+
+.. autoattribute:: MopSolverNodeSettings.auto_save_mode

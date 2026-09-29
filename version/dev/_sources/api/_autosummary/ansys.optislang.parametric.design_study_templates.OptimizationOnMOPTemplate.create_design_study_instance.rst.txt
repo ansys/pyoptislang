@@ -1,0 +1,6 @@
+create\_design\_study\_instance
+===============================
+
+.. currentmodule:: ansys.optislang.parametric.design_study_templates
+
+.. automethod:: OptimizationOnMOPTemplate.create_design_study_instance

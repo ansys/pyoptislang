@@ -1,0 +1,55 @@
+﻿Application
+===========
+
+.. currentmodule:: ansys.optislang.core.application
+
+.. autoclass:: Application
+
+   
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :toctree:
+   
+      
+      
+      Application.discard_long_running_operation
+      
+      
+      Application.get_long_running_operation_status
+      
+      
+      Application.new
+      
+      
+      Application.open
+      
+      
+      Application.save
+      
+      
+      Application.save_as
+      
+      
+      Application.save_copy
+      
+      
+      Application.wait_for_long_running_operation
+      
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+      :toctree:
+   
+      Application.project
+      Application.version
+      Application.version_string
+   
+   

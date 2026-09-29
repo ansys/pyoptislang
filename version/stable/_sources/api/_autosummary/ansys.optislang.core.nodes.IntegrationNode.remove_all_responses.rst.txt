@@ -1,0 +1,6 @@
+remove\_all\_responses
+======================
+
+.. currentmodule:: ansys.optislang.core.nodes
+
+.. automethod:: IntegrationNode.remove_all_responses

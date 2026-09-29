@@ -1,0 +1,6 @@
+wait\_for\_long\_running\_operation
+===================================
+
+.. currentmodule:: ansys.optislang.core.tcp.osl_server
+
+.. automethod:: TcpOslServer.wait_for_long_running_operation

@@ -1,0 +1,6 @@
+unassign\_placeholder
+=====================
+
+.. currentmodule:: ansys.optislang.core.nodes
+
+.. automethod:: Node.unassign_placeholder

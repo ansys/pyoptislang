@@ -1,0 +1,6 @@
+set\_instance\_execution\_option\_by\_uid
+=========================================
+
+.. currentmodule:: ansys.optislang.parametric.design_study
+
+.. automethod:: ExecutableBlock.set_instance_execution_option_by_uid

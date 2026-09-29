@@ -1,0 +1,6 @@
+get\_managed\_parametric\_system
+================================
+
+.. currentmodule:: ansys.optislang.parametric.design_study
+
+.. automethod:: ExecutableBlock.get_managed_parametric_system

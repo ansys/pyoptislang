@@ -1,0 +1,6 @@
+sort\_designs\_by\_hid
+======================
+
+.. currentmodule:: ansys.optislang.core.managers
+
+.. automethod:: DesignManager.sort_designs_by_hid

@@ -1,0 +1,6 @@
+get\_instance\_by\_uid
+======================
+
+.. currentmodule:: ansys.optislang.parametric.design_study
+
+.. automethod:: ExecutableBlock.get_instance_by_uid

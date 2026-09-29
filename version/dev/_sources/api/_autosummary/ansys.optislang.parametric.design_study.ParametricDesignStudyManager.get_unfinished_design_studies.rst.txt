@@ -1,0 +1,6 @@
+get\_unfinished\_design\_studies
+================================
+
+.. currentmodule:: ansys.optislang.parametric.design_study
+
+.. automethod:: ParametricDesignStudyManager.get_unfinished_design_studies

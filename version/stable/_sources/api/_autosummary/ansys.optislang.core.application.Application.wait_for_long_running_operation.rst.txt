@@ -1,0 +1,6 @@
+wait\_for\_long\_running\_operation
+===================================
+
+.. currentmodule:: ansys.optislang.core.application
+
+.. automethod:: Application.wait_for_long_running_operation

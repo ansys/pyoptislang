@@ -1,0 +1,6 @@
+sensitivity\_algo\_settings
+===========================
+
+.. currentmodule:: ansys.optislang.parametric.design_study_templates
+
+.. autoattribute:: GeneralAlgorithmSettings.sensitivity_algo_settings

@@ -1,0 +1,34 @@
+﻿PythonSolverNodeSettings
+========================
+
+.. currentmodule:: ansys.optislang.parametric.design_study_templates
+
+.. autoclass:: PythonSolverNodeSettings
+
+   
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :toctree:
+   
+      
+      
+      PythonSolverNodeSettings.convert_properties_to_dict
+      
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+      :toctree:
+   
+      PythonSolverNodeSettings.additional_settings
+      PythonSolverNodeSettings.input_code
+      PythonSolverNodeSettings.input_file
+   
+   

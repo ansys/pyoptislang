@@ -1,0 +1,6 @@
+uuid
+====
+
+.. currentmodule:: ansys.optislang.core.io
+
+.. autoproperty:: RegisteredFilePath.uuid

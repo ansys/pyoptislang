@@ -1,0 +1,6 @@
+remove\_all\_internal\_variables
+================================
+
+.. currentmodule:: ansys.optislang.core.tcp.osl_server
+
+.. automethod:: TcpOslServer.remove_all_internal_variables

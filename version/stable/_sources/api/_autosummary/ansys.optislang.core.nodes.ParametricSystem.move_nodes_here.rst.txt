@@ -1,0 +1,6 @@
+move\_nodes\_here
+=================
+
+.. currentmodule:: ansys.optislang.core.nodes
+
+.. automethod:: ParametricSystem.move_nodes_here

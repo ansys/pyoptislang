@@ -1,0 +1,6 @@
+set\_start\_designs
+===================
+
+.. currentmodule:: ansys.optislang.core.tcp.osl_server
+
+.. automethod:: TcpOslServer.set_start_designs

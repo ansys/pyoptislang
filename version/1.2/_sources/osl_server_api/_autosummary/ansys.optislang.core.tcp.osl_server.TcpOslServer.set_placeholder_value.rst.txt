@@ -1,0 +1,6 @@
+set\_placeholder\_value
+=======================
+
+.. currentmodule:: ansys.optislang.core.tcp.osl_server
+
+.. automethod:: TcpOslServer.set_placeholder_value

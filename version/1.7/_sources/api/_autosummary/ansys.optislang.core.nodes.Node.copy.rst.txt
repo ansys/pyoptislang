@@ -1,0 +1,6 @@
+copy
+====
+
+.. currentmodule:: ansys.optislang.core.nodes
+
+.. automethod:: Node.copy

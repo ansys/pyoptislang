@@ -1,0 +1,6 @@
+set\_execution\_options\_to\_active
+===================================
+
+.. currentmodule:: ansys.optislang.parametric.design_study
+
+.. automethod:: ExecutableBlock.set_execution_options_to_active
