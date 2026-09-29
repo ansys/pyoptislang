@@ -44,7 +44,7 @@ tests = [
 doc = [
     "ansys-sphinx-theme==1.9.0",
     "matplotlib==3.10.9",
-    "numpydoc==1.10.0",
+    "numpydoc==1.11.0",
     "pypandoc==1.17",
     "quarto-cli==1.10.18",
     "Sphinx==9.0.4",
