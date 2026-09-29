@@ -49,7 +49,7 @@ doc = [
     "quarto-cli==1.10.18",
     "Sphinx==9.0.4",
     "sphinx-copybutton==0.5.2",
-    "sphinx-gallery==0.21.0",
+    "sphinx-gallery==0.22.1",
     "sphinx-design==0.7.0",
 ]
 build = [
