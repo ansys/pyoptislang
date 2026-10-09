@@ -1,0 +1,62 @@
+{
+    "$id": "https://ldl-laki.docs.ansys.com/schema/rev00/metadata",
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "title": "Laki Definition Language metadata schema",
+    "description": "Defines a common set of metadata that can be attached to any file.",
+    "$defs": {
+    },
+    "type": "object",
+    "properties": {
+        "description": {
+            "description": "Gives a human readable description of what the document contains.",
+            "type": "string"
+        },
+        "creator": {
+            "description": "Who created this document.",
+            "type": "string"
+        },
+        "authors": {
+            "description": "All the authors that have edited this document.",
+            "type": "array",
+            "items": {
+                "type": "string"
+            }
+        },
+        "thumbnail": {
+            "description": "A reference to a thumbnail view of the contained file.",
+            "type": "string",
+            "format": "uri-reference"
+        },
+        "version": {
+            "description": "The version of this document. It is RECOMMENDED that semantic versioning be used, but not required.",
+            "type": "string"
+        },
+        "helpUrl": {
+            "description": "A link to help documentation for whatever this document contains.",
+            "type": "string",
+            "format": "uri-reference"
+        },
+        "displayName": {
+            "description": "A short display name or title for use when listing multiple workflows together.",
+            "type": "string"
+        },
+        "agent": {
+            "description": "The tool or user agent which generated this content",
+            "$comment": "Should we define this more precisely?",
+            "type": "string"
+        },
+        "typeLibrary": {
+            "description": "What type library this workflow uses",
+            "$comment": "Each workflow must use a single type library system where the type library system provides validation, conversion, and transport rules for data as it is handled by the workflow engine. The URI defined here is merely used as an identifier for the type library. A workflow engine MUST NOT try to execute a workflow that uses a type library that it does not understand. A workflow engine MAY reject to load a file that uses a type library system that it does not understand.",
+            "type": "string",
+            "format": "uri"
+        },
+        "resetTimeout": {
+            "type": "integer",
+            "description": "Specifies the amount of time, in seconds, that the reset command will wait for the reset response before failing.",
+            "minimum": 1,
+            "default": 60            
+        }
+    },
+    "required": ["agent", "typeLibrary"]
+}
