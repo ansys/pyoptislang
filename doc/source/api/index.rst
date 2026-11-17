@@ -14,6 +14,7 @@ API documentation.
    optislang
    osl_process
    application
+   algorithm_recommendations
    project
    nodes
    project_parametric

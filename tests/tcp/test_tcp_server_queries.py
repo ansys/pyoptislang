@@ -21,6 +21,7 @@
 # SOFTWARE.
 
 "Module for testing server_queries.py"
+
 import json
 
 import pytest
@@ -247,6 +248,34 @@ def test_available_nodes():
     json_string = sq.available_nodes(password=example_password)
     dictionary = json.loads(json_string)
     assert dictionary["Password"] == example_password
+
+
+def test_algorithm_recommendations_query():
+    """Test the application-level recommendation query builder."""
+    args = {
+        "schema_version": 1,
+        "source": "explicit",
+        "workflow": "optimization",
+        "context": {
+            "parameters": {
+                "deterministic_count": 2,
+                "random_count": 0,
+                "has_discrete_deterministic": False,
+                "has_discrete_random": False,
+                "has_nominal_discrete_deterministic": False,
+            },
+            "criteria": {"objective_count": 1, "constraint_count": 0},
+        },
+        "declared_license_features": ["optimization_level2"],
+    }
+    query = json.loads(sq.algorithm_recommendations(args=args))
+    assert query == {"What": "ALGORITHM_RECOMMENDATIONS", "args": args}
+
+    query = json.loads(
+        sq.algorithm_recommendations(args=args, uid=example_uid, password=example_password)
+    )
+    assert query["uid"] == example_uid
+    assert query["Password"] == example_password
 
 
 def test_available_output_locations():

@@ -21,6 +21,7 @@
 # SOFTWARE.
 
 """Module for generation of all server queries."""
+
 import json
 from typing import Any, Dict, Optional
 
@@ -36,6 +37,7 @@ _ACTOR_REGISTERED_RESPONSES = "ACTOR_REGISTERED_RESPONSES"
 _ACTOR_STATES = "ACTOR_STATES"
 _ACTOR_STATUS_INFO = "ACTOR_STATUS_INFO"
 _ACTOR_SUPPORTS = "ACTOR_SUPPORTS"
+_ALGORITHM_RECOMMENDATIONS = "ALGORITHM_RECOMMENDATIONS"
 _AVAILABLE_INPUT_LOCATIONS = "AVAILABLE_INPUT_LOCATIONS"
 _AVAILABLE_NODES = "AVAILABLE_NODES"
 _AVAILABLE_OUTPUT_LOCATIONS = "AVAILABLE_OUTPUT_LOCATIONS"
@@ -366,6 +368,37 @@ def available_input_locations(uid: str, password: Optional[str] = None) -> str:
         _gen_query(
             what=_AVAILABLE_INPUT_LOCATIONS,
             uid=uid,
+            password=password,
+        )
+    )
+
+
+def algorithm_recommendations(
+    args: QueryArgs,
+    uid: Optional[str] = None,
+    password: Optional[str] = None,
+) -> str:
+    """Generate an application-level Decision Tree recommendations query.
+
+    Parameters
+    ----------
+    args : QueryArgs
+        Validated recommendation request arguments.
+    uid : Optional[str], optional
+        System UUID for system-derived context requests.
+    password : Optional[str], optional
+        Password, by default ``None``.
+
+    Returns
+    -------
+    str
+        JSON string of the recommendation query.
+    """
+    return _to_json(
+        _gen_query(
+            what=_ALGORITHM_RECOMMENDATIONS,
+            uid=uid,
+            args=args,
             password=password,
         )
     )

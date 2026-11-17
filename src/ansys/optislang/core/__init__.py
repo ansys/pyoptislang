@@ -40,6 +40,25 @@ LOG.logger.debug("Loaded logging module as LOG")
 # First supported version of optiSLang: 2023R1
 FIRST_SUPPORTED_VERSION = 231
 
+from ansys.optislang.core.algorithm_recommendations import (
+    AlgorithmCapabilityRequirement,
+    AlgorithmCategory,
+    AlgorithmLicenseRequirements,
+    AlgorithmRecommendation,
+    AlgorithmRecommendationContext,
+    AlgorithmRecommendationCriteria,
+    AlgorithmRecommendationCriteriaOverrides,
+    AlgorithmRecommendationEvaluation,
+    AlgorithmRecommendationKnowledge,
+    AlgorithmRecommendationOverrides,
+    AlgorithmRecommendationParameterOverrides,
+    AlgorithmRecommendationParameters,
+    AlgorithmRecommendationResult,
+    AlgorithmWorkflow,
+    PriorKnowledge,
+    SolverNoise,
+    ViolationKnowledge,
+)
 from ansys.optislang.core.optislang import Optislang
 from ansys.optislang.core.osl_process import OslServerProcess, ServerNotification
 from ansys.optislang.core.placeholder_types import PlaceholderInfo, PlaceholderType, UserLevel

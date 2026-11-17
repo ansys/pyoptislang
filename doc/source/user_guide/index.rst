@@ -11,6 +11,7 @@ This section provides an overview of how you use PyOptiSLang.
 
    launch
    functions
+   algorithm_recommendations
    project_content
    design_evaluation
    create_workflow

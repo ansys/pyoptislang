@@ -31,7 +31,9 @@ import threading
 import time
 from typing import (
     TYPE_CHECKING,
+    Any,
     Callable,
+    Dict,
     Iterable,
     List,
     Optional,
@@ -57,8 +59,15 @@ from ansys.optislang.core.project_parametric import (
     Parameter,
     Response,
 )
+from ansys.optislang.core.tcp.osl_server import TcpOslServer
 
 if TYPE_CHECKING:
+    from ansys.optislang.core.algorithm_recommendations import (
+        AlgorithmRecommendationContext,
+        AlgorithmRecommendationOverrides,
+        AlgorithmRecommendationResult,
+        AlgorithmWorkflow,
+    )
     from ansys.optislang.core.project_parametric import (
         Design,
     )
@@ -774,6 +783,55 @@ class ExecutableBlock:
 # endregion
 
 
+# region algorithm recommendations
+_ALGORITHM_WORKFLOWS = ("optimization", "sensitivity")
+
+
+def _recommend_algorithms(
+    optislang: Optislang,
+    workflow: AlgorithmWorkflow,
+    context: Optional[AlgorithmRecommendationContext] = None,
+    system_uid: Optional[str] = None,
+    overrides: Optional[AlgorithmRecommendationOverrides] = None,
+    declared_license_features: Optional[Sequence[str]] = None,
+) -> AlgorithmRecommendationResult:
+    """Validate a recommendation request and send it to the optiSLang server."""
+    if (context is None) == (system_uid is None):
+        raise ValueError("Supply exactly one of context or system_uid.")
+    if context is not None and overrides is not None:
+        raise ValueError("overrides are only valid with system_uid.")
+    if not isinstance(workflow, str) or workflow not in _ALGORITHM_WORKFLOWS:
+        raise ValueError("workflow must be 'optimization' or 'sensitivity'.")
+    if isinstance(declared_license_features, str):
+        raise TypeError("declared_license_features must be a sequence of feature names.")
+
+    osl_server = optislang.osl_server
+    if not isinstance(osl_server, TcpOslServer):
+        raise NotImplementedError(
+            "Algorithm recommendations are only supported for the TCP optiSLang server."
+        )
+
+    args: Dict[str, Any] = {
+        "schema_version": 1,
+        "source": "explicit" if context is not None else "system",
+        "workflow": workflow,
+    }
+    if context is not None:
+        args["context"] = context
+    elif overrides is not None:
+        args["overrides"] = overrides
+    if declared_license_features is not None:
+        args["declared_license_features"] = list(declared_license_features)
+
+    response = osl_server.get_algorithm_recommendations(args, uid=system_uid)
+    response.pop("status", None)
+    response.pop("message", None)
+    return cast("AlgorithmRecommendationResult", response)
+
+
+# endregion
+
+
 # region parametric design studies
 class ParametricDesignStudyBase:
     """A class to store data and perform operations on design study."""
@@ -978,6 +1036,65 @@ class ParametricDesignStudyBase:
             if parametric_system:
                 return parametric_system.instance
         return None
+
+    def recommend_algorithms(
+        self,
+        workflow: AlgorithmWorkflow,
+        overrides: Optional[AlgorithmRecommendationOverrides] = None,
+        declared_license_features: Optional[Sequence[str]] = None,
+    ) -> AlgorithmRecommendationResult:
+        """Recommend algorithms for the last parametric system of this design study.
+
+        The parameter and criterion summary is derived from the parametric system
+        returned by :py:meth:`get_last_parametric_system`. The Decision Tree is
+        evaluated without running an algorithm or changing the project.
+
+        Parameters
+        ----------
+        workflow : AlgorithmWorkflow
+            Workflow to recommend algorithms for: ``"optimization"`` or
+            ``"sensitivity"``, corresponding to the Opt or Sensi wizard.
+        overrides : Optional[AlgorithmRecommendationOverrides], optional
+            Field-wise overrides applied to the system-derived context. Omitted
+            values retain the system-derived baseline.
+        declared_license_features : Optional[Sequence[str]], optional
+            Canonical license feature names used for advisory filtering, for example
+            ``["optimization_level2"]``. When omitted, licensing does not filter
+            results. No license is checked out.
+
+        Returns
+        -------
+        AlgorithmRecommendationResult
+            Recommendations, resolved context and provenance, license metadata,
+            filtering diagnostics, and warnings.
+
+        Raises
+        ------
+        RuntimeError
+            If the design study does not contain a parametric system.
+        ValueError
+            If the workflow is invalid.
+        TypeError
+            If ``declared_license_features`` is a single string.
+        NotImplementedError
+            If the optiSLang server does not use the TCP protocol.
+        OslCommunicationError
+            If an error occurs while communicating with the server.
+        OslCommandError
+            If the server rejects the request or does not support this query.
+        TimeoutError
+            If the request timeout expires.
+        """
+        parametric_system = self.get_last_parametric_system()
+        if parametric_system is None:
+            raise RuntimeError("Design study does not contain a parametric system.")
+        return _recommend_algorithms(
+            self.__osl_instance,
+            workflow,
+            system_uid=parametric_system.uid,
+            overrides=overrides,
+            declared_license_features=declared_license_features,
+        )
 
     def get_result_designs(self) -> Tuple[Design, ...]:
         """Get the result designs of the design study.
@@ -1871,6 +1988,77 @@ class ParametricDesignStudyManager:
             return design_study
         else:
             raise RuntimeError("No project loaded.")
+
+    def recommend_algorithms(
+        self,
+        workflow: AlgorithmWorkflow,
+        context: Optional[AlgorithmRecommendationContext] = None,
+        system_uid: Optional[str] = None,
+        overrides: Optional[AlgorithmRecommendationOverrides] = None,
+        declared_license_features: Optional[Sequence[str]] = None,
+    ) -> AlgorithmRecommendationResult:
+        """Recommend algorithms using optiSLang's Decision Tree.
+
+        Supply either an explicit problem ``context`` or ``system_uid`` to derive
+        the baseline from an existing parametric system. Explicit context does not
+        require an open project. In system mode, ``overrides`` are merged
+        field-by-field; omitted values retain the baseline. Contradictory effective
+        context is rejected by the server. No algorithm is run and the project is
+        not changed.
+
+        Use :py:meth:`ParametricDesignStudy.recommend_algorithms` to evaluate
+        the parametric system of a managed design study.
+
+        Parameters
+        ----------
+        workflow : AlgorithmWorkflow
+            Workflow to recommend algorithms for: ``"optimization"`` or
+            ``"sensitivity"``, corresponding to the Opt or Sensi wizard.
+            Exactly one workflow is evaluated per request.
+        context : Optional[AlgorithmRecommendationContext], optional
+            Explicit parameter, criterion, knowledge, and evaluation summaries.
+            Required when ``system_uid`` is omitted.
+        system_uid : Optional[str], optional
+            UUID of an existing parametric system used as the baseline. Required
+            when ``context`` is omitted.
+        overrides : Optional[AlgorithmRecommendationOverrides], optional
+            Field-wise overrides applied to a system-derived baseline. Invalid in
+            explicit-context mode.
+        declared_license_features : Optional[Sequence[str]], optional
+            Canonical license feature names used for advisory filtering, for example
+            ``["optimization_level2"]``. When omitted, licensing does not filter
+            results. An empty sequence requests filtering with no declared
+            features. No license is checked out.
+
+        Returns
+        -------
+        AlgorithmRecommendationResult
+            Recommendations, resolved context and provenance, license metadata,
+            filtering diagnostics, and warnings.
+
+        Raises
+        ------
+        ValueError
+            If the source combination or workflow is invalid.
+        TypeError
+            If ``declared_license_features`` is a single string.
+        NotImplementedError
+            If the optiSLang server does not use the TCP protocol.
+        OslCommunicationError
+            If an error occurs while communicating with the server.
+        OslCommandError
+            If the server rejects the request or does not support this query.
+        TimeoutError
+            If the request timeout expires.
+        """
+        return _recommend_algorithms(
+            self.optislang,
+            workflow,
+            context=context,
+            system_uid=system_uid,
+            overrides=overrides,
+            declared_license_features=declared_license_features,
+        )
 
     def dispose(self):
         """Clear all managed design studies and dispose the associated optiSLang instance."""

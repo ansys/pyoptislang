@@ -3889,6 +3889,39 @@ class TcpOslServer(OslServer):
             max_request_attempts=self.max_request_attempts_register.get_value(current_func_name),
         )
 
+    def get_algorithm_recommendations(
+        self, args: Dict[str, Any], uid: Optional[str] = None
+    ) -> Dict[str, Any]:
+        """Evaluate algorithm recommendations through the application query.
+
+        Parameters
+        ----------
+        args : Dict[str, Any]
+            Recommendation request arguments.
+        uid : Optional[str], optional
+            System UUID for system-derived requests.
+
+        Returns
+        -------
+        Dict[str, Any]
+            Server response containing the recommendation result.
+
+        Raises
+        ------
+        OslCommunicationError
+            If an error occurs while communicating with the server.
+        OslCommandError
+            If the server rejects the request or does not support this query.
+        TimeoutError
+            If the request timeout expires.
+        """
+        current_func_name = self.get_algorithm_recommendations.__name__
+        return self.send_command(
+            command=queries.algorithm_recommendations(args, uid, self.__password),
+            timeout=self.timeouts_register.get_value(current_func_name),
+            max_request_attempts=self.max_request_attempts_register.get_value(current_func_name),
+        )
+
     def get_server_info(self) -> Dict:
         """Get information about the application, the server configuration and the open projects.
 
