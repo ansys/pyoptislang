@@ -103,6 +103,26 @@ def test_manager_recommend_algorithms_explicit_context(workflow: AlgorithmWorkfl
     )
 
 
+def test_manager_recommend_algorithms_forwards_enable_amop():
+    """Sensitivity requests can disable the default AMOP preference."""
+    manager, server = _manager({"schema_version": 1, "filtered_recommendations": []})
+    context = _context()
+    context["evaluation"] = {"enable_amop": False}
+
+    response = manager.recommend_algorithms(workflow="sensitivity", context=context)
+
+    assert response["filtered_recommendations"] == []
+    server.get_algorithm_recommendations.assert_called_once_with(
+        {
+            "schema_version": 1,
+            "source": "explicit",
+            "workflow": "sensitivity",
+            "context": context,
+        },
+        uid=None,
+    )
+
+
 def test_manager_recommend_algorithms_system_overrides():
     """System requests forward a uid and field-wise overrides."""
     manager, server = _manager({"schema_version": 1})

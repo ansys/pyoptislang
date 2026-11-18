@@ -70,9 +70,16 @@ class AlgorithmRecommendationKnowledge(TypedDict, total=False):
 
 
 class AlgorithmRecommendationEvaluation(TypedDict, total=False):
-    """Evaluation options accepted by the recommendation query."""
+    """Evaluation options accepted by the recommendation query.
+
+    ``operate_on_mop`` is used by optimization. ``enable_amop`` is used by
+    sensitivity and defaults to ``True``, which prefers AMOP. The option the
+    selected workflow does not use is reported with provenance
+    ``"not_applicable"``.
+    """
 
     operate_on_mop: bool
+    enable_amop: bool
 
 
 class AlgorithmRecommendationContext(TypedDict):
@@ -93,48 +100,136 @@ class AlgorithmRecommendationOverrides(TypedDict, total=False):
     evaluation: AlgorithmRecommendationEvaluation
 
 
+AlgorithmFamily = Literal["optimization", "sensitivity", "unclassified"]
+"""Decision-tree family of an algorithm.
+
+``"unclassified"`` custom algorithms stay in the result without an assessment.
+"""
+AlgorithmLicenseStatus = Literal[
+    "not_evaluated",
+    "included_by_unknown_custom_policy",
+    "unknown_requirements",
+    "eligible",
+    "ineligible",
+]
+"""Advisory license eligibility of one algorithm."""
+LicenseRequirementStatus = Literal["known", "partially_unknown", "unknown"]
+"""Certainty of an algorithm's declared license requirements."""
+LicensePolicyMode = Literal["unknown", "user_interactive", "non_interactive", "automation_server"]
+"""Application mode of the license-steering policy captured with the response."""
+LicensePolicyScenario = Literal[
+    "default",
+    "parent_child",
+    "inside",
+    "inside_parametric_0",
+    "raptor_ai",
+    "unknown",
+]
+"""Scenario of the license-steering policy captured with the response."""
+AlgorithmRecommendationProvenance = Literal[
+    "explicit",
+    "system_derived",
+    "overridden",
+    "defaulted",
+    "structure_defaulted",
+    "not_applicable",
+]
+"""How one resolved-context field was obtained.
+
+``"not_applicable"`` marks a field the selected workflow does not use.
+"""
+
+
 class AlgorithmCapabilityRequirement(TypedDict):
     """License requirement associated with a server capability."""
 
     capability: str
     no_license_required: bool
-    mapping_status: str
+    mapping_status: Literal["known", "unknown"]
     any_of: list[str]
 
 
 class AlgorithmLicenseRequirements(TypedDict):
     """Algorithm-only license requirements; not a workflow entitlement check."""
 
-    status: str
+    status: LicenseRequirementStatus
     scope: Literal["algorithm_only"]
-    custom_specific_status: str
-    configuration_dependent_status: str
+    custom_specific_status: Literal["known", "unknown"]
+    configuration_dependent_status: Literal["known", "unknown"]
     capability_requirements: list[AlgorithmCapabilityRequirement]
 
 
+class AlgorithmLicenseFilter(TypedDict):
+    """Advisory license filter metadata returned with recommendations."""
+
+    applied: bool
+    policy_mode: LicensePolicyMode
+    policy_scenario: LicensePolicyScenario
+    declared_features: list[str]
+    basis: Literal["current_server_steering_policy"]
+
+
+class AlgorithmRecommendationResolvedKnowledge(TypedDict):
+    """Knowledge values present on every resolved context."""
+
+    prior_knowledge: PriorKnowledge
+    constraint_violations: ViolationKnowledge
+    failed_designs: ViolationKnowledge
+    solver_noise: SolverNoise
+
+
+class AlgorithmRecommendationResolvedEvaluation(TypedDict):
+    """Evaluation values present on every resolved context."""
+
+    operate_on_mop: bool
+    enable_amop: bool
+
+
+class AlgorithmRecommendationResolvedContext(TypedDict):
+    """Problem summary returned after defaults and workflow rules are applied."""
+
+    parameters: AlgorithmRecommendationParameters
+    criteria: AlgorithmRecommendationCriteria
+    knowledge: AlgorithmRecommendationResolvedKnowledge
+    evaluation: AlgorithmRecommendationResolvedEvaluation
+
+
 class AlgorithmRecommendation(TypedDict):
-    """One assessed, installed algorithm."""
+    """One assessed, installed algorithm.
+
+    Retained recommendations are ordered by assessment, strongest first
+    (``recommended``, ``possible``, ``not_applicable``, ``impossible``,
+    ``no_assessment``), then by ``algorithm_id``.
+    """
 
     algorithm_id: str
     display_name: str
-    family: str
+    family: AlgorithmFamily
     category: AlgorithmCategory
     origin: Literal["builtin", "custom"]
     assessment: Literal["no_assessment", "impossible", "not_applicable", "possible", "recommended"]
-    license_status: str
+    license_status: AlgorithmLicenseStatus
     license_eligibility_verified: bool
     license_requirements: AlgorithmLicenseRequirements
 
 
 class AlgorithmRecommendationResult(TypedDict):
-    """Response returned by the design-study ``recommend_algorithms`` conveniences."""
+    """Response returned by the design-study ``recommend_algorithms`` conveniences.
+
+    ``recommendations`` contains the retained algorithms.
+    ``filtered_recommendations`` contains algorithms removed by the advisory
+    license filter. Built-in algorithms with unknown configuration-dependent
+    requirements stay in ``recommendations`` when their known requirements are
+    covered; ``license_status`` is then ``"unknown_requirements"`` and
+    ``license_eligibility_verified`` is false.
+    """
 
     schema_version: int
     server_version: str
     rule_implementation_version: str
-    resolved_context: AlgorithmRecommendationContext
-    context_provenance: dict[str, str]
+    resolved_context: AlgorithmRecommendationResolvedContext
+    context_provenance: dict[str, AlgorithmRecommendationProvenance]
     recommendations: list[AlgorithmRecommendation]
-    filtered_algorithms: list[AlgorithmRecommendation]
-    license_filter: dict[str, object]
+    filtered_recommendations: list[AlgorithmRecommendation]
+    license_filter: AlgorithmLicenseFilter
     warnings: list[str]

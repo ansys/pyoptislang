@@ -17,10 +17,18 @@ available from ``ansys.optislang.core``:
    :toctree: _autosummary
 
    AlgorithmWorkflow
+   AlgorithmFamily
    AlgorithmCategory
    AlgorithmRecommendationContext
+   AlgorithmRecommendationResolvedContext
    AlgorithmRecommendationOverrides
    AlgorithmRecommendation
    AlgorithmRecommendationResult
+   AlgorithmRecommendationProvenance
    AlgorithmCapabilityRequirement
    AlgorithmLicenseRequirements
+   AlgorithmLicenseStatus
+   AlgorithmLicenseFilter
+   LicenseRequirementStatus
+   LicensePolicyMode
+   LicensePolicyScenario

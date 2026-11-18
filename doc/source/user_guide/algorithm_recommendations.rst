@@ -50,10 +50,32 @@ and discrete flags, plus objective and constraint counts, are required:
     for algorithm in result["recommendations"]:
         print(algorithm["algorithm_id"], algorithm["assessment"])
 
+``recommendations`` is ordered by assessment, strongest first
+(``recommended``, ``possible``, ``not_applicable``, ``impossible``,
+``no_assessment``), then by ``algorithm_id``. ``filtered_recommendations``
+lists algorithms removed by the license filter, in the same order.
+
 Knowledge and evaluation fields can be added when known. Omitted values use
-documented defaults and are identified in ``context_provenance``. Contradictory
-effective values, such as a nominal discrete parameter without any discrete
-deterministic parameter, are rejected.
+documented defaults and are identified in ``context_provenance``.
+
+``evaluation.operate_on_mop`` applies to optimization. ``evaluation.enable_amop``
+applies to sensitivity and defaults to ``True``, which prefers AMOP. Set it to
+``False`` to stop preferring AMOP; AMOP remains available, and another sampler
+such as a full factorial design can be recommended instead. For an optimization
+request, ``context_provenance`` marks ``evaluation.enable_amop`` as
+``"not_applicable"``. For a sensitivity request, the same marker is used for
+random-parameter counts and flags, objective and constraint counts, solver
+knowledge, and ``evaluation.operate_on_mop``. Those fields still appear in
+``resolved_context``.
+
+Discrete deterministic parameters require a non-zero ``deterministic_count``,
+and nominal discrete parameters require ``has_discrete_deterministic``.
+An optimization request is rejected when ``objective_count`` or
+``deterministic_count`` is zero, when discrete random parameters are set
+without random parameters, or when ``constraint_count`` is zero while
+``constraint_violations`` is not ``"none"``. A sensitivity request can use zero
+objectives, zero deterministic parameters, and an unset
+``constraint_violations`` value.
 
 Algorithm categories
 --------------------
@@ -78,6 +100,11 @@ System-derived context
 Call the method on a design study to derive the parameter and criterion summary
 of its last parametric system from the open project. The ``overrides`` mapping
 is applied field-by-field; omitted values retain the system-derived baseline.
+When an override changes ``constraint_count`` and leaves
+``constraint_violations`` unset, the server derives the violations again:
+``"none"`` when the effective count is zero (provenance
+``"structure_defaulted"``), otherwise ``"not_set"`` (provenance
+``"defaulted"``). An explicit ``constraint_violations`` override is preserved.
 
 .. code:: python
 
@@ -104,9 +131,18 @@ The optional ``declared_license_features`` argument accepts canonical
 optiSLang feature names, for example ``["optimization_level2"]``. When omitted,
 the server does not filter recommendations by license. When supplied, built-in
 algorithms are filtered using their algorithm-level capability requirements and
-the current server license steering policy. The response includes both retained
-and filtered algorithms, the capability requirements, and whether eligibility
-was verified. This is advisory only: it does not check out a license or verify
+the current server license steering policy. Retained algorithms stay in
+``recommendations``. Excluded algorithms are returned in
+``filtered_recommendations``, together with capability requirements and whether
+eligibility was verified.
+
+Built-in algorithms whose configuration-dependent requirements are unknown stay
+in ``recommendations`` when their known requirements are covered. Their
+``license_status`` is ``"unknown_requirements"`` and
+``license_eligibility_verified`` is false. They move to
+``filtered_recommendations`` when the known requirements are not covered.
+
+This check is advisory only: it does not check out a license or verify
 workflow-wide entitlements. Custom algorithms with unknown custom-specific
 requirements are included but marked unverified.
 Installed custom algorithms without a recognized workflow classification remain

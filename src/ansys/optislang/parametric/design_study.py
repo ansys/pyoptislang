@@ -1066,7 +1066,8 @@ class ParametricDesignStudyBase:
         -------
         AlgorithmRecommendationResult
             Recommendations, resolved context and provenance, license metadata,
-            filtering diagnostics, and warnings.
+            filtering diagnostics, and warnings. Excluded algorithms are listed in
+            ``filtered_recommendations``.
 
         Raises
         ------
@@ -1084,6 +1085,18 @@ class ParametricDesignStudyBase:
             If the server rejects the request or does not support this query.
         TimeoutError
             If the request timeout expires.
+
+        Notes
+        -----
+        Recommendations are ordered by assessment, strongest first, then by
+        algorithm id. Sensitivity sampling prefers AMOP unless
+        ``evaluation.enable_amop`` is false. An optimization request requires at
+        least one objective and one deterministic parameter. Fields unused by the
+        selected workflow have provenance ``"not_applicable"``. When ``overrides``
+        change ``constraint_count`` without setting ``constraint_violations``, the
+        server derives that field again. Built-in algorithms with unknown
+        configuration-dependent license requirements stay in the result when their
+        known requirements are covered, with unverified eligibility.
         """
         parametric_system = self.get_last_parametric_system()
         if parametric_system is None:
@@ -2034,7 +2047,8 @@ class ParametricDesignStudyManager:
         -------
         AlgorithmRecommendationResult
             Recommendations, resolved context and provenance, license metadata,
-            filtering diagnostics, and warnings.
+            filtering diagnostics, and warnings. Excluded algorithms are listed in
+            ``filtered_recommendations``.
 
         Raises
         ------
@@ -2050,6 +2064,19 @@ class ParametricDesignStudyManager:
             If the server rejects the request or does not support this query.
         TimeoutError
             If the request timeout expires.
+
+        Notes
+        -----
+        Recommendations are ordered by assessment, strongest first, then by
+        algorithm id. Sensitivity sampling prefers AMOP unless
+        ``evaluation.enable_amop`` is false. An optimization request requires at
+        least one objective and one deterministic parameter. Fields unused by the
+        selected workflow have provenance ``"not_applicable"``. When a system
+        request changes ``constraint_count`` without setting
+        ``constraint_violations``, the server derives that field again. Built-in
+        algorithms with unknown configuration-dependent license requirements stay
+        in the result when their known requirements are covered, with unverified
+        eligibility.
         """
         return _recommend_algorithms(
             self.optislang,
