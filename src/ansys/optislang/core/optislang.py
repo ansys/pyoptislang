@@ -976,7 +976,7 @@ class Optislang:
         """
         self.osl_server.timeout = timeout
 
-    def shutdown(self, force: bool = False) -> None:
+    def shutdown(self, force: bool = False, terminate_after: Optional[float] = None) -> None:
         """Shut down the optiSLang server.
 
         This method stops the server from listening for incoming connections, discards
@@ -991,6 +991,11 @@ class Optislang:
             shut down the optiSLang server in the proper way. However, if the
             ``force`` parameter is ``True``, after a while, the process is forcibly
             shut down without an exception being raised.
+        terminate_after : Optional[float], optional
+            Time in seconds to wait for a local optiSLang server to exit before it is
+            forcibly shut down. Only used when ``force`` is ``True``. A forcibly shut down
+            server neither finishes sending its usage data nor releases its licenses properly.
+            The default is ``None``, in which case it waits 15 s.
 
         Raises
         ------
@@ -1001,8 +1006,10 @@ class Optislang:
             Raised when the ``force`` parameter is ``False`` and the command or query fails.
         TimeoutError
             Raised when the ``force`` parameter is ``False`` and the timeout float value expires.
+        ValueError
+            Raised when ``terminate_after`` is negative.
         """
-        self.osl_server.shutdown(force)
+        self.osl_server.shutdown(force, terminate_after)
 
     @deprecated(
         version="0.6.0",

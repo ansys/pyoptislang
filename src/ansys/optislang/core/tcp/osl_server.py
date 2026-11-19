@@ -25,7 +25,6 @@
 from __future__ import annotations
 
 import atexit
-from datetime import datetime
 from ipaddress import ip_address
 import json
 import logging
@@ -1451,7 +1450,10 @@ class TcpOslServer(OslServer):
 
     _LOCALHOST_IPV4 = "127.0.0.1"
     _LOCALHOST_IPV6 = "::1"
-    _SHUTDOWN_WAIT = 5  # wait for local server to shutdown in second
+    # Default wait in seconds for the local server to exit after a forced shutdown before it is
+    # terminated. optiSLang sends its usage data and releases its licenses while it exits;
+    # measured at 1 to 3 s, so this leaves a margin for slow license servers and networks.
+    _SHUTDOWN_WAIT = 15
     _STOPPED_STATES = ["IDLE", "FINISHED", "STOPPED", "ABORTED"]
     _STOP_REQUESTS_PRIORITIES = {
         "STOP": 20,
@@ -5630,7 +5632,7 @@ class TcpOslServer(OslServer):
         """
         self.timeouts_register.default_value = timeout
 
-    def shutdown(self, force: bool = False) -> None:
+    def shutdown(self, force: bool = False, terminate_after: Optional[float] = None) -> None:
         """Shutdown the optiSLang server.
 
         Stop listening for incoming connections, discard pending requests, and shut down
@@ -5645,6 +5647,11 @@ class TcpOslServer(OslServer):
             to shutdown the optiSLang server process in a proper way. However, if the force
             parameter is ``True``, after a while, the process is forced to terminate and no
             exception is raised. Defaults to ``False``.
+        terminate_after : Optional[float], optional
+            Time in seconds to wait for the local optiSLang server process to exit before it is
+            forced to terminate. Only used when ``force`` is ``True``. A terminated process
+            neither finishes sending its usage data nor releases its licenses properly.
+            Defaults to ``None``, which waits 15 s.
 
         Raises
         ------
@@ -5655,7 +5662,12 @@ class TcpOslServer(OslServer):
             Raised when the parameter force is ``False`` and the command or query fails.
         TimeoutError
             Raised when the parameter force is ``False`` and the timeout float value expires.
+        ValueError
+            Raised when ``terminate_after`` is negative.
         """
+        if terminate_after is not None and terminate_after < 0:
+            raise ValueError(f"terminate_after must not be negative, got {terminate_after}.")
+
         self.__stop_listeners_registration_thread()
         self.__unregister_all_listeners()
         self.__dispose_all_listeners()
@@ -5675,7 +5687,7 @@ class TcpOslServer(OslServer):
 
         # If desired actively force osl process to terminate
         if force and self.__osl_process is not None:
-            self._force_shutdown_local_process()
+            self._force_shutdown_local_process(terminate_after)
 
     def start(self, wait_for_started: bool = True, wait_for_finished: bool = True) -> None:
         """Start project execution.
@@ -5861,17 +5873,16 @@ class TcpOslServer(OslServer):
                 raise TimeoutError("Waiting for finished timed out.")
             self._logger.info(f"Successfully_finished: {successfully_finished}.")
 
-    def _force_shutdown_local_process(self):
+    def _force_shutdown_local_process(self, terminate_after: Optional[float] = None):
         """Force shutdown local optiSLang server process.
 
-        It waits a while and then terminates the process.
+        It waits for the process to exit and terminates it if it is still running after
+        ``terminate_after`` seconds (``_SHUTDOWN_WAIT`` if ``None``).
         """
-        start_time = datetime.now()
-        while (
-            self.__osl_process.is_running()
-            and (datetime.now() - start_time).seconds < self._SHUTDOWN_WAIT
-        ):
-            time.sleep(0.5)
+        wait = self._SHUTDOWN_WAIT if terminate_after is None else terminate_after
+        deadline = time.monotonic() + wait
+        while self.__osl_process.is_running() and time.monotonic() < deadline:
+            time.sleep(min(0.5, max(0.0, deadline - time.monotonic())))
 
         if self.__osl_process.is_running():
             self.__osl_process.terminate()

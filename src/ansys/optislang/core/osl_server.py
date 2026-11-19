@@ -166,7 +166,9 @@ class OslServer(ABC):
         pass
 
     @abstractmethod
-    def shutdown(self, force: bool = False) -> None:  # pragma: no cover
+    def shutdown(
+        self, force: bool = False, terminate_after: Optional[float] = None
+    ) -> None:  # pragma: no cover
         """Shutdown the optiSLang server.
 
         Stop listening for incoming connections, discard pending requests, and shut down
@@ -181,6 +183,11 @@ class OslServer(ABC):
             to shutdown the optiSLang server process in a proper way. However, if the force
             parameter is ``True``, after a while, the process is forced to terminate and no
             exception is raised. Defaults to ``False``.
+        terminate_after : Optional[float], optional
+            Time in seconds to wait for the local optiSLang server process to exit before it is
+            forced to terminate. Only used when ``force`` is ``True``. A terminated process
+            neither finishes sending its usage data nor releases its licenses properly.
+            Defaults to ``None``, which waits 15 s.
 
         Raises
         ------
@@ -191,5 +198,7 @@ class OslServer(ABC):
             Raised when the parameter force is ``False`` and the command or query fails.
         TimeoutError
             Raised when the parameter force is ``False`` and the timeout float value expires.
+        ValueError
+            Raised when ``terminate_after`` is negative.
         """
         pass
